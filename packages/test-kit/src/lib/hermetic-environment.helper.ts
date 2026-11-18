@@ -35,7 +35,12 @@ const isAmbient = (
 
 let emptyForgeConfigDir: string | undefined;
 
-/** An empty directory for `gh`'s login, made once a process. */
+/**
+ * An empty directory for `gh`'s login, made once a process. `tmpdir()`
+ * is the run's temp root while a test run holds one (its global setup
+ * sets TMPDIR before any worker starts), so the directory is removed
+ * with the run instead of piling up in the system temp directory.
+ */
 const forgeConfigDir = (): string => {
 	emptyForgeConfigDir ??= mkdtempSync(join(tmpdir(), 'delendai-gh-'));
 	return emptyForgeConfigDir;

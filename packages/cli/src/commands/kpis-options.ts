@@ -28,6 +28,9 @@ export interface IKpiCliOptions {
 	readonly watch: boolean;
 	readonly watchIntervalMs: number;
 	readonly windowDays?: number;
+	/** `--failures`: group the runtime tool failures instead of a KPI view. */
+	readonly failures: boolean;
+	readonly sinceDays?: number;
 	readonly maxBytes?: number;
 	readonly from?: string;
 	readonly to?: string;
@@ -41,7 +44,7 @@ export type IKpiCliOptionParseResult =
 	| { readonly ok: false; readonly error: string };
 
 export const KPI_CLI_USAGE =
-	'kpis [summary|history|usage|costs|models|agents|plugins|errors|efficiency|audit] [--view=<name>] [--window-days=N] [--from=<iso>] [--to=<iso>] [--limit=N] [--max-bytes=N] [--json] [--watch] [--watch-interval-ms=N] [--threshold=<metric><op><value>] [--cache-dir=<dir>]';
+	'kpis [summary|history|usage|costs|models|agents|plugins|errors|efficiency|audit] [--view=<name>] [--window-days=N] [--failures [--since=<days>]] [--from=<iso>] [--to=<iso>] [--limit=N] [--max-bytes=N] [--json] [--watch] [--watch-interval-ms=N] [--threshold=<metric><op><value>] [--cache-dir=<dir>]';
 
 const DEFAULT_WATCH_INTERVAL_MS = 5_000;
 const DEFAULT_LIMIT = 10;
@@ -142,6 +145,9 @@ export const parseKpiCliOptions = (
 		return { ok: false, error: windowDays };
 	}
 
+	const sinceDays = parsePositiveInteger(scalarArg(args, 'since'), '--since');
+	if (typeof sinceDays === 'string') return { ok: false, error: sinceDays };
+
 	const maxBytes = parsePositiveInteger(
 		scalarArg(args, 'max-bytes'),
 		'--max-bytes',
@@ -168,6 +174,8 @@ export const parseKpiCliOptions = (
 			watch: hasFlag(args, 'watch'),
 			watchIntervalMs: watchIntervalMs ?? DEFAULT_WATCH_INTERVAL_MS,
 			...(windowDays !== undefined ? { windowDays } : {}),
+			failures: hasFlag(args, 'failures'),
+			...(sinceDays !== undefined ? { sinceDays } : {}),
 			...(maxBytes !== undefined ? { maxBytes } : {}),
 			...(from !== undefined ? { from } : {}),
 			...(to !== undefined ? { to } : {}),

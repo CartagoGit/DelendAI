@@ -53,6 +53,13 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 			{ location: 'home', path: '.claude.json', format: 'json' },
 			{ location: 'home', path: '.mcp.json', format: 'json' },
 		],
+		compaction: {
+			thresholdEnv: 'CLAUDE_AUTOCOMPACT_PCT_OVERRIDE',
+			hooks: {
+				beforeCompaction: 'PreCompact',
+				sessionStart: 'SessionStart',
+			},
+		},
 		evidence: {
 			paths: ['.claude', 'CLAUDE.md', '.mcp.json'],
 			env: ['CLAUDECODE'],

@@ -1,5 +1,9 @@
 import { formatRows } from '../lib/text-format.service';
 
+import type {
+	IToolFailureCode,
+	IToolFailureRow,
+} from '../contracts/interfaces/tool-failure-row.interface';
 import type { IKpiThreshold, TKpiCliView } from './kpis-options';
 
 export interface IKpiRenderedMetric {
@@ -197,3 +201,102 @@ const sortValue = (value: unknown): unknown => {
 
 export const renderKpiCliReportJsonLine = (report: IKpiCliReport): string =>
 	`${JSON.stringify(sortValue(report))}\n`;
+
+/** Failure codes shown per tool in `kpis --failures`. */
+const TOP_FAILURE_CODES = 5;
+
+interface IFailureEventLike {
+	readonly ts?: unknown;
+	readonly kind?: unknown;
+	readonly toolName?: unknown;
+	readonly failure?: { readonly class?: unknown; readonly code?: unknown };
+}
+
+/** Runtime events (JSONL) of one project folded per tool; bad lines are skipped. */
+export const summariseToolFailures = (
+	jsonl: string,
+	sinceMs: number,
+): readonly IToolFailureRow[] => {
+	const tools = new Map<
+		string,
+		{
+			calls: number;
+			failures: number;
+			codes: Map<string, IToolFailureCode>;
+		}
+	>();
+	for (const line of jsonl.split('\n')) {
+		if (line.trim() === '') continue;
+		let event: IFailureEventLike;
+		try {
+			event = JSON.parse(line) as IFailureEventLike;
+		} catch {
+			continue;
+		}
+		if (event.kind !== 'tool.completed' && event.kind !== 'tool.failed')
+			continue;
+		if (typeof event.toolName !== 'string') continue;
+		const at = typeof event.ts === 'string' ? Date.parse(event.ts) : NaN;
+		if (Number.isNaN(at) || at < sinceMs) continue;
+		const entry = tools.get(event.toolName) ?? {
+			calls: 0,
+			failures: 0,
+			codes: new Map<string, IToolFailureCode>(),
+		};
+		tools.set(event.toolName, entry);
+		entry.calls += 1;
+		if (event.kind !== 'tool.failed') continue;
+		entry.failures += 1;
+		const cls = event.failure?.class;
+		const code = event.failure?.code;
+		if (typeof cls !== 'string' || typeof code !== 'string') continue;
+		const key = `${cls}\u0000${code}`;
+		const known = entry.codes.get(key);
+		entry.codes.set(key, {
+			class: cls,
+			code,
+			count: (known?.count ?? 0) + 1,
+		});
+	}
+	return [...tools.entries()]
+		.map(([tool, entry]) => ({
+			tool,
+			calls: entry.calls,
+			failures: entry.failures,
+			failureShare:
+				entry.calls === 0
+					? 0
+					: Math.round((entry.failures / entry.calls) * 1000) / 1000,
+			topCodes: [...entry.codes.values()]
+				.sort(
+					(a, b) =>
+						b.count - a.count ||
+						a.code.localeCompare(b.code) ||
+						a.class.localeCompare(b.class),
+				)
+				.slice(0, TOP_FAILURE_CODES),
+		}))
+		.filter((row) => row.failures > 0)
+		.sort(
+			(a, b) =>
+				b.failures - a.failures ||
+				b.failureShare - a.failureShare ||
+				a.tool.localeCompare(b.tool),
+		);
+};
+
+export const renderToolFailures = (
+	rows: readonly IToolFailureRow[],
+): string => {
+	if (rows.length === 0) return 'kpis failures\nno tool failures recorded\n';
+	const lines = ['kpis failures'];
+	for (const row of rows) {
+		lines.push(
+			`${row.tool}: ${row.failures}/${row.calls} failed (${(row.failureShare * 100).toFixed(1)}%)`,
+		);
+		for (const code of row.topCodes) {
+			lines.push(`  ${code.count}x [${code.class}] ${code.code}`);
+		}
+	}
+	return `${lines.join('\n')}\n`;
+};

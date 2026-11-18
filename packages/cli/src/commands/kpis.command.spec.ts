@@ -6,6 +6,7 @@ import type {
 	ICliCommandContext,
 } from '../contracts/interfaces/cli-command.interface';
 import { kpisCommands, runKpisCommandBody } from './kpis.command';
+import { KPI_VIEWS } from './kpis-options';
 
 const snapshot = {
 	contract: 'project-kpis.snapshot',
@@ -395,11 +396,11 @@ const find = (name: string): ICliCommand => {
 };
 
 describe('kpis command', () => {
-	it('exports the standalone kpis command', () => {
+	it('[<100ms] exports the standalone kpis command', () => {
 		expect(kpisCommands.map((entry) => entry.name)).toEqual(['kpis']);
 	});
 
-	it('renders a scannable human summary by default', async () => {
+	it('[<100ms] renders a scannable human summary by default', async () => {
 		const result = await find('kpis').run([], buildStubContext());
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(result.text ?? '').toContain('kpis summary');
@@ -408,7 +409,7 @@ describe('kpis command', () => {
 		expect(result.text ?? '').toContain('limitations:');
 	});
 
-	it('returns stable structured data in json mode', async () => {
+	it('[<100ms] returns stable structured data in json mode', async () => {
 		const ctx = buildStubContext(true);
 		const result = await runKpisCommandBody(
 			['--view=plugins'],
@@ -424,7 +425,7 @@ describe('kpis command', () => {
 		expect(report.payload.tables[0]?.rows[0]?.plugin).toBe('search');
 	});
 
-	it('projects telemetry-backed model and error views without recomputing raw logs', async () => {
+	it('[<100ms] projects telemetry-backed model and error views without recomputing raw logs', async () => {
 		const ctx = buildStubContext(true);
 		const models = await runKpisCommandBody(['models'], ctx, runtime);
 		const errors = await runKpisCommandBody(['errors'], ctx, runtime);
@@ -446,7 +447,54 @@ describe('kpis command', () => {
 		);
 	});
 
-	it('fails validation when a configured threshold is breached', async () => {
+	it('[<100ms] renders every view in text and json', async () => {
+		for (const view of KPI_VIEWS) {
+			const text = await runKpisCommandBody(
+				[view],
+				buildStubContext(),
+				runtime,
+			);
+			expect(text.text ?? '').toContain(`kpis ${view}`);
+			const json = await runKpisCommandBody(
+				[`--view=${view}`, '--limit=1', '--window-days=30'],
+				buildStubContext(true),
+				runtime,
+			);
+			expect((json.data as { view: string }).view).toBe(view);
+		}
+	});
+
+	it('[<100ms] renders the views without any persisted evidence', async () => {
+		const bare = { pathExists: () => false };
+		for (const view of KPI_VIEWS) {
+			const result = await runKpisCommandBody(
+				[view],
+				buildStubContext(),
+				bare,
+			);
+			expect(result.text ?? '').toContain(`kpis ${view}`);
+		}
+	});
+
+	it('[<100ms] rejects bad options', async () => {
+		for (const args of [
+			['nope'],
+			['--limit=x'],
+			['--window-days=0'],
+			['--max-bytes=-1'],
+			['--watch-interval-ms=0'],
+			['--threshold=bad'],
+		]) {
+			const result = await runKpisCommandBody(
+				args,
+				buildStubContext(),
+				runtime,
+			);
+			expect(result.code).toBe(EXIT_CODE.USAGE);
+		}
+	});
+
+	it('[<100ms] fails validation when a configured threshold is breached', async () => {
 		const ctx = buildStubContext(true);
 		const result = await runKpisCommandBody(
 			['--threshold=health.score>=90'],
@@ -461,7 +509,7 @@ describe('kpis command', () => {
 		expect(report.thresholds.breaches[0]?.raw).toBe('health.score>=90');
 	});
 
-	it('streams repeated watch frames and suppresses default printing when watch ends', async () => {
+	it('[<100ms] streams repeated watch frames and suppresses default printing when watch ends', async () => {
 		const ctx = buildStubContext(true);
 		const writes: string[] = [];
 		const result = await runKpisCommandBody(
@@ -478,5 +526,133 @@ describe('kpis command', () => {
 		expect(result.suppressDefaultPrint).toBe(true);
 		expect(writes).toHaveLength(2);
 		expect(writes[0]).toContain('cli.kpis-report');
+	});
+
+	describe('--failures', () => {
+		const ev = (
+			ts: string,
+			kind: string,
+			toolName: string,
+			failure?: { class: string; code: string },
+		): string =>
+			JSON.stringify({
+				version: 1,
+				ts,
+				sessionId: 's',
+				kind,
+				toolName,
+				...(failure === undefined ? {} : { failure }),
+			});
+		const refused = { class: 'refused', code: 'gate invalid' };
+		const events = [
+			ev('2026-11-17T10:00:00Z', 'tool.completed', 'a'),
+			ev('2026-11-17T10:01:00Z', 'tool.failed', 'a', refused),
+			ev('2026-11-17T10:02:00Z', 'tool.failed', 'b', refused),
+			ev('2026-11-17T10:03:00Z', 'tool.failed', 'b', refused),
+			ev('2026-11-17T10:04:00Z', 'tool.failed', 'b', {
+				class: 'threw',
+				code: 'boom',
+			}),
+			ev('2026-11-17T10:05:00Z', 'tool.failed', 'b'),
+			ev('2026-10-01T10:00:00Z', 'tool.failed', 'old', refused),
+			'not json',
+		].join('\n');
+		const failuresRuntime = {
+			pathExists: () => true,
+			readTextFile: async () => events,
+			now: () => new Date('2026-11-18T00:00:00Z'),
+		};
+
+		it('[<100ms] prints per-tool rows, most failing first, as json', async () => {
+			const result = await runKpisCommandBody(
+				['--failures'],
+				buildStubContext(true),
+				failuresRuntime,
+			);
+			expect(result.data).toEqual({
+				rows: [
+					{
+						tool: 'b',
+						calls: 4,
+						failures: 4,
+						failureShare: 1,
+						topCodes: [
+							{
+								class: 'refused',
+								code: 'gate invalid',
+								count: 2,
+							},
+							{ class: 'threw', code: 'boom', count: 1 },
+						],
+					},
+					{
+						tool: 'a',
+						calls: 2,
+						failures: 1,
+						failureShare: 0.5,
+						topCodes: [
+							{
+								class: 'refused',
+								code: 'gate invalid',
+								count: 1,
+							},
+						],
+					},
+				],
+			});
+		});
+
+		it('[<100ms] reports no failures for a missing file and skips odd events', async () => {
+			const none = await runKpisCommandBody(
+				['--failures'],
+				buildStubContext(),
+				{ pathExists: () => false },
+			);
+			expect(none.text).toContain('no tool failures recorded');
+			const odd = await runKpisCommandBody(
+				['--failures'],
+				buildStubContext(true),
+				{
+					...failuresRuntime,
+					readTextFile: async () =>
+						[
+							'{"kind":"tool.failed","ts":"2026-11-17T10:00:00Z"}',
+							'{"kind":"tool.failed","toolName":"z"}',
+							'{"kind":"tool.started","toolName":"z","ts":"2026-11-17T10:00:00Z"}',
+							ev('2026-11-17T10:00:00Z', 'tool.failed', 'z'),
+						].join('\n'),
+				},
+			);
+			expect(odd.data).toEqual({
+				rows: [
+					{
+						tool: 'z',
+						calls: 1,
+						failures: 1,
+						failureShare: 1,
+						topCodes: [],
+					},
+				],
+			});
+		});
+
+		it('[<100ms] rejects an invalid --since', async () => {
+			const result = await runKpisCommandBody(
+				['--failures', '--since=0'],
+				buildStubContext(),
+				failuresRuntime,
+			);
+			expect(result.code).toBe(EXIT_CODE.USAGE);
+		});
+
+		it('[<100ms] honours --since and renders text', async () => {
+			const result = await runKpisCommandBody(
+				['--failures', '--since=60'],
+				buildStubContext(),
+				failuresRuntime,
+			);
+			expect(result.text).toContain('old: 1/1 failed (100.0%)');
+			expect(result.text).toContain('2x [refused] gate invalid');
+		});
 	});
 });

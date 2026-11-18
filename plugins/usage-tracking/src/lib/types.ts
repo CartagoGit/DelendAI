@@ -26,6 +26,10 @@ export interface IUsageTokens {
 	readonly inputTokens?: number;
 	readonly outputTokens?: number;
 	readonly totalTokens?: number;
+	/** Prompt tokens served from the cache, when the host reports them. */
+	readonly cacheReadTokens?: number;
+	/** Prompt tokens written to the cache, when the host reports them. */
+	readonly cacheWriteTokens?: number;
 }
 
 export type TokenAccountingStatus = 'measured' | 'estimated' | 'unavailable';

@@ -2,14 +2,16 @@
 id: x01005
 title: "delendai reports the version it is"
 kind: fix
-status: review
+status: done
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: 1c7200c9-dc2b-4128-ace4-429bcff3e989
-last-correlation-id: 1c7200c9-dc2b-4128-ace4-429bcff3e989
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:56:40.016Z
+last-transition-id: b4938806-100d-43ee-9d24-3a2f9e50e53f
+last-correlation-id: b4938806-100d-43ee-9d24-3a2f9e50e53f
+last-transition-from: review
+last-transition-at: 2026-11-18T02:54:25.475Z
+shipped-in:
+  - "cf39e9ec4d28650c4ec158677f76b86e32bacd15"
 ---
 
 # x01005 — delendai reports the version it is
@@ -32,7 +34,7 @@ delendai --version, the help header and the server startup report printed 0.1.0 
 - global_gate: none
 
 ### S1 — Read each version from its own package.json and guard it
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/contracts/constants/version.constant.ts`, `packages/cli/src/contracts/constants/version.constant.spec.ts`, `packages/core/src/lib/plugins/parse-cli-args.ts`, `packages/core/src/lib/scaffold/standalone-core-tools.ts`, `packages/core/src/lib/version.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -40,9 +42,11 @@ delendai --version, the help header and the server startup report printed 0.1.0 
   - "DEFAULT_CLI_ARGS.serverVersion equals packages/core/package.json version"
   - "a spec fails when a version-defining source holds a literal semver string"
 - shipped-in: `0ba3b22bf10f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 0ba3b22bf10f is stale: slice files changed afterward (e.g. 53c5f4fb0). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
+- review-log: approved by mai-code-2 — verified at cf39e9ec4d28, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 3/3: (1) Source imports ../../../package.json and version.constant.spec.ts passed. (2) Both values derive from DELENDAI_VERSION; packages/core version spec passed. (3) version.spec.ts scans all four source files and rejects literal semantic versions; scoped specs passed. — Verified cf39e9ec: CLI_VERSION and DELENDAI_VERSION are read from their respective package manifests, DEFAULT_CLI_ARGS/server scaffold use the core constant, and the regression spec rejects literal semvers in each version-defining source. Scoped version specs passed.
 
 ## acceptance
 

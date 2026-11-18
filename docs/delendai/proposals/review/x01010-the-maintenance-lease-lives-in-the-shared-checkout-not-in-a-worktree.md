@@ -36,13 +36,15 @@ The CLI assembly (`cli/assemble.ts`) resolved the lease path against the workspa
 - global_gate: none
 
 ### S1 — Put the maintenance lease in the shared checkout
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease-path.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/development-policy/maintenance-lease-path.spec.ts`
 - **Gate**: none
 - shipped-in: `56655a4722e2`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 56655a4722e2 is stale: slice files changed afterward (e.g. 1921c42fa). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
+- review-log: requested_changes by mai-code-2 — The prior stale-delivery finding is unresolved: queue delivery is 0ea3a2b5 while S1 still cites shipped-in 56655a4722e2 and the lease path changed afterward at 1921c42fa. Redeliver on the intended current tip and rerun the real-linked-worktree spec covering shared, non-git and absolute-cache paths.
 
 ## acceptance
 
