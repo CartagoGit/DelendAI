@@ -239,6 +239,7 @@ export {
 export { readLeaseOf } from './lib/work-units/unit-lease.service';
 export { reapDeliveredUnits } from './lib/work-units/unit-reaper.service';
 export { compileWorkRefParser } from './lib/startup-reconciler/work-ref-identity';
+export { isRevalidationIdentity } from './lib/work-units/unit-topic.service';
 export { readSwarm } from './lib/work-units/work-swarm.service';
 export type { IUnitStandingEntry } from './lib/work-units/unit-lease.interface';
 export type {

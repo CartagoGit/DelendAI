@@ -5,6 +5,9 @@
  */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
+import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
+import { revalidatePortsOf } from '../lib/work-revalidate-ports.service';
 import { createNoopContext } from '../lib/noop-context.factory';
 import {
 	createWorkCommand,
@@ -125,6 +128,16 @@ describe('printPathOnly', () => {
 	});
 });
 
+describe('work revalidate', () => {
+	it('[<200ms] chooses none in a project with no ready proposals and exits 0', async () => {
+		const result = await createWorkCommand().run(
+			['revalidate'],
+			createNoopContext('/nonexistent-project', globals(true)),
+		);
+		expect(result.code).toBe(0);
+	});
+});
+
 describe('work offline', () => {
 	it('[<50ms] starts no server for any subcommand but deliver', () => {
 		const { offline } = createWorkCommand();
@@ -142,6 +155,7 @@ describe('work offline', () => {
 			expect(isOffline([sub])).toBe(true);
 		}
 		expect(isOffline(['deliver', '--proposal=x1'])).toBe(false);
+		expect(isOffline(['revalidate'])).toBe(false);
 	});
 });
 
@@ -198,5 +212,88 @@ describe('deliverPortsOf', () => {
 		for (const port of [ports.locate, ports.prove, ports.publish]) {
 			expect((await port()).code).not.toBe(0);
 		}
+	});
+});
+
+describe('revalidatePortsOf', () => {
+	/** A git that keeps its commits in memory: no process is spawned. */
+	const memoryGit = () => {
+		const log: string[] = ['base'];
+		const dirty = new Set<string>();
+		const git: IGitInCheckout = (args) => {
+			const [verb] = args;
+			if (verb === 'rev-parse') {
+				return args[1] === 'HEAD'
+					? { ok: true, out: `${log.at(-1) ?? ''}\n` }
+					: { ok: false, out: '' };
+			}
+			if (verb === 'status') {
+				return {
+					ok: true,
+					out: [...dirty].map((path) => `?? ${path}`).join('\0'),
+				};
+			}
+			if (verb === 'commit') {
+				log.push(`c${String(log.length)}`);
+				dirty.clear();
+			}
+			if (verb === 'reset') {
+				log.splice(log.indexOf(args[2] ?? '') + 1);
+			}
+			return { ok: true, out: '' };
+		};
+		return { git, log, dirty };
+	};
+
+	it('[<50ms] commits what a transition wrote, marks the unit and undoes back to the mark', async () => {
+		const { git, log, dirty } = memoryGit();
+		const ctx = {
+			...createNoopContext('/work', globals(true)),
+			request: (async () => {
+				dirty.add('docs/p.md');
+				return { ok: true };
+			}) as ICliCommandContext['request'],
+		};
+		const ports = revalidatePortsOf(
+			ctx,
+			'claude-sonnet-5-5',
+			'tool',
+			() => git,
+		);
+		const mark = ports.mark('/unit');
+		expect(mark).toBe('base');
+		const answer = await ports.transition({
+			id: 'f1',
+			to: 'review',
+			reason: 'why',
+			worktree: '/unit',
+		});
+		expect(answer).toEqual({ ok: true });
+		expect(log).toEqual(['base', 'c1']);
+		ports.undo('/unit', mark ?? '');
+		expect(log).toEqual(['base']);
+		expect(await ports.developSha('/unit')).toBeUndefined();
+		expect(await ports.proposals()).toEqual([]);
+	});
+
+	it('[<50ms] prints a line to stdout', () => {
+		const write = vi
+			.spyOn(process.stdout, 'write')
+			.mockImplementation(() => true);
+		revalidatePortsOf(
+			createNoopContext('/work', globals(true)),
+			undefined,
+			'tool',
+		).print('f1');
+		expect(write).toHaveBeenCalledWith('f1\n');
+	});
+
+	it('[<50ms] refuses to enter the unit when the engine answers no path', async () => {
+		const ports = revalidatePortsOf(
+			createNoopContext('/nonexistent-project', globals(true)),
+			'claude-sonnet-5-5',
+			'tool',
+		);
+		await expect(ports.enter()).rejects.toThrow();
 	});
 });

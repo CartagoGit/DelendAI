@@ -40,7 +40,7 @@ A rehearsal scenario died on `GET pulls?... failed: gh: HTTP 504`: the land clie
 - global_gate: type
 
 ### S1 — Retry idempotent forge reads on a transient error
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/contracts/constants/forge-read-retry.constant.ts`, `packages/core/src/lib/integration/land/forge-read-retry.helper.ts`, `packages/core/src/lib/integration/land/github-land-forge.service.ts`, `packages/core/tests/src/lib/integration/land/forge-read-retry.helper.spec.ts`, `packages/core/tests/src/lib/integration/land/github-land-forge.service.spec.ts`, `plugins/integration/src/lib/contracts/interfaces/integration-pass.interface.ts`, `plugins/integration/src/lib/services/integration-pass.service.ts`
 - **Gate**: type
 - acceptance:
@@ -49,8 +49,10 @@ A rehearsal scenario died on `GET pulls?... failed: gh: HTTP 504`: the land clie
   - "FORGE_READ_RETRY in contracts/constants/forge-read-retry.constant.ts is the one place that names the statuses (502, 503, 504), the 3 retries and the delays 1000/3000/9000 ms."
   - "integration-pass.service.ts is the composition root that supplies the real wait to createGithubLandForge; specs inject a fake and use no real timer."
 - shipped-in: `523240c88df6`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Review evidence is stale. S1 is shipped-in 523240c88df6, but multiple slice files changed afterward on develop (including packages/core/src/lib/integration/land/github-land-forge.service.ts, its spec, and integration-pass interface/service files). Please redeliver on current HEAD with a fresh shipped-in and updated scoped type-gate evidence before re-review.
 
 ## acceptance
 

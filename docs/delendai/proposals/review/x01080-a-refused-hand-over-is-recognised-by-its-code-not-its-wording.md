@@ -37,7 +37,7 @@ Decisions (nothing is left undecided):
 - global_gate: none
 
 ### S1 — The same-status refusal carries a code and work deliver reads it
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/contracts/constants/transition-refusal-code.constant.ts`, `plugins/proposals/src/lib/tools/transition/dfa.tool.ts`, `plugins/proposals/tests/src/lib/tools/transition/dfa.tool.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -45,8 +45,10 @@ Decisions (nothing is left undecided):
   - "`bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts` passes a case that republishes on the code `already-in-review`."
   - "The same spec proves the refusal text `illegal transition: "review" → "review"` with no code does not republish and fails the delivery."
 - shipped-in: `907ce2c2e992`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S1 evidence is stale: shipped-in is 907ce2c2e992, but packages/cli/src/lib/work-deliver.service.ts and packages/cli/src/lib/work-deliver.service.spec.ts changed afterward on develop. Please redeliver S1 on current HEAD with fresh shipped-in and updated scoped evidence before re-review.
 
 ## acceptance
 

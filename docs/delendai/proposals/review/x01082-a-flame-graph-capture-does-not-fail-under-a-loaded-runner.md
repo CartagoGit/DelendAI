@@ -38,7 +38,7 @@ Root cause: the unit spec `a flame-graph capture > keeps the CPU profile it reco
 - global_gate: none
 
 ### S1 — Injected exec seam, deadline reason, real-process spec in the e2e tier
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/perf/src/lib/profile/real-perf-profile-deps.ts`, `plugins/perf/src/lib/contracts/interfaces/perf.interface.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps-deadline.spec.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -47,8 +47,10 @@ Root cause: the unit spec `a flame-graph capture > keeps the CPU profile it reco
   - "real-perf-profile-deps-deadline.spec.ts proves with an injected exec that a timeout gives ok false, timedOut true and a deadline detail, and that a successful run keeps the .cpuprofile it recorded, with no process and no timer."
   - "The real-process capture is real-perf-profile-deps.e2e.spec.ts, in the e2e tier whose budget stretches with the runner load, and asserts on the whole result so a red run shows why."
 - shipped-in: `7891a84831a5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
