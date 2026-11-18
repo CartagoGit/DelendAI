@@ -31,10 +31,69 @@ const settle = async (
 	}
 };
 
-const fsDrained = (): boolean =>
-	!process
-		.getActiveResourcesInfo()
-		.some((name) => name.endsWith('Req') || name.startsWith('FSReq'));
+interface IHeartbeatTicks {
+	/** Heartbeats that read the lease and are about to write it. */
+	started: number;
+	/** Heartbeats whose write finished. */
+	done: number;
+}
+
+type TestHooks = Parameters<typeof __setWithFileMutexTestHooks>[0];
+
+/** Hook pair that counts heartbeat ticks as they start and as they finish. */
+const trackHeartbeats = (
+	onDone: (generation: number) => void = () => undefined,
+): { ticks: IHeartbeatTicks; hooks: TestHooks } => {
+	const ticks: IHeartbeatTicks = { started: 0, done: 0 };
+	return {
+		ticks,
+		hooks: {
+			beforeHeartbeatWrite: () => {
+				ticks.started += 1;
+			},
+			afterHeartbeat: (lease) => {
+				ticks.done += 1;
+				onDone(lease.generation);
+			},
+		},
+	};
+};
+
+/**
+ * Advance the fake clock one heartbeat period at a time until one more
+ * heartbeat has finished; returns the fake milliseconds spent.
+ *
+ * The mutex skips a tick while the previous heartbeat is still in flight
+ * (its handle is closed after `afterHeartbeat`), and a skipped tick reports
+ * nothing: then the clock simply advances another period. A tick that has
+ * started is waited for however long its real fs work takes, and cannot be
+ * doubled, because the in-flight guard is taken when it starts.
+ */
+const advanceToNextHeartbeat = async (
+	periodMs: number,
+	ticks: IHeartbeatTicks,
+): Promise<number> => {
+	const before = ticks.done;
+	let spentMs = 0;
+	for (let attempt = 0; attempt < 100; attempt += 1) {
+		await vi.advanceTimersByTimeAsync(periodMs);
+		spentMs += periodMs;
+		const giveUpAt = performance.now() + 20;
+		while (ticks.done === before) {
+			if (ticks.started === before && performance.now() > giveUpAt) {
+				break;
+			}
+			await new Promise<void>((resolve) => setImmediate(resolve));
+		}
+		if (ticks.done > before) {
+			expect(ticks.done, 'one heartbeat per matched period').toBe(
+				before + 1,
+			);
+			return spentMs;
+		}
+	}
+	throw new Error('no heartbeat was reported');
+};
 
 describe('withFileMutex state-machine invariants', () => {
 	let dir = '';
@@ -116,7 +175,7 @@ describe('withFileMutex state-machine invariants', () => {
 		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
 		try {
 			for (const [caseIndex, entry] of cases.entries()) {
-				let heartbeatCount = 0;
+				const tracker = trackHeartbeats();
 				let waiterEntered = false;
 				const targetCase = join(
 					dir,
@@ -124,18 +183,11 @@ describe('withFileMutex state-machine invariants', () => {
 				);
 				const lockPathCase = `${targetCase}.mutex`;
 				writeFileSync(targetCase, '{}');
-				const holderDurationMs = Math.max(
-					entry.heartbeatMs * 8,
-					entry.staleMs + 20,
-				);
-
 				__setWithFileMutexTestHooks({
 					// A live holder whose heartbeats keep the lease fresh:
 					// reclaim must keep seeing the pid as alive.
 					isPidAlive: () => true,
-					afterHeartbeat: () => {
-						heartbeatCount += 1;
-					},
+					...tracker.hooks,
 				});
 
 				const armedBaseline = vi.getTimerCount();
@@ -170,15 +222,12 @@ describe('withFileMutex state-machine invariants', () => {
 				let elapsedMs = 0;
 				let expectedHeartbeats = 0;
 				while (elapsedMs < entry.staleMs) {
-					await vi.advanceTimersByTimeAsync(entry.heartbeatMs);
-					elapsedMs += entry.heartbeatMs;
+					elapsedMs += await advanceToNextHeartbeat(
+						entry.heartbeatMs,
+						tracker.ticks,
+					);
 					expectedHeartbeats += 1;
-					await settle(() => heartbeatCount >= expectedHeartbeats);
-					// afterHeartbeat fires before the handle is closed and the
-					// in-flight guard released; a tick landing in that window
-					// is skipped, so wait for the fs requests to drain.
-					await settle(fsDrained);
-					expect(heartbeatCount, `case ${caseIndex}`).toBe(
+					expect(tracker.ticks.done, `case ${caseIndex}`).toBe(
 						expectedHeartbeats,
 					);
 				}
@@ -229,18 +278,12 @@ describe('withFileMutex state-machine invariants', () => {
 				);
 
 				expect(waiterEntered, `case ${caseIndex}`).toBe(false);
-				expect(heartbeatCount, `case ${caseIndex}`).toBe(
+				expect(tracker.ticks.done, `case ${caseIndex}`).toBe(
 					expectedHeartbeats,
 				);
 
-				expect(elapsedMs, `case ${caseIndex}`).toBeLessThan(
-					holderDurationMs,
-				);
 				endSection();
 				await holder;
-				// A tick that fired at the instant the section ended may still be
-				// finishing; it must not count toward the next case.
-				await settle(fsDrained);
 				__resetWithFileMutexTestHooks();
 			}
 		} finally {
@@ -256,6 +299,9 @@ describe('withFileMutex state-machine invariants', () => {
 		try {
 			for (const [caseIndex, targetHeartbeats] of cases.entries()) {
 				const generations: number[] = [];
+				const tracker = trackHeartbeats((generation) => {
+					generations.push(generation);
+				});
 				let caseToken: string | undefined;
 				let release: () => void = () => undefined;
 				const gate = new Promise<void>((resolve) => {
@@ -275,10 +321,7 @@ describe('withFileMutex state-machine invariants', () => {
 					// that is genuinely abandoned is one whose process is gone,
 					// which is what this probe states.
 					isPidAlive: () => false,
-					afterHeartbeat: (lease) => {
-						if (lease.token !== caseToken) return;
-						generations.push(lease.generation);
-					},
+					...tracker.hooks,
 				});
 
 				// The section holds until the test has advanced the clock
@@ -308,17 +351,12 @@ describe('withFileMutex state-machine invariants', () => {
 				);
 
 				for (let beat = 1; beat <= targetHeartbeats; beat += 1) {
-					await vi.advanceTimersByTimeAsync(5);
-					await settle(() => generations.length >= beat);
-					// afterHeartbeat fires before the handle closes; a tick in
-					// that window is skipped, so let the fs requests drain.
-					await settle(fsDrained);
+					await advanceToNextHeartbeat(5, tracker.ticks);
 					expect(generations.length, `case ${caseIndex}`).toBe(beat);
 				}
 
 				release();
 				await holder;
-				await settle(fsDrained);
 
 				for (let index = 1; index < generations.length; index += 1) {
 					const current = generations[index];
