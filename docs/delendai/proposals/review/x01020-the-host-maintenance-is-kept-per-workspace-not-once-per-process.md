@@ -2,14 +2,14 @@
 id: x01020
 title: "The host maintenance is kept per workspace, not once per process"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: c3b63a26-1a77-4a7c-a358-7dbd923f3b36
-last-correlation-id: c3b63a26-1a77-4a7c-a358-7dbd923f3b36
-last-transition-from: ready
-last-transition-at: 2026-11-18T06:27:56.459Z
+last-transition-id: 31d3dc59-a9a8-4c6e-98a3-ff7743674e51
+last-correlation-id: 31d3dc59-a9a8-4c6e-98a3-ff7743674e51
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T06:28:37.665Z
 ---
 
 # x01020 — The host maintenance is kept per workspace, not once per process
@@ -32,15 +32,14 @@ External audit finding 2 (ChatGPT, 2026-11-04, against develop f7f53bf8d), P1: `
 - global_gate: none
 
 ### S1 — The maintenance of a server is looked up by its workspace
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease.service.ts`, `packages/core/src/lib/cli/assemble.ts`, `plugins/commit-policy/src/index.ts`, `packages/core/tests/src/lib/development-policy/current-host-maintenance.spec.ts`
 - **Gate**: type
 - acceptance:
   - "currentHostMaintenance takes the workspace root and returns the maintenance made for that workspace only; a spec starts two servers on two workspaces in one process and each plugin call gets its own workspace maintenance, never the other one"
 - shipped-in: `3aa21aae1294`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-opus-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 3aa21aae1294 is stale: slice files changed afterward (e.g. ef203ed1f, 2c5e46fc9). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus the two-workspace empirical spec evidence.
 
 ## acceptance
