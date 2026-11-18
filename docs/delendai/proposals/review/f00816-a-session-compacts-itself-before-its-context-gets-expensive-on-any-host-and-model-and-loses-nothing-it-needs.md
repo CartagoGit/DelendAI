@@ -128,7 +128,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 1/1: (1) index.spec accepts/refuses the policy options; auto-run.tool.spec caps the ladder and returns a named blocker for unauthorized top tier. — Reviewed plugin options and auto_run tier cap/authorization blocker. Focused f00816 suite passed 86/86.
 
 ### S5a — Ledger record and cost per correct result
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`, `plugins/usage-tracking/src/lib/contracts/usage-rollup.interface.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup-buckets.helper.ts`, `plugins/usage-tracking/src/lib/services/cost-per-correct.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
@@ -137,8 +137,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One invocation record holds requested model, real model, tokens in, out, cache read and cache write, wall time, turns, retries, task class and an outcome (correct, blocked or failed) set from a gate result, never self-reported."
   - "The rollup reports cost per correct result by task class and model, with the sample count."
   - "Records without the new fields still read."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) Invocation record/interfaces and usage-rollup tests cover every metric field and derive outcomes only from a gate result. (2) buildCostPerCorrect spec asserts task-class/model grouping, cost per correct and sample count. (3) usage-rollup compatibility spec reads records created before the new ledger fields. — Reviewed invocation ledger shape, gate-derived outcomes, compatibility and cost-per-correct rollups. Focused f00816 suite passed 86/86.
 
 ### S5b — Cost limits and the no-progress stop
 - **Status**: review
