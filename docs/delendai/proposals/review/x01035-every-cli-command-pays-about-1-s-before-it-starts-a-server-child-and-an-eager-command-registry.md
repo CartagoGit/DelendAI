@@ -33,7 +33,7 @@ Measured 2026-11-05 on a one-commit fixture (bare origin, `shared-checkout-merge
 - global_gate: type
 
 ### S1 — Work subcommands start no server child
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -41,8 +41,10 @@ Measured 2026-11-05 on a one-commit fixture (bare origin, `shared-checkout-merge
   - "On the fixture, `delendai work status`, `enter`, `checkpoint`, `swarm`, `prove`, `publish` and `retire` start no `__serve` process (strace -ff), and their git processes are those of the command alone."
   - "work.command.spec.ts proves the work command declares itself offline except for deliver."
 - shipped-in: `a2cdee2ebb2a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — The CLI loads only the command it runs
 - **Status**: review
