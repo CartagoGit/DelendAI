@@ -208,15 +208,15 @@ export const allowedRefPatterns = (
 		...protectedBranchNames(branches).map(
 			(branch) => `refs/heads/${branch}`,
 		),
-		...(branches.workRefVisibility === 'visible' &&
-		branches.workRefPrefix.length > 0
-			? [
-					`${branches.workRefPrefix.startsWith('refs/') ? branches.workRefPrefix : `refs/${branches.workRefPrefix}`}**/*`,
-				]
+		...(branches.workRefVisibility === 'visible'
+			? ownedWorkRefPrefixes(branches).map(
+					(prefix) =>
+						`${prefix.startsWith('refs/') ? prefix : `refs/${prefix}`}**/*`,
+				)
 			: []),
-		...(branches.publicationRefPrefix === ''
-			? []
-			: [`refs/heads/${branches.publicationRefPrefix}**/*`]),
+		...ownedPublicationRefPrefixes(branches)
+			.filter((prefix) => prefix !== '')
+			.map((prefix) => `refs/heads/${prefix}**/*`),
 		...ownedBatchPrefixes(branches).map(
 			(prefix) => `refs/heads/${prefix}**/*`,
 		),

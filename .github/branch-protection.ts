@@ -23,6 +23,8 @@ export interface IBranchProtectionConfig {
 	readonly version: number;
 	readonly defaults: IBranchProtectionDefaults;
 	readonly branches: readonly IBranchPolicy[];
+	/** Every publication prefix the policy owns, current first. */
+	readonly publication_prefixes: readonly string[];
 }
 
 export const BRANCH_PROTECTION: IBranchProtectionConfig = {
@@ -47,4 +49,5 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 			required_checks: ['delendai-validate', 'release-pr-gate'],
 		},
 	],
+	publication_prefixes: ['delendai/pr/'],
 };

@@ -27,6 +27,7 @@
 import {
 	allowedRefPatterns,
 	hasSeparateReleaseBranch,
+	publicationPrefixesOf,
 } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import { buildDesiredState, type IDesiredBranchRule } from '@delendai/core/cli';
@@ -232,6 +233,8 @@ export const branchProtectionModule = (
 		'\treadonly version: number;',
 		'\treadonly defaults: IBranchProtectionDefaults;',
 		'\treadonly branches: readonly IBranchPolicy[];',
+		'\t/** Every publication prefix the policy owns, current first. */',
+		'\treadonly publication_prefixes: readonly string[];',
 		'}',
 		'',
 		'export const BRANCH_PROTECTION: IBranchProtectionConfig = {',
@@ -251,6 +254,9 @@ export const branchProtectionModule = (
 			? [entry(release, 'The release branch: the promotion boundary.')]
 			: []),
 		'\t],',
+		`\tpublication_prefixes: [${publicationPrefixesOf(policy.branches)
+			.map((prefix) => `'${prefix}'`)
+			.join(', ')}],`,
 		'};',
 	].join('\n')}\n`;
 };

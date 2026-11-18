@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { BRANCH_PROTECTION } from '../../../.github/branch-protection.ts';
 import {
 	assertDeclaration,
+	assertWorkflowPrefixes,
 	compareLive,
 	parseDeclaration,
 } from './branch-protection-guard.script';
@@ -140,5 +141,33 @@ ${CONTEXTS}
 
 	it('accepts the live policy when protection and checks match', () => {
 		expect(() => compareLive(declaration, live)).not.toThrow();
+	});
+});
+
+describe('workflow publication prefixes (f00808 S5)', () => {
+	it('[<50ms] accepts a workflow that names none or exactly the owned ones', () => {
+		expect(() =>
+			assertWorkflowPrefixes('run: bun x', ['pr/']),
+		).not.toThrow();
+		expect(() =>
+			assertWorkflowPrefixes(
+				"if: startsWith(github.head_ref, 'pr/') || startsWith(github.head_ref, 'delendai/pr/')",
+				['pr/', 'delendai/pr/'],
+			),
+		).not.toThrow();
+	});
+
+	it('[<50ms] refuses a workflow whose prefixes differ from the policy and ignores comments', () => {
+		expect(() =>
+			assertWorkflowPrefixes("if: startsWith(x, 'delendai/pr/')", [
+				'pr/',
+				'delendai/pr/',
+			]),
+		).toThrow(/names publication prefixes/u);
+		expect(() =>
+			assertWorkflowPrefixes('# delendai/pr/ in a comment\nrun: x', [
+				'pr/',
+			]),
+		).not.toThrow();
 	});
 });
