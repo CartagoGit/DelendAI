@@ -509,6 +509,7 @@ const settleHandovers = async (
 	ports: IWorkRevalidatePorts,
 	selection: IRevalidateSelection,
 	proposals: readonly IRevalidateProposal[],
+	worktree: string,
 ): Promise<IRevalidateSelection> => {
 	const chosen: string[] = [];
 	const refused = [...selection.refused];
@@ -520,7 +521,7 @@ const settleHandovers = async (
 		}
 		let reason: string | undefined;
 		try {
-			reason = await ports.handoverRefusal(id);
+			reason = await ports.handoverRefusal(id, worktree);
 		} catch (error) {
 			reason = error instanceof Error ? error.message : String(error);
 		}
@@ -541,28 +542,36 @@ export const revalidateBatch = async (
 	proposalsFlag: string | undefined,
 ): Promise<ICliCommandResult & { readonly data: IRevalidateOutcome }> => {
 	const proposals = await ports.proposals();
-	const selection = await settleHandovers(
-		ports,
-		selectRevalidation(
-			proposals,
-			namedProposalsOf(proposalsFlag),
-			await ports.heldByUnits(),
-		),
+	const picked = selectRevalidation(
 		proposals,
+		namedProposalsOf(proposalsFlag),
+		await ports.heldByUnits(),
 	);
+	// The hand-over's preflight runs in the batch's unit: the tool refuses
+	// a call that would write into the shared checkout.
+	const inProgress = picked.chosen.some(
+		(id) => proposals.find((p) => p.id === id)?.stage === 'in-progress',
+	);
+	let entered: string | undefined;
+	if (inProgress) entered = await ports.enter();
+	const selection =
+		entered === undefined
+			? picked
+			: await settleHandovers(ports, picked, proposals, entered);
 	for (const { id, reason } of selection.refused) {
 		ports.print(`left out ${id}: ${reason}`);
 	}
 	if (selection.chosen.length === 0) ports.print('chose none');
 	for (const id of selection.chosen) ports.print(id);
 	if (selection.chosen.length === 0) {
+		if (entered !== undefined) await ports.release(entered);
 		return {
 			code: EXIT_CODE.OK,
 			data: { ...selection, transitioned: [], failed: [] },
 			suppressDefaultPrint: true,
 		};
 	}
-	const worktree = await ports.enter();
+	const worktree = entered ?? (await ports.enter());
 	const sha = await ports.developSha(worktree);
 	const transitioned: string[] = [];
 	const retired: string[] = [];

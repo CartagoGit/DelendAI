@@ -37,7 +37,12 @@ export interface IRevalidateReadPorts {
 	readonly proposals: () => Promise<readonly IRevalidateProposal[]>;
 	/** The proposals a live unit holds, here or on the forge. */
 	/** Why handing `id` over to review would be refused (the transition's own preflight); undefined when it would not. */
-	readonly handoverRefusal: (id: string) => Promise<string | undefined>;
+	readonly handoverRefusal: (
+		id: string,
+		worktree: string,
+	) => Promise<string | undefined>;
+	/** Retires the batch's unit when nothing was chosen, keeping its work. */
+	readonly release: (worktree: string) => Promise<void>;
 	readonly heldByUnits: () => Promise<ReadonlySet<string>>;
 	readonly print: (line: string) => void;
 }
