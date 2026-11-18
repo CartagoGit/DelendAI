@@ -2,14 +2,14 @@
 id: x01020
 title: "The host maintenance is kept per workspace, not once per process"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-04
-last-transition-id: 7331af6d-abe4-4649-8704-eca413ded817
-last-correlation-id: 7331af6d-abe4-4649-8704-eca413ded817
-last-transition-from: review
-last-transition-at: 2026-11-04T19:28:29.271Z
+last-transition-id: c3b63a26-1a77-4a7c-a358-7dbd923f3b36
+last-correlation-id: c3b63a26-1a77-4a7c-a358-7dbd923f3b36
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:27:56.459Z
 ---
 
 # x01020 — The host maintenance is kept per workspace, not once per process
