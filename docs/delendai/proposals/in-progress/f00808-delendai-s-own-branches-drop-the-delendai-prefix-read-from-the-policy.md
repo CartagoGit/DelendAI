@@ -94,21 +94,50 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "When no ref is left under a former prefix it says so and names the config line to remove."
   - "Spec: no rename of a ref with an open pull request; tips identical before and after."
 
-### S9 — Branch names a person can read at a glance
+### S9 — Branch names a person can read at a glance: grammar, render and parse core
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/work-units/work-ref-record.service.ts`, `packages/core/tests/src/lib/work-units/work-ref-record.service.spec.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
+- **Files**: `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/core/src/lib/development-policy/work-ref-placeholders.ts`, `packages/core/src/lib/wip-engine/ref-name.ts`, `packages/core/src/lib/wip-engine/scope.ts`, `packages/core/src/lib/startup-reconciler/work-ref-identity.ts`, `packages/core/src/lib/work-units/work-ref-shape.service.ts`, `packages/core/tests/src/lib/wip-engine/ref-name.spec.ts`, `packages/core/tests/src/lib/work-units/work-ref-shape.service.spec.ts`
 - **Gate**: type
+- **Decisions**: none
 - acceptance:
-  - "The default template, configurable in the policy (`workRefTemplate`; publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, chosen by the owner. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`."
-  - "action is implement, review, create or fix. scope is a proposal (`x01003`), one slice (`x01003-S2`), a range (`x01003-S1-S3`), a set (`x01003-S1+S4`) or several proposals (`x01004+x01016`), with `-G{n}` (uppercase) only from the second generation on (`x01003-G2`). Only `-` and `+` join parts: `[ ]`, `~`, `..` and spaces are not valid in git refs. topic is a short human summary of what the branch integrates; on a publication, of what that pull request ships."
-  - "Spec: the scope grammar is parsed and rendered both ways for proposal, slice, range, set, multi-proposal and generation, and every rendered name passes `git check-ref-format`."
-  - "The machine identity (agent, kind, proposal, slices, generation) is written in the existing `Delendai-Wip-Ref` commit trailer; every parser reads it from there first and falls back to the name, so the old and new forms are both recognised in the transition (S2)."
-  - "The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed."
+  - "ref-name.spec.ts asserts the default template, configurable in the policy (`workRefTemplate`; publications use the same shape after `publicationRefPrefix`), is `{wip|pr}/{action}/{agent}/{scope}/{topic}`, chosen by the owner. With this repository's empty prefix the names start directly with `wip/` or `pr/`: `wip/implement/claude-opus-5-5/x01003/shared-checkout-stays-clean`, `pr/implement/claude-opus-5-5/x01003-S2/work-ref-refuses-shared-checkout`, `wip/review/gpt-5.3-codex/x01004+x01016/verdicts`."
+  - "ref-name.spec.ts asserts action is implement, review, create or fix; scope is a proposal (`x01003`), one slice (`x01003-S2`), a range (`x01003-S1-S3`), a set (`x01003-S1+S4`) or several proposals (`x01004+x01016`), with `-G{n}` (uppercase) only from the second generation on (`x01003-G2`); only `-` and `+` join parts. topic is a short human summary of what the branch integrates; on a publication, of what that pull request ships."
+  - "work-ref-shape.service.spec.ts parses and renders the scope grammar both ways for proposal, slice, range, set, multi-proposal and generation, and every rendered name passes `git check-ref-format`; `compileWorkRefParser` (work-ref-identity.ts) reads both the old `-g{n}` template and the new grammar."
+  - "ref-name.spec.ts asserts `withScopeTrailers` (scope.ts) writes the machine identity (agent, kind, proposal, slices, generation) in the `Delendai-Wip-Ref` trailer and a new reader in scope.ts returns it; a message without it returns undefined."
+
+### S9b — Core parsers read the trailer identity first and the name second
+- **Status**: pending
+- **DependsOn**: [S9, S3]
+- **Files**: `packages/core/src/lib/development-policy/owned-work-ref-parser.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/pull-request-text.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-generation.service.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "work-unit-generation.service.spec.ts asserts `chooseGeneration` and `endedGenerations` recognise a unit under the old `-g{n}` name and under the new `-G{n}` scope, reading the `Delendai-Wip-Ref` trailer identity first and the name only when the trailer is absent."
+  - "`bun run lint:architecture` passes and no module in this slice's Files keeps its own `-g\\d+` regex: each calls the parser of S9."
+
+### S9c — CLI and plugin call sites follow the new grammar
+- **Status**: pending
+- **DependsOn**: [S9, S7]
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "work-ref-migration.spec.ts appends the old shape to PREVIOUS_SHAPES: a unit under it still enters, checkpoints and publishes under its own name; no ref with an open pull request is ever renamed."
+  - "work-ref-mention.spec.ts finds a mention of a ref in the old and in the new grammar; `pullRequestOf` (work-deliver.service.ts) and `agentOfWorkBranch` (group-helpers.ts) read both."
+
+### S9d — Checkpoint and rebase write the structured trailer
+- **Status**: pending
+- **DependsOn**: [S9]
+- **Files**: `packages/core/src/lib/wip-engine/checkpoint.ts`, `packages/core/src/lib/wip-engine/rebase.ts`, `packages/core/tests/src/lib/wip-engine/checkpoint.spec.ts`, `packages/core/tests/src/lib/wip-engine/rebase.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "checkpoint.spec.ts and rebase.spec.ts assert every checkpoint and rebased commit carries the structured `Delendai-Wip-Ref` identity S9 defines, read back by S9's reader."
 
 ### S8 — This repository switches, and q00040 learns the current namespace
 - **Status**: pending
-- **DependsOn**: [S2, S3, S4, S5, S9]
+- **DependsOn**: [S2, S3, S4, S5, S9, S9b, S9c, S9d]
 - **Files**: `delendai.config.json`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
 - **Gate**: none
 - acceptance:
