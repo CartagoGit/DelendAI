@@ -50,21 +50,6 @@
 					"name": "Dashboard",
 					"type": "webview",
 					"icon": "media/logo.svg"
-				},
-				{
-					"id": "delendai.tools",
-					"name": "Tools",
-					"type": "tree"
-				},
-				{
-					"id": "delendai.proposals",
-					"name": "Proposals",
-					"type": "tree"
-				},
-				{
-					"id": "delendai.memory",
-					"name": "Memory",
-					"type": "tree"
 				}
 			]
 		},
@@ -282,75 +267,6 @@
 			}
 		],
 		"menus": {
-			"view/title": [
-				{
-					"command": "delendai.refresh",
-					"when": "view == delendai.tools",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.openAgentCatalog",
-					"when": "view == delendai.tools",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.openAutoAgentSelector",
-					"when": "view == delendai.tools",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.toolSearch",
-					"when": "view == delendai.tools",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.providers.openDashboard",
-					"when": "view == delendai.tools",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.providers.healthcheck",
-					"when": "view == delendai.tools",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.proposals.refresh",
-					"when": "view == delendai.proposals",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.openProposal",
-					"when": "view == delendai.proposals",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.refresh",
-					"when": "view == delendai.memory",
-					"group": "navigation"
-				},
-				{
-					"command": "delendai.openToolDetail",
-					"when": "view == delendai.tools && viewItem == delendaiTool",
-					"group": "inline"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "delendai.openToolDetail",
-					"when": "view == delendai.tools && viewItem == delendaiTool",
-					"group": "inline"
-				},
-				{
-					"command": "delendai.openPluginConfig",
-					"when": "view == delendai.tools && viewItem == delendaiPlugin",
-					"group": "configure"
-				},
-				{
-					"command": "delendai.plugins.activation",
-					"when": "view == delendai.tools && viewItem == delendaiPlugin",
-					"group": "configure"
-				}
-			],
 			"commandPalette": [
 				{
 					"command": "delendai.openAgentCatalog",

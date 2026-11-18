@@ -72,7 +72,8 @@ The views ask once while the client is still connecting and nothing asks again w
 
 ### S6 — One dashboard with everything, and it remembers the viewer
 - **Status**: pending
-- **Files**: `extensions/vscode/package.json`, `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`
+- **Files**: `extensions/vscode/package.json`, `extensions/vscode/src/extension.ts`, `extensions/vscode/src/providers/dashboard-webview-view-provider.ts`
+- **DependsOn**: [S1, S2, S4]
 - **Gate**: type
 - acceptance:
   - "The extension has one view, the Dashboard, with sections for tools, proposals, memory, plugins, agents and KPIs; the separate panels are gone and every section loads its data."

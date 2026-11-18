@@ -30,7 +30,7 @@ const overviewFixture: IOverview = {
 };
 
 describe('proposals view registration (f00079 S4)', async () => {
-	it('registers a TreeDataProvider for the proposals view', async () => {
+	it('[<200ms] registers no tree for the proposals view: the Dashboard shows them', async () => {
 		__resetRuntimeHandle();
 
 		const stored = new Map<string, unknown>();
@@ -76,9 +76,7 @@ describe('proposals view registration (f00079 S4)', async () => {
 
 		await activate(context, { vscode, createClient: async () => client });
 
-		const provider = registeredViews.get(PROPOSALS_VIEW_ID);
-		expect(provider).toBeDefined();
-		expect(typeof provider?.getChildren).toBe('function');
+		expect(registeredViews.has(PROPOSALS_VIEW_ID)).toBe(false);
 
 		await deactivate();
 	});

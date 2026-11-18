@@ -644,16 +644,8 @@ export const activate = async (
 		statusBarItem = undefined;
 	}
 
-	const treeRegistration = vscode.window.registerTreeDataProvider?.(
-		TOOLS_VIEW_ID,
-		toolTree,
-	);
-	if (treeRegistration !== undefined) track(treeRegistration);
-	const memoryRegistration = vscode.window.registerTreeDataProvider?.(
-		MEMORY_VIEW_ID,
-		memoryTree,
-	);
-	if (memoryRegistration !== undefined) track(memoryRegistration);
+	// The Dashboard is the one view: its sections read the same server, so no
+	// separate tree is registered for tools, proposals or memory.
 	// Register views before the first status-bar refresh. The refresh performs
 	// several MCP requests and must not prevent the workbench from attaching
 	// the providers declared by the extension manifest.
@@ -666,11 +658,6 @@ export const activate = async (
 		snapshotSource: proposalsSource,
 		filterStore: createProposalFilterStore(context.globalState),
 	});
-	const proposalsRegistration = vscode.window.registerTreeDataProvider?.(
-		PROPOSALS_VIEW_ID,
-		proposalsTree,
-	);
-	if (proposalsRegistration !== undefined) track(proposalsRegistration);
 
 	// S3: capture the host's actually-loaded plugin set after the views are
 	// registered. A slow MCP overview must not prevent the workbench from
