@@ -299,11 +299,35 @@ describe('revalidateBatch declared files', () => {
 		return { calls, ports };
 	};
 
-	const renameLog = (args: readonly string[]): string =>
-		args.includes('--diff-filter=R') ? `R100\t${OLD}\t${NEW}\n` : '';
+	interface IFakeHistory {
+		/** Commits that removed a path: git answers D for them under a pathspec. */
+		readonly removed: Record<string, { sha: string; subject: string }>;
+		/** The unlimited `git show -M` rows of a commit. */
+		readonly shown?: Record<string, string>;
+		/** The merge line (`sha<TAB>subject`) that brought a commit in. */
+		readonly merge?: string;
+	}
 
-	it('[<100ms] rewrites a renamed path and keeps the proposal in the batch', async () => {
-		const { calls, ports } = filesUnit([NEW], renameLog);
+	const fakeGit =
+		(history: IFakeHistory) =>
+		(args: readonly string[]): string => {
+			if (args[0] === 'show')
+				return history.shown?.[args.at(-1) ?? ''] ?? '';
+			if (args.includes('--merges')) return history.merge ?? '';
+			const removal = history.removed[args.at(-1) ?? ''];
+			return removal === undefined
+				? ''
+				: `${removal.sha}\t${removal.subject}\n`;
+		};
+
+	const RENAME_SHA = 'aaaaaaaaaaaa';
+	const renamed: IFakeHistory = {
+		removed: { [OLD]: { sha: RENAME_SHA, subject: 'name the specs e2e' } },
+		shown: { [RENAME_SHA]: `R100\t${OLD}\t${NEW}\n` },
+	};
+
+	it('[<100ms] rewrites a path git reports as D under a pathspec but pairs as R in the commit', async () => {
+		const { calls, ports } = filesUnit([NEW], fakeGit(renamed));
 		const result = await revalidateBatch(ports, undefined);
 		expect(calls.rewrites).toEqual([`${OLD}>${NEW}`]);
 		expect(result.data.transitioned).toEqual(['g1']);
@@ -311,12 +335,18 @@ describe('revalidateBatch declared files', () => {
 	});
 
 	it('[<100ms] judges a rename whose target was later deleted as deleted', async () => {
-		const { calls, ports } = filesUnit([], (args) =>
-			args.includes('--diff-filter=R')
-				? renameLog(args)
-				: args.at(-1) === NEW
-					? 'abc1234\tdelete the thing (x00001)\n\nD\tpackages/a/old.e2e.ts\n'
-					: '',
+		const { calls, ports } = filesUnit(
+			[],
+			fakeGit({
+				removed: {
+					...renamed.removed,
+					[NEW]: {
+						sha: 'bbbbbbbbbbbb',
+						subject: 'delete it (x00001)',
+					},
+				},
+				shown: renamed.shown ?? {},
+			}),
 		);
 		const result = await revalidateBatch(ports, undefined);
 		expect(calls.rewrites).toEqual([]);
@@ -333,37 +363,55 @@ describe('revalidateBatch declared files', () => {
 		expect(calls.transitions).toEqual([]);
 	});
 
-	const deletion = (subject: string) => (args: readonly string[]) =>
-		args.includes('--diff-filter=D')
-			? `abc1234\t${subject}\n\nD\t${OLD}\n`
-			: '';
+	const deletion = (subject: string, merge?: string): IFakeHistory => ({
+		removed: { [OLD]: { sha: 'abc123456789', subject } },
+		...(merge === undefined ? {} : { merge }),
+	});
 
 	it('[<100ms] retires a proposal whose files one proposal id deleted', async () => {
 		const { calls, ports } = filesUnit(
 			[],
-			deletion('refactor(land): delete the queue (x00995)'),
+			fakeGit(deletion('refactor(land): delete the queue (x00995)')),
 		);
 		const result = await revalidateBatch(ports, undefined);
 		expect(result.data.retired).toEqual(['g1']);
 		expect(result.data.failed).toEqual([]);
 		expect(calls.transitions).toEqual(['retired']);
 		expect(calls.supersededBy).toEqual(['x00995']);
-		expect(calls.reasons[0]).toContain('abc1234');
+		expect(calls.reasons[0]).toContain('abc123456');
 	});
 
-	it('[<100ms] leaves out a deletion whose commit names no proposal, naming the commit', async () => {
-		const { calls, ports } = filesUnit([], deletion('delete the queue'));
+	it('[<100ms] reads the proposal id from the merge when the commit names none', async () => {
+		const { calls, ports } = filesUnit(
+			[],
+			fakeGit(
+				deletion(
+					'delete the queue',
+					'm1\tMerge pull request #9 from X/delendai/pr/a/implement/q00046-S4-g1/land',
+				),
+			),
+		);
+		const result = await revalidateBatch(ports, undefined);
+		expect(calls.supersededBy).toEqual(['q00046']);
+		expect(result.data.retired).toEqual(['g1']);
+	});
+
+	it('[<100ms] leaves out a deletion no commit or merge names, naming the commit', async () => {
+		const { calls, ports } = filesUnit(
+			[],
+			fakeGit(deletion('delete the queue', 'm1\tMerge pull request #9')),
+		);
 		const result = await revalidateBatch(ports, undefined);
 		expect(calls.transitions).toEqual([]);
 		expect(result.data.refused[0]?.reason).toContain(
-			`${OLD} was deleted by abc1234`,
+			`${OLD} was deleted by abc123456`,
 		);
 	});
 
 	it('[<100ms] leaves out a deletion whose commit names two proposals', async () => {
 		const { calls, ports } = filesUnit(
 			[],
-			deletion('delete the queue (x00995, x01015)'),
+			fakeGit(deletion('delete the queue (x00995, x01015)')),
 		);
 		const result = await revalidateBatch(ports, undefined);
 		expect(calls.transitions).toEqual([]);
@@ -407,7 +455,13 @@ describe('declared paths', () => {
 				},
 			]),
 			exists: (_w, path) => path === 'a/new.ts',
-			git: () => ({ ok: true, out: 'R100\ta/old.ts\ta/new.ts\n' }),
+			git: (_w, args) => ({
+				ok: true,
+				out:
+					args[0] === 'show'
+						? 'R100\ta/old.ts\ta/new.ts\n'
+						: 'aaaaaaaaaaaa\trename\n',
+			}),
 			rewriteDeclared: () => 'no',
 		};
 		const result = await revalidateBatch(ports, undefined);
