@@ -51,6 +51,15 @@ const prefixesOf = (
 	};
 };
 
+/**
+ * Where an agent's review units sit under a prefix: the readable shape
+ * puts the kind first, the shape it replaced put the agent first (f00808).
+ */
+const reviewRoots = (prefix: string, agent: string): readonly string[] => [
+	`${prefix}review/${agent}/`,
+	`${prefix}${agent}/review/`,
+];
+
 /** The output of a read-only git command, or nothing when it failed. */
 const read = (cwd: string, args: readonly string[]): string =>
 	gitVerbatim(cwd, args) ?? '';
@@ -117,12 +126,15 @@ export const releasedElsewhere = (
 	if (integration === undefined) return [];
 	const prefixes = prefixesOf(branches);
 	const own = [
-		...prefixes.work.map(
-			(prefix) => `refs/heads/${branchPath(prefix)}${agent}/review/`,
+		...prefixes.work.flatMap((prefix) =>
+			reviewRoots(branchPath(prefix), agent).map(
+				(root) => `refs/heads/${root}`,
+			),
 		),
-		...prefixes.publication.map(
-			(prefix) =>
-				`refs/remotes/origin/${branchPath(prefix)}${agent}/review/`,
+		...prefixes.publication.flatMap((prefix) =>
+			reviewRoots(branchPath(prefix), agent).map(
+				(root) => `refs/remotes/origin/${root}`,
+			),
 		),
 	];
 	const units = read(cwd, ['for-each-ref', '--format=%(refname)', ...own])
@@ -133,8 +145,8 @@ export const releasedElsewhere = (
 	);
 	// A pack that landed: its merge names its branch, its second parent
 	// carries its releases.
-	const packMarks = prefixes.publication.map(
-		(prefix) => `${branchPath(prefix)}${agent}/review/`,
+	const packMarks = prefixes.publication.flatMap((prefix) =>
+		reviewRoots(branchPath(prefix), agent),
 	);
 	for (const line of read(cwd, [
 		'log',

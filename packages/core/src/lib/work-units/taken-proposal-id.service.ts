@@ -51,7 +51,8 @@ export const takenProposalId = (
 		.split('\n')
 		.filter(
 			(ref) =>
-				ref.includes(`/${proposal}-`) &&
+				(ref.includes(`/${proposal}-`) ||
+					ref.includes(`/${proposal}/`)) &&
 				namespaces.some((namespace) => ref.includes(`/${namespace}`)) &&
 				!ref.includes(`/${agent}/`),
 		);

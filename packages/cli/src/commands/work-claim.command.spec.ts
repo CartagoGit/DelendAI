@@ -117,19 +117,19 @@ describe('work claim', () => {
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(captured.out).toContain('delendai/wip/other/x00001-S1-g1/topic');
 		expect(captured.out).toContain(
-			'delendai/wip/mine/implement/x00001-S1-g2/topic',
+			'delendai/wip/implement/mine/x00001-S1-G2/topic',
 		);
 		expect(captured.out).toContain('work claim --ref=');
 		// Listing is not taking.
 		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(true);
 		expect(
-			has(root, 'delendai/wip/mine/implement/x00001-S1-g2/topic'),
+			has(root, 'delendai/wip/implement/mine/x00001-S1-G2/topic'),
 		).toBe(false);
 	});
 
 	it('says so when nothing belongs to anybody else', async () => {
 		const root = project();
-		ref(root, 'delendai/wip/mine/implement/x00001-S1-g1/already-mine');
+		ref(root, 'delendai/wip/implement/mine/x00001-S1/already-mine');
 		capture();
 
 		const result = await createWorkCommand().run(
@@ -159,7 +159,7 @@ describe('work claim', () => {
 		expect(captured.out).toContain('claimed');
 		expect(captured.out).toContain('the same commit, a different name');
 		expect(
-			has(root, 'delendai/wip/mine/implement/x00001-S1-g2/topic'),
+			has(root, 'delendai/wip/implement/mine/x00001-S1-G2/topic'),
 		).toBe(true);
 		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(false);
 	});
@@ -183,12 +183,12 @@ describe('work claim', () => {
 			],
 			{ cwd: root },
 		);
-		ref(root, 'delendai/wip/mine/implement/x00001-S1-g2/topic');
+		ref(root, 'delendai/wip/implement/mine/x00001-S1-G2/topic');
 		const tipBefore = execFileSync(
 			'git',
 			[
 				'rev-parse',
-				'refs/heads/delendai/wip/mine/implement/x00001-S1-g2/topic',
+				'refs/heads/delendai/wip/implement/mine/x00001-S1-G2/topic',
 			],
 			{ cwd: root, encoding: 'utf8' },
 		).trim();
@@ -210,7 +210,7 @@ describe('work claim', () => {
 				'git',
 				[
 					'rev-parse',
-					'refs/heads/delendai/wip/mine/implement/x00001-S1-g2/topic',
+					'refs/heads/delendai/wip/implement/mine/x00001-S1-G2/topic',
 				],
 				{ cwd: root, encoding: 'utf8' },
 			).trim(),

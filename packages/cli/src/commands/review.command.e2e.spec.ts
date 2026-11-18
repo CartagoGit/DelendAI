@@ -217,7 +217,7 @@ describe('delendai review', () => {
 			)
 		).data as { unit: string; next: string };
 		expect(released.next).toContain(`--session=${first.session}`);
-		expect(released.unit).toContain('/review/batch-all-g1/');
+		expect(released.unit).toMatch(/\/review\/[^/]+\/batch-all\//u);
 		const reviewUnits = git(root, 'worktree', 'list', '--porcelain')
 			.split('\n')
 			.filter((line) => line.includes('/review/'));
@@ -354,7 +354,7 @@ describe('delendai review', () => {
 		);
 		expect(claimsIn(answer.worktree)).toBe('x00002');
 		expect(git(answer.worktree, 'branch', '--show-current')).toMatch(
-			/^delendai\/wip\/minimax-m3\/review\/batch-all-g1\//u,
+			/^delendai\/wip\/review\/minimax-m3\/batch-all\//u,
 		);
 		expect(answer.slices[0]?.approve).toContain(
 			`delendai review approve x00002 S1 --agent=minimax-m3 --session=${answer.session} --commit=abc1234`,
