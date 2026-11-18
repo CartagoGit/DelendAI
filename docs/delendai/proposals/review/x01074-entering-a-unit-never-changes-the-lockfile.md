@@ -48,7 +48,7 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A guard refuses a lockfile change without a manifest change
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/lockfile-follows-manifest.script.ts`, `tools/scripts/lint/lockfile-follows-manifest.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
@@ -57,8 +57,10 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "A spec proves the three cases."
   - "The guard runs in the pre-commit hook and in validate."
 - shipped-in: `b3cdb9dea54f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — Entering a unit reports the exact install command and the bun mismatch
 - **Status**: review
