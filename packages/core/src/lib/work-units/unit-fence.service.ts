@@ -9,36 +9,35 @@
  * while no higher generation of its slice exists.
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { readGit } from './work-unit-shared.service';
-
-/** `<kind>/<proposal>-<slice>-g<n>/<topic>` at the end of a work ref. */
-const UNIT_OF_REF = /\/([^/]+)\/([^/]+)-g(\d+)\/[^/]+$/u;
-
-const literal = (text: string): string =>
-	text.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
 
 /**
  * Among `refs`, the highest generation of the unit `workRef` names that
  * is higher than its own, with the ref that carries it. `undefined` when
- * `workRef` is the newest, or names no unit.
+ * `workRef` is the newest, or names no unit. Names are read by the one
+ * parser, so both spellings of a generation count (f00808).
  */
 export const supersedingUnit = (
 	refs: readonly string[],
 	workRef: string,
 ): { readonly generation: number; readonly ref: string } | undefined => {
-	const unit = UNIT_OF_REF.exec(workRef);
-	if (unit === null) return undefined;
-	const [, kind = '', slice = '', own = '0'] = unit;
-	const sameUnit = new RegExp(
-		`/${literal(kind)}/${literal(slice)}-g(\\d+)/[^/]+$`,
-		'u',
-	);
+	const own = unitOfName(workRef);
+	if (own === undefined) return undefined;
 	let newest: { generation: number; ref: string } | undefined;
 	for (const ref of refs) {
-		const generation = Number(sameUnit.exec(ref)?.[1] ?? '0');
-		if (generation <= Number(own)) continue;
-		if (newest === undefined || generation > newest.generation) {
-			newest = { generation, ref };
+		const other = unitOfName(ref);
+		if (
+			other === undefined ||
+			other.kind !== own.kind ||
+			other.proposal !== own.proposal ||
+			other.slice !== own.slice ||
+			other.generation <= own.generation
+		) {
+			continue;
+		}
+		if (newest === undefined || other.generation > newest.generation) {
+			newest = { generation: other.generation, ref };
 		}
 	}
 	return newest;
