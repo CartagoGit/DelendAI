@@ -18,6 +18,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IReapedStrayRef } from './stray-refs-reap.interface';
 import { strayRefs } from './stray-refs.service';
+import { namespacedRef } from './namespaced-ref.helper';
 import { integrationBase, readGit } from './work-unit-shared.service';
 
 const lines = (text: string | undefined): readonly string[] =>
@@ -107,12 +108,91 @@ export const heldByForge = (
 	);
 };
 
+/** The kept-here ref kinds whose work may already be on the integration branch. */
+const KEPT_KINDS = ['stranded', 'rescued'] as const;
+
+/**
+ * Whether every commit `ref` holds beyond its merge base has an
+ * equivalent patch on `base` (`git cherry` reports only `-`): the work
+ * landed under another hash, as a merge or a squash of it.
+ */
+export const patchesLanded = (
+	root: string,
+	ref: string,
+	base: string,
+): boolean => {
+	const cherry = readGit(root, ['cherry', base, ref]);
+	return (
+		cherry !== undefined &&
+		lines(cherry).every((line) => line.startsWith('-'))
+	);
+};
+
+/** What a kept ref still holds that `base` lacks: its age and files. */
+const describeKept = (
+	root: string,
+	ref: string,
+	base: string,
+	now: number,
+): Pick<IReapedStrayRef, 'ageSeconds' | 'files'> => {
+	const stamp = Number(readGit(root, ['log', '-1', '--format=%ct', ref]));
+	return {
+		ageSeconds: Number.isFinite(stamp) ? Math.max(0, now - stamp) : 0,
+		files: lines(
+			readGit(root, ['diff', '--name-only', `${base}...${ref}`]),
+		),
+	};
+};
+
+/**
+ * The stranded and rescued refs a clone keeps: removed when they hold no
+ * work or every patch is on `base`; otherwise listed with age and files.
+ */
+const reapKeptRefs = (input: {
+	readonly root: string;
+	readonly policy: IResolvedDevelopmentPolicy;
+	readonly base: string;
+	readonly apply: boolean;
+	readonly now: number;
+	readonly trees: () => ReadonlySet<string>;
+}): readonly IReapedStrayRef[] => {
+	const { root, base, apply } = input;
+	const kept = lines(
+		readGit(root, [
+			'for-each-ref',
+			'--format=%(refname)',
+			...KEPT_KINDS.map(
+				(kind) =>
+					`${namespacedRef(input.policy.branches.namespacePrefix, kind)}/`,
+			),
+		]),
+	);
+	return kept.map((ref): IReapedStrayRef => {
+		const reason = holdsOnlyEmptyCommits(root, ref, base, input.trees)
+			? 'no-work'
+			: patchesLanded(root, ref, base)
+				? 'patch-landed'
+				: undefined;
+		if (reason === undefined)
+			return {
+				ref,
+				outcome: 'kept',
+				...describeKept(root, ref, base, input.now),
+			};
+		if (!apply) return { ref, outcome: 'would-remove', reason };
+		return readGit(root, ['update-ref', '-d', ref]) === undefined
+			? { ref, outcome: 'kept' }
+			: { ref, outcome: 'removed', reason };
+	});
+};
+
 export const reapStrayRefs = (input: {
 	readonly root: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 	readonly apply: boolean;
 	/** The forge to ask; absent, only refs that hold no work may go. */
 	readonly remote?: string;
+	readonly now?: number;
 }): readonly IReapedStrayRef[] => {
 	const { root, policy, apply, remote } = input;
 	const base = integrationBase(root, policy);
@@ -138,16 +218,28 @@ export const reapStrayRefs = (input: {
 		);
 		return listed;
 	};
-	return stray.map((ref): IReapedStrayRef => {
-		const reason = holdsOnlyEmptyCommits(root, ref, base, trees)
-			? 'no-work'
-			: remote !== undefined && heldByForge(root, ref, remote, forgeTips)
-				? 'on-the-forge'
-				: undefined;
-		if (reason === undefined) return { ref, outcome: 'kept' };
-		if (!apply) return { ref, outcome: 'would-remove', reason };
-		return readGit(root, ['update-ref', '-d', ref]) === undefined
-			? { ref, outcome: 'kept' }
-			: { ref, outcome: 'removed', reason };
+	const keptRefs = reapKeptRefs({
+		root,
+		policy,
+		base,
+		apply,
+		now: input.now ?? Math.floor(Date.now() / 1000),
+		trees,
 	});
+	return [
+		...stray.map((ref): IReapedStrayRef => {
+			const reason = holdsOnlyEmptyCommits(root, ref, base, trees)
+				? 'no-work'
+				: remote !== undefined &&
+						heldByForge(root, ref, remote, forgeTips)
+					? 'on-the-forge'
+					: undefined;
+			if (reason === undefined) return { ref, outcome: 'kept' };
+			if (!apply) return { ref, outcome: 'would-remove', reason };
+			return readGit(root, ['update-ref', '-d', ref]) === undefined
+				? { ref, outcome: 'kept' }
+				: { ref, outcome: 'removed', reason };
+		}),
+		...keptRefs,
+	];
 };
