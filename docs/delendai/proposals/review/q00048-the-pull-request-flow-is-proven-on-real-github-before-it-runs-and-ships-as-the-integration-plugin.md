@@ -353,7 +353,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at 7a9c228afcfe, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) Land verdict/helper and land.spec reconciliation cases passed in the focused suite. (2) F3-oriented label stability specs assert no premature removal and one comment per head/reason. (3) Land reporting specs assert a reason line for each open PR. (4) Rehearsal F3/scenario expectations and land verdict tests pass, covering multi-pass label stability. — Reviewed verdict reconciliation and label-difference behavior; focused integration suite passed 564/564.
 
 ### S8 — One CI per overlapping group, and the integrator brings heads forward
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S7]
 - **Files**: `packages/core/src/lib/integration/land/land-batch-merge.helper.ts`, `packages/core/src/lib/integration/land/land-batch-record.helper.ts`, `packages/core/src/lib/integration/land/land-bring-forward.helper.ts`, `packages/core/src/lib/integration/land/land-batch-assembly.helper.ts`, `packages/core/src/lib/integration/decisions/overlap.helper.ts`, `plugins/integration/src/lib/services/land-bring-forward.helper.ts`
 - **Gate**: none
@@ -366,8 +366,10 @@ Nothing of this repository is emitted into the other project.
   - "A head the forge did not build (no run, or `action_required`) is brought forward once by the integrator; a cross-repository head is never built, pushed or batched"
   - "Scenarios F5, N-overlapping, red batch, derived conflict, bot head and develop-moving-mid-batch are green"
 - shipped-in: `edd7b73cd055`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 7a9c228afcfe, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 7/7: (1) Land batch assembly and scenario specs assert one batch PR and no independent member rerun. (2) land.spec and tree-footprint tests cover pinned heads, disjoint tip movement and retest on overlap. (3) Red-batch cases in land.spec pass for culprit attribution, remaining-member batching and deduplication. (4) Lone/no-overlap land tests assert same-pass merge independent of red or grouped PRs. (5) Workflow and land-forward/derived specs pass for tokenless prepare, path restriction, identity push and stale-head refusal. (6) Bring-forward and bot-head rehearsal specs cover one retry and cross-repository refusal. (7) The scenario catalogue/step tests and all 564 focused tests pass for these cases; no known-red remains for them. — Reviewed overlap batching, pinned merges, red-batch recovery, bring-forward and derived two-phase path; focused integration suite passed 564/564.
 
 ### S9 — The integration branch is scanned after every merge
 - **Status**: review
