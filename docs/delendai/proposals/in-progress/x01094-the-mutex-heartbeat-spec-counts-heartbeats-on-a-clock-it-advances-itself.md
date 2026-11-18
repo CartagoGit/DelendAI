@@ -2,14 +2,14 @@
 id: x01094
 title: "The mutex heartbeat spec counts heartbeats on a clock it advances itself"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: 9f2716da-228d-4759-a9ee-6d4765cf095a
-last-correlation-id: 9f2716da-228d-4759-a9ee-6d4765cf095a
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T06:25:13.986Z
+last-transition-id: 857ba8ad-259c-4720-a57e-4e802b036cb2
+last-correlation-id: 857ba8ad-259c-4720-a57e-4e802b036cb2
+last-transition-from: review
+last-transition-at: 2026-11-18T07:30:53.481Z
 ---
 
 # x01094 — The mutex heartbeat spec counts heartbeats on a clock it advances itself
