@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 const EXTENSION_ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..');
 
 /** What the built extension sees of the editor: it records the views it registers. */
-const FAKE_VSCODE = String.raw`const views = (globalThis.__views = {});
+const FAKE_VSCODE = `const views = (globalThis.__views = {});
 const d = { dispose() {} };
 class EventEmitter { constructor(){ this.event = () => d; } fire(){} dispose(){} }
 class TreeItem { constructor(l, s){ this.label = l; this.collapsibleState = s; } }
@@ -38,17 +38,11 @@ module.exports = {
 `;
 
 /** Activates the built bundle, then reads the Tools view the way the editor would. */
-const ACTIVATE_AND_READ = String.raw`const ext = await import('./extension.js');
+const ACTIVATE_AND_READ = `const ext = await import('./extension.js');
 const ctx = { subscriptions: [], globalState: { get: () => undefined, update: async () => {} } };
 await ext.activate(ctx);
 const view = globalThis.__views['delendai.tools'];
-const deadline = Date.now() + 60000;
-let kids = [];
-while (Date.now() < deadline) {
-  kids = (await view.getChildren()) ?? [];
-  if (kids.length > 0) break;
-  await new Promise((r) => setTimeout(r, 500));
-}
+const kids = (await view.getChildren()) ?? [];
 console.log(JSON.stringify({ labels: kids.map((kid) => String(kid.label)) }));
 await ext.deactivate();
 process.exit(0);
@@ -160,5 +154,5 @@ describe('VS Code production build', () => {
 		};
 		expect(labels.length).toBeGreaterThan(0);
 		expect(labels.join(' ')).not.toMatch(/connecting/iu);
-	}, 10_000);
+	});
 });
