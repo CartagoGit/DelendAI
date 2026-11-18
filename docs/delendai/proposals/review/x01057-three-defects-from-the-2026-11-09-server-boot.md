@@ -135,14 +135,16 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — S8 evidence is stale: shipped-in is 737a7d85e9da, but both tools/scripts/ci/prove-plan.script.ts and tools/scripts/ci/prove-plan.script.spec.ts changed afterward on develop. Please redeliver S8 on current HEAD with fresh shipped-in and updated evidence before re-review.
 
 ### S9 — ref-lifecycle reads the pull requests it needs, not their bodies
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-pr-fields.spec.ts`
 - **Gate**: type
 - acceptance:
   - "lint:ref-lifecycle asks the forge for every pull request projected to the fields it reads (number, state, merged and closed dates, head ref and sha), so the list no longer outgrows the 32 MB it reads (ENOBUFS on every pull request, run 42749758353)."
 - shipped-in: `301af1ee59cd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S9 evidence is stale: shipped-in is 301af1ee59cd, but tools/scripts/lint/ref-lifecycle-guard.script.ts changed afterward on develop. Please redeliver S9 on current HEAD with fresh shipped-in and refreshed scoped type evidence.
 
 ## acceptance
 
