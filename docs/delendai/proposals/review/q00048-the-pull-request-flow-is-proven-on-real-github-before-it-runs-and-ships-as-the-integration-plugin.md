@@ -15,6 +15,7 @@ shipped-in:
   - "1b14a507545dfb58193eb3854974f3075906f25c"
   - "7c5f13a76a7af86544450905fc2de3094e1390c3"
   - "7a9c228afcfe476c531812a286cf84bef2d2bb68"
+  - "edd7b73cd055"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -372,7 +373,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at 7a9c228afcfe, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 7/7: (1) Land batch assembly and scenario specs assert one batch PR and no independent member rerun. (2) land.spec and tree-footprint tests cover pinned heads, disjoint tip movement and retest on overlap. (3) Red-batch cases in land.spec pass for culprit attribution, remaining-member batching and deduplication. (4) Lone/no-overlap land tests assert same-pass merge independent of red or grouped PRs. (5) Workflow and land-forward/derived specs pass for tokenless prepare, path restriction, identity push and stale-head refusal. (6) Bring-forward and bot-head rehearsal specs cover one retry and cross-repository refusal. (7) The scenario catalogue/step tests and all 564 focused tests pass for these cases; no known-red remains for them. — Reviewed overlap batching, pinned merges, red-batch recovery, bring-forward and derived two-phase path; focused integration suite passed 564/564.
 
 ### S9 — The integration branch is scanned after every merge
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S6]
 - **Files**: `.github/workflows/codeql.yml`, `tools/scripts/forge/promotion-alerts.script.ts`
 - **Gate**: none
@@ -381,8 +382,10 @@ Nothing of this repository is emitted into the other project.
   - "promotion-alerts gates the promotion on no open alert on the integration branch"
   - "Scenario F9 is green: in fast mode each tip has its push-started scan workflow, in real mode a completed CodeQL analysis"
 - shipped-in: `edd7b73cd055`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at edd7b73cd055, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) CodeQL/rehearsal scan workflow specs cover integration-branch push triggers, newest-tip concurrency and per-tip completed scan coverage. (2) Promotion alert and rehearsal workflow tests pass with open-alert blocking. (3) F9 scenario and scan-helper expectations pass; known-red contains no F9 entry. — Reviewed scan-after-merge and promotion alert gating; focused integration suite passed 564/564.
 
 ### S10 — Test budgets never block integration by noise
 - **Status**: review
