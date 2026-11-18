@@ -50,7 +50,7 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
 - review-log: approved by mai-code-2 — verified at 64d614baf4ee, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 4/4: (1) runtime-event.interface.ts exports IToolFailure with the exact class union and string code, and IRuntimeEvent has optional failure with a failed-event-only com… (2) deriveToolFailure implements the four classes, prefers structuredContent.error.code, generalises first-sentence dynamic values, redacts secrets, and slices to … (3) The final runtime-event emit selects tool.failed when isError and spreads failureField only there; other events receive no failure. The helper spec asserts fai… (4) tool-failure-class.helper.spec.ts has explicit schema/refused/thrown/cancelled assertions, stable-code equality across IDs, and a ghp-shaped secret non-retenti… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The 28 focused specs for this proposal pass and the lint gate exits 0. Failure classification, stable redacted/bounded codes, and event-only instrumentation meet the acceptance criteria.
 
 ### S2 — kpis groups failures by tool, class and code
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/commands/kpis.command.ts`, `packages/cli/src/commands/kpis-options.ts`, `packages/cli/src/commands/kpis-renderer.ts`, `packages/cli/src/commands/kpis.command.spec.ts`
 - **Gate**: lint
@@ -58,8 +58,10 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
   - "`delendai kpis --failures [--since=<days>]` reads the runtime events of the project and prints, per tool, calls, failures, failure share, and the top codes with their class and count, most frequent first; --json prints the same rows."
   - "The spec drives the command over a fixture events file and asserts the rows and their order."
 - shipped-in: `659732cadb52`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 64d614baf4ee, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 2/2: (1) runFailuresView reads <workspace>/<cacheDir>/runtime/events.jsonl with a default 7-day window, summariseToolFailures folds tool.completed/tool.failed events an… (2) kpis.command.spec.ts supplies JSONL with completed/failed events, asserts b before a, exact calls/failureShare/topCodes order in JSON, missing/odd-line behavio… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The 28 focused specs pass and the lint gate exits 0. The failures view reads project runtime events, folds calls/failures and ranks failure codes consistently in text and JSON.
 
 ### S3 — doctor reports a recurring failure code
 - **Status**: review
