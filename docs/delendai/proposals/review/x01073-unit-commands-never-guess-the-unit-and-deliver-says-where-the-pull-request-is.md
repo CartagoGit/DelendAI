@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-15T22:32:46.732Z
 shipped-in:
   - "e72f2e167a8f8a109b442e6cf4e6e173194353ca"
+  - "ac65f6381d2546bb1b4258e5763b652c6c0fa521"
 ---
 
 # x01073 — Unit commands never guess the unit, and deliver says where the pull request is
@@ -50,7 +51,7 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
 - review-log: approved by mai-code-2 — verified at e72f2e167a8f, validate exit 0 and tests 4/4 claimed, no recorded run cited; acceptance 3/3: (1) liveUnitsOf filters active units by agent/proposal and chooseLiveUnit returns the sole unit; the one-unit spec verifies kind/slice/generation flags. (2) The no-unit case refuses with `no live unit`, and the several-unit case prints full cd/work-deliver commands for each exact slice; no all flag is synthesized. (3) work-live-unit.service.spec.ts contains and passes all three cases plus filtering of ended/foreign units. — Reviewed the live-unit resolver and the CLI wiring. The 4 dedicated cases pass, and the later command refactors preserve the behavior: outside a unit, the one live unit is selected; none or several are refused with exact commands and no `all` fallback.
 
 ### S2 — A publication carries the unit's slice
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -58,8 +59,10 @@ Observed 2026-11-15 with three agents. Outside the worktree `work deliver` assum
   - "The cause of the lost slice is stated in the commit body."
   - "A spec proves a unit of S1 on a branch named all reports slice S1 and the note."
 - shipped-in: `7a4c3fc74448`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at ac65f6381d25, validate exit 0 and tests 24/24 claimed, no recorded run cited; acceptance 3/3: (1) pullRequestOf is passed ports.slice except only on a separate slice publication; an S1 unit against an all publication returns slice S1 and the explanatory sli… (2) The shipped S1-to-S4 commit body states: the branch named all is not a lost slice; integration.publication publishes a small proposal whole with all in the pub… (3) work-deliver.service.spec.ts asserts pullRequestOf(...all,S1) has slice S1 and a sliceNote containing S1, while an S1 publication branch has no note; the full … — Reviewed the slice-bearing publication answer and commit history. All 24 work-deliver specs pass, and the delivery commit body explicitly explains why policy can publish a small proposal under an `all` branch while the work ref retains S1.
 
 ### S3 — Enter with an implement slice and no kind never hands out a review unit
 - **Status**: review
