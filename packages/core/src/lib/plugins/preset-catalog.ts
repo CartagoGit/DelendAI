@@ -398,23 +398,7 @@ const resolvePresetMembersFrom = (
 	if (index < 0) return [];
 	const target = definitions[index];
 	if (target === undefined) return [];
-	if (target.independent === true) {
-		return target.members.map((m) => m.plugin);
-	}
-	const seen = new Set<string>();
-	const ordered: string[] = [];
-	for (let i = 0; i <= index; i += 1) {
-		const def = definitions[i];
-		if (def === undefined) continue;
-		if (def.independent === true && def !== target) continue;
-		for (const member of def.members) {
-			if (!seen.has(member.plugin)) {
-				seen.add(member.plugin);
-				ordered.push(member.plugin);
-			}
-		}
-	}
-	return ordered;
+	return target.members.map((m) => m.plugin);
 };
 
 export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(
