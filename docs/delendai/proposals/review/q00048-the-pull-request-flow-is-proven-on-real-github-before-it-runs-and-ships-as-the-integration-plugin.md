@@ -18,6 +18,7 @@ shipped-in:
   - "edd7b73cd055"
   - "4d676221b5f5a68724ac3f4a8076da3039736b8e"
   - "5fc3983d4da8a7d107a50c19bf59f88079162b3b"
+  - "d568237449783710f645d49c6cb0e896ff30e2d5"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -475,7 +476,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at 1b14a507545d, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) Integration adoption/service and CLI specs pass for policy-driven workflows and project-owned checks. (2) The fixture-project rendering/grep test passes and the resulting workflows contain only the fixture's branch, zones and derived command beyond the version head… (3) plugins/integration README and configuration guide document options, identity setup and adopt/rehearse flow; tests cover the delivered land integration. — Reviewed adoption rendering for an external project's policy and documentation; focused integration suite passed 564/564.
 
 ### S14 — Activation and resume
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S8, S9, S10, S11a, S12, S13]
 - **Files**: `plugins/integration/src/lib/services/integration-activation.service.ts`, `plugins/integration/tests/src/lib/services/integration-activation.service.spec.ts`
 - **Gate**: none
@@ -484,8 +485,10 @@ Nothing of this repository is emitted into the other project.
   - "After that commit merges, `delendai integration resume` marks every `delendai:paused` pull request ready and removes the label; the integrator lands them with no further step"
   - "`delendai integration deactivate` returns to engine `none` in one command, and the first week's KPIs are reported against every target"
 - shipped-in: `ccbd2639c82f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at d56823744978, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) integration-activation.service.spec passes refusal prerequisites, empty known-red/doctor checks, one-commit config switch and workflow rendering. (2) Activation/resume specs verify all paused PRs are marked ready, labels removed and normal land flow owns the landing. (3) Deactivation specs verify the one-command engine-none path; KPI/report tests include every declared threshold target. — Reviewed activation prerequisites, pause/resume and deactivation/reporting; focused integration suite passed 564/564.
 
 ## acceptance
 
