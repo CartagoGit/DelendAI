@@ -47,6 +47,10 @@ import {
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
 import { runWorkProgress } from '../lib/work-progress.service';
+import {
+	readReadyProposals,
+	revalidateBatch,
+} from '../lib/work-revalidate.service';
 
 /**
  * Where an agent that just entered a unit reads what its slice asks for.
@@ -252,6 +256,16 @@ export const createWorkCommand = (): ICliCommand => ({
 	run: async (args, ctx) => {
 		if (args[0] === 'enter') await briefOnEntering();
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
+		if (args[0] === 'revalidate') {
+			const flags = args.slice(1);
+			return revalidateBatch(
+				{
+					proposals: () => readReadyProposals(ctx.cwd),
+					print: (line) => process.stdout.write(`${line}\n`),
+				},
+				scalarArg(flags, 'proposals'),
+			);
+		}
 		if (args[0] === 'deliver') {
 			const unit = args.slice(1);
 			const id = scalarArg(unit, 'proposal');
