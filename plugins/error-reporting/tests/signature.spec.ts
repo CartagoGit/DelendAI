@@ -15,7 +15,7 @@ import { extractSafeMcpFrames } from '../src/lib/frame-extractor.helper';
 import { DelendaiInternalError } from '../src/lib/contracts/interfaces/reporter.interface';
 
 describe('isDelendaiInternal', () => {
-	it('detects a stack trace originating inside delendai', () => {
+	it('[<200ms] detects a stack trace originating inside delendai', () => {
 		const error = new Error('invariant violated');
 		error.stack = [
 			'Error: invariant violated',
@@ -24,7 +24,7 @@ describe('isDelendaiInternal', () => {
 		expect(isDelendaiInternal(error)).toBe(true);
 	});
 
-	it('detects the package scope in the message alone', () => {
+	it('[<200ms] detects the package scope in the message alone', () => {
 		const error = new DelendaiInternalError({
 			code: 'PLUGIN_LOAD_FAILED',
 			packageId: '@delendai/issues',
@@ -33,7 +33,7 @@ describe('isDelendaiInternal', () => {
 		expect(isDelendaiInternal(error)).toBe(true);
 	});
 
-	it('ignores host-project failures with no delendai marker', () => {
+	it('[<200ms] ignores host-project failures with no delendai marker', () => {
 		const error = new Error("Cannot read file './src/app.ts'");
 		error.stack = [
 			'Error: Cannot read file',
@@ -44,7 +44,7 @@ describe('isDelendaiInternal', () => {
 });
 
 describe('safeFailureClassOf / classificationOf / signatureOf', () => {
-	it('classifies typed timeout errors as performance', () => {
+	it('[<200ms] classifies typed timeout errors as performance', () => {
 		const error = new DelendaiInternalError({
 			code: 'PLUGIN_REGISTER_TIMEOUT',
 			packageId: '@delendai/error-reporting',
@@ -62,7 +62,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		).toBe('PERFORMANCE');
 	});
 
-	it('produces the same signature across different workspace roots for the same internal bug', () => {
+	it('[<200ms] produces the same signature across different workspace roots for the same internal bug', () => {
 		resetInternalPathRegistry();
 		registerInternalPath('/home/user/project-a');
 		registerInternalPath('/srv/build/project-b');
@@ -97,7 +97,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		expect(a).toBe(b);
 	});
 
-	it('differs across safe package identities', () => {
+	it('[<200ms] differs across safe package identities', () => {
 		const left = signatureOf({
 			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
@@ -117,7 +117,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		expect(left).not.toBe(right);
 	});
 
-	it('collapses the same internal bug even when runtime message and values differ', () => {
+	it('[<200ms] collapses the same internal bug even when runtime message and values differ', () => {
 		const left = signatureOf({
 			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
@@ -154,7 +154,7 @@ describe('safeFailureClassOf / classificationOf / signatureOf', () => {
 		expect(left).toBe(right);
 	});
 
-	it('does not collapse different bugs that share only the error code', () => {
+	it('[<200ms] does not collapse different bugs that share only the error code', () => {
 		const left = signatureOf({
 			delendaiVersion: '0.1.0',
 			packageId: '@delendai/error-reporting',
@@ -223,7 +223,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		},
 	} as const;
 
-	it('titles the issue by the one template and bounds its length', () => {
+	it('[<200ms] titles the issue by the one template and bounds its length', () => {
 		const title = buildIssueTitle(report);
 		expect(
 			title.startsWith(
@@ -233,7 +233,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		expect(title.length).toBeLessThanOrEqual(180);
 	});
 
-	it('renders safe DTO detail and opt-in instructions', () => {
+	it('[<200ms] renders safe DTO detail and opt-in instructions', () => {
 		const body = buildIssueBody(report);
 		for (const heading of [
 			'## Summary',
@@ -256,7 +256,7 @@ describe('buildIssueTitle / buildIssueBody', () => {
 });
 
 describe('buildSyntheticExample', () => {
-	it('builds deterministic fixture fallback examples without real payload input', () => {
+	it('[<200ms] builds deterministic fixture fallback examples without real payload input', () => {
 		const left = buildSyntheticExample({
 			packageId: '@delendai/error-reporting',
 			toolName: 'quality_run_quality',
@@ -276,7 +276,7 @@ describe('buildSyntheticExample', () => {
 		);
 	});
 
-	it('projects schema-shaped payloads from fixtures when a schema is available', () => {
+	it('[<200ms] projects schema-shaped payloads from fixtures when a schema is available', () => {
 		const example = buildSyntheticExample({
 			packageId: '@delendai/error-reporting',
 			toolName: 'docs_docs_read',
