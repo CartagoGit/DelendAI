@@ -104,6 +104,11 @@ export {
 	underNamespace,
 	underPublication,
 } from './lib/integration/decisions/namespaces.helper';
+// The explicit rename of the refs left under a former namespace prefix.
+export {
+	gitNamespaceRenamePorts,
+	renameNamespace,
+} from './lib/work-units/namespace-rename.service';
 // The integration decisions: ready, overlap, grouping, culprit, landed.
 export {
 	footprintFromReach,

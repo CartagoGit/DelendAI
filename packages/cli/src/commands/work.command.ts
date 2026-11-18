@@ -7,7 +7,9 @@ import { spawnSync } from 'node:child_process';
 
 import {
 	compileWorkRefParser,
+	gitNamespaceRenamePorts,
 	noteUnitUrgency,
+	renameNamespace,
 	readUnitStandings,
 	readWorkspacePolicy,
 	runWorkUnit,
@@ -95,6 +97,56 @@ const readOpenPullRequestUrl = (
 	);
 	const url = read.status === 0 ? read.stdout.trim() : '';
 	return url === '' ? undefined : url;
+};
+
+/** The head branches of every open pull request; undefined when the forge cannot be read. */
+const readOpenPullRequestHeads = (
+	cwd: string,
+): readonly string[] | undefined => {
+	const read = spawnSync(
+		'gh',
+		[
+			'pr',
+			'list',
+			'--state',
+			'open',
+			'--limit',
+			'1000',
+			'--json',
+			'headRefName',
+			'--jq',
+			'.[].headRefName',
+		],
+		{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+	);
+	return read.status === 0
+		? read.stdout.split('\n').filter((line) => line.length > 0)
+		: undefined;
+};
+
+/** `work rename-namespace`: a dry run unless `--apply`. */
+const runRenameNamespace = async (
+	args: readonly string[],
+	ctx: ICliCommandContext,
+): Promise<ICliCommandResult> => {
+	const policy = await readWorkspacePolicy(ctx.cwd);
+	const report = renameNamespace({
+		policy,
+		apply: args.includes('--apply'),
+		ports: gitNamespaceRenamePorts({
+			root: ctx.cwd,
+			remote: 'origin',
+			openPullRequestHeads: () => readOpenPullRequestHeads(ctx.cwd),
+		}),
+	});
+	if (!ctx.globals.json) {
+		for (const ref of report.refs)
+			process.stdout.write(`${ref.outcome}  ${ref.from} -> ${ref.to}\n`);
+		process.stdout.write(`${report.message}\n`);
+	}
+	return report.refused === undefined
+		? { code: 0, data: report }
+		: { code: EXIT_CODE.VALIDATION, error: report.message };
 };
 
 /** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
@@ -278,6 +330,8 @@ export const createWorkCommand = (): ICliCommand => ({
 	...WORK_COMMAND,
 	run: async (args, ctx) => {
 		if (args[0] === 'enter') await briefOnEntering();
+		if (args[0] === 'rename-namespace')
+			return runRenameNamespace(args.slice(1), ctx);
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
 		if (args[0] === 'revalidate') {
 			const flags = args.slice(1);
