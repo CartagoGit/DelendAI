@@ -1,7 +1,6 @@
 /**
- * work-unit-publish-refusals.service.e2e.spec.ts — what `published` refuses
- * before it touches the forge, and the fence that reads a unit's
- * generation in either spelling (f00808).
+ * work-unit-publish-failure.spec.ts — a publication that did not land
+ * says so in words, not only in a list of steps.
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -13,8 +12,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
-import { published } from '@delendai/core/lib/work-units/work-unit-publish.service';
-
+import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 import { commitOnRef } from './unit-repo.helper';
 
 const roots: string[] = [];
@@ -29,7 +27,7 @@ const git = (cwd: string, ...args: string[]): string =>
 	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
 const repo = (): string => {
-	const root = mkdtempSync(join(tmpdir(), 'publish-refusals-'));
+	const root = mkdtempSync(join(tmpdir(), 'publish-failure-'));
 	roots.push(root);
 	git(root, 'init', '-q', '-b', 'develop');
 	git(root, 'config', 'user.email', 'work@example.com');
@@ -65,31 +63,47 @@ const UNIT = [
 	'--agent=claude-opus-5',
 	'--topic=probe',
 ];
-const REF = (generation: number): string =>
-	`delendai/wip/claude-opus-5/implement/x00001-S1-g${String(generation)}/probe`;
 
-describe('published refuses before it publishes', () => {
-	it('[<1000ms] names the arguments it needs', async () => {
-		const result = await published(['--slice=S1'], contextFor(repo()));
-		expect(result.code).not.toBe(0);
-	});
+const WORK_REF = 'delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe';
 
-	it('[<1000ms] does not take a separate name for the publication', async () => {
-		const result = await published(
-			[...UNIT, '--as=elsewhere'],
-			contextFor(repo()),
-		);
-		expect(result.error).toContain('is not named separately');
-	});
-
-	it('[<2000ms] refuses a unit another generation has taken over', async () => {
+describe('a publication that cannot reach the remote', () => {
+	it('[<15000ms] fails with the reason first, and keeps the work ref', async () => {
 		const root = repo();
-		commitOnRef(root, REF(1), { 'a.ts': 'export const a = 1;\n' });
-		commitOnRef(root, REF(2), { 'b.ts': 'export const b = 1;\n' });
-		const result = await published(
-			[...UNIT, '--generation=1'],
+		commitOnRef(root, WORK_REF, { 'a.ts': 'export const a = 1;\n' });
+
+		const published = await runWorkUnit(
+			['publish', ...UNIT, '--no-pull-request'],
 			contextFor(root),
 		);
-		expect(result.error).toContain('was taken over: generation 2');
+
+		expect(published.code).not.toBe(0);
+		expect(published.error?.split('\n')[0]).toContain('was NOT published');
+		// The step that failed is named, not only listed in the data.
+		expect(published.error).toMatch(/\n[a-z-]+: /u);
+		expect(
+			git(
+				root,
+				'for-each-ref',
+				'--format=%(refname)',
+				'refs/heads/delendai',
+			),
+		).toContain('delendai/wip/claude-opus-5/implement/x00001-S1-g1/probe');
+	});
+});
+
+describe('a unit whose work already landed', () => {
+	it('[<5000ms] is refused, saying it holds nothing the integration branch lacks', async () => {
+		const root = repo();
+		commitOnRef(root, WORK_REF, { 'a.ts': 'export const a = 1;\n' });
+		// Its pull request merged: develop now holds the unit's commit.
+		git(root, 'merge', '-q', '--no-edit', WORK_REF);
+
+		const published = await runWorkUnit(
+			['publish', ...UNIT, '--no-pull-request'],
+			contextFor(root),
+		);
+
+		expect(published.code).not.toBe(0);
+		expect(published.error).toContain('holds nothing develop lacks');
 	});
 });

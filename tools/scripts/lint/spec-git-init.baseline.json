@@ -86,7 +86,7 @@
 	"packages/core/tests/src/lib/work-units/work-unit-generation.remote.spec.ts": 3,
 	"packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts": 1,
-	"packages/core/tests/src/lib/work-units/work-unit-publish.service.spec.ts": 1,
+	"packages/core/tests/src/lib/work-units/work-unit-publish.service.e2e.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts": 2,
 	"packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts": 2,

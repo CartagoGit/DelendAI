@@ -834,7 +834,6 @@
 		"packages/core/tests/src/lib/work-units/work-unit-lease.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-unit-profiles.e2e.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-unit-publish-proof.spec.ts",
-		"packages/core/tests/src/lib/work-units/work-unit-publish.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-unit-status.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts",
 		"packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts",
