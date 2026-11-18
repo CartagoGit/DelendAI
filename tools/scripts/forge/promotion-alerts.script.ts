@@ -15,6 +15,10 @@
  * descendant of it was analysed) has unknown alerts, so it is refused too:
  * the answer "none open" would be about an older tree.
  *
+ * `--latest-analysed` (the hourly upkeep watch only) judges the open alerts
+ * at the latest analysed commit when the tip is not analysed yet, and says
+ * so; the release gate never passes it.
+ *
  * Exit codes:
  *   0 — no alert is open on the head branch, and an analysis covers its tip.
  *   1 — at least one is, no analysis covers the tip, or the forge could not
@@ -87,35 +91,90 @@ export const uncoveredReport = (
 ): string =>
 	`✖ promotion-alerts: no completed code scanning analysis covers ${branch} at ${tip.slice(0, 12)} (${analysed === undefined ? 'none yet' : `latest is ${analysed.slice(0, 12)}`}); its open alerts are unknown. Wait for the push-started scan.`;
 
-const ask = (repository: string, path: string): string =>
-	execFileSync('gh', ['api', `repos/${repository}/${path}`], {
-		encoding: 'utf8',
-		maxBuffer: 16 * 1024 * 1024,
-	});
+/** Answers a forge API path of one repository with its raw JSON. */
+export type IForgeAsk = (path: string, paginate?: boolean) => string;
 
-/** Whether a completed analysis covers `branch`'s tip; the refusal line when not. */
+const ghAsk =
+	(repository: string): IForgeAsk =>
+	(path, paginate = false) =>
+		execFileSync(
+			'gh',
+			[
+				'api',
+				...(paginate ? ['--paginate'] : []),
+				`repos/${repository}/${path}`,
+			],
+			{ encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
+		);
+
+/** The line printed when the tip is not analysed yet and the watch judges the latest analysed commit. */
+export const judgedAtLatestReport = (tip: string, analysed: string): string =>
+	`promotion-alerts: ${tip.slice(0, 12)} is not analysed yet; judged at the latest analysed commit ${analysed.slice(0, 12)}`;
+
+/**
+ * Whether a completed analysis covers `branch`'s tip; the refusal line when
+ * not. With `latestAnalysed`, a tip behind the latest analysis is judged at
+ * that analysis instead (one line says so); no analysis at all still refuses.
+ */
 const coverageRefusal = (
-	repository: string,
+	ask: IForgeAsk,
 	branch: string,
+	latestAnalysed: boolean,
 ): string | undefined => {
-	const tip = (
-		JSON.parse(ask(repository, `commits/${branch}`)) as { sha: string }
-	).sha;
+	const tip = (JSON.parse(ask(`commits/${branch}`)) as { sha: string }).sha;
 	const [latest] = JSON.parse(
-		ask(
-			repository,
-			`code-scanning/analyses?ref=refs/heads/${branch}&per_page=1`,
-		),
+		ask(`code-scanning/analyses?ref=refs/heads/${branch}&per_page=1`),
 	) as readonly { commit_sha: string }[];
 	if (latest === undefined) return uncoveredReport(branch, tip, undefined);
 	const status = (
-		JSON.parse(
-			ask(repository, `compare/${tip}...${latest.commit_sha}`),
-		) as { status: string }
+		JSON.parse(ask(`compare/${tip}...${latest.commit_sha}`)) as {
+			status: string;
+		}
 	).status;
-	return analysisCoversTip(status)
-		? undefined
-		: uncoveredReport(branch, tip, latest.commit_sha);
+	if (analysisCoversTip(status)) return undefined;
+	if (!latestAnalysed) return uncoveredReport(branch, tip, latest.commit_sha);
+	console.log(judgedAtLatestReport(tip, latest.commit_sha));
+	return undefined;
+};
+
+/** Judges `branch` with the forge answers `ask` gives; the exit code. */
+export const judge = (
+	branch: string,
+	ask: IForgeAsk,
+	latestAnalysed: boolean,
+): number => {
+	let rows: readonly IAlertRow[];
+	try {
+		rows = JSON.parse(
+			ask(
+				`code-scanning/alerts?ref=refs/heads/${branch}&state=open&per_page=100`,
+				true,
+			),
+		) as readonly IAlertRow[];
+	} catch (error) {
+		console.error(
+			`✖ promotion-alerts: the forge could not be asked for the alerts of ${branch} (${error instanceof Error ? error.message.split('\n')[0] : String(error)}), so nothing was checked.`,
+		);
+		return 1;
+	}
+	try {
+		const refusal = coverageRefusal(ask, branch, latestAnalysed);
+		if (refusal !== undefined) {
+			console.error(refusal);
+			return 1;
+		}
+	} catch (error) {
+		console.error(
+			`✖ promotion-alerts: the forge could not be asked which analysis covers ${branch} (${error instanceof Error ? error.message.split('\n')[0] : String(error)}), so nothing was checked.`,
+		);
+		return 1;
+	}
+	const report = promotionAlertReport(branch, openAlertsOf(rows));
+	for (const line of report.lines) {
+		if (report.ok) console.log(line);
+		else console.error(line);
+	}
+	return report.ok ? 0 : 1;
 };
 
 export const main = (): number => {
@@ -133,43 +192,11 @@ export const main = (): number => {
 		);
 		return 1;
 	}
-	let rows: readonly IAlertRow[];
-	try {
-		rows = JSON.parse(
-			execFileSync(
-				'gh',
-				[
-					'api',
-					'--paginate',
-					`repos/${repository}/code-scanning/alerts?ref=refs/heads/${branch}&state=open&per_page=100`,
-				],
-				{ encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 },
-			),
-		) as readonly IAlertRow[];
-	} catch (error) {
-		console.error(
-			`✖ promotion-alerts: the forge could not be asked for the alerts of ${branch} (${error instanceof Error ? error.message.split('\n')[0] : String(error)}), so nothing was checked.`,
-		);
-		return 1;
-	}
-	try {
-		const refusal = coverageRefusal(repository, branch);
-		if (refusal !== undefined) {
-			console.error(refusal);
-			return 1;
-		}
-	} catch (error) {
-		console.error(
-			`✖ promotion-alerts: the forge could not be asked which analysis covers ${branch} (${error instanceof Error ? error.message.split('\n')[0] : String(error)}), so nothing was checked.`,
-		);
-		return 1;
-	}
-	const report = promotionAlertReport(branch, openAlertsOf(rows));
-	for (const line of report.lines) {
-		if (report.ok) console.log(line);
-		else console.error(line);
-	}
-	return report.ok ? 0 : 1;
+	return judge(
+		branch,
+		ghAsk(repository),
+		process.argv.includes('--latest-analysed'),
+	);
 };
 
 if (import.meta.main) process.exit(main());

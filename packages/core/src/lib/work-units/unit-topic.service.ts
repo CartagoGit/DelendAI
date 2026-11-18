@@ -13,8 +13,12 @@
 import {
 	DEFAULT_WORK_TOPIC,
 	MAX_WORK_TOPIC_LENGTH,
+	REVALIDATION_TOPIC,
 	REVIEW_PACK_TOPIC,
 } from '../contracts/constants/work-topic.constant';
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { compileOwnedWorkRefParser } from '../development-policy/owned-work-ref-parser';
+import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
 
 /** The words of a title that fit in a topic, cut between words. */
 const fitted = (slug: string): string => {
@@ -42,4 +46,28 @@ export const derivedTopic = (input: {
 		.replaceAll(/[^a-z0-9]+/gu, '-')
 		.replaceAll(/^-+|-+$/gu, '');
 	return slug.length === 0 ? DEFAULT_WORK_TOPIC : fitted(slug);
+};
+
+/**
+ * Whether a unit's identity is a revalidation batch: a review-kind unit of
+ * the batch proposal under the revalidation topic, not a reviewer's pack.
+ */
+export const isRevalidationIdentity = (identity: {
+	readonly kind?: string | undefined;
+	readonly proposal: string;
+	readonly topic?: string | undefined;
+}): boolean =>
+	identity.kind === 'review' &&
+	identity.proposal === REVIEW_BATCH_ID &&
+	identity.topic === REVALIDATION_TOPIC;
+
+/** Whether `branch` is a work ref of a revalidation batch. */
+export const isRevalidationBranch = (
+	policy: IResolvedDevelopmentPolicy,
+	branch: string,
+): boolean => {
+	const identity = compileOwnedWorkRefParser(policy.branches)?.parse(
+		`refs/heads/${branch}`,
+	);
+	return identity !== undefined && isRevalidationIdentity(identity);
 };

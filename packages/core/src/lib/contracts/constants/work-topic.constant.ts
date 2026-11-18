@@ -12,3 +12,11 @@ export const DEFAULT_WORK_TOPIC = 'work';
 
 /** The one topic of a review pack: the tools name it, not each reviewer. */
 export const REVIEW_PACK_TOPIC = 'verdicts';
+
+/**
+ * The topic of a revalidation batch: a review-kind unit of the batch
+ * proposal that records no verdicts, only the transitions of proposals
+ * sent back for fresh evidence. It is the one thing that tells it from a
+ * reviewer's pack, which the review guards read as verdicts.
+ */
+export const REVALIDATION_TOPIC = 'revalidation';

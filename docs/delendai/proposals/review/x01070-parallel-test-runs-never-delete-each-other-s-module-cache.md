@@ -31,12 +31,14 @@ vitest's fsModuleCache clears node_modules/.vitest-cache when the stored bun.loc
 - global_gate: none
 
 ### S1 — Key the module cache directory by the lockfile
-- **Status**: review
+- **Status**: pending
 - **Files**: `vitest.shared.ts`, `vitest.config.ts`, `tools/scripts/ci/vitest-cache-key.helper.ts`, `tools/scripts/ci/vitest-cache-key.helper.spec.ts`
 - **Gate**: none
 - shipped-in: `e63b5d239537`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 

@@ -31,34 +31,40 @@ Joint audit a00095. G136: the documentation site is not published: has_pages is 
 - global_gate: type
 
 ### S1 — Pages publishes the site
-- **Status**: review
+- **Status**: pending
 - **Files**: `.github/workflows/pages.yml`, `apps/web/astro.config.mjs`
 - **Gate**: type
 - acceptance:
   - "A push to main deploys Pages; the published root and three deep routes answer 200 (G136). Enabling Pages in the repo settings is the owner's step and is stated in the PR."
 - shipped-in: `ae10a17064dc`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — Canonical, hreflang, one h1
-- **Status**: review
+- **Status**: pending
 - **Files**: `apps/web/src/layouts/Base.astro`, `apps/web/src/pages/capabilities.astro`, `apps/web/src/pages/[lang]/capabilities.astro`
 - **Gate**: type
 - acceptance:
   - "Every built page has one h1, a canonical and hreflang for each locale; a built-output check fails otherwise (D12, G137)."
 - shipped-in: `fb363c7ec614`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — /api is built, not linked
-- **Status**: review
+- **Status**: pending
 - **Files**: `apps/web/scripts/sync-public-api.ts`, `apps/web/package.json`
 - **Gate**: type
 - acceptance:
   - "dev, preview and build generate or copy the API docs and fail when the source is missing or older than the code (G50, D33)."
 - shipped-in: `3638714938ca`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 

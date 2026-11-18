@@ -13,6 +13,7 @@
  * it; the verdict's own writes are committed after the call.
  */
 import { compileWorkRefParser } from '@delendai/core/public';
+import { isRevalidationIdentity } from '@delendai/core/cli';
 
 import {
 	CLAIM_TRAILERS_FORMAT,
@@ -69,7 +70,8 @@ const currentUnit = async (
 	)?.parse(unit);
 	return {
 		unit,
-		review: identity?.kind === 'review',
+		review:
+			identity?.kind === 'review' && !isRevalidationIdentity(identity),
 		...(identity?.agent === undefined ? {} : { agent: identity.agent }),
 	};
 };

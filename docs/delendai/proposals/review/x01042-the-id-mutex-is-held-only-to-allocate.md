@@ -31,7 +31,7 @@ On 2026-11-07 create_proposal failed twice with `lock contention: proposal-id-co
 - global_gate: none
 
 ### S1 — The critical section is the counter alone
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator-lock.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -39,8 +39,10 @@ On 2026-11-07 create_proposal failed twice with `lock contention: proposal-id-co
   - "A spec keeps one allocation's remote claim pending and shows that a concurrent allocation finishes with a different id instead of failing on lock contention; on the old allocator the same spec fails with LockContentionError."
   - "A taken reservation still moves on to the next id, and 50 taken ids still end in a refusal."
 - shipped-in: `31e71822c524`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 

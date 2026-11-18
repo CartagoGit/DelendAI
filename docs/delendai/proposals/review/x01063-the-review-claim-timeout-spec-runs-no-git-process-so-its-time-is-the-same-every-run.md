@@ -32,12 +32,14 @@ Cause: the timeout under test is already an answer the runner gives, not a clock
 - global_gate: none
 
 ### S1 — Replace the git-backed unit with an in-memory runner
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/tests/src/lib/services/review-claim-timeout.spec.ts`
 - **Gate**: none
 - shipped-in: `4902b74f3f8c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
