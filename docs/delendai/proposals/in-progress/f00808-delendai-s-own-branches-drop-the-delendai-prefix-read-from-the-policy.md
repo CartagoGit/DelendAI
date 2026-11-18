@@ -2,14 +2,14 @@
 id: f00808
 title: "delendai's own branches drop the delendai/ prefix, read from the policy"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 7e2f05e6-62fe-4d07-9b99-f81e330e09b9
-last-correlation-id: 7e2f05e6-62fe-4d07-9b99-f81e330e09b9
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T18:02:17.401Z
+last-transition-id: 74f5559c-afb9-4b6f-b852-7e1edba66227
+last-correlation-id: 74f5559c-afb9-4b6f-b852-7e1edba66227
+last-transition-from: review
+last-transition-at: 2026-11-18T22:47:51.490Z
 ---
 
 # f00808 — delendai's own branches drop the delendai/ prefix, read from the policy

@@ -35,6 +35,23 @@ const policy = resolveDevelopmentPolicy({
 });
 
 describe('unitRefsAnyName', () => {
+	it('[<200ms] finds a unit under a former prefix in the shape the default replaced, when everything is named', () => {
+		const root = template.copy().root;
+		const old =
+			'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/the-topic';
+		git(root, 'update-ref', old, 'HEAD');
+		expect(
+			unitRefsAnyName(
+				root,
+				['--kind=implement', '--generation=1', '--topic=the-topic'],
+				policy,
+				'agent-a',
+				'x00001',
+				'S1',
+			),
+		).toEqual([old]);
+	});
+
 	it('[<200ms] finds a unit under both namespaces, whatever its topic', () => {
 		const root = template.copy().root;
 		const old = 'refs/heads/delendai/wip/implement/agent-a/x00001-S1/one';
