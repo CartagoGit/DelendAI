@@ -2,14 +2,14 @@
 id: f00796
 title: "Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused"
 kind: feat
-status: review
+status: done
 type: proposal
 track: workflow
 date: 2026-10-29
-last-transition-id: 67c14cae-f3f4-41a3-9cce-a76f2df68fac
-last-correlation-id: 67c14cae-f3f4-41a3-9cce-a76f2df68fac
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:57:28.714Z
+last-transition-id: 53cfd5c4-9944-4347-b6f7-1fe88084625c
+last-correlation-id: 53cfd5c4-9944-4347-b6f7-1fe88084625c
+last-transition-from: review
+last-transition-at: 2026-11-18T04:47:52.547Z
 shipped-in:
   - "26aa84e29054cace69e611675dbf6a6c84789c3a"
   - "e51eaf2d8c7fd0bcea14ac06305ae5cbdbd0b836"
@@ -89,14 +89,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: approved by mai-code-2 — verified at f1476fe6c7fd, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) proofKey hashes tree plus commands and records under git-common-dir/delendai-proofs; proveUnit detects the exact record and returns remembered. Specs assert re… — Reviewed proof reuse and the later compute-slot/revalidation changes. The 59 focused suites pass and full typecheck passes. Records are local, tree+command keyed, reused by publish, and only skipped across bounded proposal-document transition commits.
 
 ### S5 — A proof installs only what it lacks
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A unit proved in its own worktree reuses the dependencies installed there. A unit with no worktree is proved in a temporary one, installed first by the lockfile's package manager and removed afterwards. A project with no package manifest installs nothing. A failed install is a refusal that shows its output, never a pass. Stale derived files stay the pre-push drift check's to refuse (work-unit-proof.service.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at f1476fe6c7fd, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) proveUnit chooses own clean worktree without installing, creates/install/proves/removes a detached temporary worktree only when no unit worktree exists, and pa… — Reviewed temporary proof setup and dependency handling. The 59 focused suites pass and full typecheck passes. Existing worktrees reuse installed dependencies; only detached temporary proof worktrees install, manifest-free projects skip install, failures retain output, and teardown removes only the temporary registration.
 
 ## acceptance
 
