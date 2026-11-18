@@ -6,7 +6,12 @@ import { describe, expect, it } from 'vitest';
 
 import { MAX_WORK_TOPIC_LENGTH } from '@delendai/core/lib/contracts/constants/work-topic.constant';
 import { pullRequestText } from '@delendai/core/lib/work-units/publication-pull-request.service';
-import { derivedTopic } from '@delendai/core/lib/work-units/unit-topic.service';
+import {
+	derivedTopic,
+	isRevalidationBranch,
+	isRevalidationIdentity,
+} from '@delendai/core/lib/work-units/unit-topic.service';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 describe('derivedTopic', () => {
 	it('[<10ms] names every review pack the same, whatever it reviews', () => {
@@ -70,5 +75,40 @@ describe('the title of a pull request with several deliveries', () => {
 		expect(
 			pullRequestText(['fix(cli): only'], 'branch', 'fallback').title,
 		).toBe('fix(repo): only');
+	});
+});
+
+describe('isRevalidationIdentity', () => {
+	it('[<10ms] reads the batch under the revalidation topic as a revalidation, not a pack', () => {
+		const batch = { kind: 'review', proposal: 'batch' };
+		expect(
+			isRevalidationIdentity({ ...batch, topic: 'revalidation' }),
+		).toBe(true);
+		expect(isRevalidationIdentity({ ...batch, topic: 'verdicts' })).toBe(
+			false,
+		);
+		expect(
+			isRevalidationIdentity({
+				kind: 'implement',
+				proposal: 'batch',
+				topic: 'revalidation',
+			}),
+		).toBe(false);
+	});
+});
+
+describe('isRevalidationBranch', () => {
+	const policy = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: { namespacePrefix: 'delendai' },
+		},
+	});
+
+	it('[<20ms] tells a revalidation batch from a reviewer pack by its topic', () => {
+		const ref = (topic: string): string =>
+			`delendai/wip/claude-sonnet-5-5/review/batch-all-g1/${topic}`;
+		expect(isRevalidationBranch(policy, ref('revalidation'))).toBe(true);
+		expect(isRevalidationBranch(policy, ref('verdicts'))).toBe(false);
 	});
 });

@@ -34,7 +34,7 @@ Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e 
 - global_gate: none
 
 ### S1 — Read each unit's unlanded commits once; intersect in memory
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
 - acceptance:
@@ -44,8 +44,10 @@ Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e 
   - "Measured: git process count and wall time of `work status` in this repo before and after are written in the proposal's why and in the commit body."
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage`."
 - shipped-in: `41c340ab115a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
