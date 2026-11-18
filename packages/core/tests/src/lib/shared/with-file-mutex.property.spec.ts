@@ -18,21 +18,23 @@ import {
 	withFileMutex,
 } from '../../../../src/lib/shared/with-file-mutex';
 
-const delay = (ms: number): Promise<void> =>
-	new Promise((resolve) => setTimeout(resolve, ms));
-
-const waitFor = async (
+// The heartbeat is a setInterval, so under a fake clock its count is a pure
+// function of how far the test advances. Only timers and Date are faked; the
+// lock file I/O stays real, so after each advance the test yields to the real
+// event loop until that heartbeat's fs work has settled.
+const settle = async (
 	predicate: () => boolean,
-	timeoutMs = 400,
+	maxYields = 10_000,
 ): Promise<void> => {
-	const deadline = Date.now() + timeoutMs;
-	while (!predicate()) {
-		if (Date.now() >= deadline) {
-			throw new Error('timed out waiting for test condition');
-		}
-		await delay(5);
+	for (let i = 0; i < maxYields && !predicate(); i += 1) {
+		await new Promise<void>((resolve) => setImmediate(resolve));
 	}
 };
+
+const fsDrained = (): boolean =>
+	!process
+		.getActiveResourcesInfo()
+		.some((name) => name.endsWith('Req') || name.startsWith('FSReq'));
 
 describe('withFileMutex state-machine invariants', () => {
 	let dir = '';
@@ -111,25 +113,6 @@ describe('withFileMutex state-machine invariants', () => {
 			{ heartbeatMs: 40, staleMs: 800 },
 		] as const;
 
-		// Fake clock: the heartbeat is a setInterval, so its count is a pure
-		// function of how far the clock is advanced. Only timers and Date are
-		// faked; the lock file I/O stays real, so after each advance the test
-		// yields to the real event loop until that heartbeat's write settled.
-		const settle = async (
-			predicate: () => boolean,
-			maxYields = 10_000,
-		): Promise<void> => {
-			for (let i = 0; i < maxYields && !predicate(); i += 1) {
-				await new Promise<void>((resolve) => setImmediate(resolve));
-			}
-		};
-
-		const fsDrained = (): boolean =>
-			!process
-				.getActiveResourcesInfo()
-				.some(
-					(name) => name.endsWith('Req') || name.startsWith('FSReq'),
-				);
 		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
 		try {
 			for (const [caseIndex, entry] of cases.entries()) {
@@ -156,10 +139,14 @@ describe('withFileMutex state-machine invariants', () => {
 				});
 
 				const armedBaseline = vi.getTimerCount();
+				let endSection: () => void = () => undefined;
+				const sectionGate = new Promise<void>((resolve) => {
+					endSection = resolve;
+				});
 				const holder = withFileMutex(
 					targetCase,
 					async () => {
-						await delay(holderDurationMs);
+						await sectionGate;
 					},
 					{
 						heartbeatMs: entry.heartbeatMs,
@@ -169,11 +156,11 @@ describe('withFileMutex state-machine invariants', () => {
 					},
 				);
 
-				// Holder delay + heartbeat interval both armed.
+				// The heartbeat interval is armed.
 				await settle(
 					() =>
 						existsSync(lockPathCase) &&
-						vi.getTimerCount() >= armedBaseline + 2,
+						vi.getTimerCount() >= armedBaseline + 1,
 				);
 				expect(existsSync(lockPathCase), `case ${caseIndex}`).toBe(
 					true,
@@ -249,7 +236,7 @@ describe('withFileMutex state-machine invariants', () => {
 				expect(elapsedMs, `case ${caseIndex}`).toBeLessThan(
 					holderDurationMs,
 				);
-				await vi.advanceTimersByTimeAsync(holderDurationMs - elapsedMs);
+				endSection();
 				await holder;
 				// A tick that fired at the instant the section ended may still be
 				// finishing; it must not count toward the next case.
@@ -265,69 +252,92 @@ describe('withFileMutex state-machine invariants', () => {
 	it('[<200ms] heartbeat generations are monotonic across bounded runs', async () => {
 		const cases = [3, 4, 5] as const;
 
-		for (const [caseIndex, targetHeartbeats] of cases.entries()) {
-			const generations: number[] = [];
-			let caseToken: string | undefined;
-			const targetCase = join(dir, `state-generation-${caseIndex}.json`);
-			writeFileSync(targetCase, '{}');
+		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
+		try {
+			for (const [caseIndex, targetHeartbeats] of cases.entries()) {
+				const generations: number[] = [];
+				let caseToken: string | undefined;
+				let release: () => void = () => undefined;
+				const gate = new Promise<void>((resolve) => {
+					release = resolve;
+				});
+				const targetCase = join(
+					dir,
+					`state-generation-${caseIndex}.json`,
+				);
+				writeFileSync(targetCase, '{}');
 
-			__setWithFileMutexTestHooks({
-				// x00420: an aged lease alone no longer means "abandoned" —
-				// the reclaimer also asks whether the holder's process is
-				// still running, and in a single-process test that pid is
-				// ours, so a real holder would look alive forever. A holder
-				// that is genuinely abandoned is one whose process is gone,
-				// which is what this probe states.
-				isPidAlive: () => false,
-				afterHeartbeat: (lease) => {
-					if (lease.token !== caseToken) return;
-					generations.push(lease.generation);
-				},
-			});
+				__setWithFileMutexTestHooks({
+					// x00420: an aged lease alone no longer means "abandoned" —
+					// the reclaimer also asks whether the holder's process is
+					// still running, and in a single-process test that pid is
+					// ours, so a real holder would look alive forever. A holder
+					// that is genuinely abandoned is one whose process is gone,
+					// which is what this probe states.
+					isPidAlive: () => false,
+					afterHeartbeat: (lease) => {
+						if (lease.token !== caseToken) return;
+						generations.push(lease.generation);
+					},
+				});
 
-			// Hold the lock until the heartbeats have actually been observed
-			// rather than for a wall-clock window sized as heartbeatMs * N:
-			// under load the timer fires fewer times than the division
-			// predicts, which made this assertion flaky.
-			await withFileMutex(
-				targetCase,
-				async () => {
-					caseToken = (
-						JSON.parse(
-							readFileSync(`${targetCase}.mutex`, 'utf8'),
-						) as { token?: unknown }
-					).token as string;
-					await waitFor(
-						() => generations.length >= targetHeartbeats,
-						15_000,
-					);
-				},
-				{
-					heartbeatMs: 5,
-					pollMs: 2,
-					staleMs: 30_000,
-					timeoutMs: 30_000,
-				},
-			);
+				// The section holds until the test has advanced the clock
+				// through the target number of heartbeats, then releases it.
+				const armedBaseline = vi.getTimerCount();
+				const holder = withFileMutex(
+					targetCase,
+					async () => {
+						caseToken = (
+							JSON.parse(
+								readFileSync(`${targetCase}.mutex`, 'utf8'),
+							) as { token?: unknown }
+						).token as string;
+						await gate;
+					},
+					{
+						heartbeatMs: 5,
+						pollMs: 2,
+						staleMs: 30_000,
+						timeoutMs: 30_000,
+					},
+				);
+				await settle(
+					() =>
+						caseToken !== undefined &&
+						vi.getTimerCount() > armedBaseline,
+				);
 
-			expect(
-				generations.length,
-				`case ${caseIndex}`,
-			).toBeGreaterThanOrEqual(targetHeartbeats);
-			for (let index = 1; index < generations.length; index += 1) {
-				const current = generations[index];
-				const previous = generations[index - 1];
-				if (current === undefined || previous === undefined) {
-					throw new Error(
-						`missing generation sample for case ${caseIndex}`,
-					);
+				for (let beat = 1; beat <= targetHeartbeats; beat += 1) {
+					await vi.advanceTimersByTimeAsync(5);
+					await settle(() => generations.length >= beat);
+					// afterHeartbeat fires before the handle closes; a tick in
+					// that window is skipped, so let the fs requests drain.
+					await settle(fsDrained);
+					expect(generations.length, `case ${caseIndex}`).toBe(beat);
 				}
-				expect(
-					current,
-					`case ${caseIndex} generation ${index}`,
-				).toBeGreaterThan(previous);
+
+				release();
+				await holder;
+				await settle(fsDrained);
+
+				for (let index = 1; index < generations.length; index += 1) {
+					const current = generations[index];
+					const previous = generations[index - 1];
+					if (current === undefined || previous === undefined) {
+						throw new Error(
+							`missing generation sample for case ${caseIndex}`,
+						);
+					}
+					expect(
+						current,
+						`case ${caseIndex} generation ${index}`,
+					).toBeGreaterThan(previous);
+				}
+				__resetWithFileMutexTestHooks();
 			}
+		} finally {
 			__resetWithFileMutexTestHooks();
+			vi.useRealTimers();
 		}
 	});
 });
