@@ -2,14 +2,14 @@
 id: f00819
 title: "Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-11-17
-last-transition-id: 72e30f97-d295-4098-b806-942e8d1b3bbc
-last-correlation-id: 72e30f97-d295-4098-b806-942e8d1b3bbc
-last-transition-from: ready
-last-transition-at: 2026-11-17T08:15:55.762Z
+last-transition-id: be7a8488-999a-4a94-b8a5-7b338e647c03
+last-correlation-id: be7a8488-999a-4a94-b8a5-7b338e647c03
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T07:10:57.484Z
 ---
 
 # f00819 — Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request
@@ -33,7 +33,7 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
 - global_gate: none
 
 ### S1 — `delendai work revalidate` selects the proposals and prints the list it chose
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -43,9 +43,12 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "A spec with a fixture of one proposal per case selects only the proposal with every live slice shipped-in and changes_requested, and leaves out one with an unshipped live slice, one with a different review-state, and one not in ready/ [<50ms]"
   - "A proposal named in --proposals that does not satisfy the predicate is reported by id with the reason and left out, and the other ids are still selected [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-governance` passes before the slice is handed over"
+- shipped-in: `a206adf9d929`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — The batch is one unit and applies each proposal's transitions through the transition service
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/review-unit-publish-checks.service.ts`, `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-unit-tree.service.ts`, `plugins/proposals/src/lib/tools/transition/run-transition.tool.ts`
 - **Gate**: none
@@ -57,9 +60,12 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "A proposal whose transition is refused or fails is reported by id with the service's reason, is absent from the batch's diff, and the remaining proposals are still transitioned; a spec with one refusing fake among three expects two transitioned and one reported [<100ms]"
   - "Nothing retries or loops: a spec with a failing fake shows the service is called once for that proposal [<100ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-governance,lint-architecture` passes before the slice is handed over"
+- shipped-in: `569fa373862f`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The batch is proved by the documents-only proof, after measuring where the 3.5 minutes go
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: none
@@ -71,9 +77,12 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "A spec shows the batch run does not run the dependency install when the diff is proposal-only [<100ms]"
   - "The measured wall time of one batch of N proposals is recorded in the proposal and is lower than N times the 3 min 18 s to 3 min 32 s measured per proposal today"
   - "Pre-check: `delendai work prove --only=typecheck,lint-governance,lint-docs,lint-security` passes before the slice is handed over"
+- shipped-in: `746feeb8c3d5`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S4 — The batch is published as one pull request titled by the product, and documented
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3]
 - **Files**: `packages/cli/src/contracts/constants/help-translation.constant.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
@@ -83,6 +92,9 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "The CLI help summary for `work` names `revalidate` in every declared help locale, so `bun run lint:cli:i18n` passes"
   - "The work-unit playbook has one line saying that shipped proposals sent back for fresh evidence are re-validated with `delendai work revalidate`, not one unit each, and that approving the batch is a later review batch"
   - "Pre-check: `delendai work prove --only=typecheck,lint-docs,lint-governance` passes before the slice is handed over"
+- shipped-in: `6c623053b932`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
