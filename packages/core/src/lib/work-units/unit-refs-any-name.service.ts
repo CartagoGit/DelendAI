@@ -3,8 +3,11 @@
  * kind and topic, under every namespace the policy owns.
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { ownedWorkRefShapes } from '../development-policy/owned-work-ref-parser';
-import { resolveWorkRef } from '../wip-engine/ref-name';
+import {
+	ownedWorkRefShapes,
+	unitOfName,
+} from '../development-policy/owned-work-ref-parser';
+import { sanitizeRefComponent, resolveWorkRef } from '../wip-engine/ref-name';
 import { scalarArg } from './command-args.helper';
 import { kindFor, readGit } from './work-unit-shared.service';
 
@@ -64,13 +67,31 @@ const unitRefsUnder = (
 	);
 	if (!Number.isFinite(firstOpen)) return [];
 	const prefix = rendered.slice(0, rendered.lastIndexOf('/', firstOpen) + 1);
-	let pattern = rendered.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-	for (const s of sentinels)
-		pattern = pattern.replace(s, s === ANY_GENERATION ? '[0-9]+' : '[^/]+');
-	const shape = new RegExp(`^${pattern}$`, 'u');
+	// Read each name with the one parser instead of a pattern of the
+	// template: the scope grammar omits generation 1, which a pattern for
+	// "any generation" cannot match (f00808).
+	const kind = open.kind === undefined ? kindFor(args, slice) : undefined;
+	const topic =
+		open.topic === undefined ? scalarArg(args, 'topic') : undefined;
+	const generation =
+		open.generation === undefined
+			? Number(scalarArg(args, 'generation'))
+			: undefined;
 	return (
 		readGit(root, ['for-each-ref', '--format=%(refname)', prefix]) ?? ''
 	)
 		.split('\n')
-		.filter((name) => shape.test(name));
+		.filter((name) => {
+			const unit = unitOfName(name);
+			return (
+				unit !== undefined &&
+				unit.agent === sanitizeRefComponent(agent) &&
+				unit.proposal === sanitizeRefComponent(proposal) &&
+				unit.slice === sanitizeRefComponent(slice) &&
+				(kind === undefined || unit.kind === kind) &&
+				(topic === undefined ||
+					unit.topic === sanitizeRefComponent(topic)) &&
+				(generation === undefined || unit.generation === generation)
+			);
+		});
 };

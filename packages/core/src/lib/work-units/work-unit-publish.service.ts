@@ -1,3 +1,4 @@
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { carriesNothingBeyond } from './landed-work.service';
 import { argumentsRefused } from './work-arguments.helper';
 import { reviewUnitRefusal } from './review-unit-publish-checks.service';
@@ -48,11 +49,9 @@ import {
 	proveUnit,
 } from './work-unit-proof.service';
 
-/** The generation a work ref names (`…-g<n>/…`), if it names one. */
-const generationOfWorkRef = (ref: string): number | undefined => {
-	const found = /-g(\d+)\//u.exec(ref)?.[1];
-	return found === undefined ? undefined : Number(found);
-};
+/** The generation a work ref names, in either spelling, if it names one. */
+const generationOfWorkRef = (ref: string): number | undefined =>
+	unitOfName(ref)?.generation;
 
 /** The pull request with its number, from the target or from its URL. */
 const withNumber = (
