@@ -2,14 +2,14 @@
 id: x00966
 title: "Webviews escape through one helper and run under a CSP without unsafe-inline"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: fe71c510-2e14-4afa-808e-fcf9b7f36fd0
-last-correlation-id: fe71c510-2e14-4afa-808e-fcf9b7f36fd0
-last-transition-from: review
-last-transition-at: 2026-11-04T19:50:08.953Z
+last-transition-id: 6b963ed2-acce-428b-979f-e36eb683199e
+last-correlation-id: 6b963ed2-acce-428b-979f-e36eb683199e
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:45:30.084Z
 ---
 
 # x00966 — Webviews escape through one helper and run under a CSP without unsafe-inline
