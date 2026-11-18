@@ -30,7 +30,7 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
 
 ### S1 — Deliver pre-check on changed files before the compute slot
 - **Status**: pending
-- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/lib/work-deliver-precheck.service.ts`, `new:packages/cli/src/lib/work-deliver-precheck.service.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.interface.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `new:packages/cli/src/lib/work-deliver-precheck.service.ts`, `new:packages/cli/src/lib/work-deliver-precheck.service.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.interface.ts`
 - **Gate**: lint
 - **Decisions**: The pre-check runs the static gates the prove plan declares (lint presets incl. types-in-contracts and file-size, test budget names and tier, mirror spec presence, biome on changed files, proposal readiness and hygiene when a proposal changed) scoped to changed files, and takes its gate list from the prove-plan definitions: one source, no second list. It refuses with the same messages the proof gives and runs before the compute slot is taken.
 - acceptance:
@@ -42,7 +42,7 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
 ### S2 — Changed-file coverage pre-check with mirror specs only
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/ci/changed-file-coverage.script.ts`, `tools/scripts/ci/changed-file-coverage.interface.ts`, `packages/cli/src/lib/work-deliver-coverage-precheck.service.ts`, `new:packages/cli/src/lib/work-deliver-coverage-precheck.service.spec.ts`
+- **Files**: `tools/scripts/ci/changed-file-coverage.script.ts`, `tools/scripts/ci/changed-file-coverage.interface.ts`, `new:packages/cli/src/lib/work-deliver-coverage-precheck.service.ts`, `new:packages/cli/src/lib/work-deliver-coverage-precheck.service.spec.ts`
 - **Gate**: lint
 - **Decisions**: The fast path runs only the mirror unit specs of the changed modules, with coverage collected on only those files, using the same counting rule as the coverage gate (only mirror-named specs count); it runs after the S1 static pre-check and before the slot.
 - acceptance:
@@ -63,7 +63,7 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
 
 ### S4 — kpis reports deliver attempts and time lost per gate
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/kpis.command.ts`, `packages/cli/src/commands/kpis-options.ts`, `packages/cli/src/commands/kpis-renderer.ts`, `packages/cli/src/commands/kpis.command.spec.ts`, `packages/cli/src/commands/kpis-deliver.ts`, `new:packages/cli/src/commands/kpis-deliver.spec.ts`
+- **Files**: `packages/cli/src/commands/kpis.command.ts`, `packages/cli/src/commands/kpis-options.ts`, `packages/cli/src/commands/kpis-renderer.ts`, `packages/cli/src/commands/kpis.command.spec.ts`, `new:packages/cli/src/commands/kpis-deliver.ts`, `new:packages/cli/src/commands/kpis-deliver.spec.ts`
 - **Gate**: lint
 - **Decisions**: kpis reads the existing deliver logs and records and reports per slice: the number of deliver attempts, minutes from enter to PR, and minutes lost per failing gate; no new store is written.
 - acceptance:
