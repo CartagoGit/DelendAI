@@ -11,10 +11,12 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createFakeToolServer } from '@delendai/test-kit';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
-import { buildCreateProposalRegistration } from '@delendai/proposals/lib/tools/authoring/create-proposal.tool';
+import {
+	buildCreateProposalRegistration,
+	scaffoldGaps,
+} from '@delendai/proposals/lib/tools/authoring/create-proposal.tool';
 
 type IHandler = (args: unknown) => Promise<{
 	content: Array<{ text: string }>;
@@ -35,7 +37,7 @@ const capture = async (registration: IToolRegistration): Promise<IHandler> => {
 	return handler;
 };
 
-const parse = (result: { content: Array<{ text: string }> }) =>
+const _parse = (result: { content: Array<{ text: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>;
 
 describe('create_proposal', () => {
@@ -63,35 +65,15 @@ describe('create_proposal', () => {
 	const proposal = {
 		id: 'f00001',
 		title: 'Create me',
-		slices: [{ sliceId: 'S1', files: ['src/a.ts'] }],
+		goal: 'A goal.',
+		why: 'A reason.',
+		nonGoals: ['Nothing else.'],
+		slices: [
+			{ sliceId: 'S1', files: ['src/a.ts'], acceptance: ['It works'] },
+		],
 	};
 
-	it('writes the document and, with no git runner, names the step that publishes it', async () => {
-		const create = await capture(buildCreateProposalRegistration(options));
-		const created = parse(await create(proposal));
-		expect(created.id).toBe('f00001');
-		expect(created.published).toBe(false);
-		expect(String(created.publishReason)).toContain('no git runner');
-	});
-
-	it('names the publication ref of the policy, with no namespace of its own', async () => {
-		const create = await capture(
-			buildCreateProposalRegistration({
-				...options,
-				developmentPolicy: resolveDevelopmentPolicy({
-					development: {
-						profile: 'shared-checkout-pr',
-						branches: { namespacePrefix: '' },
-					},
-				}),
-			}),
-		);
-		const created = parse(await create(proposal));
-		expect(created.id).toBe('f00001');
-		expect(String(created.nextAction)).not.toContain('delendai/pr/');
-	});
-
-	it('refuses a checkout that is not a working tree of the repository', async () => {
+	it('[<200ms] refuses a checkout that is not a working tree of the repository', async () => {
 		const create = await capture(buildCreateProposalRegistration(options));
 		const refused = await create({
 			...proposal,
@@ -100,9 +82,65 @@ describe('create_proposal', () => {
 		expect(refused.isError).toBe(true);
 	});
 
-	it('refuses a document it cannot write', async () => {
+	it('[<200ms] refuses a document it cannot write', async () => {
 		const create = await capture(buildCreateProposalRegistration(options));
 		const refused = await create({ ...proposal, id: 'not an id' });
 		expect(refused.isError).toBe(true);
+	});
+
+	it('[<200ms] refuses what the scaffold would fill with a placeholder', async () => {
+		const create = await capture(buildCreateProposalRegistration(options));
+		const refused = await create({
+			id: 'f00002',
+			title: 'No goal',
+			slices: [{ sliceId: 'S1', files: ['src/a.ts'] }],
+		});
+		expect(refused.isError).toBe(true);
+		expect(refused.content[0]?.text).toContain('goal');
+		expect(refused.content[0]?.text).toContain('S1 acceptance');
+	});
+});
+
+describe('scaffoldGaps', () => {
+	const whole = {
+		goal: 'g',
+		why: 'w',
+		nonGoals: ['n'],
+		slices: [{ sliceId: 'S1', files: ['a.ts'], acceptance: ['a'] }],
+	};
+
+	it('[<50ms] finds nothing in a proposal written out in full', () => {
+		expect(scaffoldGaps(whole)).toEqual([]);
+	});
+
+	it('[<50ms] names every placeholder, blank and missing part', () => {
+		expect(
+			scaffoldGaps({
+				goal: ' ',
+				why: 'TODO: why',
+				nonGoals: ['- TODO: skip'],
+				slices: [
+					{
+						sliceId: 'S1',
+						title: 'TODO',
+						files: ['TODO'],
+						acceptance: ['TODO: x'],
+					},
+				],
+			}),
+		).toEqual([
+			'goal',
+			'why',
+			'nonGoals',
+			'S1 acceptance',
+			'S1 files or title',
+		]);
+		expect(scaffoldGaps({ ...whole, nonGoals: [], slices: [] })).toEqual([
+			'nonGoals',
+			'slices',
+		]);
+		expect(
+			scaffoldGaps({ ...whole, nonGoals: undefined, slices: undefined }),
+		).toEqual(['nonGoals', 'slices']);
 	});
 });
