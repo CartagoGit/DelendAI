@@ -54,7 +54,6 @@ import {
 } from './job-scope.script';
 
 import { touchesIntegrationMachinery } from '../forge/land-rehearsal';
-import { mirrorSpecsOf } from './changed-file-coverage.script';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
 import { bunSuiteCommand, splitByRunner } from './bun-near-specs';
@@ -686,7 +685,7 @@ export const gateNamesOf = (
 						...fastSteps(changed, ['*'], base).map(
 							([label]) => label,
 						),
-						...coveragePrecheckSteps([], base).map(
+						...coveragePrecheckSteps(changed, ['*'], base).map(
 							([label]) => label,
 						),
 					]
@@ -718,39 +717,29 @@ export const precheckGatesOf = (
 				staticJobRuns(changed, gate)),
 	);
 
-/** The gate `work deliver` runs after the static pre-check: coverage by the mirror specs alone. */
+/** The gate `work deliver` runs after the static pre-check: the proof's coverage steps alone. */
 export const COVERAGE_PRECHECK_GATE = 'coverage-precheck';
 
 /**
- * The coverage pre-check: the mirror specs of the changed modules with
- * coverage collected on the changed files only, then the coverage gate's own
- * script on that report, so it refuses with the gate's message.
+ * The coverage pre-check: the proof's own changed-file coverage steps, taken
+ * from `fastSteps` with the specs the proof selects (mirror and nearest, the
+ * same function) and coverage on the changed files, relabelled so it runs
+ * apart from the proof. One source: never stricter or looser than the proof.
  */
 export const coveragePrecheckSteps = (
-	mirrors: readonly string[],
+	changed: readonly string[],
+	specs: readonly string[],
 	base: string,
-): readonly (readonly [string, readonly string[]])[] => [
-	[
-		'coverage precheck: mirror specs',
-		[
-			'bunx',
-			'vitest',
-			'run',
-			'--coverage',
-			'--passWithNoTests',
-			'--maxWorkers=2',
-			...mirrors,
-		],
-	],
-	[
-		'coverage precheck: gate',
-		[
-			'bun',
-			'tools/scripts/ci/changed-file-coverage.script.ts',
-			`--base=${base}`,
-		],
-	],
-];
+): readonly (readonly [string, readonly string[]])[] =>
+	fastSteps(changed, specs, base)
+		.filter(([label]) => gateOf(label) === 'changed-file-coverage')
+		.map(
+			([label, command]) =>
+				[
+					label.replace('changed-file coverage', 'coverage precheck'),
+					command,
+				] as const,
+		);
 
 /** `--only=precheck` stands for the gates `precheckGatesOf` names. */
 export const expandPrecheck = (
@@ -880,8 +869,11 @@ const main = async (): Promise<number> => {
 		if (only?.has(COVERAGE_PRECHECK_GATE) === true) {
 			// Never in a proof (`only` is set): `work deliver` asks for it.
 			process.env.VITEST_COVERAGE_FILES = selected.join('\n');
-			const mirrors = mirrorSpecsOf(selected, existsSync);
-			coveredOk = coveragePrecheckSteps(mirrors, selectionBase).reduce(
+			coveredOk = coveragePrecheckSteps(
+				selected,
+				nearSpecsSince(root, selectionBase),
+				selectionBase,
+			).reduce(
 				(allOk, [label, command]) => step(label, command) && allOk,
 				true,
 			);

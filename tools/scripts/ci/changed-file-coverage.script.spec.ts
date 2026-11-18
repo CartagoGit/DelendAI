@@ -14,7 +14,6 @@ import {
 	bunOwnedSources,
 	isBunOwned,
 	judgeChangedCoverage,
-	mirrorSpecsOf,
 } from './changed-file-coverage.script';
 import { behaviourOf, onlyImportsChanged } from './import-only-change.helper';
 
@@ -356,56 +355,5 @@ describe('onlyImportsChanged', () => {
 		expect(behaviourOf(dynamic)).toBe(dynamic);
 		const local = 'export const from = 1;';
 		expect(behaviourOf(local)).toBe(local);
-	});
-});
-
-describe('mirrorSpecsOf', () => {
-	const on =
-		(...paths: string[]) =>
-		(path: string) =>
-			paths.includes(path);
-
-	it('[<20ms] names the spec beside a module and the one under tests/src, never another spec', () => {
-		const specs = mirrorSpecsOf(
-			[
-				'packages/core/src/lib/a.ts',
-				'packages/core/src/lib/b.ts',
-				'packages/core/src/lib/c.ts',
-			],
-			on(
-				'packages/core/src/lib/a.spec.ts',
-				'packages/core/tests/src/lib/b.spec.ts',
-				'packages/core/src/lib/other.spec.ts',
-			),
-		);
-		expect(specs).toEqual([
-			'packages/core/src/lib/a.spec.ts',
-			'packages/core/tests/src/lib/b.spec.ts',
-		]);
-	});
-
-	it('[<20ms] skips specs, declarations and files the gate does not judge', () => {
-		expect(
-			mirrorSpecsOf(
-				[
-					'packages/core/src/lib/a.spec.ts',
-					'packages/core/src/lib/a.d.ts',
-					'docs/a.md',
-				],
-				() => true,
-			),
-		).toEqual([]);
-	});
-
-	it('[<20ms] agrees with the gate: a module with no mirror spec runs no spec for it, and the gate measures it at 0% and refuses', () => {
-		const changed = ['packages/core/src/lib/a.ts'];
-		expect(mirrorSpecsOf(changed, () => false)).toEqual([]);
-		expect(
-			judgeChangedCoverage({
-				changed,
-				summary: { 'packages/core/src/lib/a.ts': entry(0) },
-				floors: FLOORS,
-			}).verdict,
-		).toBe('FAIL');
 	});
 });

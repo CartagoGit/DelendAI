@@ -357,15 +357,29 @@ describe('the proof of a proposal-only batch', () => {
 });
 
 describe('coveragePrecheckSteps', () => {
-	it('[<40ms] runs the mirror specs, then the coverage gate script, under one gate', () => {
-		const steps = coveragePrecheckSteps(['a.spec.ts'], 'b');
-		expect(steps.map(([label]) => gateOf(label))).toEqual([
+	const changed = ['plugins/x/src/a.ts'];
+	const specs = ['plugins/x/src/a.spec.ts', 'plugins/x/tests/src/b.spec.ts'];
+
+	it('[<40ms] selects the same specs and runs the same commands as the proof, for the same diff', () => {
+		const proof = fastSteps(changed, specs, 'b').filter(
+			([label]) => gateOf(label) === 'changed-file-coverage',
+		);
+		const precheck = coveragePrecheckSteps(changed, specs, 'b');
+		expect(precheck.map(([, command]) => command)).toEqual(
+			proof.map(([, command]) => command),
+		);
+		expect(precheck[0]?.[1]).toEqual(expect.arrayContaining(specs));
+	});
+
+	it('[<40ms] runs apart from the proof under its own gate', () => {
+		const labels = coveragePrecheckSteps(changed, specs, 'b').map(
+			([label]) => gateOf(label),
+		);
+		expect(labels).toEqual([
 			COVERAGE_PRECHECK_GATE,
 			COVERAGE_PRECHECK_GATE,
 		]);
-		expect(steps[0]?.[1]).toContain('a.spec.ts');
-		expect(steps[1]?.[1]).toContain('--base=b');
-		expect(gateNamesOf(['x.ts'], true, 'b')).toContain(
+		expect(gateNamesOf(changed, true, 'b')).toContain(
 			COVERAGE_PRECHECK_GATE,
 		);
 	});
