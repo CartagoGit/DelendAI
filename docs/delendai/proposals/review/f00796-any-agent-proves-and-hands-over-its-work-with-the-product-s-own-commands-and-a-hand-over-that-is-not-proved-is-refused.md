@@ -77,14 +77,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: approved by mai-code-2 — verified at f1476fe6c7fd, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) published() calls proveUnit before publishWorkUnitExclusively on PR routes; proveUnit reads candidateProofSteps from integrationSha and enforces a clean tip/wo… — Reviewed the delivered proof/publication path and the later extensions. The 59 focused proof, publish and real-git land specs pass plus full typecheck. Pull-request publication and proposal hand-over run the integration-declared proof at the unit tip and refuse before push with the failed step/output.
 
 ### S4 — A proved tree is not proved twice
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A green proof is recorded under the git directory, keyed by the tree it proved and the proof's commands. Proving or publishing the same tree with the same proof skips the run and says so (`remembered`); any change to either runs it again. `work prove` runs the proof alone, so a hand-over through a tool call finds it already proved, across the commits a product tool made on top of the proved tip that change only Markdown under the docs directory (a proposal's transition is one). Any other commit is proved again. The record is local and never sent to the forge (work-unit-proof.service.spec.ts, work-unit-publish-proof.spec.ts)."
 - shipped-in: `3bea2adee7ad`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at f1476fe6c7fd, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) proofKey hashes tree plus commands and records under git-common-dir/delendai-proofs; proveUnit detects the exact record and returns remembered. Specs assert re… — Reviewed proof reuse and the later compute-slot/revalidation changes. The 59 focused suites pass and full typecheck passes. Records are local, tree+command keyed, reused by publish, and only skipped across bounded proposal-document transition commits.
 
 ### S5 — A proof installs only what it lacks
 - **Status**: review
