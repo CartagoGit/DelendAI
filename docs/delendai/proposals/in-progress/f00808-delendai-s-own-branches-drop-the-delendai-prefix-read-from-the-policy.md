@@ -108,7 +108,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 
 ### S9b — Core parsers read the trailer identity first and the name second
 - **Status**: pending
-- **DependsOn**: [S9]
+- **DependsOn**: [S9, S3]
 - **Files**: `packages/core/src/lib/development-policy/owned-work-ref-parser.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/pull-request-text.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-identity/resolve-work-agent.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-generation.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
@@ -118,7 +118,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 
 ### S9c — CLI and plugin call sites follow the new grammar
 - **Status**: pending
-- **DependsOn**: [S9]
+- **DependsOn**: [S9, S7]
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`
 - **Gate**: type
 - **Decisions**: none
