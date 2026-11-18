@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { INotificationEventName } from '@delendai/client';
 import { McpStdioClient, NotificationsService } from '@delendai/client';
+import { waitUntil } from '@delendai/test-kit';
 
 import {
 	DelendaiStatusBar,
@@ -27,87 +28,71 @@ const createItem = (): IStatusBarItem & {
 	return item;
 };
 
-describe('DelendaiStatusBar', async () => {
-	it('shows tool, proposal, token and agent segments', async () => {
-		const item = createItem();
-		const bar = new DelendaiStatusBar(
-			item,
-			{
-				async listTools() {
-					return [
-						{
-							name: 'delendai_overview',
-							plugin: 'delendai',
-							tags: [],
-							effects: [],
+const overview = {
+	async listTools() {
+		return [];
+	},
+};
+
+const serverAnswering = (
+	units: Record<string, number> = { live: 2 },
+): McpStdioClient =>
+	McpStdioClient.fromTransport({
+		async callTool(input) {
+			if (input.name === 'delendai_status') {
+				return {
+					structuredContent: {
+						runtime: { summary: 'develop@abc behind 2' },
+						maintenance: { maintains: false, maintainer: 'pid 42' },
+					},
+				};
+			}
+			if (input.name === 'delendai_work') {
+				return {
+					structuredContent: {
+						data: {
+							computeSlot: { holder: 'agent-a' },
+							units,
+							publications: [{ ref: 'pr/x' }, { ref: 'pr/y' }],
 						},
-					];
-				},
-			},
-			McpStdioClient.fromTransport({
-				async callTool(input) {
-					if (input.name === 'delendai_proposals_proposal_board') {
-						return {
-							structuredContent: {
-								proposals: [{ id: 'f00014' }, { id: 'f00015' }],
-							},
-						};
-					}
-					if (input.name === 'delendai_metrics') {
-						return {
-							structuredContent: {
-								tools: {},
-								totals: {
-									calls: 0,
-									errors: 0,
-									totalMs: 0,
-									totalBytes: 4000,
-								},
-							},
-						};
-					}
-					if (input.name === 'delendai_proposals_agent_names') {
-						return {
-							structuredContent: {
-								assignments: [
-									{
-										agent_name: 'implementation_runner',
-										status: 'active',
-									},
-									{
-										agent_name: 'delivery_verifier',
-										status: 'active',
-									},
-								],
-							},
-						};
-					}
-					return { structuredContent: {} };
-				},
-			}),
-		);
+					},
+				};
+			}
+			return { structuredContent: {} };
+		},
+	});
+
+const tooltipOf = (item: IStatusBarItem): string => {
+	const tip = item.tooltip;
+	return typeof tip === 'object' ? tip.value : (tip ?? '');
+};
+
+describe('DelendaiStatusBar', async () => {
+	it('[<50ms] labels the item DelendAI and puts the live data in a rich tooltip', async () => {
+		const item = createItem();
+		const bar = new DelendaiStatusBar(item, overview, serverAnswering());
 
 		await bar.start();
 		await bar.update();
 
-		expect(item.text).toContain('delendai');
-		expect(item.text).toContain('1 tools');
-		expect(item.text).toContain('2 proposals');
-		expect(item.text).toContain('1.0k tok');
-		expect(item.text).toContain('2 agents');
+		expect(item.text).toBe('DelendAI');
+		const tip = tooltipOf(item);
+		expect(typeof item.tooltip).toBe('object');
+		expect(tip).toContain('develop@abc behind 2');
+		expect(tip).toContain('Connection: connected');
+		expect(tip).toContain('Maintained by: pid 42');
+		expect(tip).toContain('Compute slot: agent\\-a');
+		expect(tip).toContain('Active units: 2 live');
+		expect(tip).toContain('Open PRs: 2');
 		expect(item.command).toBe('delendai.openDashboard');
 		expect(item.shown).toBe(true);
 	});
 
-	it('falls back gracefully when metrics and agents tools are missing', async () => {
+	it('[<50ms] says it is not connected when the server answers nothing', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(
 			item,
-			{
-				async listTools() {
-					return [];
-				},
-			},
+			overview,
 			McpStdioClient.fromTransport({
 				async callTool() {
 					throw new Error('tool missing');
@@ -116,38 +101,17 @@ describe('DelendaiStatusBar', async () => {
 		);
 		await bar.start();
 		await bar.update();
-		// Without metrics or agents calls, the status bar should still
-		// render the tool/proposal segments and not crash.
-		expect(item.text).toContain('0 tools');
-		expect(item.text).not.toContain('tok');
-		expect(item.text).not.toContain('agents');
+		expect(item.text).toBe('DelendAI');
+		expect(tooltipOf(item)).toContain('not connected');
 	});
 
-	it('updates when notifications emit lifecycle events', async () => {
+	it('[<200ms] rewrites the tooltip when a notification arrives, with no timer', async () => {
 		const item = createItem();
-		let toolCount = 1;
+		let units: Record<string, number> = { live: 1 };
 		const client = McpStdioClient.fromTransport({
 			async callTool(input) {
-				if (input.name === 'delendai_proposals_proposal_board') {
-					return {
-						structuredContent: { proposals: [{ id: 'f00014' }] },
-					};
-				}
-				if (input.name === 'delendai_metrics') {
-					return {
-						structuredContent: {
-							tools: {},
-							totals: {
-								calls: 0,
-								errors: 0,
-								totalMs: 0,
-								totalBytes: 0,
-							},
-						},
-					};
-				}
-				if (input.name === 'delendai_proposals_agent_names') {
-					return { structuredContent: { assignments: [] } };
+				if (input.name === 'delendai_work') {
+					return { structuredContent: { data: { units } } };
 				}
 				return { structuredContent: {} };
 			},
@@ -155,54 +119,35 @@ describe('DelendaiStatusBar', async () => {
 		const notifications = new NotificationsService(client);
 		const bar = new DelendaiStatusBar(
 			item,
-			{
-				async listTools() {
-					return Array.from({ length: toolCount }, (_, index) => ({
-						name: `tool_${index}`,
-						plugin: 'tool',
-						tags: [],
-						effects: [],
-					}));
-				},
-			},
+			overview,
 			client,
 			notifications,
 		);
 
 		await bar.start();
 		await bar.update();
-		expect(item.text).toContain('1 tools');
+		expect(tooltipOf(item)).toContain('Active units: 1 live');
 
-		toolCount = 3;
+		units = { live: 3 };
 		notifications.emitStatus('cap', 'checkpoint');
-		await new Promise((resolve) => setTimeout(resolve, 0));
+		await waitUntil('the tooltip shows 3 live units', () =>
+			tooltipOf(item).includes('3 live'),
+		);
 
-		expect(item.text).toContain('3 tools');
+		expect(tooltipOf(item)).toContain('Active units: 3 live');
 	});
 
-	it('click opens the dashboard command', async () => {
+	it('[<50ms] a click opens the dashboard directly', async () => {
 		const item = createItem();
-		const bar = new DelendaiStatusBar(
-			item,
-			{
-				async listTools() {
-					return [];
-				},
-			},
-			McpStdioClient.fromTransport({
-				async callTool() {
-					return { structuredContent: {} };
-				},
-			}),
-		);
+		const bar = new DelendaiStatusBar(item, overview, serverAnswering());
 		await bar.start();
 		expect(item.command).toBe('delendai.openDashboard');
-		expect(item.tooltip).toContain('Dashboard');
+		expect(tooltipOf(item)).toContain('Click to open the dashboard');
 	});
 });
 
 describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
-	it('subscribes to every union event and removes them on dispose', async () => {
+	it('[<50ms] subscribes to every union event and removes them on dispose', async () => {
 		const subscribed: string[] = [];
 		const removed: string[] = [];
 		const notifications = {
@@ -237,7 +182,7 @@ describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
 		expect(removed.sort()).toEqual(subscribed.sort());
 	});
 
-	it('keys the config map on the discriminated union (compile-time OCP)', () => {
+	it('[<50ms] keys the config map on the discriminated union (compile-time OCP)', () => {
 		// A status-bar event config is the value shape of the exhaustive
 		// map. Adding a new INotificationEventName without a map entry is a
 		// *compile* error in status-bar.ts (Record<INotificationEventName>),

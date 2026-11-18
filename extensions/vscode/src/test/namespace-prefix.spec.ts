@@ -39,12 +39,12 @@ const createItem = (): IStatusBarItem => {
 };
 
 describe('resolveNamespacePrefix', () => {
-	it('reads delendai.server.prefix from config', () => {
+	it('[<50ms] reads delendai.server.prefix from config', () => {
 		expect(resolveNamespacePrefix(apiWithPrefix('acme'))).toBe('acme');
 		expect(resolveNamespacePrefix(apiWithPrefix('acme_'))).toBe('acme_');
 	});
 
-	it('returns undefined for missing/blank prefix (keeps the default)', () => {
+	it('[<50ms] returns undefined for missing/blank prefix (keeps the default)', () => {
 		expect(
 			resolveNamespacePrefix(apiWithPrefix(undefined)),
 		).toBeUndefined();
@@ -86,20 +86,18 @@ describe('status bar honours the namespace prefix', () => {
 			prefix,
 		);
 
-	it('default prefix probes delendai_* tools', async () => {
+	it('[<50ms] default prefix probes delendai_* tools', async () => {
 		const calls: string[] = [];
 		await buildBar(undefined, calls).update();
-		expect(calls).toContain('delendai_proposals_proposal_board');
-		expect(calls).toContain('delendai_metrics');
-		expect(calls).toContain('delendai_proposals_agent_names');
+		expect(calls).toContain('delendai_status');
+		expect(calls).toContain('delendai_work');
 	});
 
-	it('custom prefix probes <prefix>_* tools', async () => {
+	it('[<50ms] custom prefix probes <prefix>_* tools', async () => {
 		const calls: string[] = [];
 		await buildBar('acme', calls).update();
-		expect(calls).toContain('acme_proposals_proposal_board');
-		expect(calls).toContain('acme_metrics');
-		expect(calls).toContain('acme_proposals_agent_names');
+		expect(calls).toContain('acme_status');
+		expect(calls).toContain('acme_work');
 		expect(calls.some((c) => c.startsWith('delendai_'))).toBe(false);
 	});
 });
