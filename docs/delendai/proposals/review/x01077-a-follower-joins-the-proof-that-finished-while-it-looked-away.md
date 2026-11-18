@@ -32,12 +32,14 @@ A caller that follows another caller's proof of the same unit and tip returns th
 - global_gate: none
 
 ### S1 — follow reads the result once more when its claim vanishes
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/shared/compute-slot-follow.helper.ts`, `packages/core/tests/src/lib/shared/compute-slot-follow.helper.spec.ts`
 - **Gate**: none
 - shipped-in: `466f34cc864b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
