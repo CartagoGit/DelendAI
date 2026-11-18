@@ -130,14 +130,16 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S7 — The external install runs where the packaging can change
-- **Status**: done
+- **Status**: pending
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
   - "verify:external-install runs in the pack-smoke job, whose scope now also names its script, the publish staging and init's code; verify-runtime no longer rebuilds and repacks for it."
 - shipped-in: `3d7174504930`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S10 — The repository-wide lints cost only what the change changes
 - **Status**: done
