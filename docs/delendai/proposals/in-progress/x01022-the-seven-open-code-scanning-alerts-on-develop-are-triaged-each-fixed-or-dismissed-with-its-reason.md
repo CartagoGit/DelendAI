@@ -2,14 +2,14 @@
 id: x01022
 title: "The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: ci
 date: 2026-11-04
-last-transition-id: 62abc1b3-ab3a-4015-b239-8843a61b8830
-last-correlation-id: 62abc1b3-ab3a-4015-b239-8843a61b8830
-last-transition-from: review
-last-transition-at: 2026-11-04T22:16:34.991Z
+last-transition-id: 02370ef7-e036-465e-b596-98a51f1fa3b0
+last-correlation-id: 02370ef7-e036-465e-b596-98a51f1fa3b0
+last-transition-from: ready
+last-transition-at: 2026-11-18T08:31:07.499Z
 ---
 
 # x01022 — The seven open code-scanning alerts on develop are triaged, each fixed or dismissed with its reason
