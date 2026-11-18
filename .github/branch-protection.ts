@@ -49,5 +49,5 @@ export const BRANCH_PROTECTION: IBranchProtectionConfig = {
 			required_checks: ['delendai-validate', 'release-pr-gate'],
 		},
 	],
-	publication_prefixes: ['delendai/pr/'],
+	publication_prefixes: ['pr/', 'delendai/pr/'],
 };
