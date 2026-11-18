@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: feats
 date: 2026-11-18
-last-transition-id: 1b506841-5144-41ec-b8dd-81b9a5ead3e9
-last-correlation-id: 1b506841-5144-41ec-b8dd-81b9a5ead3e9
+last-transition-id: 49149051-3b9e-42f0-a9d9-b740ecb4cef0
+last-correlation-id: 49149051-3b9e-42f0-a9d9-b740ecb4cef0
 last-transition-from: in-progress
-last-transition-at: 2026-11-18T11:20:05.098Z
+last-transition-at: 2026-11-18T11:54:27.044Z
 ---
 
 # f00822 — work revalidate follows a renamed declared file and retires a proposal whose files a later change deleted
