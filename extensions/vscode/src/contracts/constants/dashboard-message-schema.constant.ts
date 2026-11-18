@@ -13,6 +13,12 @@ export const DASHBOARD_MESSAGE_SCHEMA = z.discriminatedUnion('command', [
 		.strict(),
 	z
 		.object({
+			command: z.literal('section'),
+			section: z.string().min(1).max(64),
+		})
+		.strict(),
+	z
+		.object({
 			command: z.literal('openProposal'),
 			id: z.string().min(1),
 		})

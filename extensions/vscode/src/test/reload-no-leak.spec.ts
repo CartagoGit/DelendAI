@@ -89,7 +89,7 @@ const makeTrackedClient = (): ITrackedClient => {
 };
 
 describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
-	it('deactivate calls client.close() exactly once', async () => {
+	it('[<200ms] deactivate calls client.close() exactly once', async () => {
 		__resetRuntimeHandle();
 		const tracked = makeTrackedClient();
 		const context: IExtensionContext = {
@@ -124,7 +124,7 @@ describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
 		expect(getRuntimeHandle()).toBeUndefined();
 	});
 
-	it('deactivate disposes tree registrations and config-watcher listeners', async () => {
+	it('[<200ms] deactivate disposes config-watcher listeners, and no tree is registered', async () => {
 		__resetRuntimeHandle();
 		const tracked = makeTrackedClient();
 		let treeDisposals = 0;
@@ -172,11 +172,11 @@ describe('activate / deactivate lifecycle (reload-leak contract)', async () => {
 		});
 		await deactivate();
 
-		expect(treeDisposals).toBe(3);
+		expect(treeDisposals).toBe(0);
 		expect(watcherListenerDisposals).toBe(3);
 	});
 
-	it('failed initial connection keeps the runtime handle recoverable', async () => {
+	it('[<200ms] failed initial connection keeps the runtime handle recoverable', async () => {
 		__resetRuntimeHandle();
 		const context: IExtensionContext = {
 			subscriptions: [],
