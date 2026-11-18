@@ -95,7 +95,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 2/2: (1) worktree-status.helper.ts and WORKTREE_STATUS_ARGS (status --porcelain=v2 --branch) are the one status; git-invocation-memo.helper.ts:122-179 shares and refres… (2) memo answers ls-remote once (spec :92) and work-git-spawn-budget.spec.ts :114 fails above 1 fetch per invocation across enter..retire; passes — One status and one fetch per invocation, pinned by spec.
 
 ### S5 — Validate arguments first, and pin the spawn budget
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S2, S3, S4]
 - **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`, `packages/core/src/lib/work-units/work-arguments.helper.ts`, `packages/core/src/lib/contracts/constants/work-arguments.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-arguments.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/work-units/integration-merges.helper.ts`, `packages/core/src/lib/work-units/agents-seen.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/committed-file-reader.helper.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
@@ -104,8 +104,10 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
   - "work-git-spawn-budget.spec.ts builds the fixture (one commit, bare origin), runs each subcommand in process, counts spawns through the S1 observer and fails above: status 25, enter 40, checkpoint 30, swarm 35, prove 30, publish 40, retire 40, argument refusal 2, fetch 1 per invocation."
   - "The delivery records before and after spawn counts and untraced wall times per subcommand, as the budget spec reports them and as strace on the fixture counts them."
 - shipped-in: `d4cd9f4825cd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
