@@ -10,6 +10,8 @@ last-transition-id: 50311de5-6258-4918-8709-8b819c82eccc
 last-correlation-id: 50311de5-6258-4918-8709-8b819c82eccc
 last-transition-from: in-progress
 last-transition-at: 2026-11-17T21:54:43.164Z
+shipped-in:
+  - "2f99e2c40c63c6a1bec3004a405f905db917556f"
 ---
 
 # x01065 — The first-call cold import and the per-test git init leave the CLI entry spec, and the real host boot is named an e2e spec
@@ -33,12 +35,14 @@ CI measured the CLI entry spec's first test at several seconds because the first
 - global_gate: none
 
 ### S1 — Warm the CLI entry import once, copy repository templates, name the host boot e2e
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/index.e2e.spec.ts`, `tools/scripts/host/host-boot-journal.e2e.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/ci/spec-duration-budget.baseline.json`
 - **Gate**: none
 - shipped-in: `121532481c51`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 2f99e2c40c63, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 3/3: (1) A module-scope beforeAll warms loadCommandsFor; the observed first CLI tests run in 9 ms and 2 ms, under their 30 ms budgets. Per-case repositories come from c… (2) The real host boot is tools/scripts/host/host-boot-journal.e2e.spec.ts; neither spec-git-init.baseline.json nor spec-duration-budget.baseline.json lists it, so… (3) The renamed host-boot and CLI entry files retain all 20 named cases, including the two real two-machine boot checks and every CLI entry assertion; all 20 pass. — Reviewed the delivered diff and current implementation; no later change touches these four files. Both E2E specs pass 20/20, the first CLI cases are 1-9 ms after the warm-up, the git-init lint passes with no entry beyond baseline, and the host boot keeps its real two-machine behavior under its E2E name.
 
 ## acceptance
 
