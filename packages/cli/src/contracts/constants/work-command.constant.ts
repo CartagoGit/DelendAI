@@ -7,12 +7,15 @@
 export const WORK_COMMAND = {
 	// The work engine runs in the CLI process; only `deliver` calls the
 	// server, for its proposal transitions (x01035).
-	offline: (args: readonly string[]): boolean => args[0] !== 'deliver',
+	offline: (args: readonly string[]): boolean =>
+		args[0] !== 'deliver' && args[0] !== 'revalidate',
 	summary:
 		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
-	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|prove|deliver|publish|retire|retired|reap|rescue> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--urgent=<reason>] [--only=<gate>[,<gate>]] [--alongside] [--print-path] [--all] [--watch] [--agents] [--workspace=<path>]',
+	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|prove|deliver|revalidate|publish|retire|retired|reap|rescue> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--urgent=<reason>] [--only=<gate>[,<gate>]] [--alongside] [--print-path] [--all] [--watch] [--agents] [--workspace=<path>]',
 	flags: [
 		'proposal',
+		// `work revalidate --proposals=<id,id>` names the batch instead of selecting it.
+		'proposals',
 		'slice',
 		'kind',
 		'agent',

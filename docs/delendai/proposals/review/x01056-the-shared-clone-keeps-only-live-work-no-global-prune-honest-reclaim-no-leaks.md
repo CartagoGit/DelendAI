@@ -32,12 +32,14 @@ An inventory of the shared clone found worktrees and refs that belong to nobody.
 - global_gate: none
 
 ### S1 — No global prune, honest reclaim, no leaks
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `tools/scripts/forge/publish-candidate.script.ts`, `tools/scripts/forge/publish-candidate.script.spec.ts`, `packages/core/tests/src/lib/work-units/local-certification.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-proof.service.spec.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.spec.ts`, `tools/scripts/forge/train-rehearsal.script.ts`, `tools/scripts/forge/train-rehearsal.spec.ts`
 - **Gate**: none
 - shipped-in: `b6d59ac81a42`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — The delivery is stale for review. S1 is shipped-in b6d59ac81a42, but key slice files changed since then on develop (including work-unit-proof service/spec, publish-candidate script, train-rehearsal script/spec, and refresh-candidate-artifacts script/spec). Please redeliver on current HEAD with a fresh shipped-in and updated evidence for this slice before re-review.
 
 ## acceptance
 

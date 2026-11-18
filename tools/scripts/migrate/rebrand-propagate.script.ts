@@ -180,7 +180,7 @@ const INTENTIONAL_LEGACY_PATHS = [
 	// while a hook runs, so a migration there writes to the workspace
 	// mid-commit. The fixture has to be a genuine legacy workspace, which
 	// means the old spelling is the assertion.
-	'packages/cli/src/index.spec.ts',
+	'packages/cli/src/index.e2e.spec.ts',
 	// Proves that `migrate status` reports the old name a live file still
 	// carries, so its fixture has to carry it.
 	'packages/cli/src/commands/migrate.command.spec.ts',

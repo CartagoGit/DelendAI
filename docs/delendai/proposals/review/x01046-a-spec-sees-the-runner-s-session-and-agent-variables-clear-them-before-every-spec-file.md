@@ -31,7 +31,7 @@ A green run on the owner's machine should mean what a green run in CI means. Age
 - global_gate: none
 
 ### S1 — Every spec file starts from an environment with no delendai or agent variables
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/test-kit/src/lib/hermetic-environment.helper.ts`, `packages/test-kit/src/contracts/constants/hermetic-environment.constant.ts`, `packages/test-kit/src/contracts/interfaces/hermetic-environment.interface.ts`, `packages/test-kit/src/public/index.ts`, `packages/core/src/cli.ts`, `packages/test-kit/tests/src/lib/hermetic-environment.helper.spec.ts`, `tools/scripts/test/hermetic-agent-identity-setup.ts`, `tools/scripts/test/hermetic-agent-identity-setup.spec.ts`, `vitest.shared.ts`, `packages/core/src/lib/contracts/constants/agent-environment.constant.ts`, `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/unit-liveness.service.ts`, `packages/cli/src/commands/review.command.ts`
 - **Gate**: type
 - acceptance:
@@ -40,8 +40,10 @@ A green run on the owner's machine should mean what a green run in CI means. Age
   - "DELENDAI_SESSION_ID is one named constant in core, read through it by work-unit-shared, unit-liveness and the review command."
   - "A spec run under DELENDAI_SESSION_ID, DELENDAI_AGENT_ID, CLAUDECODE and AI_AGENT exported in the shell sees none of them (tools/scripts/test/hermetic-agent-identity-setup.spec.ts), and work-unit.service.e2e.spec.ts and slice-reservation.service.e2e.spec.ts pass with DELENDAI_SESSION_ID exported."
 - shipped-in: `f504139ef9ce`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — The review evidence is stale. This slice is shipped-in f504139ef9ce, but multiple slice files changed since then on develop (for example packages/core/src/cli.ts, packages/cli/src/commands/review.command.ts, packages/core/src/lib/work-units/unit-liveness.service.ts, vitest.shared.ts, and test-kit files). Please redeliver S1 on current HEAD with a fresh shipped-in commit and rerun scoped gate evidence before re-review.
 
 ## acceptance
 

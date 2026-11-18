@@ -239,6 +239,7 @@ export {
 export { readLeaseOf } from './lib/work-units/unit-lease.service';
 export { reapDeliveredUnits } from './lib/work-units/unit-reaper.service';
 export { compileWorkRefParser } from './lib/startup-reconciler/work-ref-identity';
+export { isRevalidationIdentity } from './lib/work-units/unit-topic.service';
 export { readSwarm } from './lib/work-units/work-swarm.service';
 export type { IUnitStandingEntry } from './lib/work-units/unit-lease.interface';
 export type {
@@ -323,7 +324,10 @@ export type {
 	IInvariantResult,
 	IInvariantScope,
 } from './lib/contracts/interfaces/workflow-invariants.interface';
-export { worktreeAgent } from './lib/work-units/worktree-agent.service';
+export {
+	worktreeAgent,
+	worktreeSession,
+} from './lib/work-units/worktree-agent.service';
 
 // What only the host and the verification scripts read: the watch that tells
 // a running server its source moved, and the code a refused shared-checkout

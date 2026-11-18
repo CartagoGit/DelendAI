@@ -10,6 +10,11 @@
  */
 import type { IDelegatedTask } from '@delendai/contracts';
 
+import type {
+	IClosedContract,
+	IClosedContractResult,
+} from '../contracts/interfaces/closed-contract.interface';
+
 const section = (title: string, lines: readonly string[]): string =>
 	lines.length === 0 ? '' : `## ${title}\n${lines.join('\n')}\n`;
 
@@ -49,3 +54,70 @@ export const renderTaskPack = (
 	]
 		.filter((part) => part.length > 0)
 		.join('\n');
+
+const RULES = [
+	'You may not redesign the task, widen its scope or launch other agents.',
+	'Change only the authorized files. When a stop condition holds, or you need more capacity than the limits allow, stop and answer with a blocker; do not go on.',
+];
+
+const bullets = (items: readonly string[]): string[] =>
+	items.map((item) => `- ${item}`);
+
+/** The sections of `contract` that are empty, by name. */
+const missingSections = (contract: IClosedContract): string[] => {
+	const lists: ReadonlyArray<readonly [string, readonly string[]]> = [
+		['authorizedFiles', contract.authorizedFiles],
+		['interfaces', contract.interfaces],
+		['invariants', contract.invariants],
+		['dependencies', contract.dependencies],
+		['acceptance', contract.acceptance],
+		['tests', contract.tests],
+		['stopConditions', contract.stopConditions],
+	];
+	const budget = Object.entries(contract.budget)
+		.filter(([, value]) => !(Number.isFinite(value) && value > 0))
+		.map(([name]) => `budget.${name}`);
+	return [
+		...(contract.objective.trim().length === 0 ? ['objective'] : []),
+		...lists
+			.filter(([, items]) => items.length === 0)
+			.map(([name]) => name),
+		...budget,
+		...(contract.unit.trim().length === 0 ? ['unit'] : []),
+	];
+};
+
+/**
+ * The prompt a worker reads for one closed contract: every section, and
+ * the rule that it cannot redesign, widen scope or launch agents. A
+ * contract missing a section is refused with the names of the gaps.
+ */
+export const renderClosedContract = (
+	contract: IClosedContract,
+): IClosedContractResult => {
+	const missing = missingSections(contract);
+	if (missing.length > 0) return { ok: false, missing };
+	const { budget } = contract;
+	const prompt = [
+		section('Objective', [contract.objective]),
+		section('Unit (this contract is bound to it)', [contract.unit]),
+		section('Authorized files', bullets(contract.authorizedFiles)),
+		section(
+			'Interfaces and expected behaviour',
+			bullets(contract.interfaces),
+		),
+		section('Invariants', bullets(contract.invariants)),
+		section('Dependencies', bullets(contract.dependencies)),
+		section('Acceptance', bullets(contract.acceptance)),
+		section('Exact tests', bullets(contract.tests)),
+		section('Budget and limits', [
+			`- tokens: ${budget.tokens}`,
+			`- calls: ${budget.calls}`,
+			`- turns: ${budget.turns}`,
+			`- retries: ${budget.retries}`,
+		]),
+		section('Stop conditions', bullets(contract.stopConditions)),
+		section('Rules', bullets(RULES)),
+	].join('\n');
+	return { ok: true, prompt };
+};

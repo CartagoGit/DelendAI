@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-10
-last-transition-id: 9d636962-1c08-412f-b904-13b2ed9c054f
-last-correlation-id: 9d636962-1c08-412f-b904-13b2ed9c054f
+last-transition-id: e4803861-948b-4fb8-bcb3-bb700e72291b
+last-correlation-id: e4803861-948b-4fb8-bcb3-bb700e72291b
 last-transition-from: in-progress
-last-transition-at: 2026-11-17T20:57:50.660Z
+last-transition-at: 2026-11-17T22:09:39.463Z
 ---
 
 # x01058 — The delivery flow hands over what it proved, writes through the tool, and refuses early
@@ -33,7 +33,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - global_gate: type
 
 ### S1 — Deliver hands over only the slice it proved
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`, `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -41,11 +41,13 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "With other slices undelivered, deliver leaves the proposal in progress and reports which slices remain; the last slice moves it to review."
   - "[<Nms] specs cover: one slice delivered of three, all delivered, and a whole-proposal deliver unchanged."
 - shipped-in: `23b3ed8a110e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — Deliver runs the hand-over preflight before the proof
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`
 - **Gate**: type
@@ -54,11 +56,13 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "The preflight is read-only and uses the same function as the transition, so the two cannot disagree."
   - "[<Nms] spec: a missing declared file refuses with prove never called."
 - shipped-in: `23b3ed8a110e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — Deliver commits its own writes before the proof
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/lib/work-deliver-commit.service.ts`, `packages/cli/src/lib/work-deliver-commit.service.spec.ts`
 - **Gate**: type
@@ -67,11 +71,13 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "Nothing but the tool's own write is committed; a foreign dirty file is left and the proof refuses it as before."
   - "[<Nms] spec covers a clean write, a foreign dirty file, and nothing written."
 - shipped-in: `7567b784e1cd`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S4 — A reconciler keep commit may carry a tool-recorded verdict
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/verdicts-through-the-tool.script.ts`, `tools/scripts/lint/verdicts-through-the-tool.script.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -79,11 +85,13 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "The spec reproduces the shape of c8a5c88f0 (transition 0f533c39) both accepted and, with an unrecorded id, refused."
   - "A tool's write is never left uncommitted: it is committed by the tool (S3), which is the preferred path."
 - shipped-in: `3a1a24a67772`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S5 — Review approve and release reuse the open review unit
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/commands/review.command.ts`, `packages/cli/src/commands/review.command.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -91,11 +99,13 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "No empty review unit is left behind by a command that finds one."
   - "e2e spec: two calls without --session use one unit."
 - shipped-in: `575096dc8383`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S6 — carried-work reads the owned namespaces from the decisions module
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/services/carried-work.service.ts`, `plugins/proposals/tests/src/lib/services/carried-work.service.spec.ts`, `packages/core/src/lib/integration/decisions/namespaces.helper.ts`, `tools/scripts/lint/integration-decisions-single-owner.script.ts`, `tools/scripts/lint/integration-decisions-single-owner.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -103,11 +113,13 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "lint:integration-decisions refuses code that builds retired roots or namespace-derived `refs/<namespace>/…` prefixes outside the module."
   - "[<Nms] spec: the lint flags the old carried-work shape and passes the new one."
 - shipped-in: `575096dc8383`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S7 — Entering a unit installs what the worktree lacks
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-dependencies.service.ts`, `packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -115,8 +127,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "The install command table is the one the proof's temporary worktree uses; no second list."
   - "[<Nms] spec: complete modules are left alone, incomplete ones installed, no lockfile skipped."
 - shipped-in: `575096dc8383`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 

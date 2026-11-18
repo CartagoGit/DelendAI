@@ -35,7 +35,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - global_gate: none
 
 ### S1 — Merges keep one copy of each proposal id
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/proposals/reconcile-duplicate-ids.ts`, `plugins/proposals/src/lib/contracts/constants/status-progress.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposal-copy.interface.ts`, `plugins/proposals/tests/src/lib/proposals/reconcile-duplicate-ids.e2e.spec.ts`, `tools/scripts/proposals/reconcile-duplicate-ids.script.ts`, `tools/scripts/proposals/keep-one-proposal-copy.ts`, `tools/scripts/proposals/keep-one-proposal-copy.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: type
 - acceptance:
@@ -43,11 +43,13 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "land's train assembly (the candidate refresh and the post-merge hook were deleted with the queue) keep the copy with the latest last-transition-at, then the furthest status, and commit that as a derived fix"
   - "the survivor is placed by the existing folder reconciler, and a spec with two branches that move one proposal proves it"
 - shipped-in: `3a7dfd098e7f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A claim retires the publication it superseded
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/superseded-publication.service.ts`, `packages/core/src/lib/contracts/interfaces/superseded-publication.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/superseded-publication.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -55,11 +57,13 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "after the new publication is published the old one is retired with the reason superseded by #N, only when git merge-base --is-ancestor says the new publication contains the old tip"
   - "otherwise the old publication stays and the answer says why; both cases are specced"
 - shipped-in: `fb53bd97e7ac`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — The land rehearsal's gates judge for the branch they rehearse
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lib/rehearsed-branch.ts`, `tools/scripts/lib/rehearsed-branch.spec.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/forge/land-rehearsal.script.ts`
 - **Gate**: type
 - acceptance:
@@ -67,8 +71,10 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "the rehearsal names the branch it stands in for in the environment of its gates (DELENDAI_REHEARSED_BRANCH, not an agent marker), and proposal-hygiene reads it when the checkout has no branch of its own"
   - "a spec proves the environment is set only for a real branch and that hygiene exempts the reopened proposal from a detached clone and flags it without the variable"
 - shipped-in: `62df6c0c6000`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 

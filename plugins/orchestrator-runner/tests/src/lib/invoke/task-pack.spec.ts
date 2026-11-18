@@ -5,12 +5,29 @@
 import type { IDelegatedTask } from '@delendai/contracts';
 import { describe, expect, it } from 'vitest';
 
-import { renderTaskPack } from '../../../../src/lib/invoke/task-pack.service';
+import type { IClosedContract } from '../../../../src/lib/contracts/interfaces/closed-contract.interface';
+import {
+	renderClosedContract,
+	renderTaskPack,
+} from '../../../../src/lib/invoke/task-pack.service';
 import {
 	hopInputBudget,
 	overHopBudget,
 	promptTokens,
 } from '../../../../src/lib/invoke/task-pack-budget.service';
+
+const contract: IClosedContract = {
+	objective: 'Rename a to b',
+	authorizedFiles: ['src/x.ts'],
+	interfaces: ['x.ts exports b'],
+	invariants: ['no behaviour change'],
+	dependencies: ['none'],
+	acceptance: ['no reference to a remains'],
+	tests: ['bunx vitest run src/x.spec.ts'],
+	budget: { tokens: 8_000, calls: 10, turns: 5, retries: 1 },
+	stopConditions: ['a file outside the list needs a change'],
+	unit: 'wip/x-S1',
+};
 
 const task: IDelegatedTask = {
 	objective: 'Rename a to b in src/x.ts',
@@ -26,7 +43,7 @@ const task: IDelegatedTask = {
 };
 
 describe('renderTaskPack', () => {
-	it('names every section of the task, and what could not be given', () => {
+	it('[<200ms] names every section of the task, and what could not be given', () => {
 		const prompt = renderTaskPack(task, 'export const a = 1;');
 		expect(prompt).toContain('## Objective\nRename a to b in src/x.ts');
 		expect(prompt).toContain('- no reference to a remains');
@@ -37,7 +54,7 @@ describe('renderTaskPack', () => {
 		);
 	});
 
-	it('names the manifest by reference when no context is given inline', () => {
+	it('[<200ms] names the manifest by reference when no context is given inline', () => {
 		const prompt = renderTaskPack({
 			...task,
 			missingContext: undefined,
@@ -50,7 +67,7 @@ describe('renderTaskPack', () => {
 		expect(prompt).not.toContain('Asked for but not given');
 	});
 
-	it('asks for JSON when the task declares an output schema', () => {
+	it('[<200ms] asks for JSON when the task declares an output schema', () => {
 		expect(
 			renderTaskPack({
 				...task,
@@ -62,7 +79,7 @@ describe('renderTaskPack', () => {
 });
 
 describe('hopInputBudget', () => {
-	it('holds two models to their own windows, under the task budget', () => {
+	it('[<200ms] holds two models to their own windows, under the task budget', () => {
 		const small = hopInputBudget({
 			contextWindow: 8_000,
 			taskBudget: 50_000,
@@ -78,7 +95,7 @@ describe('hopInputBudget', () => {
 		expect(overHopBudget(pack, large)).toBeUndefined();
 	});
 
-	it('keeps the task budget for a model whose window is unknown, and nothing when neither is', () => {
+	it('[<200ms] keeps the task budget for a model whose window is unknown, and nothing when neither is', () => {
 		expect(hopInputBudget({ contextWindow: 0, taskBudget: 100 })).toEqual({
 			tokens: 100,
 			rule: 'task',
@@ -88,5 +105,42 @@ describe('hopInputBudget', () => {
 			overHopBudget('x'.repeat(10_000), { rule: 'none' }),
 		).toBeUndefined();
 		expect(promptTokens('abcde')).toBe(2);
+	});
+});
+
+describe('renderClosedContract', () => {
+	it('[<200ms] renders every section and tells the worker it cannot redesign, widen or launch agents', () => {
+		const result = renderClosedContract(contract);
+		expect(result.ok).toBe(true);
+		const prompt = result.ok ? result.prompt : '';
+		for (const title of [
+			'## Objective',
+			'## Authorized files\n- src/x.ts',
+			'## Interfaces and expected behaviour',
+			'## Invariants',
+			'## Dependencies',
+			'## Acceptance',
+			'## Exact tests',
+			'## Budget and limits\n- tokens: 8000',
+			'## Stop conditions',
+			'wip/x-S1',
+			'may not redesign the task, widen its scope or launch other agents',
+		]) {
+			expect(prompt).toContain(title);
+		}
+	});
+
+	it('[<200ms] refuses a contract missing a section and names the gaps', () => {
+		const result = renderClosedContract({
+			...contract,
+			tests: [],
+			objective: ' ',
+			unit: '',
+			budget: { ...contract.budget, retries: 0 },
+		});
+		expect(result).toEqual({
+			ok: false,
+			missing: ['objective', 'tests', 'budget.retries', 'unit'],
+		});
 	});
 });

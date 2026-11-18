@@ -252,6 +252,23 @@ export const createWorkCommand = (): ICliCommand => ({
 	run: async (args, ctx) => {
 		if (args[0] === 'enter') await briefOnEntering();
 		if (args[0] === 'progress') return runWorkProgress(args.slice(1), ctx);
+		if (args[0] === 'revalidate') {
+			const flags = args.slice(1);
+			// Loaded here, not at start-up: only this subcommand needs it.
+			const [{ revalidateBatch }, { revalidatePortsOf }] =
+				await Promise.all([
+					import('../lib/work-revalidate.service'),
+					import('../lib/work-revalidate-ports.service'),
+				]);
+			return revalidateBatch(
+				revalidatePortsOf(
+					ctx,
+					scalarArg(flags, 'agent'),
+					TRANSITION_TOOL,
+				),
+				scalarArg(flags, 'proposals'),
+			);
+		}
 		if (args[0] === 'deliver') {
 			const unit = args.slice(1);
 			const id = scalarArg(unit, 'proposal');

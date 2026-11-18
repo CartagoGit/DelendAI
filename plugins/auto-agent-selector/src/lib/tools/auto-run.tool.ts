@@ -18,6 +18,7 @@ import type {
 } from '../contracts/interfaces/roster.interface';
 import type { IRunEscalationDeps } from '../contracts/interfaces/escalation.interface';
 import type { IRosterSnapshotStore } from '../discovery/roster-store';
+import type { resolveTaskClassTier } from '../routing/task-class-tier.service';
 import { installKnownCli } from '../discovery/install-provider';
 
 const MIN_COST_TIER = 1;
@@ -39,6 +40,8 @@ const OUTPUT_SCHEMA = z.object({
 	costCeiling: z.number(),
 	maxDepth: z.number(),
 	costQualityTradeoff: z.number(),
+	/** Why no route is planned (e.g. the top tier lacks owner authorization). */
+	blocker: z.string().nullable(),
 	/** How to execute the plan (the selector plans; the host runs + gates). */
 	howToExecute: z.string(),
 	/** First safe install hint when the host cannot reach any provider. */
@@ -223,6 +226,10 @@ export const buildAutoRunRegistration = (options: {
 	readonly defaultTradeoff: number;
 	readonly deps?: IDiscoveryDeps;
 	readonly taskPins?: Readonly<Record<string, string>>;
+	/** The tier policy for a task class; undefined when the class has none. */
+	readonly tierFor?: (
+		taskClass: string,
+	) => ReturnType<typeof resolveTaskClassTier>;
 	readonly rosterStore?: IRosterSnapshotStore;
 	/** Production uses the argv-only core runner; tests inject a fake. */
 	readonly installRunner?: IAutoRunInstallRunner;
@@ -289,7 +296,28 @@ export const buildAutoRunRegistration = (options: {
 							taskPins: options.taskPins,
 						});
 					const candidates = ranked.map((result) => result.candidate);
-					const plan = buildPlan(candidates, args);
+					const tierDecision =
+						args.taskType === undefined
+							? undefined
+							: options.tierFor?.(args.taskType);
+					const blocker =
+						tierDecision?.ok === false
+							? tierDecision.blocker
+							: null;
+					const classCeiling =
+						tierDecision?.ok === true
+							? tierDecision.tier
+							: undefined;
+					const plan = buildPlan(blocker === null ? candidates : [], {
+						...args,
+						costCeiling:
+							classCeiling === undefined
+								? args.costCeiling
+								: Math.min(
+										args.costCeiling ?? MAX_COST_TIER,
+										classCeiling,
+									),
+					});
 					const nextMissingCli = roster.missing.find(
 						(candidate) => candidate.source === 'cli',
 					);
@@ -322,6 +350,7 @@ export const buildAutoRunRegistration = (options: {
 						),
 						installation,
 						execution,
+						blocker,
 						howToExecute:
 							"Run step 1 via your provider (the orchestrator-runner `invoke` tool, or the CLI/API directly), then run the project's acceptance gate (`bun run validate` or the validation matrix). If it fails, run the next step; stop at the first pass or the end of the ladder. `execute:true` only walks injected seams; production still returns host-side handoffs because plugins cannot invoke peer tools directly.",
 					});

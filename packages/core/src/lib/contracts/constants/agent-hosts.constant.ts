@@ -45,6 +45,13 @@ export const AGENT_HOSTS: readonly IAgentHost[] = [
 		skills: { dir: '.claude/skills', forkContext: true },
 		agents: { dir: '.claude/agents', suffix: '.md', format: 'claude' },
 		instructions: 'CLAUDE.md',
+		compaction: {
+			thresholdEnv: 'CLAUDE_AUTOCOMPACT_PCT_OVERRIDE',
+			hooks: {
+				beforeCompaction: 'PreCompact',
+				sessionStart: 'SessionStart',
+			},
+		},
 		evidence: {
 			paths: ['.claude', 'CLAUDE.md', '.mcp.json'],
 			env: ['CLAUDECODE'],

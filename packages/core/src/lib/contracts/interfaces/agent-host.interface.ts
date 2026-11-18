@@ -44,7 +44,45 @@ export interface IAgentHost {
 	};
 	/** How it is recognised as the program an agent runs in, when it is one. */
 	readonly identity?: IAgentHostIdentity;
+	/**
+	 * What it offers natively to compact a session: the environment variable
+	 * that sets its auto-compaction threshold (a percentage of the context)
+	 * and the lifecycle hooks it runs. Absent for a host with neither.
+	 */
+	readonly compaction?: {
+		readonly thresholdEnv?: string;
+		/** Hook events in the order they run: before compaction, at session start. */
+		readonly hooks?: {
+			readonly beforeCompaction?: string;
+			readonly sessionStart?: string;
+		};
+	};
 }
+
+/** The one compaction policy; every host gets it in its own form. */
+export interface ICompactionPolicy {
+	/** Percentage of the context at which a session compacts (1..99). */
+	readonly thresholdPercent: number;
+	/** The command that persists the handover and re-injects its index. */
+	readonly handoverCommand: string;
+}
+
+/** A host's compaction setup: its native setting, or a directive from the server. */
+export type ICompactionRendering =
+	| {
+			readonly kind: 'native';
+			readonly hostId: string;
+			readonly env: Readonly<Record<string, string>>;
+			readonly hooks: readonly {
+				readonly event: string;
+				readonly command: string;
+			}[];
+	  }
+	| {
+			readonly kind: 'directive';
+			readonly hostId: string;
+			readonly directive: string;
+	  };
 
 /**
  * What a host leaves behind when it runs an agent. Every list that names
