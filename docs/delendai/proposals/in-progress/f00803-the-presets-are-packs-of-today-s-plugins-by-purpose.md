@@ -2,14 +2,14 @@
 id: f00803
 title: "The presets are packs of today's plugins, by purpose"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-02
-last-transition-id: e79ff4c2-49f7-4a90-ab3d-5cc3005f78a0
-last-correlation-id: e79ff4c2-49f7-4a90-ab3d-5cc3005f78a0
-last-transition-from: review
-last-transition-at: 2026-11-04T21:35:42.810Z
+last-transition-id: a574a803-5f52-470b-b791-eff49452c959
+last-correlation-id: a574a803-5f52-470b-b791-eff49452c959
+last-transition-from: ready
+last-transition-at: 2026-11-18T11:44:41.955Z
 ---
 
 # f00803 — The presets are packs of today's plugins, by purpose
