@@ -17,9 +17,14 @@
  * invent an owner for it and refuses, even more firmly, to delete it.
  */
 
-import { WORK_KINDS } from '../development-policy/profiles.constant';
+import {
+	READABLE_WORK_REF_SHAPE,
+	WORK_KINDS,
+	WORK_REF_SHAPE,
+} from '../development-policy/profiles.constant';
 import {
 	legacyWorkKind,
+	parseWorkScope,
 	workRefPlaceholderPattern,
 } from '../development-policy/work-ref-placeholders';
 import { trimTrailingChar } from '../shared/string-normalize';
@@ -49,6 +54,8 @@ const escapeLiteral = (value: string): string =>
  */
 const classFor = (key: string, nextChar: string | undefined): string => {
 	if (key === 'generation') return '\\d+';
+	// `+` joins the parts of a set; the grammar is checked after the match.
+	if (key === 'scope') return '[A-Za-z0-9+-]+';
 	// Only a word of the vocabulary: a kind is never free text, and an
 	// alternation keeps a ref written before the kind segment existed
 	// from being misread with its proposal taken for a kind.
@@ -116,7 +123,7 @@ export const logicalWorkRefName = (
  * for an empty template — a policy whose persistence strategy writes no
  * per-unit ref has nothing to parse, and that is not an error.
  */
-export const compileWorkRefParser = (
+const compileOneParser = (
 	template: string,
 	prefix: string,
 	/**
@@ -195,16 +202,23 @@ export const compileWorkRefParser = (
 			order.forEach((key, index) => {
 				values[key] = found[index + 1] ?? '';
 			});
-			const generation = Number.parseInt(values.generation ?? '', 10);
+			let { proposal = '', slice = '' } = values;
+			let generation = Number.parseInt(values.generation ?? '', 10);
+			if (values.scope !== undefined) {
+				const scope = parseWorkScope(values.scope);
+				if (scope === undefined) return undefined;
+				proposal = scope.proposals.join('+');
+				slice = scope.slices.join(scope.range ? '-' : '+');
+				generation = scope.generation;
+			}
 			if (!Number.isFinite(generation)) return undefined;
-			const slice = values.slice ?? '';
 			return {
 				agent: values.agent ?? '',
 				kind:
 					values.kind === undefined || values.kind === ''
 						? legacyWorkKind(slice)
 						: values.kind,
-				proposal: values.proposal ?? '',
+				proposal,
 				slice,
 				generation,
 				...(values.topic === undefined || values.topic === ''
@@ -212,5 +226,51 @@ export const compileWorkRefParser = (
 					: { topic: values.topic }),
 			};
 		},
+	};
+};
+
+/** The other spelling of `template`: the scope grammar and `-g{n}`. */
+const alternateTemplate = (template: string): string | undefined => {
+	if (template.endsWith(READABLE_WORK_REF_SHAPE)) {
+		return `${template.slice(0, -READABLE_WORK_REF_SHAPE.length)}${WORK_REF_SHAPE}`;
+	}
+	if (template.endsWith(WORK_REF_SHAPE)) {
+		return `${template.slice(0, -WORK_REF_SHAPE.length)}${READABLE_WORK_REF_SHAPE}`;
+	}
+	if (template.includes('${scope}')) {
+		return template.replace(
+			'${scope}',
+			'${proposal}-${slice}-g${generation}',
+		);
+	}
+	return undefined;
+};
+
+/**
+ * Compile `branches.workRefTemplate` into a parser. A reader recognises
+ * both spellings of a unit's identity (the scope grammar and the former
+ * `{proposal}-{slice}-g{n}`), so work entered before the change keeps
+ * attributing (f00808); a `strict` writer-side check reads the template
+ * as written. Returns `undefined` for an empty template.
+ */
+export const compileWorkRefParser = (
+	template: string,
+	prefix: string,
+	options?: {
+		readonly strict?: boolean;
+		readonly requireKind?: boolean;
+	},
+): IWorkRefParser | undefined => {
+	const primary = compileOneParser(template, prefix, options);
+	if (primary === undefined || options?.strict === true) return primary;
+	const other = alternateTemplate(template);
+	const alternate =
+		other === undefined
+			? undefined
+			: compileOneParser(other, prefix, options);
+	if (alternate === undefined) return primary;
+	return {
+		namespace: primary.namespace,
+		parse: (refName) => primary.parse(refName) ?? alternate.parse(refName),
 	};
 };

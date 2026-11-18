@@ -12,6 +12,9 @@ import {
 	WORK_KINDS,
 	WORK_REF_PLACEHOLDERS,
 } from './profiles.constant';
+import type { IWorkScope } from '../contracts/interfaces/work-scope.interface';
+
+export type { IWorkScope } from '../contracts/interfaces/work-scope.interface';
 
 /**
  * A fresh matcher for `${placeholder}` in a template. Fresh on every
@@ -66,4 +69,86 @@ export const workRefTailSegments = (template: string): number => {
 		workRefPlaceholderPattern().test(part),
 	);
 	return firstPlaceholder === -1 ? 0 : segments.length - firstPlaceholder;
+};
+
+/** A proposal id as a scope names it (`x01003`), or the review batch. */
+const PROPOSAL_TOKEN = /^(?:[a-z]\d+|batch)$/u;
+/** A slice id as a scope names it (`S2`, `S9b`). */
+const SLICE_TOKEN = /^S\d+[a-z]*$/u;
+const GENERATION_SUFFIX = /-G(\d+)$/u;
+
+/** Whether `value` is a slice id a scope can carry. */
+export const isScopeSlice = (value: string): boolean => SLICE_TOKEN.test(value);
+
+/** Whether `value` is a proposal id a scope can carry. */
+export const isScopeProposal = (value: string): boolean =>
+	PROPOSAL_TOKEN.test(value);
+
+/**
+ * Render a scope: `x01003`, `x01003-S2`, `x01003-S1-S3`, `x01003-S1+S4`,
+ * `x01004+x01016`, with `-G{n}` (uppercase) only from generation 2. Only
+ * `-` and `+` join parts, so the result is a legal ref component.
+ */
+export const renderWorkScope = (scope: IWorkScope): string => {
+	const head = scope.proposals.join('+');
+	const slices =
+		scope.slices.length === 0
+			? ''
+			: `-${scope.slices.join(scope.range ? '-' : '+')}`;
+	const generation = scope.generation > 1 ? `-G${scope.generation}` : '';
+	return `${head}${slices}${generation}`;
+};
+
+/** Read a scope component back, or `undefined` when it is not the grammar. */
+export const parseWorkScope = (value: string): IWorkScope | undefined => {
+	const found = GENERATION_SUFFIX.exec(value);
+	const generation = found?.[1] === undefined ? 1 : Number(found[1]);
+	const body = found === null ? value : value.slice(0, found.index);
+	const tokens = body.split('+');
+	if (tokens.every((token) => PROPOSAL_TOKEN.test(token))) {
+		return { proposals: tokens, slices: [], range: false, generation };
+	}
+	const [first, ...rest] = tokens;
+	if (first === undefined || !rest.every((t) => SLICE_TOKEN.test(t))) {
+		return undefined;
+	}
+	const [proposal, ...firstSlices] = first.split('-');
+	if (
+		proposal === undefined ||
+		!PROPOSAL_TOKEN.test(proposal) ||
+		firstSlices.length === 0 ||
+		firstSlices.length > 2 ||
+		!firstSlices.every((t) => SLICE_TOKEN.test(t))
+	) {
+		return undefined;
+	}
+	const range = firstSlices.length === 2;
+	if (range && rest.length > 0) return undefined;
+	return {
+		proposals: [proposal],
+		slices: [...firstSlices, ...rest],
+		range,
+		generation,
+	};
+};
+
+/**
+ * The scope component for a unit named by proposal, slice and generation.
+ * A slice that is not a slice id (`review`, a free word) keeps its text,
+ * sanitised by the caller, so an unusual name degrades instead of failing.
+ */
+export const scopeOfUnit = (
+	proposal: string,
+	slice: string,
+	generation: number,
+): string => {
+	if (isScopeProposal(proposal) && isScopeSlice(slice)) {
+		return renderWorkScope({
+			proposals: [proposal],
+			slices: [slice],
+			range: false,
+			generation,
+		});
+	}
+	return `${proposal}-${slice}${generation > 1 ? `-G${generation}` : ''}`;
 };
