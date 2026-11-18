@@ -58,7 +58,7 @@ status folder, and `get_proposal_workflow` must teach the real format.
 ### S2 — Generator: lint-canonical documents, hyphen statuses, status folder, board filter
 - **Status**: done
 - **DependsOn**: S1
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/authoring.e2e.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/authoring.spec.ts`
 - **Gate**: bun run validate
 - status: done
 ### S3 — Teacher: get_proposal_workflow returns the real canonical template and rules

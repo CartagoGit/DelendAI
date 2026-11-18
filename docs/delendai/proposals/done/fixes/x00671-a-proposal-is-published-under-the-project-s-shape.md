@@ -68,7 +68,7 @@ repository's own `publishCommand` told agents to use the same name
 ### S1 — Proposal publication follows the project's shape
 
 - **Status**: done
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/publish-proposal.ts`
   - `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`
@@ -76,7 +76,7 @@ repository's own `publishCommand` told agents to use the same name
   - `plugins/proposals/src/lib/tools/proposal-publish-next-action.ts`
   - `delendai.config.json`
   - `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`
-  - `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - review-state: done
 - review-implementer: claude-opus-5-5
 - review-reviewer: glm-5.3-max

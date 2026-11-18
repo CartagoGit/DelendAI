@@ -227,7 +227,7 @@ Worth a one-time audit: who actually consumes the compat window?
 ### S8 — `proposal_create` refuses to write `TODO:` placeholders
 
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts:567-606`, `plugins/proposals/tests/src/lib/authoring.e2e.spec.ts` (assertions on TODO-rejection path) (new or expanded)
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts:567-606`, `plugins/proposals/tests/src/lib/authoring.spec.ts` (assertions on TODO-rejection path) (new or expanded)
 - **Gate**: type + bun run validate
 - **acceptance**:
   - "When `proposal_create` is called without `goal`, `why`, `nonGoals`, `slices`, OR `files`, the tool returns `toolError` listing the missing fields — it does NOT write a proposal with `TODO:` placeholders"

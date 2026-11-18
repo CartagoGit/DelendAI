@@ -49,7 +49,7 @@ La configuración del repositorio pide commit-and-push, pero auto_work sólo emi
 ### S2 — close_slice ejecuta la persistencia configurada y expone el resultado
 - **Status**: done
 - **DependsOn**: [S1]
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/authoring.e2e.spec.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/src/lib/tools/auto-work.tool.ts`, `plugins/proposals/tests/src/lib/authoring.spec.ts`, `plugins/proposals/tests/src/lib/auto-work.spec.ts`
 - **Gate**: type
 - acceptance:
   - "close_slice obtiene los archivos declarados de la slice y ejecuta la persistencia configurada después de validar y antes de liberar el lock."

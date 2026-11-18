@@ -49,7 +49,7 @@ The same session showed the second way work misses its ref: `create_proposal` pu
 - review-log: approved by glm-5.3-max — Revisé la entrega real abdd94bb3. work-dirty-paths: rename/copy de git status -z producen AMBAS rutas (no solo la origen); work status lista los dirty paths que ningún work ref lleva bajo undurable y el texto nombra el comando checkpoint; un path que algún ref lleva no se lista. Además create_proposal bajo perfiles shared-* publica su fichero en el publication ref sin mover HEAD ni stagear nada en el índice compartido. Acceptance cubierta — work-dirty-paths.service.spec 128 líneas + create-proposal-publishes.spec; gate 43/43 en lote. Sin cambios fuera de alcance.
 ### S2 — a proposal is published from a private index, never from HEAD
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/publish-proposal.ts`, `plugins/proposals/src/lib/contracts/interfaces/publish-proposal.interface.ts`, `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/tools/publish-proposal.spec.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The publication commit is built with a temporary index and `commit-tree` on the integration branch head; `HEAD`, the checked-out branch and `.git/index` are unchanged afterwards."

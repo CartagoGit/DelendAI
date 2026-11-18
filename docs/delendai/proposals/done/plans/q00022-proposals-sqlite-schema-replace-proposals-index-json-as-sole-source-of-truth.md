@@ -633,7 +633,7 @@ slices without ids, timestamps or revisions:
   - `plugins/proposals/src/lib/tools/authoring-options.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-reader-stale-projection.spec.ts`
   - `plugins/proposals/tests/src/lib/proposals/index-single-reader.spec.ts`
-  - `plugins/proposals/tests/src/lib/authoring.e2e.spec.ts`
+  - `plugins/proposals/tests/src/lib/authoring.spec.ts`
   - `plugins/proposals/tests/src/lib/close-slice-validation.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts`

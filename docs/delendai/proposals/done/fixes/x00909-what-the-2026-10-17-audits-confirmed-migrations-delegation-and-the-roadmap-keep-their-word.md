@@ -141,7 +141,7 @@ The owner, 2026-10-17: "tienes autonomía para decidir si crear propuestas para 
   - `plugins/proposals/src/lib/services/review-entry.service.ts`
   - `plugins/proposals/src/lib/services/review-handoff.ts`
   - `plugins/proposals/src/lib/proposals/proposal-frontmatter-writer.ts`
-  - `plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.e2e.spec.ts`
+  - `plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.spec.ts`
   - `plugins/audit/src/lib/services/proposal-scaffolder.service.ts`
   - `plugins/test-convention/src/scan.ts`
   - `plugins/test-convention/src/suggest.ts`

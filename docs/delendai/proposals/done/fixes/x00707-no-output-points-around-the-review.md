@@ -59,12 +59,12 @@ The outputs still pointed at them.
 ### S1 — Outputs name the owner's step
 
 - **Status**: done
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/review.tool.e2e.spec.ts plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts packages/cli/src/lib/publication-pull-request.service.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/review.tool.spec.ts plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts packages/cli/src/lib/publication-pull-request.service.spec.ts`
 - **Files**:
   - `plugins/proposals/src/lib/tools/authoring.tool.ts`
   - `plugins/proposals/src/lib/tools/recovery-tools.ts`
   - `packages/cli/src/lib/publication-pull-request.service.ts`
-  - `plugins/proposals/tests/src/lib/review.tool.e2e.spec.ts`
+  - `plugins/proposals/tests/src/lib/review.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/caller-checkout-tools.spec.ts`
   - `packages/cli/src/lib/publication-pull-request.service.spec.ts`
 - review-state: done

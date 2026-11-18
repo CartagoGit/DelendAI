@@ -141,7 +141,7 @@ The fix must be in the code path, not the doc, because every recent pathology in
 
 ### S2 — Same-agent peer review detector (host+pid+agent identity, not just name strings)
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/review.tool.ts`, `plugins/proposals/tests/src/lib/review-identity.spec.ts`, `plugins/proposals/tests/src/lib/review.tool.e2e.spec.ts`
+- **Files**: `plugins/proposals/src/lib/services/review-identity.ts`, `plugins/proposals/src/lib/tools/review.tool.ts`, `plugins/proposals/tests/src/lib/review-identity.spec.ts`, `plugins/proposals/tests/src/lib/review.tool.spec.ts`
 - **Gate**: type
 - **Commit**: `a6c2b80d` (services + tests committed; the `review.tool.ts` MCP entrypoint is staged and will land in the S2 close commit)
 - acceptance:
