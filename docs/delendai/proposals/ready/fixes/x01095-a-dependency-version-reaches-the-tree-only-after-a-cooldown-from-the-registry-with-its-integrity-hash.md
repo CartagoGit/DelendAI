@@ -35,20 +35,19 @@ The supply-chain checks today catch what is already known: dependency-advisories
 - **Decisions**: none
 - acceptance:
   - "bunfig.toml [install] sets minimumReleaseAge to 259200 seconds (3 days), with a comment naming this proposal's reason; `bun install --frozen-lockfile` still succeeds on the current lockfile."
-  - "Every update block in .github/dependabot.yml sets `cooldown: default-days: 3`, and the github-actions ecosystem keeps SHA-pinned actions."
-  - "`bun run lint:workflow-yaml` (or the repo's YAML lint) passes on dependabot.yml."
+  - "Every update block in .github/dependabot.yml sets `cooldown: default-days: 3`, and the github-actions ecosystem keeps SHA-pinned actions; `bun run lint:workflow-yaml` passes."
 
 ### S2 — A lint refuses a young, foreign-sourced or hashless lockfile entry
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `tools/scripts/lint/lockfile-provenance.script.ts`, `tools/scripts/lint/lockfile-provenance.script.spec.ts`, `config/delendai/lockfile-provenance-exceptions.json`, `package.json`
+- **Files**: `new:tools/scripts/lint/lockfile-provenance.script.ts`, `new:tools/scripts/lint/lockfile-provenance.script.spec.ts`, `new:config/delendai/lockfile-provenance-exceptions.json`, `package.json`
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:
-  - "lint:lockfile-provenance reads bun.lock and fails, naming package and version, for an entry not resolved from the npm registry (git, http tarball, file outside the workspace) or without an integrity hash, unless config/delendai/lockfile-provenance-exceptions.json lists it with a reason and an until date; an expired exception fails like the entry."
-  - "For entries added or changed against the integration branch's lockfile it asks the registry's publish time and fails for a version younger than the cooldown in bunfig.toml (read from there, one source of truth); a registry that cannot be read fails the check, as dependency-advisories does."
-  - "It is wired into lint:security beside dependency-advisories so every proof and CI candidate runs it, refuses an empty scan, and states how many entries it read."
-  - "The spec drives it over fixture lockfiles: a clean one, a git-sourced entry, a hashless entry, a new entry published one hour ago (registry read injected), and an excepted entry, each with its own message."
+  - "`bun run lint:lockfile-provenance` reads bun.lock and fails, naming package and version, for an entry not resolved from the npm registry (git, http tarball, file outside the workspace) or without an integrity hash, unless config/delendai/lockfile-provenance-exceptions.json lists it with a reason and an until date; an expired exception fails like the entry; lockfile-provenance.script.spec.ts covers each case."
+  - "For entries added or changed against the integration branch's lockfile, `bun run lint:lockfile-provenance` asks the registry's publish time and fails for a version younger than the cooldown in bunfig.toml (read from there, one source of truth); a registry that cannot be read fails the check, as dependency-advisories does; lockfile-provenance.script.spec.ts injects the registry read."
+  - "`delendai work prove --only=lint-security` runs lint:lockfile-provenance beside dependency-advisories, so every proof and CI candidate runs it; it refuses an empty scan and states how many entries it read."
+  - "lockfile-provenance.script.spec.ts drives it over fixture lockfiles: a clean one, a git-sourced entry, a hashless entry, a new entry published one hour ago (registry read injected), and an excepted entry, each with its own message."
 
 ## acceptance
 
