@@ -24,6 +24,7 @@ import {
 	toolCommitSubject,
 } from './work-deliver-commit.service';
 import {
+	batchAgentOf,
 	readRevalidationProposals,
 	rewriteDeclaredPath,
 } from './work-revalidate.service';
@@ -31,14 +32,17 @@ import {
 /** The ports `revalidateBatch` runs on, wired to the unit engine and the proposals tool. */
 export const revalidatePortsOf = (
 	ctx: ICliCommandContext,
-	agent: string | undefined,
+	agentFlag: string | undefined,
 	transitionTool: string,
 	gitIn: (where: string) => IGitInCheckout = (where) => (gitArgs) =>
 		runGitCommand(where, gitArgs),
 ): IWorkRevalidatePorts => {
+	// The hand-over opens the review rounds, and flips each slice to review,
+	// only under an agent: the environment's stands in for a missing flag.
+	const agent = batchAgentOf(agentFlag, process.env);
 	return {
 		proposals: () => readRevalidationProposals(ctx.cwd),
-		handoverRefusal: async (id) =>
+		handoverRefusal: async (id, worktree) =>
 			refusalOf(
 				await answerOf(
 					request(ctx, transitionTool, {
@@ -47,10 +51,22 @@ export const revalidatePortsOf = (
 						reason: 'Preflight of the revalidation hand-over.',
 						preflight: true,
 						...(agent === undefined ? {} : { agent }),
-						checkout: ctx.cwd,
+						checkout: worktree,
 					}),
 				),
 			),
+		release: async (worktree) => {
+			const branch = gitIn(worktree)(['symbolic-ref', '--short', 'HEAD']);
+			if (!branch.ok) return;
+			await runWorkUnit(
+				[
+					'retire',
+					`--ref=${branch.out.trim()}`,
+					'--reason=revalidation chose nothing',
+				],
+				ctx,
+			);
+		},
 		heldByUnits: async () => {
 			const policy = await readWorkspacePolicy(ctx.cwd).catch(
 				() => undefined,

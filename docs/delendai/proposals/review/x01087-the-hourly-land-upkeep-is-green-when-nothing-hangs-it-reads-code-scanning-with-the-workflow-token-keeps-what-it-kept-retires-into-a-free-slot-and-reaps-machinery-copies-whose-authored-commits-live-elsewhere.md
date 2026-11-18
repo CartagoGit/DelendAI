@@ -2,14 +2,14 @@
 id: x01087
 title: "The hourly land upkeep is green when nothing hangs: it reads code scanning with the workflow token, keeps what it kept, retires into a free slot and reaps machinery copies whose authored commits live elsewhere"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: architecture
 date: 2026-11-17
-last-transition-id: 251abc16-f34e-46ee-aeea-c7e0baf2efb5
-last-correlation-id: 251abc16-f34e-46ee-aeea-c7e0baf2efb5
-last-transition-from: ready
-last-transition-at: 2026-11-17T20:32:31.504Z
+last-transition-id: 39498a74-f396-4482-a55f-48467687e6b3
+last-correlation-id: 39498a74-f396-4482-a55f-48467687e6b3
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T13:58:24.909Z
 ---
 
 # x01087 — The hourly land upkeep is green when nothing hangs: it reads code scanning with the workflow token, keeps what it kept, retires into a free slot and reaps machinery copies whose authored commits live elsewhere
@@ -31,7 +31,7 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
 - global_gate: none
 
 ### S1 — The reap step judges each ref once, retires into a free slot and reaps machinery copies by authored commits
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -42,9 +42,12 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
   - "A spec with a fake runner whose create of the retired ref fails and whose kept tip is an ancestor expects one PATCH to the same retired ref and one branch delete; with a non-ancestor kept tip it expects one create at `<retiredRef>-<12 hex>` and one delete; no call is forced [<50ms]"
   - "A spec with a fake runner expects `--no-merges` in the rev-list arguments of holdsNothingOfItsOwn and returns true when the fake answers 0 [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
+- shipped-in: `5aec6a44d6fb`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S2 — An upkeep step can read with the workflow token and the job is granted exactly that read
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/integration/land/land.interface.ts`, `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `packages/core/tests/src/lib/integration/land/land-workflow.helper.spec.ts`, `tools/scripts/forge/land-workflow.script.ts`, `.github/workflows/land.yml`
 - **Gate**: none
 - acceptance:
@@ -53,9 +56,12 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
   - "A spec renders an upkeep with one readsWithWorkflowToken step and expects that step's GH_TOKEN to be the workflow token, the other steps' GH_TOKEN the identity token, and the upkeep job's permissions to be the four reads plus security-events read; a second spec with no such step expects no job-level permissions block [<50ms]"
   - "The land workflow `--check` passes on the regenerated .github/workflows/land.yml, and its diff touches only the upkeep job"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
+- shipped-in: `98c815d26360`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ### S3 — The host does not put back a unit the forge retired
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/contracts/interfaces/work-ref-lifecycle.interface.ts`, `packages/core/src/lib/integration/decisions/landed.helper.ts`, `packages/core/tests/src/lib/integration/decisions/landed.helper.spec.ts`, `packages/core/src/lib/wip-engine/landed-work-ref.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -64,6 +70,9 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
   - "A spec of workRefFate with proposal open, onForge false and retiredOnForge true expects fate withdraw, and with retiredOnForge false expects restore [<50ms]"
   - "A spec of settleLanded with a fake runner whose ls-remote answers the retired ref expects no push call and outcome not published [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
+- shipped-in: `76a6d0477d95`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
