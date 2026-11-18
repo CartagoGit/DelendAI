@@ -21,6 +21,7 @@
 import { lstat, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { gitOutput } from './git-command';
 
@@ -321,4 +322,24 @@ export const parseRefIdentityTrailer = (
 		return { agent, kind, proposal, slices, generation };
 	}
 	return undefined;
+};
+
+/**
+ * What a checkpoint or a replay records in its `Delendai-Wip-Ref` trailer
+ * for `ref`: the structured identity when the name reads as a unit, the
+ * name itself when it does not (a ref outside the shape still stays
+ * attributable).
+ */
+export const refTrailerFor = (
+	ref: string,
+): string | IWorkRefTrailerIdentity => {
+	const unit = unitOfName(ref);
+	if (unit === undefined) return ref;
+	return {
+		agent: unit.agent,
+		kind: unit.kind,
+		proposal: unit.proposal,
+		slices: unit.slice.split('+').filter((slice) => slice.length > 0),
+		generation: unit.generation,
+	};
 };

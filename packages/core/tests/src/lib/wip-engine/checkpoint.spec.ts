@@ -16,6 +16,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { parseRefIdentityTrailer } from '@delendai/core/lib/wip-engine/scope';
 import {
 	createWipEngine,
 	type IWipEngine,
@@ -56,7 +57,7 @@ describe('createOrUpdateWipRef', () => {
 		repo.cleanup();
 	});
 
-	it('refuses a ref this checkout stands on, leaving HEAD, index and ref untouched', async () => {
+	it('[<200ms] refuses a ref this checkout stands on, leaving HEAD, index and ref untouched', async () => {
 		repo.git('switch', '-q', '-c', 'unit/work');
 		const engineHere = (await createWipEngine(repo.dir, {
 			required: false,
@@ -80,7 +81,7 @@ describe('createOrUpdateWipRef', () => {
 		expect(repo.git('status', '--porcelain')).toBe('M src/alpha.ts');
 	});
 
-	it('captures only the claimed paths when two agents share one tree', async () => {
+	it('[<200ms] captures only the claimed paths when two agents share one tree', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('src/beta.ts', 'export const beta = 2;\n');
 
@@ -108,7 +109,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('names the ref it was written for, once, whatever the caller wrote', async () => {
+	it('[<200ms] names the ref it was written for, once, whatever the caller wrote', async () => {
 		// x00646: the ref is the unit's identity. Recording it on the
 		// commit keeps the delivery attributable after a squash or a
 		// rebase has dropped both the ref and the merge that named it.
@@ -127,10 +128,19 @@ describe('createOrUpdateWipRef', () => {
 			message
 				.split('\n')
 				.filter((line) => line.startsWith('Delendai-Wip-Ref:')),
-		).toEqual([`Delendai-Wip-Ref: ${AGENT_A_REF}`]);
+		).toEqual([
+			'Delendai-Wip-Ref: agent=agent-a kind=implement proposal=f1 slices=s1 generation=1',
+		]);
+		expect(parseRefIdentityTrailer(message)).toStrictEqual({
+			agent: 'agent-a',
+			kind: 'implement',
+			proposal: 'f1',
+			slices: ['s1'],
+			generation: 1,
+		});
 	});
 
-	it('captures only its own half of a rename that crosses a claim', async () => {
+	it('[<200ms] captures only its own half of a rename that crosses a claim', async () => {
 		// A rename is a delete plus an add, and the two halves can fall
 		// under different owners. The engine records the half it owns
 		// and nothing else — it cannot capture a file it was never
@@ -156,7 +166,7 @@ describe('createOrUpdateWipRef', () => {
 		expect(changedPaths(repo, moved.commit)).toEqual(['src/beta.ts']);
 	});
 
-	it('never captures a foreign dirty file, tracked or untracked', async () => {
+	it('[<200ms] never captures a foreign dirty file, tracked or untracked', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('docs/readme.md', '# someone else was here\n');
 		repo.write('scratch/foreign.txt', 'another agent is mid-edit\n');
@@ -183,7 +193,7 @@ describe('createOrUpdateWipRef', () => {
 		expect(repo.read('docs/readme.md')).toBe('# someone else was here\n');
 	});
 
-	it('leaves .git/index byte-identical', async () => {
+	it('[<200ms] leaves .git/index byte-identical', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('scratch/foreign.txt', 'dirty\n');
 		const before = repo.indexBytes();
@@ -201,7 +211,7 @@ describe('createOrUpdateWipRef', () => {
 		expect(repo.git('diff', '--cached', '--name-only')).toBe('');
 	});
 
-	it('leaves HEAD and the current branch exactly where they were', async () => {
+	it('[<200ms] leaves HEAD and the current branch exactly where they were', async () => {
 		const before = headState(repo);
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 
@@ -220,7 +230,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('captures a deletion inside the claimed scope', async () => {
+	it('[<200ms] captures a deletion inside the claimed scope', async () => {
 		repo.write('src/nested/gamma.ts', 'export const gamma = 1;\n');
 		const withGamma = repo.commitAll('add gamma');
 		repo.git('rm', '--quiet', '--', 'src/nested/gamma.ts');
@@ -244,7 +254,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('creates no ref and no commit when the first checkpoint would be empty', async () => {
+	it('[<200ms] creates no ref and no commit when the first checkpoint would be empty', async () => {
 		// The empty-tree guard used to sit behind `refExisted`, so it
 		// protected the SECOND checkpoint and never the first — and the
 		// first is the one that creates the branch. On this repository that
@@ -267,7 +277,7 @@ describe('createOrUpdateWipRef', () => {
 		).toBe('');
 	});
 
-	it('is idempotent: an unchanged scope keeps its digest and its commit', async () => {
+	it('[<200ms] is idempotent: an unchanged scope keeps its digest and its commit', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		const first = await engine.createOrUpdateWipRef({
 			baseSha: base,
@@ -291,7 +301,7 @@ describe('createOrUpdateWipRef', () => {
 		expect(repo.git('rev-list', '--count', AGENT_A_REF)).toBe('2');
 	});
 
-	it('advances the ref and changes the digest when the scope changes', async () => {
+	it('[<200ms] advances the ref and changes the digest when the scope changes', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		const first = await engine.createOrUpdateWipRef({
 			baseSha: base,
@@ -313,7 +323,7 @@ describe('createOrUpdateWipRef', () => {
 		expect(repo.git('rev-parse', AGENT_A_REF)).toBe(second.commit);
 	});
 
-	it('refuses a narrowed scope instead of dropping checkpointed work', async () => {
+	it('[<200ms] refuses a narrowed scope instead of dropping checkpointed work', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('src/beta.ts', 'export const beta = 2;\n');
 		const wide = await engine.createOrUpdateWipRef({
@@ -342,7 +352,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('narrows the scope when the caller opts in', async () => {
+	it('[<200ms] narrows the scope when the caller opts in', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		repo.write('src/beta.ts', 'export const beta = 2;\n');
 		const wide = await engine.createOrUpdateWipRef({
@@ -370,7 +380,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('accepts a widened scope without any opt-in', async () => {
+	it('[<200ms] accepts a widened scope without any opt-in', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		const first = await engine.createOrUpdateWipRef({
 			baseSha: base,
@@ -396,7 +406,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('does not read a deletion inside a claimed directory as narrowing', async () => {
+	it('[<200ms] does not read a deletion inside a claimed directory as narrowing', async () => {
 		repo.write('src/nested/one.ts', 'export const one = 1;\n');
 		repo.write('src/nested/two.ts', 'export const two = 1;\n');
 		const withNested = repo.commitAll('add nested');
@@ -427,7 +437,7 @@ describe('createOrUpdateWipRef', () => {
 		]);
 	});
 
-	it('records the scope on the commit and stamps the requested author', async () => {
+	it('[<200ms] records the scope on the commit and stamps the requested author', async () => {
 		repo.write('src/alpha.ts', 'export const alpha = 2;\n');
 		const result = await engine.createOrUpdateWipRef({
 			baseSha: base,
@@ -446,7 +456,7 @@ describe('createOrUpdateWipRef', () => {
 		);
 	});
 
-	it('refuses a claim that escapes the repository, without running git', async () => {
+	it('[<200ms] refuses a claim that escapes the repository, without running git', async () => {
 		const result = await engine.createOrUpdateWipRef({
 			baseSha: base,
 			paths: ['../outside.txt', '.git/config'],
@@ -461,7 +471,7 @@ describe('createOrUpdateWipRef', () => {
 		).toBe('');
 	});
 
-	it('claims a glob declaration by resolving it against the tree (x00562)', async () => {
+	it('[<200ms] claims a glob declaration by resolving it against the tree (x00562)', async () => {
 		// A proposal legitimately declares `src/**`. Refusing pathspec
 		// magic outright made every automatic checkpoint of such a slice
 		// fail with `unclaimable paths`, and no work ref moved at all.
@@ -487,7 +497,7 @@ describe('createOrUpdateWipRef', () => {
 		]);
 	});
 
-	it('still refuses magic that resolves to nothing, rather than claiming everything', async () => {
+	it('[<200ms] still refuses magic that resolves to nothing, rather than claiming everything', async () => {
 		const result = await engine.createOrUpdateWipRef({
 			baseSha: base,
 			paths: ['does-not-exist/**'],

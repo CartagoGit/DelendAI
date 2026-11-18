@@ -12,6 +12,7 @@
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { parseRefIdentityTrailer } from '@delendai/core/lib/wip-engine/scope';
 import {
 	createWipEngine,
 	type IWipEngine,
@@ -70,7 +71,7 @@ describe('rebaseWipOntoNewBase', () => {
 		return result.commit;
 	};
 
-	it('replays onto a new base that touched a different file', async () => {
+	it('[<200ms] replays onto a new base that touched a different file', async () => {
 		const wip = await checkpointAlpha(numbered('// header', '// agent a'));
 		repo.write('src/other.ts', 'export const other = 2;\n');
 		const newBase = repo.commitAll('integration moves on');
@@ -97,12 +98,23 @@ describe('rebaseWipOntoNewBase', () => {
 				.git('show', '-s', '--format=%B', REF)
 				.split('\n')
 				.filter((line) => line.startsWith('Delendai-Wip-Ref:')),
-		).toEqual([`Delendai-Wip-Ref: ${REF}`]);
+		).toEqual([
+			'Delendai-Wip-Ref: agent=agent-a kind=implement proposal=f1 slices=s1 generation=1',
+		]);
+		expect(
+			parseRefIdentityTrailer(repo.git('show', '-s', '--format=%B', REF)),
+		).toStrictEqual({
+			agent: 'agent-a',
+			kind: 'implement',
+			proposal: 'f1',
+			slices: ['s1'],
+			generation: 1,
+		});
 		expect(headState(repo)).toEqual(before);
 		expect(repo.indexBytes().equals(indexBefore)).toBe(true);
 	});
 
-	it('replays edits to the same file in a different region', async () => {
+	it('[<200ms] replays edits to the same file in a different region', async () => {
 		await checkpointAlpha(numbered('// header', '// agent a'));
 		repo.write(
 			'src/alpha.ts',
@@ -124,7 +136,7 @@ describe('rebaseWipOntoNewBase', () => {
 		expect(replayed).not.toContain('<<<<<<<');
 	});
 
-	it('returns a structured RECOVERY_CONFLICT instead of throwing', async () => {
+	it('[<200ms] returns a structured RECOVERY_CONFLICT instead of throwing', async () => {
 		const wip = await checkpointAlpha(numbered('// header', '// agent a'));
 		repo.write('src/alpha.ts', numbered('// header', '// integration'));
 		const newBase = repo.commitAll('integration edits the same line');
@@ -146,7 +158,7 @@ describe('rebaseWipOntoNewBase', () => {
 		expect(repo.read('src/alpha.ts')).not.toContain('<<<<<<<');
 	});
 
-	it('reports an add/add collision as a conflict, not a merge', async () => {
+	it('[<200ms] reports an add/add collision as a conflict, not a merge', async () => {
 		repo.write('src/added.ts', 'export const added = "agent";\n');
 		const created = await engine.createOrUpdateWipRef({
 			baseSha: oldBase,
@@ -168,7 +180,7 @@ describe('rebaseWipOntoNewBase', () => {
 		expect(result.conflicts).toEqual(['src/added.ts']);
 	});
 
-	it('is a no-op when the base did not move', async () => {
+	it('[<200ms] is a no-op when the base did not move', async () => {
 		const wip = await checkpointAlpha(numbered('// header', '// agent a'));
 
 		const result = await engine.rebaseWipOntoNewBase({
