@@ -66,7 +66,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S2 — Every lint runs only for the files it reads
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/ci/job-reach.helper.ts`, `tools/scripts/ci/job-reach.helper.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/lib/changed-files-scope.ts`, `tools/scripts/lib/changed-files-scope.spec.ts`, `tools/scripts/lint/biome-baseline.script.ts`, `tools/scripts/lint/file-conventions.script.ts`, `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.ts`, `tools/scripts/lint/single-frontmatter.script.ts`, `tools/scripts/lint/type-naming.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -74,8 +74,10 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
   - "A lint that judges files one by one (biome, docs, proposal and naming lints) is given the changed files, not the repository. A repository-wide lint runs only when the change touches what it reads."
   - "A one-file core change runs only the lint families that read core, each over the changed files where it judges files; the run prints which families ran and why the others did not."
 - shipped-in: `a378e93c0`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S3 — Types are checked only where the change reaches
 - **Status**: done
