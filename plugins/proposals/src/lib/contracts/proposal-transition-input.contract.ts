@@ -61,7 +61,10 @@ export const PROPOSAL_TRANSITION_INPUT_SCHEMA = z
 		id: z.string().min(1),
 		to: z.enum(PROPOSAL_TRANSITION_STATUS_VALUES),
 		reason: z.string().min(1),
-		superseded_by: z.string().optional(),
+		superseded_by: z
+			.string()
+			.regex(/^[a-z]\d{5}$/u)
+			.optional(),
 		transitionId: z.string().min(1).optional(),
 		correlationId: z.string().min(1).optional(),
 		idempotencyKey: z.string().min(1).optional(),

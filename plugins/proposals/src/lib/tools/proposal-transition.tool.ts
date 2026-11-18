@@ -63,13 +63,6 @@ export const buildProposalTransitionRegistration = (
 			async (args: IProposalTransitionArgs) => {
 				// A verdict is the move: the reviewer that recorded one does
 				// not move the proposal by hand afterwards.
-				if (
-					args.superseded_by !== undefined &&
-					!/^[a-z]\d{5}$/u.test(args.superseded_by)
-				)
-					return toolError(
-						`superseded_by must be a proposal id, got "${args.superseded_by}"`,
-					);
 				const scoped = scopeToCaller(options);
 				const refusal = await reviewerMoveRefusalFor({
 					id: args.id,
