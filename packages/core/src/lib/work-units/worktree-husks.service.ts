@@ -17,12 +17,13 @@
  * with the retired work, and only then is the directory removed.
  */
 import { runGitCommand } from '../shared/git-command.helper';
-import { readdir, rm, stat } from 'node:fs/promises';
-import { basename, join, relative, resolve } from 'node:path';
+import { mkdir, readdir, rename, rm, stat } from 'node:fs/promises';
+import { basename, dirname, join, relative, resolve } from 'node:path';
 
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import type {
 	IHusk,
+	IKeptStrayFile,
 	IReapedHusk,
 } from '../contracts/interfaces/worktree-husks.interface';
 import { EMPTY_TREE, HUSK_SEARCH_DEPTH } from './units-directory.constant';
@@ -313,4 +314,52 @@ export const reapHusks = async (input: {
 		reaped.push({ ...base, outcome: 'removed', keptAt });
 	}
 	return reaped;
+};
+
+/** Where files that are no worktree are kept, under the cache root. */
+const STRAY_FILES_KEPT = join('kept', 'worktrees-dir-files');
+
+/**
+ * The files in the units' folder that are no worktree (notes, logs an
+ * agent dropped there) are moved to `<cacheRoot>/kept/worktrees-dir-files`.
+ * Nothing is deleted: a person decides what they were.
+ */
+export const keepStrayFiles = async (input: {
+	readonly root: string;
+	readonly apply: boolean;
+	readonly now: number;
+	readonly unitsDirectory?: string | undefined;
+}): Promise<readonly IKeptStrayFile[]> => {
+	const folder = resolve(
+		input.root,
+		input.unitsDirectory ?? (await resolveUnitsDirectory(input.root)),
+	);
+	let entries: readonly string[];
+	try {
+		entries = (await readdir(folder, { withFileTypes: true }))
+			.filter((entry) => !entry.isDirectory())
+			.map((entry) => entry.name);
+	} catch {
+		return [];
+	}
+	const kept = join(dirname(folder), STRAY_FILES_KEPT);
+	const moved: IKeptStrayFile[] = [];
+	for (const name of entries) {
+		const from = join(folder, name);
+		const to = join(kept, name);
+		const free = await stat(to).then(
+			() => false,
+			() => true,
+		);
+		// A name already kept is not overwritten.
+		const target = free ? to : `${to}.${String(input.now)}`;
+		if (!input.apply) {
+			moved.push({ name, from, to: target, outcome: 'would-move' });
+			continue;
+		}
+		await mkdir(kept, { recursive: true });
+		await rename(from, target);
+		moved.push({ name, from, to: target, outcome: 'moved' });
+	}
+	return moved;
 };
