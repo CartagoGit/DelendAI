@@ -93,7 +93,7 @@ const PR_MODEL = {
 const PUBLICATION = 'delendai/pr/implement/agent-a/x00001-S1/topic';
 
 describe('work claim of an orphaned publication', () => {
-	it('adopts a publication whose unit ended, keeps it, and names both agents', async () => {
+	it('[<4000ms] adopts a publication whose unit ended, keeps it, and names both agents', async () => {
 		const root = repoWith(PR_MODEL);
 		git(root, 'switch', '-q', '-c', PUBLICATION);
 		writeFileSync(join(root, 'work.txt'), 'work\n');

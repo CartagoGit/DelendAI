@@ -104,7 +104,7 @@ const has = (root: string, name: string): boolean => {
 };
 
 describe('work claim', () => {
-	it('lists what somebody else holds, and takes nothing', async () => {
+	it('[<2000ms] lists what somebody else holds, and takes nothing', async () => {
 		const root = project();
 		ref(root, 'delendai/wip/other/x00001-S1-g1/topic');
 		capture();
@@ -127,7 +127,7 @@ describe('work claim', () => {
 		).toBe(false);
 	});
 
-	it('says so when nothing belongs to anybody else', async () => {
+	it('[<2000ms] says so when nothing belongs to anybody else', async () => {
 		const root = project();
 		ref(root, 'delendai/wip/implement/mine/x00001-S1/already-mine');
 		capture();
@@ -141,7 +141,7 @@ describe('work claim', () => {
 		expect(captured.out).toContain('belongs to anybody else');
 	});
 
-	it('moves the ref when one is named', async () => {
+	it('[<2000ms] moves the ref when one is named', async () => {
 		const root = project();
 		ref(root, 'delendai/wip/other/x00001-S1-g1/topic');
 		capture();
@@ -164,7 +164,7 @@ describe('work claim', () => {
 		expect(has(root, 'delendai/wip/other/x00001-S1-g1/topic')).toBe(false);
 	});
 
-	it('refuses a destination another unit already holds, and moves nothing', async () => {
+	it('[<2000ms] refuses a destination another unit already holds, and moves nothing', async () => {
 		const root = project();
 		ref(root, 'delendai/wip/other/x00001-S1-g1/topic');
 		writeFileSync(join(root, 'b.ts'), 'export const b = 1;\n');
@@ -217,7 +217,7 @@ describe('work claim', () => {
 		).toBe(tipBefore);
 	});
 
-	it('says the identity is missing instead of finding nothing to claim', async () => {
+	it('[<2000ms] says the identity is missing instead of finding nothing to claim', async () => {
 		const root = project();
 		ref(root, 'delendai/wip/other/x00001-S1-g1/topic');
 		for (const name of [
@@ -235,7 +235,7 @@ describe('work claim', () => {
 		expect(result.error).toContain('no agent identity');
 	});
 
-	it('refuses a ref this clone cannot resolve', async () => {
+	it('[<2000ms] refuses a ref this clone cannot resolve', async () => {
 		const root = project();
 		const result = await createWorkCommand().run(
 			['claim', '--agent=mine', '--ref=delendai/wip/other/nope-S1-g1/x'],
@@ -245,7 +245,7 @@ describe('work claim', () => {
 		expect(result.error).toContain('does not resolve');
 	});
 
-	it('works under the adopted default for a project with no development policy', async () => {
+	it('[<2000ms] works under the adopted default for a project with no development policy', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'work-claim-nopolicy-'));
 		roots.push(root);
 		execFileSync('git', ['init', '-q', '-b', 'develop'], { cwd: root });

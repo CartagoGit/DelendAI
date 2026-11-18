@@ -41,7 +41,7 @@ const repoWithRemote = async () => {
 };
 
 describe('checkpoint work ref naming', () => {
-	it('uses the agent resolved at checkpoint time and the slice topic', async () => {
+	it('[<3000ms] uses the agent resolved at checkpoint time and the slice topic', async () => {
 		const repo = await repoWithRemote();
 		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
 		if (wip === undefined) throw new Error('wip engine did not bind');
@@ -90,7 +90,7 @@ describe('checkpoint work ref naming', () => {
 		);
 	});
 
-	it("refuses a checkpoint on a slice another agent's unit holds", async () => {
+	it("[<2000ms] refuses a checkpoint on a slice another agent's unit holds", async () => {
 		const repo = await repoWithRemote();
 		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
 		if (wip === undefined) throw new Error('wip engine did not bind');
@@ -129,7 +129,7 @@ describe('checkpoint work ref naming', () => {
 		expect(await repo.git('for-each-ref', 'refs/heads/wip')).toBe('');
 	});
 
-	it('checkpoints onto the ref the agent already has on the slice, whatever topic it resolves', async () => {
+	it('[<2000ms] checkpoints onto the ref the agent already has on the slice, whatever topic it resolves', async () => {
 		const repo = await repoWithRemote();
 		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
 		if (wip === undefined) throw new Error('wip engine did not bind');
@@ -165,7 +165,7 @@ describe('checkpoint work ref naming', () => {
 		expect(outcome.report.ref).toBe(`refs/heads/${own}`);
 	});
 
-	it('checkpoints nothing for a server whose agent was never declared', async () => {
+	it('[<2000ms] checkpoints nothing for a server whose agent was never declared', async () => {
 		const repo = await repoWithRemote();
 		const wip = await bindWipCheckpointPort(repo.cwd, UNANCHORED);
 		if (wip === undefined) throw new Error('wip engine did not bind');

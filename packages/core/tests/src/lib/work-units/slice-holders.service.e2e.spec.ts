@@ -54,7 +54,7 @@ const asking = {
 } as const;
 
 describe('holdersOfSlice', () => {
-	it("leaves a slice free that only the proposal's create unit names", () => {
+	it("[<2000ms] leaves a slice free that only the proposal's create unit names", () => {
 		const writer = unit('opus', 'create/x00001-all/the-document');
 		expect(holdersOfSlice({ ...asking, view: view([], [writer]) })).toEqual(
 			[],
@@ -68,7 +68,7 @@ describe('holdersOfSlice', () => {
 		).toEqual([writer]);
 	});
 
-	it('names another agent on the same slice, live or published', () => {
+	it('[<2000ms] names another agent on the same slice, live or published', () => {
 		const held = holdersOfSlice({
 			...asking,
 			view: view(
@@ -79,7 +79,7 @@ describe('holdersOfSlice', () => {
 		expect(held.map((entry) => entry.agent)).toEqual(['codex', 'glm']);
 	});
 
-	it('counts a unit for the whole proposal against a slice, and a slice against it', () => {
+	it('[<2000ms] counts a unit for the whole proposal against a slice, and a slice against it', () => {
 		expect(
 			holdersOfSlice({
 				...asking,
@@ -95,7 +95,7 @@ describe('holdersOfSlice', () => {
 		).toHaveLength(1);
 	});
 
-	it('leaves other slices, other proposals, landed publications and odd names alone', () => {
+	it('[<2000ms] leaves other slices, other proposals, landed publications and odd names alone', () => {
 		expect(
 			holdersOfSlice({
 				...asking,
@@ -111,7 +111,7 @@ describe('holdersOfSlice', () => {
 		).toEqual([]);
 	});
 
-	it('neither keeps a review out nor lets a review hold a slice', () => {
+	it('[<2000ms] neither keeps a review out nor lets a review hold a slice', () => {
 		const reviewing = view([unit('codex', 'review/x00001-S1/t')]);
 		expect(holdersOfSlice({ ...asking, view: reviewing })).toEqual([]);
 		expect(
@@ -123,7 +123,7 @@ describe('holdersOfSlice', () => {
 		).toEqual([]);
 	});
 
-	it('lets an agent back into a slice it holds itself', () => {
+	it('[<2000ms] lets an agent back into a slice it holds itself', () => {
 		expect(
 			holdersOfSlice({
 				...asking,
@@ -135,7 +135,7 @@ describe('holdersOfSlice', () => {
 		).toEqual([]);
 	});
 
-	it('holds nobody out of a proposal not yet written: each agent writes its own', () => {
+	it('[<2000ms] holds nobody out of a proposal not yet written: each agent writes its own', () => {
 		expect(
 			holdersOfSlice({
 				...asking,
@@ -150,7 +150,7 @@ describe('holdersOfSlice', () => {
 		).toEqual([]);
 	});
 
-	it('says who holds it and what can be done about it', () => {
+	it('[<2000ms] says who holds it and what can be done about it', () => {
 		const lines = describeSliceHolders([
 			unit('codex', 'implement/x00001-S1/t'),
 		]);
@@ -217,7 +217,7 @@ const enter = (root: string, agent: string, extra: readonly string[] = []) =>
 	);
 
 describe('work enter on a slice another agent holds', () => {
-	it('refuses the second agent, and lets the first back in', async () => {
+	it('[<4000ms] refuses the second agent, and lets the first back in', async () => {
 		const root = repo();
 		const first = await enter(root, 'claude-opus-5');
 		expect(first.code).toBe(0);
@@ -236,7 +236,7 @@ describe('work enter on a slice another agent holds', () => {
 		expect(again.code).toBe(0);
 	});
 
-	it('lets the second agent in when it says so deliberately', async () => {
+	it('[<3000ms] lets the second agent in when it says so deliberately', async () => {
 		const root = repo();
 		await enter(root, 'claude-opus-5');
 		expect((await enter(root, 'gpt-5', ['--alongside'])).code).toBe(0);
@@ -260,7 +260,7 @@ describe('readSliceOwnership', () => {
 			slice: 'S1',
 		});
 
-	it("names another agent's unit on the slice, and the holder's own ref to itself", async () => {
+	it("[<3000ms] names another agent's unit on the slice, and the holder's own ref to itself", async () => {
 		const root = repo();
 		expect((await enter(root, 'claude-opus-5')).code).toBe(0);
 

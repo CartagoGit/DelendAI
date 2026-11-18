@@ -90,7 +90,7 @@ const enterReview = {
 };
 
 describe('the MCP work tool', () => {
-	it('enters a unit, and keeps it for every later call from the same server', async () => {
+	it('[<3000ms] enters a unit, and keeps it for every later call from the same server', async () => {
 		const root = repo();
 		const work = await server(root, 'srv1');
 
@@ -106,7 +106,7 @@ describe('the MCP work tool', () => {
 		);
 	});
 
-	it('gives two servers of one model entering the same unit their own', async () => {
+	it('[<4000ms] gives two servers of one model entering the same unit their own', async () => {
 		const root = repo();
 		const [one, two] = await Promise.all([server(root), server(root)]);
 
@@ -120,7 +120,7 @@ describe('the MCP work tool', () => {
 		]);
 	});
 
-	it('answers a refusal as not ok, with why', async () => {
+	it('[<2000ms] answers a refusal as not ok, with why', async () => {
 		const root = repo();
 		const work = await server(root);
 
@@ -132,7 +132,7 @@ describe('the MCP work tool', () => {
 });
 
 describe('the flags the tool passes the engine', () => {
-	it('spells each input the way `delendai work` reads it, with the server session', () => {
+	it('[<2000ms] spells each input the way `delendai work` reads it, with the server session', () => {
 		expect(
 			workUnitArgs(
 				{
@@ -166,7 +166,7 @@ describe('workUnitDescription', () => {
 	const describeFor = (profile: Parameters<typeof expandProfile>[0]) =>
 		workUnitDescription(deriveCapabilities(expandProfile(profile)));
 
-	it('states how publish lands the unit from the policy, never a fixed mechanism', () => {
+	it('[<2000ms] states how publish lands the unit from the policy, never a fixed mechanism', () => {
 		expect(describeFor('shared-checkout-merge')).toContain(
 			'no pull request',
 		);
@@ -174,7 +174,7 @@ describe('workUnitDescription', () => {
 		expect(describeFor('shared-direct')).not.toMatch(/pull request/u);
 	});
 
-	it('stays neutral without a policy', () => {
+	it('[<2000ms] stays neutral without a policy', () => {
 		expect(workUnitDescription(undefined)).not.toMatch(/pull request/u);
 	});
 });
@@ -200,7 +200,7 @@ describe('a client working in another project', () => {
 			(await call(input)) as IAnswer;
 	};
 
-	it('is refused a unit here, with both directories named', async () => {
+	it('[<2000ms] is refused a unit here, with both directories named', async () => {
 		const root = repo();
 		const elsewhere = realpathSync(mkdtempSync(join(tmpdir(), 'other-')));
 		roots.push(elsewhere);
@@ -212,7 +212,7 @@ describe('a client working in another project', () => {
 		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
 	});
 
-	it('still reads the swarm, and still enters from this project', async () => {
+	it('[<2000ms] still reads the swarm, and still enters from this project', async () => {
 		const root = repo();
 		const elsewhere = realpathSync(mkdtempSync(join(tmpdir(), 'other-')));
 		roots.push(elsewhere);

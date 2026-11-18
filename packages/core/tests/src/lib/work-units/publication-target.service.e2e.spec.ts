@@ -146,7 +146,7 @@ const choose = (
 	});
 
 describe('which pull request a slice goes to', () => {
-	it('puts a small proposal into one pull request, named for the whole of it', () => {
+	it('[<2000ms] puts a small proposal into one pull request, named for the whole of it', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
 		commitWork(root, workRefFor(policy, 'S1'), base, 10);
@@ -157,7 +157,7 @@ describe('which pull request a slice goes to', () => {
 		);
 	});
 
-	it('publishes a large proposal slice by slice', () => {
+	it('[<2000ms] publishes a large proposal slice by slice', () => {
 		const policy = policyWith();
 		const { root, base } = setup(5);
 		commitWork(root, workRefFor(policy, 'S1'), base, 10);
@@ -166,7 +166,7 @@ describe('which pull request a slice goes to', () => {
 		expect('reason' in target && target.reason).toContain('over 3 slices');
 	});
 
-	it('counts changed lines against the limit too', () => {
+	it('[<2000ms] counts changed lines against the limit too', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
 		commitWork(root, workRefFor(policy, 'S1'), base, 500);
@@ -175,7 +175,7 @@ describe('which pull request a slice goes to', () => {
 		});
 	});
 
-	it('follows a declared granularity without measuring', () => {
+	it('[<2000ms] follows a declared granularity without measuring', () => {
 		const { root, base } = setup(9);
 		const bySlice = policyWith({ granularity: 'slice' });
 		commitWork(root, workRefFor(bySlice, 'S1'), base, 1);
@@ -188,7 +188,7 @@ describe('which pull request a slice goes to', () => {
 		});
 	});
 
-	it('keeps a later slice in the proposal pull request, whatever its topic', () => {
+	it('[<2000ms] keeps a later slice in the proposal pull request, whatever its topic', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
 		commitWork(root, workRefFor(policy, 'S1', 'first'), base, 5);
@@ -210,7 +210,7 @@ describe('which pull request a slice goes to', () => {
 		});
 	});
 
-	it('keeps publishing slice by slice once a slice went alone', () => {
+	it('[<2000ms] keeps publishing slice by slice once a slice went alone', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
 		commitWork(root, workRefFor(policy, 'S1'), base, 5);
@@ -235,7 +235,7 @@ describe('which pull request a slice goes to', () => {
 		expect('reason' in target && target.reason).toContain('slice by slice');
 	});
 
-	it('republishes a slice to the pull request it already has (x00708)', () => {
+	it('[<2000ms] republishes a slice to the pull request it already has (x00708)', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
 		commitWork(root, workRefFor(policy, 'S1'), base, 5);
@@ -260,7 +260,7 @@ describe('which pull request a slice goes to', () => {
 		});
 	});
 
-	it('publishes alone, and says why, when the proposal file is missing', () => {
+	it('[<2000ms] publishes alone, and says why, when the proposal file is missing', () => {
 		const policy = policyWith();
 		const { root, base } = setup(2);
 		git(root, 'rm', '-q', '-r', 'docs');
@@ -276,7 +276,7 @@ describe('which pull request a slice goes to', () => {
 		expect('reason' in target && target.reason).toContain('was not found');
 	});
 
-	it('refuses a work ref outside the policy prefix', () => {
+	it('[<2000ms] refuses a work ref outside the policy prefix', () => {
 		const policy = policyWith();
 		const { root, base } = setup(1);
 		const target = choosePublicationTarget({
@@ -295,7 +295,7 @@ describe('which pull request a slice goes to', () => {
 });
 
 describe('what the decision reads', () => {
-	it('reads a proposal that exists only in the work being published', () => {
+	it('[<2000ms] reads a proposal that exists only in the work being published', () => {
 		const policy = policyWith();
 		const { root, base } = setup(1);
 		const ref = workRefFor(policy, 'S1');
@@ -327,13 +327,13 @@ describe('what the decision reads', () => {
 		expect(proposalSliceCount(root, 'x00002', ref)).toBe(2);
 	});
 
-	it('counts the slices the proposal file declares', () => {
+	it('[<2000ms] counts the slices the proposal file declares', () => {
 		const { root } = setup(4);
 		expect(proposalSliceCount(root, 'x00001')).toBe(4);
 		expect(proposalSliceCount(root, 'x09999')).toBeUndefined();
 	});
 
-	it('keeps a wip branch exactly while its proposal is in progress', () => {
+	it('[<2000ms] keeps a wip branch exactly while its proposal is in progress', () => {
 		const { root } = setup(2);
 		const move = (from: string, to: string) => {
 			mkdirSync(join(root, `docs/delendai/proposals/${to}`), {
@@ -363,14 +363,14 @@ describe('what the decision reads', () => {
 		expect(proposalInProgress(root, 'x09999', 'HEAD')).toBe(false);
 	});
 
-	it('counts added and removed lines against the base', () => {
+	it('[<2000ms] counts added and removed lines against the base', () => {
 		const policy = policyWith();
 		const { root, base } = setup(1);
 		commitWork(root, workRefFor(policy, 'S1'), base, 7);
 		expect(changedLines(root, base, workRefFor(policy, 'S1'))).toBe(7);
 	});
 
-	it('matches the publication refs of one proposal, any topic and slice', () => {
+	it('[<2000ms] matches the publication refs of one proposal, any topic and slice', () => {
 		const policy = policyWith();
 		const pattern = publicationPattern(policy, {
 			agent: 'agent-a',

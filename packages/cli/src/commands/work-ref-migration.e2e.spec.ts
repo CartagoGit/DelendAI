@@ -114,7 +114,7 @@ const repoWithUnitUnder = (
 };
 
 describe('a work-ref shape change keeps old units working (x00679)', () => {
-	it('pins the current shape, so a change of it records the one it replaces', () => {
+	it('[<2000ms] pins the current shape, so a change of it records the one it replaces', () => {
 		// Changing WORK_REF_SHAPE? Append the shape it replaces to
 		// PREVIOUS_SHAPES above, then update this line. Units in the field
 		// still carry the old one, and the cases below prove they keep
@@ -126,7 +126,7 @@ describe('a work-ref shape change keeps old units working (x00679)', () => {
 
 	for (const shape of PREVIOUS_SHAPES) {
 		describe(shape, () => {
-			it('enters the same unit, without a second one', async () => {
+			it('[<4000ms] enters the same unit, without a second one', async () => {
 				const { root, branch } = repoWithUnitUnder(shape);
 				const entered = await command.run(
 					['enter', ...ARGS, '--dir=unit'],
@@ -145,7 +145,7 @@ describe('a work-ref shape change keeps old units working (x00679)', () => {
 				).toEqual([`refs/heads/${branch}`]);
 			});
 
-			it('takes nothing into the same unit from the shared checkout, and names it (x01003)', async () => {
+			it('[<2000ms] takes nothing into the same unit from the shared checkout, and names it (x01003)', async () => {
 				const { root, branch } = repoWithUnitUnder(shape);
 				const before = git(root, 'rev-parse', branch);
 				const result = await command.run(
@@ -162,7 +162,7 @@ describe('a work-ref shape change keeps old units working (x00679)', () => {
 				expect(git(root, 'rev-parse', branch)).toBe(before);
 			});
 
-			it('publishes it under its own name', async () => {
+			it('[<7000ms] publishes it under its own name', async () => {
 				const { root, branch } = repoWithUnitUnder(shape);
 				const published = await command.run(
 					['publish', ...ARGS],

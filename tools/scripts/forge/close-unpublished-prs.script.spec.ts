@@ -16,7 +16,7 @@ import {
 const BRANCHES = declaredBranches(repoRoot());
 
 describe('unpublishedPullRequests', () => {
-	it('closes a pull request from a work ref or outside the namespaces, and keeps publications and forks', () => {
+	it('[<90ms] closes a pull request from a work ref or outside the namespaces, and keeps publications and forks', () => {
 		const toClose = unpublishedPullRequests(
 			[
 				{
@@ -44,7 +44,7 @@ describe('unpublishedPullRequests', () => {
 		expect(toClose[0]?.problem).toContain('work ref');
 	});
 
-	it('closes a publication that changes no file, and keeps a pull request of history alone', () => {
+	it('[<200ms] closes a publication that changes no file, and keeps a pull request of history alone', () => {
 		const toClose = unpublishedPullRequests(
 			[
 				{
@@ -77,13 +77,13 @@ describe('unpublishedPullRequests', () => {
 		expect(toClose[0]?.problem).toContain('deliver nothing');
 	});
 
-	it('tells the author how to publish, and that the branch was kept', () => {
+	it('[<30ms] tells the author how to publish, and that the branch was kept', () => {
 		const comment = closingComment('`x` is a work ref.');
 		expect(comment).toContain('delendai work publish');
 		expect(comment).toContain('The branch was left as it is');
 	});
 
-	it('keeps the promotion into the release branch and the forward sync back', () => {
+	it('[<200ms] keeps the promotion into the release branch and the forward sync back', () => {
 		const toClose = unpublishedPullRequests(
 			[
 				{

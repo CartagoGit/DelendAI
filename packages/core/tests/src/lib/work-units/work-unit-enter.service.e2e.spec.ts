@@ -48,7 +48,7 @@ const enter = (root: string, ...args: string[]) =>
 	);
 
 describe('work enter derives the review kind (x01032)', () => {
-	it('enters the batch as a review unit, and refuses another kind on it', async () => {
+	it('[<3000ms] enters the batch as a review unit, and refuses another kind on it', async () => {
 		const root = repo();
 		const contradicted = await enter(
 			root,
@@ -65,7 +65,7 @@ describe('work enter derives the review kind (x01032)', () => {
 		expect(ref).toContain('/verdicts');
 	});
 
-	it("enters a proposal waiting in review/ as the reviewer's batch unit", async () => {
+	it("[<2000ms] enters a proposal waiting in review/ as the reviewer's batch unit", async () => {
 		const root = repo();
 		const entered = await enter(root, '--proposal=x00900');
 		expect(entered.code).toBe(0);

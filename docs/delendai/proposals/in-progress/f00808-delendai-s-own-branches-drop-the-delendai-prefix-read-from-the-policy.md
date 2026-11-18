@@ -52,7 +52,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - **Gate**: type
 - acceptance:
   - "The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix, and creates every NEW unit and publication under the current prefix only."
-  - "Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.spec.ts already requires for old shapes)."
+  - "Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.e2e.spec.ts already requires for old shapes)."
   - "namespacedRef keeps writing under the current namespace; a new `ownedRefRoots(policy, part)` returns the current root then each former one for readers."
   - "Spec: both prefixes recognised in the transition; a new unit under a former prefix is refused."
 - shipped-in: `e0fd6569569d`
@@ -106,7 +106,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S7 — An explicit command renames the remaining old refs, never one with an open pull request
 - **Status**: review
 - **DependsOn**: [S3, S4]
-- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/namespace-rename.service.ts`, `packages/core/tests/src/lib/work-units/namespace-rename.service.spec.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work-ref-migration.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
   - "`delendai work rename-namespace` is a dry run unless `--apply`; it has a help summary."
@@ -148,11 +148,11 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S9c — CLI and plugin call sites follow the new grammar
 - **Status**: review
 - **DependsOn**: [S9, S7]
-- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/commands/groups/group-helpers.ts`, `packages/cli/src/commands/work-ref-migration.e2e.spec.ts`, `plugins/proposals/src/lib/services/work-ref-mention.ts`, `plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts`, `plugins/commit-policy/src/lib/services/work-ref-policy.service.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "work-ref-migration.spec.ts appends the old shape to PREVIOUS_SHAPES: a unit under it still enters, checkpoints and publishes under its own name; no ref with an open pull request is ever renamed."
+  - "work-ref-migration.e2e.spec.ts appends the old shape to PREVIOUS_SHAPES: a unit under it still enters, checkpoints and publishes under its own name; no ref with an open pull request is ever renamed."
   - "work-ref-mention.spec.ts finds a mention of a ref in the old and in the new grammar; `pullRequestOf` (work-deliver.service.ts) and `agentOfWorkBranch` (group-helpers.ts) read both."
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
@@ -183,12 +183,12 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 ### S8 — This repository switches, and q00040 learns the current namespace
 - **Status**: review
 - **DependsOn**: [S2, S3, S4, S5, S9, S9b, S9c, S9d, S9e]
-- **Files**: `delendai.config.json`, `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/cli/src/commands/work-ref-migration.spec.ts`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
+- **Files**: `delendai.config.json`, `packages/core/src/lib/development-policy/profiles.constant.ts`, `packages/cli/src/commands/work-ref-migration.e2e.spec.ts`, `docs/delendai/proposals/ready/plans/q00040-plan-spent-branches-end-in-every-project-on-every-forge.md`
 - **Gate**: none
 - acceptance:
   - "delendai.config.json sets `namespacePrefix: ""`, `formerNamespacePrefixes: ["delendai"]` and the readable template of S9; only this repository's config changes, and no existing ref is renamed."
   - "After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends."
-  - "WORK_REF_SHAPE defaults to the readable shape and work-ref-migration.spec.ts appends the old shape to PREVIOUS_SHAPES."
+  - "WORK_REF_SHAPE defaults to the readable shape and work-ref-migration.e2e.spec.ts appends the old shape to PREVIOUS_SHAPES."
   - "q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request)."
 - shipped-in: `014e23ff50ec`
 - review-state: in_review
@@ -200,7 +200,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - The resolved policy exposes, once, the owned work-ref and publication prefixes: the current ones composed from namespacePrefix, then the same shapes for each former prefix. Every later slice reads these lists and nothing else.
 - Spec: `namespacePrefix: ""` resolves to `heads/wip/`, `pr/` and `refs/<x>`; `"delendai"` to `heads/delendai/wip/` and `delendai/pr/`; a former `delendai` beside an empty current yields both, current first.
 - The ref guard accepts commits and pushes to an existing live unit or publication under a former prefix, and creates every NEW unit and publication under the current prefix only.
-- Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.spec.ts already requires for old shapes).
+- Ref identity parses a unit under any owned prefix to the same agent/kind/proposal/slice/generation/topic, so `work enter` on an existing `delendai/wip/...` unit re-enters it (no second unit, as work-ref-migration.e2e.spec.ts already requires for old shapes).
 - namespacedRef keeps writing under the current namespace; a new `ownedRefRoots(policy, part)` returns the current root then each former one for readers.
 - Spec: both prefixes recognised in the transition; a new unit under a former prefix is refused.
 - `refs/${namespacePrefix}/retired/*` (clone-forge, work-unit-generation) becomes namespacedRef, which is git-valid with an empty prefix.
@@ -224,4 +224,4 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
 - action is implement, review, create or fix. scope is a proposal (`x01003`), one slice (`x01003-S2`), a range (`x01003-S1-S3`), a set (`x01003-S1+S4`) or several proposals (`x01004+x01016`), with `-G{n}` (uppercase) only from the second generation on (`x01003-G2`). Only `-` and `+` join parts: `[ ]`, `~`, `..` and spaces are not valid in git refs. topic is a short human summary of what the branch integrates; on a publication, of what that pull request ships.
 - Spec: the scope grammar is parsed and rendered both ways for proposal, slice, range, set, multi-proposal and generation, and every rendered name passes `git check-ref-format`.
 - The machine identity (agent, kind, proposal, slices, generation) is written in the existing `Delendai-Wip-Ref` commit trailer; every parser reads it from there first and falls back to the name, so the old and new forms are both recognised in the transition (S2).
-- The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed.
+- The old shape is appended to PREVIOUS_SHAPES in work-ref-migration.e2e.spec.ts: a unit under it still enters, checkpoints and publishes under its own name. No ref with an open pull request is ever renamed.

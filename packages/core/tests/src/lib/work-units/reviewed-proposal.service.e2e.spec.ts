@@ -33,25 +33,25 @@ const document = [
 ].join('\n');
 
 describe('reviewersIn', () => {
-	it('names each reviewer once, and never the implementer', () => {
+	it('[<2000ms] names each reviewer once, and never the implementer', () => {
 		expect(reviewersIn(document)).toEqual(['minimax-m3', 'glm-5.3-flash']);
 		expect(reviewersIn('- review-log: approved by minimax-m3')).toEqual([]);
 	});
 });
 
 describe('reviewerNamed', () => {
-	it('recognises the reviewer under another spelling', () => {
+	it('[<2000ms] recognises the reviewer under another spelling', () => {
 		expect(reviewerNamed(document, 'minimax-m3')).toBe('minimax-m3');
 		expect(reviewerNamed(document, 'MiniMax-M3')).toBe('minimax-m3');
 	});
 
-	it('leaves the implementer and an agent that reviewed nothing alone', () => {
+	it('[<2000ms] leaves the implementer and an agent that reviewed nothing alone', () => {
 		expect(reviewerNamed(document, 'claude-opus-5-5')).toBeUndefined();
 		expect(reviewerNamed(document, 'qwen-3.8-max')).toBeUndefined();
 		expect(reviewerNamed('', 'minimax-m3')).toBeUndefined();
 	});
 
-	it('says who makes the change instead', () => {
+	it('[<2000ms] says who makes the change instead', () => {
 		expect(describeReviewedProposal('x00001', 'minimax-m3')).toContain(
 			'any agent that has not reviewed x00001',
 		);
@@ -59,7 +59,7 @@ describe('reviewerNamed', () => {
 });
 
 describe('sliceSectionOf', () => {
-	it('is the slice from its heading to the next one', () => {
+	it('[<2000ms] is the slice from its heading to the next one', () => {
 		const section = sliceSectionOf(document, 'S2');
 		expect(section).toBe('### S2 — second\n- review-reviewer: minimax-m3');
 		expect(reviewersIn(sliceSectionOf(document, 'S3'))).toEqual([
@@ -67,12 +67,12 @@ describe('sliceSectionOf', () => {
 		]);
 	});
 
-	it('is the whole document for the whole proposal', () => {
+	it('[<2000ms] is the whole document for the whole proposal', () => {
 		expect(sliceSectionOf(document, 'all')).toBe(document);
 		expect(sliceSectionOf(document, undefined)).toBe(document);
 	});
 
-	it('is nothing for a slice the integrated document does not have yet', () => {
+	it('[<2000ms] is nothing for a slice the integrated document does not have yet', () => {
 		// Written in a unit that has not landed: nobody has judged it.
 		expect(sliceSectionOf(document, 'S9')).toBe('');
 	});
@@ -104,7 +104,7 @@ describe('work enter by the reviewer of the proposal', () => {
 			}),
 		);
 
-	it('refuses an implement unit, and lets in a review unit and another agent', async () => {
+	it('[<10000ms] refuses an implement unit, and lets in a review unit and another agent', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'reviewed-proposal-'));
 		roots.push(root);
 		const git = (...args: string[]) =>
