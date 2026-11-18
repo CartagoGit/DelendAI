@@ -277,6 +277,12 @@ export interface ILandWorkflowInput {
 	readonly setupSteps: readonly string[];
 	/** The command that runs one pass. */
 	readonly passCommand: string;
+	/**
+	 * Run after every pass that was not the scheduled one, whatever the pass
+	 * concluded: a merge and a closing pull request each leave refs to settle.
+	 * The scheduled run has the upkeep for that. Absent: the pass job ends there.
+	 */
+	readonly reconcileCommand?: string;
 	/** The schedule of the watchdog: an alarm on the default branch, not a poll loop. */
 	readonly cron: string;
 	/**

@@ -19,6 +19,7 @@
  * watchdog on the default branch: any work it finds was a missed event.
  */
 
+import { reconcileStep } from './land-workflow-reconcile.helper';
 import type {
 	ILandUpkeepStep,
 	ILandWorkflowIdentity,
@@ -201,6 +202,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 					}),
 					`  run: ${input.passCommand}`,
 					'',
+					...reconcileStep(input.reconcileCommand, envLines(token)),
 					'- name: File the evidence of a missed event',
 					`  if: \${{ failure() && github.event_name == 'schedule' }}`,
 					...envLines({ ...token, RUN: '${{ github.run_id }}' }),

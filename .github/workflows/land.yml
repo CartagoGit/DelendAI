@@ -83,6 +83,12 @@ jobs:
                   LAND_WATCHDOG: ${{ github.event_name == 'schedule' && '1' || '' }}
               run: bun packages/cli/src/index.ts integration pass
 
+            - name: Reconcile the refs the pass left behind
+              if: ${{ !cancelled() && github.event_name != 'schedule' }}
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+              run: bun tools/scripts/forge/reconcile-refs.script.ts --apply --trigger=land-merge
+
             - name: File the evidence of a missed event
               if: ${{ failure() && github.event_name == 'schedule' }}
               env:

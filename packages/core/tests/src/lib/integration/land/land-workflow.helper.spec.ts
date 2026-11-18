@@ -146,3 +146,37 @@ describe('renderLandWorkflow upkeep reads', () => {
 		expect(upkeepJob(renderUpkeep(false))).not.toContain('permissions:');
 	});
 });
+
+describe('renderLandWorkflow reconcile step', () => {
+	const withReconcile = (command?: string): string =>
+		renderLandWorkflow({
+			integrationBranch: 'develop',
+			releaseBranch: 'main',
+			identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+			cron: '*/15 * * * *',
+			passCommand: 'pass',
+			...(command === undefined ? {} : { reconcileCommand: command }),
+			setupSteps: ['- uses: checkout'],
+		});
+	const passJob = (text: string): string =>
+		text.slice(
+			text.indexOf('    land:'),
+			text.indexOf('    upkeep:') === -1
+				? undefined
+				: text.indexOf('    upkeep:'),
+		);
+
+	it('[<50ms] runs the reconcile command after the pass, whatever the pass concluded, off the schedule', () => {
+		const job = passJob(withReconcile('reconcile'));
+		expect(job.indexOf('run: reconcile')).toBeGreaterThan(
+			job.indexOf('run: pass'),
+		);
+		expect(job).toContain(
+			"!cancelled() && github.event_name != 'schedule'",
+		);
+	});
+
+	it('[<50ms] adds no step when the project names no reconcile command', () => {
+		expect(withReconcile()).not.toContain('Reconcile the refs');
+	});
+});
