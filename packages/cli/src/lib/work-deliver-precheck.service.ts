@@ -16,15 +16,18 @@ import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.int
 
 /** The pre-checks a delivery runs, in order, each a proof run of some gates. */
 const stagesOf = (
-	ports: Pick<IWorkDeliverPorts, 'precheck'>,
-): readonly (() => Promise<ICliCommandResult>)[] => [ports.precheck];
+	ports: Pick<IWorkDeliverPorts, 'precheck' | 'coveragePrecheck'>,
+): readonly (() => Promise<ICliCommandResult>)[] => [
+	ports.precheck,
+	ports.coveragePrecheck,
+];
 
 /**
  * The refusal of the first pre-check that fails, in the proof's words;
  * undefined when every one passes and the delivery goes on to the slot.
  */
 export const precheckDelivery = async (
-	ports: Pick<IWorkDeliverPorts, 'precheck'>,
+	ports: Pick<IWorkDeliverPorts, 'precheck' | 'coveragePrecheck'>,
 ): Promise<ICliCommandResult | undefined> => {
 	for (const stage of stagesOf(ports)) {
 		const outcome = await stage();
