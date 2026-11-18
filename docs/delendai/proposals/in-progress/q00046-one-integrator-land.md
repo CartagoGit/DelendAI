@@ -236,11 +236,11 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 - **Files**: `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `packages/core/tests/src/lib/integration/land/land-workflow.helper.spec.ts`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-workflow.spec.ts`, `.github/workflows/land.yml`
 - **Gate**: type
 - **Decisions**: none
-- **Notes**: Split on 2026-11-18: the original S5c (the four reap modules) is S5c2 to S5c5, one module per slice, because each carries safety rules the reconciler's clone-side adapter must reproduce.
+- **Notes**: Split on 2026-11-18: the original S5c (the four reap modules) is S5k to S5n, one module per slice, because each carries safety rules the reconciler's clone-side adapter must reproduce.
 - acceptance:
   - "land-workflow.helper.spec.ts: the generated pass job runs the reconcile script as a step that follows `integration pass` whatever its outcome, so a merge and a closing pull request each settle refs once; `bun tools/scripts/forge/land-workflow.script.ts --check` passes with land.yml regenerated."
 
-### S5c2 — The branch flow, part 3b: delivered units are ended by the reconciler through a clone-side adapter, and unit-reaper goes
+### S5k — The branch flow, part 3b: delivered units are ended by the reconciler through a clone-side adapter, and unit-reaper goes
 - **Status**: pending
 - **DependsOn**: [S5c]
 - **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/unit-edits-kept.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
@@ -250,9 +250,9 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
   - "clone-forge.service.spec.ts: an IRefForge over a clone reads leases, worktree state, edits-kept and husk rules; an empty clean unit whose owner is inside the 30-minute idle threshold is never ended (x01098 S3), and a unit holding edits or an in-use worktree is kept and reported."
   - "unit-reaper.service.ts and its three specs are deleted, work-unit-reap.service.ts calls the reconciler for delivered units, and `git grep -n reapDeliveredUnits -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
 
-### S5c3 — The branch flow, part 3c: worktree husks are ended by the reconciler, and worktree-husks goes
+### S5l — The branch flow, part 3c: worktree husks are ended by the reconciler, and worktree-husks goes
 - **Status**: pending
-- **DependsOn**: [S5c2]
+- **DependsOn**: [S5k]
 - **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/work-units/worktree-husks.service.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
@@ -260,9 +260,9 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
   - "clone-forge.service.spec.ts adds the husk cases: a husk directory is ended and a stray file inside one is kept, as the husk spec asserted before it was deleted."
   - "worktree-husks.service.ts, its interface and its spec are deleted, workflow-doctor.service.ts and work-unit-reap.service.ts import from the reconciler, and `git grep -n 'reapHusks\|keepStrayFiles\|huskDirectories\|husksInvariant' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
 
-### S5c4 — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
+### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending
-- **DependsOn**: [S5c3]
+- **DependsOn**: [S5l]
 - **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
@@ -270,9 +270,9 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
   - "reconciler.service.spec.ts adds the stray-ref cases: a stranded or rescued ref goes only when the forge or the integration branch holds what it carries, otherwise it is kept and reported."
   - "stray-refs-reap.service.ts, its interface and its two specs are deleted, stray-ref-retire.service.ts reads held-by-forge from the reconciler, and `git grep -n 'reapStrayRefs\|heldByForge\|holdsOnlyEmptyCommits\|patchesLanded' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
 
-### S5c5 — The branch flow, part 3e: retired machinery is reaped by the reconciler, and retired-machinery-reap and work-unit-reap go
+### S5n — The branch flow, part 3e: retired machinery is reaped by the reconciler, and retired-machinery-reap and work-unit-reap go
 - **Status**: pending
-- **DependsOn**: [S5c4]
+- **DependsOn**: [S5m]
 - **Files**: `packages/core/src/lib/work-units/retired-machinery-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/retired-machinery-reap.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/work-units/retired-machinery-reap.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-reap.service.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
@@ -282,7 +282,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 
 ### S5d — The branch flow, part 4: hydration, finished-unit ending and the guard's --reap go
 - **Status**: pending
-- **DependsOn**: [S5c5]
+- **DependsOn**: [S5n]
 - **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `lefthook.yml`
 - **Gate**: type
 - **Decisions**: none
