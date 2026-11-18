@@ -25,7 +25,10 @@ import { reapRetiredMachinery } from './retired-machinery-reap.service';
 
 /**
  * `work reap [--apply]` — remove the worktree and local branch of every
- * delivered unit whose worktree holds no edit of its own, and every
+ * delivered unit, and of every unit whose commits are all on the
+ * integration branch once its owner is idle, whoever owns it (a proposal
+ * still in progress kept such a unit "idle" for ever), whose worktree
+ * holds no edit of its own, and every
  * directory beside the units that is no unit, keeping on the forge what
  * such a directory held that no commit has; and drop from the forge the
  * retired work the integration branch came to hold, the slice

@@ -107,6 +107,8 @@ export interface IUnitStandingEntry extends IUnitVerdict {
 	readonly publicationAhead: boolean;
 	/** The publication ref, when the unit has one. */
 	readonly publicationRef: string | null;
+	/** The unit moved off its entry commit and its work is in the integration branch or a publication. */
+	readonly delivered?: boolean | undefined;
 	/** Whether its author is gone, and why (`orphaned-work.service`). */
 	readonly author?: IAuthorPresence | undefined;
 }
