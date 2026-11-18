@@ -33,7 +33,7 @@ Develop's CI failed `compute-slot.service.spec.ts` (two concurrent proofs one af
 
 ### S1 — One process queues for the slot in call order
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`
+- **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
   - "Callers of withComputeSlot in one process take the slot in the order they asked; the spec for two concurrent proofs passes in 20 shuffled runs under load."
