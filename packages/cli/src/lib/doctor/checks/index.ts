@@ -26,3 +26,4 @@ export { checkSchemas } from './schemas.check';
 export { checkPorts } from './ports.check';
 export { checkNetworkDependentSurfaces } from './network.check';
 export { checkPreset } from './preset.check';
+export { checkLegacyResidue } from './legacy-residue.check';

@@ -2,14 +2,16 @@
 id: x01078
 title: "A change runs the specs of what imports it"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: e3c4f1b0-6c70-4116-9f78-0366df3fb76f
-last-correlation-id: e3c4f1b0-6c70-4116-9f78-0366df3fb76f
-last-transition-from: in-progress
-last-transition-at: 2026-11-16T04:21:20.777Z
+last-transition-id: a2c6c242-39a0-4401-9c9d-9f2015964c46
+last-correlation-id: a2c6c242-39a0-4401-9c9d-9f2015964c46
+last-transition-from: review
+last-transition-at: 2026-11-18T04:15:06.060Z
+shipped-in:
+  - "997e1759d05a99d7893d206ffebcbe7495f1de86"
 ---
 
 # x01078 — A change runs the specs of what imports it
@@ -41,7 +43,7 @@ Decisions (nothing is left undecided):
 - global_gate: none
 
 ### S1 — The touched scope adds the mirrors of direct importers
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `packages/cli/src/commands/work.command.spec.ts`, `packages/cli/src/commands/work-enter.command.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -49,8 +51,10 @@ Decisions (nothing is left undecided):
   - "The same spec proves a barrel importer is not followed and a non-importer is not selected."
   - "`bunx vitest run packages/cli/src/commands/work.command.spec.ts` passes with the `--kind` flag expected for implement and create branches."
 - shipped-in: `0b4a8ff3e397`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 997e1759d05a, validate exit 0 and tests 37/37 claimed, no recorded run cited; acceptance 3/3: (1) The repository fixture in touchedSpecsOf uses #2231's changed work-deliver service and tracked files; it asserts the exact work.command.spec.ts plus service sp… (2) The direct-importer fixture asserts the source mirror user spec is selected while the barrel-user mirror is absent; existing non-importer and one-hop tests cov… (3) The E2E companion reads implement/create work refs and asserts `--kind=implement`/`--kind=create`; work.command.spec.ts also passes all 19 cases. The combined … — Reviewed the delivered commit and the later commits listed by the queue. Those later changes extend the work-command family but do not refute this slice; the exact three named specs currently pass 37/37. The selector follows one direct non-barrel importer and the unit flags now include implement/create kind as intended.
 
 ## acceptance
 

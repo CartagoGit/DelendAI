@@ -10,6 +10,8 @@ last-transition-id: 135de960-83a5-4588-bc0b-78b5ab4c665e
 last-correlation-id: 135de960-83a5-4588-bc0b-78b5ab4c665e
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T01:21:51.288Z
+shipped-in:
+  - "19ccc8b30a8b86c76a6621404821711071fd7844"
 ---
 
 # x01090 — The hourly upkeep judges code scanning at the latest analysed commit, and the CI tests job says the zones did not run instead of crashing on a missing report folder
@@ -32,7 +34,7 @@ Measured 2026-11-17. (1) Upkeep run 44188822302 (22:19 UTC): `✖ promotion-aler
 - global_gate: none
 
 ### S1 — The upkeep judges code scanning at the latest analysed commit
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/forge/promotion-alerts.script.ts`, `tools/scripts/forge/promotion-alerts.script.spec.ts`, `tools/scripts/forge/land-workflow.script.ts`, `.github/workflows/land.yml`
 - **Gate**: none
 - acceptance:
@@ -42,11 +44,13 @@ Measured 2026-11-17. (1) Upkeep run 44188822302 (22:19 UTC): `✖ promotion-aler
   - "A spec with the same answers plus one open high alert expects exit 1 with --latest-analysed [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
 - shipped-in: `0cc850c1f90e`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 19ccc8b30a8b, validate exit 0 and tests 8/8 claimed, no recorded run cited; acceptance 5/5: (1) main passes process.argv.includes('--latest-analysed') to judge; coverageRefusal emits judgedAtLatestReport only in flag mode, then falls through to the unchan… (2) REPO_VALUES.upkeep's promotion-alerts run is the only call with the flag; the generator --check passes and the committed land.yml run line matches the renderer. (3) The first judging spec uses a compare status behind, empty alerts, asserts exit 0 plus the exact line in flag mode and exit 1 without; it passes in 2ms. (4) The second judging spec injects an open alert and asserts exit 1 in flag mode; it passes in 1ms. (5) Current review evidence includes all 8 focused specs, land generator equality, workflow YAML lint, and the worktree's full typecheck from the same unit; the de… — Reviewed the delivered diff and current implementation; no later change touches these slice files. All 8 focused promotion-alert specs pass, the land workflow generator check is clean, and workflow YAML lint passes 18/18 files. The upkeep-only flag preserves the strict release-gate path.
 
 ### S2 — The CI tests job says the zones did not run
-- **Status**: review
+- **Status**: done
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: none
 - acceptance:
@@ -54,8 +58,10 @@ Measured 2026-11-17. (1) Upkeep run 44188822302 (22:19 UTC): `✖ promotion-aler
   - "`bun run lint:workflows` (or the repository's workflow lint, if named otherwise) passes on the changed ci.yml, and actionlint reports nothing new"
   - "Pre-check: `delendai work prove --only=lint-security,lint-governance` passes before the slice is handed over"
 - shipped-in: `0f92615fb13f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 19ccc8b30a8b, validate exit 0 and tests 18/18 claimed, no recorded run cited; acceptance 3/3: (1) ci.yml computes NONE first, emits the red-zone branch next, then guards non-failure/non-NONE states with PLAN_RESULT!=success or ZONES_RESULT cancelled/skipped… (2) `bun run lint:workflow-yaml` passed for 18/18 workflow files, including ci.yml, with the expected shape and no new workflow diagnostics. (3) The delivered candidate carries its handover proof; current review evidence adds 18/18 workflow parse checks, a clean land generator check, and focused script … — Reviewed the delivered workflow diff and current ci.yml; no later change touches this file. The repository workflow lint validates all 18 files successfully and the new guard precedes artifact collection, preventing the ENOENT path while retaining no-zone and red-zone handling.
 
 ## acceptance
 
