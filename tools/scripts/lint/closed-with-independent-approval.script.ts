@@ -25,7 +25,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { parseJsonc } from '@delendai/core/cli';
+import { isRevalidationIdentity, parseJsonc } from '@delendai/core/cli';
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
@@ -125,6 +125,29 @@ export const kindOfRef = (
 			: undefined;
 	}
 	return undefined;
+};
+
+/**
+ * Whether a ref is a revalidation batch (f00819): a review-kind unit of the
+ * batch under the revalidation topic. It moves shipped proposals back to
+ * review without reading them, so it claims none and adds no approval.
+ */
+export const isRevalidationRef = (
+	ref: string,
+	prefixes: readonly string[],
+): boolean => {
+	const name = ref.replace(/^(refs\/)?(heads\/)?/u, '');
+	for (const prefix of prefixes) {
+		const bare = prefix.replace(/^(refs\/)?(heads\/)?/u, '');
+		if (bare.length === 0 || !name.startsWith(bare)) continue;
+		const [, kind, unit = '', topic] = name.slice(bare.length).split('/');
+		return isRevalidationIdentity({
+			kind,
+			proposal: unit.split('-')[0] ?? '',
+			topic,
+		});
+	}
+	return false;
 };
 
 /**
@@ -367,7 +390,18 @@ const main = async (): Promise<number> => {
 		);
 		return 1;
 	}
-	if (kind === 'review') {
+	const refPrefixes = [
+		...ownedPublicationRefPrefixes(branches),
+		...ownedWorkRefPrefixes(branches),
+	];
+	if (isRevalidationRef(head, refPrefixes)) {
+		if (approvals.length > 0) {
+			console.error(
+				`✖ closed-with-independent-approval: ${head} is a revalidation batch, and adds approvals by ${[...new Set(approvals)].join(', ')}. A revalidation sends proposals back to review; their approvals enter through a review unit: \`delendai review next\`.`,
+			);
+			return 1;
+		}
+	} else if (kind === 'review') {
 		const unclaimed = unclaimedProposals(
 			git(root, [
 				'diff',

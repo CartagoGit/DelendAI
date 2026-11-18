@@ -9,6 +9,7 @@ import {
 	approvalsAdded,
 	kindOfRef,
 	approvalsNotBy,
+	isRevalidationRef,
 	labelsInEvent,
 	linesAddedPerProposal,
 	OWNER_RECONCILE_LABEL,
@@ -24,7 +25,7 @@ ${lines}
 `;
 
 describe('unapprovedSlices', () => {
-	it('accepts a slice approved by someone other than its implementer', () => {
+	it('[<50ms]accepts a slice approved by someone other than its implementer', () => {
 		expect(
 			unapprovedSlices(
 				slice(
@@ -34,7 +35,7 @@ describe('unapprovedSlices', () => {
 		).toEqual([]);
 	});
 
-	it('refuses a slice with no approval, or approved only by its implementer', () => {
+	it('[<50ms]refuses a slice with no approval, or approved only by its implementer', () => {
 		expect(
 			unapprovedSlices(slice('- review-implementer: minimax-3')),
 		).toEqual(['S1 — the work']);
@@ -47,7 +48,7 @@ describe('unapprovedSlices', () => {
 		).toEqual(['S1 — the work']);
 	});
 
-	it('does not count a requested change as an approval', () => {
+	it('[<50ms]does not count a requested change as an approval', () => {
 		expect(
 			unapprovedSlices(
 				slice(
@@ -57,7 +58,7 @@ describe('unapprovedSlices', () => {
 		).toEqual(['S1 — the work']);
 	});
 
-	it('does not judge a heading that is not a slice (x00696)', () => {
+	it('[<50ms]does not judge a heading that is not a slice (x00696)', () => {
 		expect(
 			unapprovedSlices(
 				`${slice('- review-implementer: a\n- review-log: approved by b — ok')}\n### solid-compliance, 2026-09-08\n\nmeasured.\n`,
@@ -65,7 +66,7 @@ describe('unapprovedSlices', () => {
 		).toEqual([]);
 	});
 
-	it('judges only finished slices', () => {
+	it('[<50ms]judges only finished slices', () => {
 		expect(
 			unapprovedSlices(`### S2 — later
 
@@ -78,7 +79,7 @@ describe('unapprovedSlices', () => {
 describe('an approval enters through its reviewer (x00715)', () => {
 	const prefixes = ['delendai/pr/', 'heads/delendai/wip/'];
 
-	it('reads the agent a ref belongs to, under any spelling of the prefix', () => {
+	it('[<50ms]reads the agent a ref belongs to, under any spelling of the prefix', () => {
 		expect(
 			agentOfRef('delendai/pr/glm-5/review/batch-all-g2/r', prefixes),
 		).toBe('glm-5');
@@ -91,7 +92,7 @@ describe('an approval enters through its reviewer (x00715)', () => {
 		expect(agentOfRef('feature/owner-work', prefixes)).toBeUndefined();
 	});
 
-	it("names the approvals a diff adds that are not its author's", () => {
+	it("[<50ms] names the approvals a diff adds that are not its author's", () => {
 		const diff = [
 			'+++ b/docs/delendai/proposals/review/x1.md',
 			'+- review-log: approved by glm-5 — checked',
@@ -109,7 +110,7 @@ describe('an approval enters through its reviewer (x00715)', () => {
 describe('an approval enters through a review unit (x00729)', () => {
 	const prefixes = ['delendai/pr/', 'heads/delendai/wip/'];
 
-	it('reads the kind of work a ref names', () => {
+	it('[<50ms]reads the kind of work a ref names', () => {
 		expect(
 			kindOfRef('delendai/pr/glm-5/review/batch-all-g2/r', prefixes),
 		).toBe('review');
@@ -123,7 +124,29 @@ describe('an approval enters through a review unit (x00729)', () => {
 		expect(kindOfRef('feature/owner-work', prefixes)).toBeUndefined();
 	});
 
-	it('names every approval a diff adds, and nothing else', () => {
+	it('[<50ms]tells a revalidation batch from a reviewer pack (f00819)', () => {
+		expect(
+			isRevalidationRef(
+				'delendai/wip/glm-5/review/batch-all-g10/revalidation',
+				['delendai/wip/'],
+			),
+		).toBe(true);
+		expect(
+			isRevalidationRef(
+				'delendai/pr/glm-5/review/batch-all-g3/verdicts',
+				prefixes,
+			),
+		).toBe(false);
+		expect(
+			isRevalidationRef(
+				'delendai/pr/glm-5/implement/batch-all-g1/revalidation',
+				prefixes,
+			),
+		).toBe(false);
+		expect(isRevalidationRef('feature/owner-work', prefixes)).toBe(false);
+	});
+
+	it('[<50ms]names every approval a diff adds, and nothing else', () => {
 		const diff = [
 			'+- review-log: approved by glm-5 — checked',
 			'-- review-log: approved by gone — removed',
@@ -134,7 +157,7 @@ describe('an approval enters through a review unit (x00729)', () => {
 });
 
 describe('the owner authorizes a reconciliation (x00743)', () => {
-	it('reads the labels and the number of the pull request an event is for', () => {
+	it('[<50ms]reads the labels and the number of the pull request an event is for', () => {
 		expect(
 			labelsInEvent(
 				JSON.stringify({
@@ -150,14 +173,14 @@ describe('the owner authorizes a reconciliation (x00743)', () => {
 		).toEqual({ labels: ['ci', OWNER_RECONCILE_LABEL], number: 611 });
 	});
 
-	it('authorizes nothing without the label, outside CI, or from a broken payload', () => {
+	it('[<50ms]authorizes nothing without the label, outside CI, or from a broken payload', () => {
 		expect(ownerAuthorizedReconcile([OWNER_RECONCILE_LABEL])).toBe(true);
 		expect(ownerAuthorizedReconcile(['reconcile', 'owner'])).toBe(false);
 		expect(labelsInEvent(undefined)).toEqual({ labels: [] });
 		expect(labelsInEvent('{not json')).toEqual({ labels: [] });
 	});
 
-	it('reads the kind of a reconciliation from its ref', () => {
+	it('[<50ms]reads the kind of a reconciliation from its ref', () => {
 		expect(
 			kindOfRef(
 				'delendai/pr/claude-opus-5-5/reconcile/batch-all-g1/swarm',
@@ -170,7 +193,7 @@ describe('the owner authorizes a reconciliation (x00743)', () => {
 describe('unclaimedProposals', () => {
 	const DIR = 'docs/delendai/proposals';
 
-	it('names a proposal a pack changes and none of its commits claimed', () => {
+	it('[<50ms]names a proposal a pack changes and none of its commits claimed', () => {
 		expect(
 			unclaimedProposals(
 				[
@@ -185,7 +208,7 @@ describe('unclaimedProposals', () => {
 		).toEqual(['x00002']);
 	});
 
-	it('is empty for a pack that changes only what it claimed, wherever the document moved', () => {
+	it('[<50ms]is empty for a pack that changes only what it claimed, wherever the document moved', () => {
 		expect(
 			unclaimedProposals(
 				[
@@ -218,7 +241,7 @@ describe('linesAddedPerProposal', () => {
 	const read = (side: 'base' | 'head', path: string): string =>
 		files[`${side}:${path}`] ?? '';
 
-	it('does not count an approval a moved proposal already carried', () => {
+	it('[<50ms]does not count an approval a moved proposal already carried', () => {
 		// The move falls under git's rename similarity once the content
 		// changes this much, so it arrives as a deletion and an addition.
 		const added = linesAddedPerProposal(
@@ -238,7 +261,7 @@ describe('linesAddedPerProposal', () => {
 		expect(added).toContain('+- file 0');
 	});
 
-	it('counts an approval that is new in the moved proposal', () => {
+	it('[<50ms]counts an approval that is new in the moved proposal', () => {
 		const added = linesAddedPerProposal(
 			[
 				{
@@ -258,7 +281,7 @@ describe('linesAddedPerProposal', () => {
 		expect(approvalsAdded(added)).toEqual(['minimax-3']);
 	});
 
-	it('counts every approval of a proposal that did not exist before', () => {
+	it('[<50ms]counts every approval of a proposal that did not exist before', () => {
 		expect(
 			approvalsAdded(
 				linesAddedPerProposal(
@@ -281,13 +304,13 @@ describe('a closure that rests on an attested implementer', () => {
 	const attested =
 		'### S2 — Vouched for\n\n- **Status**: done\n- review-implementer: gamma\n- review-attribution: gamma attested by delta — the session record shows gamma making the commit\n';
 
-	it('is none where Git names every implementer', () => {
+	it('[<50ms]is none where Git names every implementer', () => {
 		expect(
 			attestedClosures([{ path: 'done/a.md', markdown: named }]),
 		).toEqual([]);
 	});
 
-	it('names the proposal and the slices the owner is asked to decide on', () => {
+	it('[<50ms]names the proposal and the slices the owner is asked to decide on', () => {
 		expect(
 			attestedClosures([
 				{ path: 'done/a.md', markdown: named },
