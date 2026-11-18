@@ -16,6 +16,7 @@ import { join } from 'node:path';
 import { AGENT_HOSTS } from '../../../packages/core/src/lib/contracts/constants/agent-hosts.constant';
 import { DEFAULT_CORE_PATHS } from '../../../packages/core/src/lib/contracts/interfaces/core-paths.interface';
 import { legacyResidueRegistry } from '../../../packages/core/src/lib/workspace-migration/legacy-residue/legacy-residue.registry';
+import { refuseMissingScanRoots } from './lib/scan-roots.lib';
 import { LEGACY_RESIDUE_SNAPSHOT_PATH } from './legacy-residue-registry.constant';
 import type {
 	ILegacyResidueSnapshot,
@@ -90,6 +91,13 @@ const readRecorded = (path: string): ILegacyResidueSnapshot | undefined => {
 };
 
 if (import.meta.main) {
+	if (
+		!process.argv.includes('--update') &&
+		refuseMissingScanRoots('legacy-residue-registry', process.cwd(), [
+			LEGACY_RESIDUE_SNAPSHOT_PATH,
+		])
+	)
+		process.exit(1);
 	const path = join(process.cwd(), LEGACY_RESIDUE_SNAPSHOT_PATH);
 	const current = currentEmittedNames();
 	const recorded = readRecorded(path);
