@@ -126,7 +126,6 @@
 		"packages/cli/src/commands/groups/docs.spec.ts",
 		"packages/cli/src/commands/groups/doctor.spec.ts",
 		"packages/cli/src/commands/groups/git.spec.ts",
-		"packages/cli/src/commands/groups/group-helpers.spec.ts",
 		"packages/cli/src/commands/groups/memory.spec.ts",
 		"packages/cli/src/commands/groups/notification.spec.ts",
 		"packages/cli/src/commands/groups/plugin-new.spec.ts",

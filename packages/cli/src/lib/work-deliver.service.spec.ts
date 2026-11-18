@@ -360,6 +360,21 @@ describe('pullRequestOf', () => {
 		).not.toHaveProperty('sliceNote');
 	});
 
+	it('[<20ms] explains a whole-proposal branch in the scope grammar too', () => {
+		for (const branch of [
+			'pr/implement/a/x00001/work',
+			'pr/implement/a/x00001-G2/work',
+		]) {
+			expect(pullRequestOf(undefined, branch, 'S1')).toMatchObject({
+				slice: 'S1',
+				sliceNote: expect.stringContaining('S1'),
+			});
+		}
+		expect(
+			pullRequestOf(undefined, 'pr/implement/a/x00001-S1/work', 'S1'),
+		).not.toHaveProperty('sliceNote');
+	});
+
 	it('[<20ms] reaches a delivery that hands the proposal to review', async () => {
 		const { value } = ports({});
 		const result = await deliverUnit(value);

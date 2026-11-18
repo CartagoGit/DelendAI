@@ -17,7 +17,45 @@ const DEFAULTS = resolveDevelopmentPolicy({
 	development: { profile: 'shared-checkout-pr' },
 }).branches;
 
+const READABLE = resolveDevelopmentPolicy({
+	development: {
+		profile: 'shared-checkout-pr',
+		branches: {
+			namespacePrefix: 'delendai',
+			workRefTemplate:
+				'heads/delendai/wip/${kind}/${agent}/${scope}/${topic}',
+		},
+	},
+}).branches;
+
 const UNIT = 'claude-opus-5/x00568-S1-g1/a-publication-keeps-its-name';
+
+describe('findWorkRefMention in the scope grammar (f00808)', () => {
+	const NEW_UNIT =
+		'implement/claude-opus-5/x00568-S1+S4-G2/a-publication-keeps-its-name';
+
+	it('[<20ms] finds a unit named in either spelling, whatever template is configured', () => {
+		for (const branches of [THIS_REPO, READABLE]) {
+			expect(
+				findWorkRefMention(
+					`Merge pull request #3 from Owner/delendai/pr/${NEW_UNIT}`,
+					branches,
+				),
+			).toEqual({
+				ref: `refs/heads/delendai/wip/${NEW_UNIT}`,
+				agent: 'claude-opus-5',
+				proposal: 'x00568',
+				slice: 'S1+S4',
+			});
+			expect(
+				findWorkRefMention(
+					`Merge pull request #3 from Owner/delendai/pr/${UNIT}`,
+					branches,
+				)?.agent,
+			).toBe('claude-opus-5');
+		}
+	});
+});
 
 describe('findWorkRefMention', () => {
 	it.each([
@@ -32,7 +70,7 @@ describe('findWorkRefMention', () => {
 			'the engine trailer',
 			`feat: the work\n\nDelendai-Wip-Ref: refs/heads/delendai/wip/${UNIT}`,
 		],
-	])('reads the unit out of a %s message', (_forge, message) => {
+	])('[<20ms] reads the unit out of a %s message', (_forge, message) => {
 		expect(findWorkRefMention(message, THIS_REPO)).toEqual({
 			ref: `refs/heads/delendai/wip/${UNIT}`,
 			agent: 'claude-opus-5',
@@ -41,7 +79,7 @@ describe('findWorkRefMention', () => {
 		});
 	});
 
-	it('uses the project defaults when no namespace is configured', () => {
+	it('[<200ms] uses the project defaults when no namespace is configured', () => {
 		expect(
 			findWorkRefMention(
 				"Merge branch 'pr/codex-5/f00001-S2-g3/topic' into 'main'",
@@ -50,7 +88,7 @@ describe('findWorkRefMention', () => {
 		).toBe('codex-5');
 	});
 
-	it('finds the agent wherever the template puts it', () => {
+	it('[<200ms] finds the agent wherever the template puts it', () => {
 		const shape = {
 			workRefTemplate:
 				'heads/team/work/${proposal}-${slice}-g${generation}/${agent}', // work-ref-shape: alternative
@@ -69,7 +107,7 @@ describe('findWorkRefMention', () => {
 		});
 	});
 
-	it('names nobody when the ref does not fit the template', () => {
+	it('[<200ms] names nobody when the ref does not fit the template', () => {
 		expect(
 			findWorkRefMention(
 				'Merge pull request #301 from Owner/delendai/pr/x00566-guards-run',
@@ -84,7 +122,7 @@ describe('findWorkRefMention', () => {
 		).toBeUndefined();
 	});
 
-	it('does not take a prefix that only appears inside another word', () => {
+	it('[<200ms] does not take a prefix that only appears inside another word', () => {
 		expect(
 			findWorkRefMention(`see notdelendai/pr/${UNIT}`, THIS_REPO),
 		).toBeUndefined();

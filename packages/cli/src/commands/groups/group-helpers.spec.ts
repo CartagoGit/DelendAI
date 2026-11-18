@@ -15,7 +15,7 @@ const TEMPLATE =
 	'heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
 
 describe('agentOfWorkBranch', () => {
-	it('reads the agent segment of a work ref with the template that wrote it', () => {
+	it('[<200ms] reads the agent segment of a work ref with the template that wrote it', () => {
 		expect(
 			agentOfWorkBranch(
 				TEMPLATE,
@@ -24,7 +24,18 @@ describe('agentOfWorkBranch', () => {
 		).toBe('claude-sonnet-5-5');
 	});
 
-	it('reads nothing from a branch that is not a work ref, or from no template', () => {
+	it('[<20ms] reads the agent out of the scope grammar and the former -g{n} name alike', () => {
+		for (const branch of [
+			'delendai/wip/claude-sonnet-5-5/implement/x00811-S1-g2/the-topic',
+			'delendai/wip/implement/claude-sonnet-5-5/x00811-S1-G2/the-topic',
+		]) {
+			expect(agentOfWorkBranch(TEMPLATE, branch)).toBe(
+				'claude-sonnet-5-5',
+			);
+		}
+	});
+
+	it('[<200ms] reads nothing from a branch that is not a work ref, or from no template', () => {
 		expect(agentOfWorkBranch(TEMPLATE, 'develop')).toBeUndefined();
 		expect(
 			agentOfWorkBranch('', 'delendai/wip/a/implement/x1-S1-g1/t'),
@@ -57,12 +68,12 @@ describe('resolveAgent', () => {
 
 	const UNIT = 'wip/claude-opus-5-5/implement/x00811-S1-g1/topic';
 
-	it('takes the agent from the unit when nothing else names one', async () => {
+	it('[<200ms] takes the agent from the unit when nothing else names one', async () => {
 		const root = unitCheckout(UNIT);
 		expect(await resolveAgent([], root, {})).toBe('claude-opus-5-5');
 	});
 
-	it('prefers the flag, then the environment, over the unit', async () => {
+	it('[<200ms] prefers the flag, then the environment, over the unit', async () => {
 		const root = unitCheckout(UNIT);
 		expect(await resolveAgent(['--agent=Flag-One'], root, {})).toBe(
 			'flag-one',
@@ -72,12 +83,12 @@ describe('resolveAgent', () => {
 		).toBe('env-two');
 	});
 
-	it('names nobody on a branch that is not a unit', async () => {
+	it('[<200ms] names nobody on a branch that is not a unit', async () => {
 		const root = unitCheckout('develop');
 		expect(await resolveAgent([], root, {})).toBeUndefined();
 	});
 
-	it('names the project default when development.identity says so (f00758)', async () => {
+	it('[<200ms] names the project default when development.identity says so (f00758)', async () => {
 		const root = unitCheckout('develop');
 		writeFileSync(
 			join(root, 'delendai.config.json'),
@@ -98,7 +109,7 @@ describe('resolveAgent', () => {
 		);
 	});
 
-	it('names nobody when the axis refuses and nothing is declared', async () => {
+	it('[<200ms] names nobody when the axis refuses and nothing is declared', async () => {
 		const root = unitCheckout('develop');
 		writeFileSync(
 			join(root, 'delendai.config.json'),
