@@ -135,4 +135,30 @@ describe('keepStrayFiles', () => {
 		expect(plan?.outcome).toBe('would-move');
 		expect(existsSync(join(dir, 'q48.md'))).toBe(true);
 	});
+
+	it('[<100ms] never overwrites a file already kept under that name', async () => {
+		const { root, dir, unitsDirectory } = units();
+		await keepStrayFiles({ root, apply: true, now: 1, unitsDirectory });
+		writeFileSync(join(dir, 'q48.md'), 'again');
+		const [again] = await keepStrayFiles({
+			root,
+			apply: true,
+			now: 2,
+			unitsDirectory,
+		});
+		expect(again?.to.endsWith('q48.md.2')).toBe(true);
+		expect(existsSync(again?.to ?? '')).toBe(true);
+	});
+
+	it('[<100ms] has nothing to keep when the units folder does not exist', async () => {
+		const { root } = folder();
+		expect(
+			await keepStrayFiles({
+				root,
+				apply: true,
+				now: 1,
+				unitsDirectory: join(root, 'absent'),
+			}),
+		).toEqual([]);
+	});
 });

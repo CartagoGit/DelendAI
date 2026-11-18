@@ -11,7 +11,6 @@
  * removed.
  */
 import { readdir, rmdir, stat } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import {
@@ -23,6 +22,15 @@ import type { ITestTempLeftovers } from '../contracts/interfaces/test-temp-lefto
 
 /** Directories read or removed at once. */
 const BATCH = 64;
+
+/**
+ * The system temp folder as the platform's own variables name it. Read,
+ * never written to: this pass only looks for what the old test kit left.
+ */
+const systemTempRoot = (): string => {
+	const { TMPDIR, TEMP, TMP } = process.env;
+	return TMPDIR ?? TEMP ?? TMP ?? '/tmp';
+};
 
 type Verdict = 'removable' | 'removed' | 'non-empty' | 'skip';
 
@@ -51,7 +59,7 @@ export const reapTestTempLeftovers = async (input: {
 	/** Milliseconds since the epoch. */
 	readonly now?: number | undefined;
 }): Promise<ITestTempLeftovers> => {
-	const root = input.tmpRoot ?? tmpdir();
+	const root = input.tmpRoot ?? systemTempRoot();
 	const cutoffMs =
 		(input.now ?? Date.now()) - TEST_TEMP_LEFTOVER_AGE_SECONDS * 1000;
 	let names: readonly string[];
