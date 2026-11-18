@@ -112,6 +112,7 @@ import { registerKpiDashboardProvider } from './providers/kpi-dashboard-provider
 import { MemoryTreeDataProvider } from './providers/memory-tree-data-provider';
 import { ProposalBoardProvider } from './providers/proposal-board-provider';
 import { DelendaiStatusBar, type IStatusBarItem } from './providers/status-bar';
+import type { IStatusBarTooltip } from './contracts/interfaces/status-bar-tooltip.interface';
 import {
 	ToolTreeDataProvider,
 	type IFileSystemWatcher,
@@ -264,6 +265,10 @@ export interface IVscodeApi {
 			| undefined
 		>;
 	};
+	/** The host's Markdown string, used for rich tooltips. */
+	readonly MarkdownString?: new (
+		value: string,
+	) => IStatusBarTooltip;
 	readonly workspace?: {
 		createFileSystemWatcher(pattern: string): IFileSystemWatcher;
 		getConfiguration?(section: string): IConfiguration;
@@ -671,6 +676,7 @@ export const activate = async (
 	// registered. A slow MCP overview must not prevent the workbench from
 	// attaching the providers declared by the extension manifest.
 	if (statusBarItem !== undefined) {
+		const MarkdownString = vscode.MarkdownString;
 		const statusBar = new DelendaiStatusBar(
 			statusBarItem,
 			overview,
@@ -679,6 +685,14 @@ export const activate = async (
 			undefined,
 			undefined,
 			namespacePrefix,
+			MarkdownString === undefined
+				? undefined
+				: (value) => {
+						const rich = new MarkdownString(value);
+						rich.isTrusted = false;
+						rich.supportThemeIcons = true;
+						return rich;
+					},
 		);
 		try {
 			statusBar.start();
