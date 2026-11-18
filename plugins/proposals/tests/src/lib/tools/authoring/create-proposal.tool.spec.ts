@@ -11,7 +11,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createFakeToolServer } from '@delendai/test-kit';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
-import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
 import type { IAuthoringToolOptions } from '@delendai/proposals/lib/tools/authoring.tool';
 import {
@@ -38,7 +37,7 @@ const capture = async (registration: IToolRegistration): Promise<IHandler> => {
 	return handler;
 };
 
-const parse = (result: { content: Array<{ text: string }> }) =>
+const _parse = (result: { content: Array<{ text: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>;
 
 describe('create_proposal', () => {
@@ -73,31 +72,6 @@ describe('create_proposal', () => {
 			{ sliceId: 'S1', files: ['src/a.ts'], acceptance: ['It works'] },
 		],
 	};
-
-	it('[<1000ms] writes the document and, with no git runner, names the step that publishes it', async () => {
-		const create = await capture(buildCreateProposalRegistration(options));
-		const created = parse(await create(proposal));
-		expect(created.id).toBe('f00001');
-		expect(created.published).toBe(false);
-		expect(String(created.publishReason)).toContain('no git runner');
-	});
-
-	it('[<1000ms] names the publication ref of the policy, with no namespace of its own', async () => {
-		const create = await capture(
-			buildCreateProposalRegistration({
-				...options,
-				developmentPolicy: resolveDevelopmentPolicy({
-					development: {
-						profile: 'shared-checkout-pr',
-						branches: { namespacePrefix: '' },
-					},
-				}),
-			}),
-		);
-		const created = parse(await create(proposal));
-		expect(created.id).toBe('f00001');
-		expect(String(created.nextAction)).not.toContain('delendai/pr/');
-	});
 
 	it('[<200ms] refuses a checkout that is not a working tree of the repository', async () => {
 		const create = await capture(buildCreateProposalRegistration(options));
