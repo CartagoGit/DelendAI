@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createGitRepoTemplate } from '@delendai/test-kit';
 
+import { READABLE_WORK_REF_SHAPE } from '@delendai/core/lib/development-policy/profiles.constant';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import { stampWorktreeAgent } from '@delendai/core/lib/work-units/worktree-agent.service';
 import {
@@ -40,6 +41,16 @@ const policy = resolveDevelopmentPolicy({
 	},
 });
 
+const readablePolicy = resolveDevelopmentPolicy({
+	development: {
+		profile: 'shared-checkout-pr',
+		branches: {
+			namespacePrefix: '',
+			workRefTemplate: `heads/wip/${READABLE_WORK_REF_SHAPE}`,
+		},
+	},
+});
+
 const OLD = 'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/topic';
 const NEW = 'refs/heads/wip/agent-a/implement/x00001-S1-g1/topic';
 const ARGS = ['--kind=implement', '--topic=topic'];
@@ -52,7 +63,7 @@ const template = createGitRepoTemplate({
 const repo = (): string => template.copy().root;
 
 describe('a unit under a former namespace', () => {
-	it('is the unit work enter finds again', () => {
+	it('[<200ms] is the unit work enter finds again', () => {
 		const root = repo();
 		git(root, 'update-ref', OLD, 'HEAD');
 		expect(
@@ -60,7 +71,7 @@ describe('a unit under a former namespace', () => {
 		).toBe(OLD);
 	});
 
-	it('leaves a new unit under the current namespace', () => {
+	it('[<200ms] leaves a new unit under the current namespace', () => {
 		const root = repo();
 		expect(
 			existingWorkRef(root, ARGS, policy, 'agent-a', 'x00001', 'S1'),
@@ -70,7 +81,7 @@ describe('a unit under a former namespace', () => {
 		).toEqual({ generation: 1 });
 	});
 
-	it('keeps a generation retired under the former root spent', () => {
+	it('[<200ms] keeps a generation retired under the former root spent', () => {
 		const root = repo();
 		git(
 			root,
@@ -85,7 +96,7 @@ describe('a unit under a former namespace', () => {
 		).toEqual({ generation: 2 });
 	});
 
-	it('is ambiguous when two names answer for one unit', () => {
+	it('[<200ms] is ambiguous when two names answer for one unit', () => {
 		const root = repo();
 		git(root, 'update-ref', OLD, 'HEAD');
 		git(root, 'update-ref', NEW, 'HEAD');
@@ -102,12 +113,12 @@ describe('a unit under a former namespace', () => {
 		expect(sessionHolding(root, NEW)).toBeUndefined();
 	});
 
-	it('reads the generation the arguments name', () => {
+	it('[<200ms] reads the generation the arguments name', () => {
 		expect(unitGeneration(['--generation=3'])).toBe(3);
 		expect(unitGeneration([])).toBe(1);
 	});
 
-	it('finds a unit written before its shape named the kind', () => {
+	it('[<200ms] finds a unit written before its shape named the kind', () => {
 		const root = repo();
 		const legacy = 'refs/heads/wip/agent-a/x00001-S1-g1/topic';
 		git(root, 'update-ref', legacy, 'HEAD');
@@ -126,7 +137,7 @@ describe('a unit under a former namespace', () => {
 		).toBe(NEW);
 	});
 
-	it('is not ambiguous for the one ref the arguments render', () => {
+	it('[<200ms] is not ambiguous for the one ref the arguments render', () => {
 		const root = repo();
 		git(root, 'update-ref', NEW, 'HEAD');
 		git(root, 'update-ref', OLD, 'HEAD');
@@ -154,7 +165,7 @@ describe('a unit generation, against real refs', () => {
 		return dir;
 	};
 
-	it('names the session whose worktree holds a ref, and none for a bare ref', () => {
+	it('[<200ms] names the session whose worktree holds a ref, and none for a bare ref', () => {
 		const root = repo();
 		git(root, 'update-ref', NEW, 'HEAD');
 		expect(sessionHolding(root, NEW)).toBeUndefined();
@@ -162,7 +173,7 @@ describe('a unit generation, against real refs', () => {
 		expect(sessionHolding(root, NEW)).toBe('s1');
 	});
 
-	it('sends a session back to the generation it holds', () => {
+	it('[<200ms] sends a session back to the generation it holds', () => {
 		const root = repo();
 		const second = NEW.replace('-g1/', '-g2/');
 		git(root, 'update-ref', second, 'HEAD');
@@ -179,7 +190,7 @@ describe('a unit generation, against real refs', () => {
 		).toEqual({ generation: 2 });
 	});
 
-	it('refuses a slice another session of the agent works on', () => {
+	it('[<200ms] refuses a slice another session of the agent works on', () => {
 		const root = repo();
 		git(root, 'update-ref', NEW, 'HEAD');
 		worktreeOn(root, NEW, 'theirs');
@@ -194,7 +205,7 @@ describe('a unit generation, against real refs', () => {
 		expect('refusal' in chosen).toBe(true);
 	});
 
-	it('counts a generation merged into the integration branch as spent', () => {
+	it('[<200ms] counts a generation merged into the integration branch as spent', () => {
 		const root = repo();
 		git(root, 'checkout', '-q', '-b', 'side');
 		git(root, 'commit', '-q', '--allow-empty', '-m', 'work');
@@ -219,7 +230,7 @@ describe('a unit generation, against real refs', () => {
 		).toBe(0);
 	});
 
-	it('sends the entrant back to its own open publication, unless alongside', () => {
+	it('[<200ms] sends the entrant back to its own open publication, unless alongside', () => {
 		const root = repo();
 		const publication =
 			'refs/heads/pr/agent-a/implement/x00001-S1-g1/topic';
@@ -247,7 +258,7 @@ describe('a unit generation, against real refs', () => {
 		).toEqual({ generation: 2 });
 	});
 
-	it('finds a unit by the session holding it, or by its kindless legacy name', () => {
+	it('[<200ms] finds a unit by the session holding it, or by its kindless legacy name', () => {
 		const root = repo();
 		git(root, 'update-ref', NEW, 'HEAD');
 		const other = NEW.replace('/topic', '/other');
@@ -289,5 +300,63 @@ describe('a unit generation, against real refs', () => {
 		expect(
 			existingWorkRef(fresh, ARGS, policy, 'agent-a', 'x00001', 'S1'),
 		).toBe(NEW);
+	});
+});
+
+describe('a unit under the scope grammar (f00808)', () => {
+	const SCOPED = 'refs/heads/wip/implement/agent-a/x00001-S1-G2/topic';
+
+	it('[<200ms] chooseGeneration reads -G{n} from the name when the trailer is absent', () => {
+		const root = repo();
+		const scoped = SCOPED.replace('x00001-S1-G2', 'x00001-S1-G2');
+		git(root, 'update-ref', scoped, 'HEAD');
+		const dir = `${root}-wt-sg`;
+		git(
+			root,
+			'worktree',
+			'add',
+			'-q',
+			dir,
+			scoped.replace('refs/heads/', ''),
+		);
+		stampWorktreeAgent(dir, 'agent-a', 'sg');
+		expect(
+			chooseGeneration(
+				root,
+				[...ARGS, '--session=sg'],
+				readablePolicy,
+				'agent-a',
+				'x00001',
+				'S1',
+			),
+		).toEqual({ generation: 2 });
+	});
+
+	it('[<200ms] endedGenerations reads both the old -g{n} and the new -G{n} names', () => {
+		const root = repo();
+		git(root, 'checkout', '-q', '-b', 'side');
+		git(root, 'commit', '-q', '--allow-empty', '-m', 'work');
+		git(root, 'checkout', '-q', 'develop');
+		for (const [index, name] of [
+			'wip/agent-a/implement/x00001-S1-g1/topic',
+			'wip/implement/agent-a/x00001-S1-G2/topic',
+		].entries()) {
+			git(root, 'checkout', '-q', '-b', `side${index}`, 'side');
+			git(root, 'commit', '-q', '--allow-empty', '-m', `work ${index}`);
+			git(root, 'checkout', '-q', 'develop');
+			git(
+				root,
+				'merge',
+				'-q',
+				'--no-ff',
+				'-m',
+				`Merge ${name}`,
+				`side${index}`,
+			);
+		}
+		expect([...endedGenerations(root, policy, NEW)].sort()).toEqual([1, 2]);
+		expect([...endedGenerations(root, policy, SCOPED)].sort()).toEqual([
+			1, 2,
+		]);
 	});
 });

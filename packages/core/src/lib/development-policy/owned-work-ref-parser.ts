@@ -8,6 +8,7 @@
  */
 import type { IPolicyBranches } from '../contracts/interfaces/development-policy.interface';
 import type { IOwnedWorkRefShape } from '../contracts/interfaces/owned-work-ref-shape.interface';
+import { WORK_REF_SHAPE } from './profiles.constant';
 import {
 	compileWorkRefParser,
 	type IWorkRefParser,
@@ -148,4 +149,28 @@ export const branchesForRef = <T extends IShapeBranches>(
 		};
 	}
 	return branches;
+};
+
+/** Reads both spellings of a unit's name, whatever namespace holds it. */
+const NAMELESS_PARSER = compileWorkRefParser(WORK_REF_SHAPE, '');
+
+/**
+ * The identity a unit's name carries, wherever the name sits: a work ref,
+ * a publication, a merge subject's branch or a bare `agent/kind/...`
+ * tail. Reads the scope grammar and the former `-g{n}` spelling through
+ * the one parser, so no caller keeps a regex of its own (f00808).
+ */
+export const unitOfName = (
+	name: string,
+): ReturnType<IWorkRefParser['parse']> => {
+	const segments = name
+		.replace(/^refs\/(?:heads\/|remotes\/[^/]+\/)?/u, '')
+		.split('/');
+	for (let from = 0; from < segments.length; from += 1) {
+		const identity = NAMELESS_PARSER?.parse(
+			`refs/${segments.slice(from).join('/')}`,
+		);
+		if (identity !== undefined) return identity;
+	}
+	return undefined;
 };

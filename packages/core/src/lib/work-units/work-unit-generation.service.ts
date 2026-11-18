@@ -1,5 +1,9 @@
 import { ownedRootsOf } from './namespaced-ref.helper';
-import { ownedWorkRefShapes } from '../development-policy/owned-work-ref-parser';
+import {
+	ownedWorkRefShapes,
+	unitOfName,
+} from '../development-policy/owned-work-ref-parser';
+import { parseRefIdentityTrailer } from '../wip-engine/scope';
 import { unitRefsAnyName } from './unit-refs-any-name.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { REVIEW_BATCH_ID } from '../development-policy/profiles.constant';
@@ -55,9 +59,19 @@ const publishedUnder = (
 	return found !== undefined && found.length > 0 ? found : undefined;
 };
 
-/** A string as a literal inside a regular expression. */
-const literal = (text: string): string =>
-	text.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+/**
+ * The generation a unit ref is in: the identity its tip's
+ * `Delendai-Wip-Ref` trailer carries, and only when there is none, the
+ * one its name spells (either spelling).
+ */
+const generationOfRef = (root: string, ref: string): number => {
+	const message = readGit(root, ['log', '-1', '--format=%B', ref]) ?? '';
+	return (
+		parseRefIdentityTrailer(message)?.generation ??
+		unitOfName(ref)?.generation ??
+		Number.NaN
+	);
+};
 
 /**
  * The generations of one unit that ended: merged into the integration
@@ -73,8 +87,8 @@ export const endedGenerations = (
 ): ReadonlySet<number> => {
 	const workPrefix = `refs/heads/${policy.branches.workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}`;
 	if (!workRef.startsWith(workPrefix)) return new Set();
-	// `<agent>/<kind>/<proposal>-<slice>-g`: the unit, every generation.
-	const unit = /^(.*-g)\d+\//u.exec(workRef.slice(workPrefix.length))?.[1];
+	// The unit, every generation: who, what kind, on which proposal/slice.
+	const unit = unitOfName(workRef.slice(workPrefix.length));
 	if (unit === undefined) return new Set();
 	const integration = policy.branches.integration;
 	// The remote the integration branch lives on, not `origin` by name: a
@@ -96,9 +110,19 @@ export const endedGenerations = (
 			...ownedRootsOf(policy.branches, 'retired', '*'),
 		]) ?? '';
 	const ended = new Set<number>();
-	const named = new RegExp(`/${literal(unit)}(\\d+)/`, 'gu');
 	for (const text of [merged, retired]) {
-		for (const match of text.matchAll(named)) ended.add(Number(match[1]));
+		for (const token of text.split(/[\s'"]+/u)) {
+			const found = unitOfName(token);
+			if (
+				found !== undefined &&
+				found.agent === unit.agent &&
+				found.kind === unit.kind &&
+				found.proposal === unit.proposal &&
+				found.slice === unit.slice
+			) {
+				ended.add(found.generation);
+			}
+		}
 	}
 	return ended;
 };
@@ -140,7 +164,7 @@ export const chooseGeneration = (
 			slice,
 		)
 			.filter((ref) => sessionHolding(root, ref) === session)
-			.map((ref) => Number(/-g(\d+)\//u.exec(ref)?.[1] ?? Number.NaN))
+			.map((ref) => generationOfRef(root, ref))
 			.filter((generation) => Number.isInteger(generation));
 		if (held.length > 0) return { generation: Math.max(...held) };
 	}
