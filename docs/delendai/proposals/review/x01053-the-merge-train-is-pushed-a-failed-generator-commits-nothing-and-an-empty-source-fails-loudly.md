@@ -104,14 +104,16 @@ Once trains were pushed, every train run went red, even a train of one green pul
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S7 — The refresher judges riders as the queue does
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
 - **Gate**: none
 
 With trains running, two green pull requests sat for over 40 minutes: the queue said "#1861 is brought forward first" while the refresher said "lands as it is or rides a train; not brought forward", so neither acted. The refresher counted a failed train left from an OLDER tip as carrying the rider, and it ignored the culprit marker the queue keeps such a candidate off its trains by. It now counts only trains built from the current tip and leaves no culprit to a train.
 - shipped-in: `c97c3ea9d3d3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ## acceptance
 
