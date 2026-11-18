@@ -64,7 +64,7 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
 - review-log: requested_changes by mai-code-2 — Acceptance is not met for the declared input inventory. In tools/scripts/ci/step-inputs.constant.ts, STEP_INPUTS contains only `lint-docs`; `lint-security`, `quality-gate`, `land rehearsal`, and `lint-governance` are deliberately absent, so createStepReuse always runs and never records them. Reproduce by importing STEP_INPUTS and checking those labels, or read step-reuse.spec.ts's explicit expectation that lint-security has no declared inputs. To approve, each named step must have pathspecs covering the scripts/files it actually reads, with tests proving lookup and clean-input reuse; if these checks are intentionally dynamic, revise the proposal's acceptance criterion and behavior/design in the same unit rather than claiming they declare inputs.
 
 ### S3 — test:sqlite near the change
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `tools/scripts/ci/bun-near-specs.ts`, `tools/scripts/ci/bun-near-specs.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`
 - **Gate**: type
@@ -73,8 +73,10 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
   - "The full bun-owned suite runs only when the bun runner's own config or setup changed."
   - "The vitest step no longer receives the bun-owned specs."
 - shipped-in: `8e63cec7f2e6`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 31e5d80c428b, validate exit 0 and tests 49/49 claimed, no recorded run cited; acceptance 3/3: (1) fastSteps splits near specs by runner; bunSuiteCommand runs only the provided bun list and returns undefined for an empty list. Specs assert the split and the … (2) bunRunnerChanged matches bunfig.toml, vitest.shared.ts, or tools/scripts/test/bun-owned-* and bunSuiteCommand returns `bun run test:sqlite` only for those path… (3) fastSteps passes only splitByRunner(...).vitest to vitest; prove-plan.script.spec.ts asserts the bun-owned spec is absent from the vitest command and present i… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The focused suite passes 49/49 and typecheck passes. Runner splitting, no-op behavior, and full-suite trigger are implemented and exercised without widening CI ownership.
 
 ## acceptance
 
