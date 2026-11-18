@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ISafeDelendaiReport } from '../src/lib/contracts/interfaces/reporter.interface';
 import { buildSyntheticExample } from '../src/lib/synthetic-example.builder';
 import {
 	buildIssueBody,
@@ -282,12 +283,13 @@ describe('buildIssueTitle / buildIssueBody optional parts', () => {
 	it('[<200ms] names the safe tool, environment and frame details when known', () => {
 		const body = buildIssueBody({
 			...bare,
-			safeToolId: 'quality_run_quality',
+			safeToolId:
+				'@delendai/quality.run_quality' as ISafeDelendaiReport['safeToolId'],
 			errorCode: 'PROCESS_TIMEOUT',
 			environmentClass: { runtime: 'bun', platformFamily: 'linux' },
 			mcpFrames: [{ file: '@delendai/core/src/a.ts', fn: 'run' }],
 		});
-		expect(body).toContain('tool `quality_run_quality`');
+		expect(body).toContain('tool `@delendai/quality.run_quality`');
 		expect(body).toContain('| Safe tool |');
 		expect(body).toContain('runtime=bun, platform=linux');
 		expect(body).toContain('@delendai/core/src/a.ts run');
