@@ -34,7 +34,7 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
 - global_gate: none
 
 ### S1 — The committed lockfile is canonical for the pinned bun
-- **Status**: review
+- **Status**: pending
 - **Files**: `bun.lock`
 - **Gate**: none
 - acceptance:
@@ -42,11 +42,13 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "bun install --frozen-lockfile still passes."
   - "The commit body states the dependency versions are unchanged apart from the removed duplicate vite and rolldown entries."
 - shipped-in: `b2d30e6435f3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A guard refuses a lockfile change without a manifest change
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/lockfile-follows-manifest.script.ts`, `tools/scripts/lint/lockfile-follows-manifest.script.spec.ts`, `package.json`
 - **Gate**: none
 - acceptance:
@@ -55,11 +57,13 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "A spec proves the three cases."
   - "The guard runs in the pre-commit hook and in validate."
 - shipped-in: `b3cdb9dea54f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — Entering a unit reports the exact install command and the bun mismatch
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-dependencies.service.ts`, `packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -67,8 +71,10 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "When the running bun differs from packageManager the answer says so with both versions."
   - "A spec proves the message and the mismatch case."
 - shipped-in: `b2d30e6435f3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
