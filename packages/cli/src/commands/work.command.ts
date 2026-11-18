@@ -33,6 +33,7 @@ import {
 	deliverUnit,
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
+import { coveragePrecheckFlag } from '../lib/work-deliver-coverage-precheck.service';
 import { runGitCommand } from '@delendai/core/runtime';
 import {
 	answerCommittingWrites,
@@ -174,6 +175,8 @@ export const deliverPortsOf = (
 			),
 		precheck: () =>
 			runWorkUnit(['prove', ...unitFlags, '--only=precheck'], ctx),
+		coveragePrecheck: () =>
+			runWorkUnit(['prove', ...unitFlags, coveragePrecheckFlag()], ctx),
 		prove: () => runWorkUnit(['prove', ...unitFlags], ctx),
 		transition: async (to, checkout) => {
 			// The transition to review publishes the unit, apart from this

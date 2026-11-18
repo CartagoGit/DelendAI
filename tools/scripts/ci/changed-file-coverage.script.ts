@@ -50,6 +50,38 @@ export type {
 	ICoverageMetrics,
 } from './changed-file-coverage.interface';
 
+/** A source the coverage gate judges: not a spec, not a declaration file. */
+const COVERED_SOURCE =
+	/^(?:packages|plugins|tools|extensions|apps)\/.*\.tsx?$/u;
+
+/**
+ * The mirror specs of the changed modules, and only those: `x.spec.ts`
+ * beside `x.ts`, or the same path under the package's `tests/src/`. The gate
+ * counts the coverage mirror-named specs give; a spec that merely imports a
+ * module does not make it covered, so the fast path runs no other spec.
+ * `exists` says which candidates are on disk.
+ */
+export const mirrorSpecsOf = (
+	changed: readonly string[],
+	exists: (path: string) => boolean,
+): readonly string[] => {
+	const found = new Set<string>();
+	for (const file of changed) {
+		if (
+			!COVERED_SOURCE.test(file) ||
+			/\.(?:spec|test|d)\.tsx?$/u.test(file)
+		)
+			continue;
+		const stem = file.replace(/\.tsx?$/u, '');
+		const candidates = [
+			`${stem}.spec.ts`,
+			`${stem.replace('/src/', '/tests/src/')}.spec.ts`,
+		];
+		for (const spec of candidates) if (exists(spec)) found.add(spec);
+	}
+	return [...found].sort();
+};
+
 const pct = (counts: ICoverageCounts): number =>
 	counts.total === 0 ? 100 : (counts.covered / counts.total) * 100;
 

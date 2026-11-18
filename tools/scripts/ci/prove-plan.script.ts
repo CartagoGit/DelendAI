@@ -54,6 +54,7 @@ import {
 } from './job-scope.script';
 
 import { touchesIntegrationMachinery } from '../forge/land-rehearsal';
+import { mirrorSpecsOf } from './changed-file-coverage.script';
 import { changedSince, nearSpecsSince } from './near-specs';
 import type { IProveJob } from './prove-plan.interface';
 import { bunSuiteCommand, splitByRunner } from './bun-near-specs';
@@ -681,7 +682,14 @@ export const gateNamesOf = (
 			'typecheck',
 			...STATIC_CHECK_FAMILIES,
 			...(fast
-				? fastSteps(changed, ['*'], base).map(([label]) => label)
+				? [
+						...fastSteps(changed, ['*'], base).map(
+							([label]) => label,
+						),
+						...coveragePrecheckSteps([], base).map(
+							([label]) => label,
+						),
+					]
 				: ['tests']),
 		].map(gateOf),
 	),
@@ -709,6 +717,40 @@ export const precheckGatesOf = (
 				!RUN_ALONE.has(gate) &&
 				staticJobRuns(changed, gate)),
 	);
+
+/** The gate `work deliver` runs after the static pre-check: coverage by the mirror specs alone. */
+export const COVERAGE_PRECHECK_GATE = 'coverage-precheck';
+
+/**
+ * The coverage pre-check: the mirror specs of the changed modules with
+ * coverage collected on the changed files only, then the coverage gate's own
+ * script on that report, so it refuses with the gate's message.
+ */
+export const coveragePrecheckSteps = (
+	mirrors: readonly string[],
+	base: string,
+): readonly (readonly [string, readonly string[]])[] => [
+	[
+		'coverage precheck: mirror specs',
+		[
+			'bunx',
+			'vitest',
+			'run',
+			'--coverage',
+			'--passWithNoTests',
+			'--maxWorkers=2',
+			...mirrors,
+		],
+	],
+	[
+		'coverage precheck: gate',
+		[
+			'bun',
+			'tools/scripts/ci/changed-file-coverage.script.ts',
+			`--base=${base}`,
+		],
+	],
+];
 
 /** `--only=precheck` stands for the gates `precheckGatesOf` names. */
 export const expandPrecheck = (
@@ -834,6 +876,16 @@ const main = async (): Promise<number> => {
 			);
 			return 1;
 		}
+		let coveredOk = true;
+		if (only?.has(COVERAGE_PRECHECK_GATE) === true) {
+			// Never in a proof (`only` is set): `work deliver` asks for it.
+			process.env.VITEST_COVERAGE_FILES = selected.join('\n');
+			const mirrors = mirrorSpecsOf(selected, existsSync);
+			coveredOk = coveragePrecheckSteps(mirrors, selectionBase).reduce(
+				(allOk, [label, command]) => step(label, command) && allOk,
+				true,
+			);
+		}
 		const ok = await runChecks(base, only, selectionBase);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
@@ -855,7 +907,7 @@ const main = async (): Promise<number> => {
 					true,
 				),
 		);
-		return conclude(ok && heavyOk, 'fast');
+		return conclude(ok && heavyOk && coveredOk, 'fast');
 	}
 	const jobs = JSON.parse(
 		execFileSync(

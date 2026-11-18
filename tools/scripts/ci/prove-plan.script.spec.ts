@@ -16,6 +16,8 @@ import {
 	timingTableOf,
 	fastSteps,
 	gateNamesOf,
+	coveragePrecheckSteps,
+	COVERAGE_PRECHECK_GATE,
 	gateOf,
 	onlyGatesOf,
 	partialVerdictOf,
@@ -351,5 +353,20 @@ describe('the proof of a proposal-only batch', () => {
 			),
 		];
 		expect(planned.some((step) => /install/u.test(step))).toBe(false);
+	});
+});
+
+describe('coveragePrecheckSteps', () => {
+	it('[<40ms] runs the mirror specs, then the coverage gate script, under one gate', () => {
+		const steps = coveragePrecheckSteps(['a.spec.ts'], 'b');
+		expect(steps.map(([label]) => gateOf(label))).toEqual([
+			COVERAGE_PRECHECK_GATE,
+			COVERAGE_PRECHECK_GATE,
+		]);
+		expect(steps[0]?.[1]).toContain('a.spec.ts');
+		expect(steps[1]?.[1]).toContain('--base=b');
+		expect(gateNamesOf(['x.ts'], true, 'b')).toContain(
+			COVERAGE_PRECHECK_GATE,
+		);
 	});
 });
