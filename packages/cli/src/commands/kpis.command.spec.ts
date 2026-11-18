@@ -479,4 +479,89 @@ describe('kpis command', () => {
 		expect(writes).toHaveLength(2);
 		expect(writes[0]).toContain('cli.kpis-report');
 	});
+
+	describe('--failures', () => {
+		const ev = (
+			ts: string,
+			kind: string,
+			toolName: string,
+			failure?: { class: string; code: string },
+		): string =>
+			JSON.stringify({
+				version: 1,
+				ts,
+				sessionId: 's',
+				kind,
+				toolName,
+				...(failure === undefined ? {} : { failure }),
+			});
+		const refused = { class: 'refused', code: 'gate invalid' };
+		const events = [
+			ev('2026-11-17T10:00:00Z', 'tool.completed', 'a'),
+			ev('2026-11-17T10:01:00Z', 'tool.failed', 'a', refused),
+			ev('2026-11-17T10:02:00Z', 'tool.failed', 'b', refused),
+			ev('2026-11-17T10:03:00Z', 'tool.failed', 'b', refused),
+			ev('2026-11-17T10:04:00Z', 'tool.failed', 'b', {
+				class: 'threw',
+				code: 'boom',
+			}),
+			ev('2026-11-17T10:05:00Z', 'tool.failed', 'b'),
+			ev('2026-10-01T10:00:00Z', 'tool.failed', 'old', refused),
+			'not json',
+		].join('\n');
+		const failuresRuntime = {
+			pathExists: () => true,
+			readTextFile: async () => events,
+			now: () => new Date('2026-11-18T00:00:00Z'),
+		};
+
+		it('prints per-tool rows, most failing first, as json', async () => {
+			const result = await runKpisCommandBody(
+				['--failures'],
+				buildStubContext(true),
+				failuresRuntime,
+			);
+			expect(result.data).toEqual({
+				rows: [
+					{
+						tool: 'b',
+						calls: 4,
+						failures: 4,
+						failureShare: 1,
+						topCodes: [
+							{
+								class: 'refused',
+								code: 'gate invalid',
+								count: 2,
+							},
+							{ class: 'threw', code: 'boom', count: 1 },
+						],
+					},
+					{
+						tool: 'a',
+						calls: 2,
+						failures: 1,
+						failureShare: 0.5,
+						topCodes: [
+							{
+								class: 'refused',
+								code: 'gate invalid',
+								count: 1,
+							},
+						],
+					},
+				],
+			});
+		});
+
+		it('honours --since and renders text', async () => {
+			const result = await runKpisCommandBody(
+				['--failures', '--since=60'],
+				buildStubContext(),
+				failuresRuntime,
+			);
+			expect(result.text).toContain('old: 1/1 failed (100.0%)');
+			expect(result.text).toContain('2x [refused] gate invalid');
+		});
+	});
 });

@@ -16,6 +16,18 @@ export type RuntimeEventKind =
 	| 'tool.cancelled'
 	| 'plugin.activated';
 
+export type ToolFailureClass =
+	| 'input-invalid'
+	| 'refused'
+	| 'threw'
+	| 'cancelled';
+
+/** Why a tool call failed: a bounded class and a stable, redacted code. */
+export interface IToolFailure {
+	readonly class: ToolFailureClass;
+	readonly code: string;
+}
+
 /** Stable, host-neutral event envelope written outside MCP stdio. */
 export interface IRuntimeEvent {
 	readonly version: 1;
@@ -27,6 +39,8 @@ export interface IRuntimeEvent {
 	readonly toolCount?: number;
 	readonly elapsedMs?: number;
 	readonly error?: boolean;
+	/** Present on `tool.failed` events only. */
+	readonly failure?: IToolFailure;
 	readonly estimatedTokens4B?: number;
 	readonly meta?: Readonly<Record<string, string | number | boolean>>;
 }
