@@ -33,6 +33,7 @@ import {
 	buildCreateProposalRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { completing } from '../_fixtures/complete-proposal-input';
 
 // The publication namespace is configuration: derive it from the same
 // policy the tool is built with instead of pinning the old default.
@@ -119,7 +120,7 @@ const handlerFor = async (
 		}),
 	);
 	expect(handler).toBeDefined();
-	return handler as (args: unknown) => Promise<unknown>;
+	return completing(handler as (args: unknown) => Promise<unknown>);
 };
 
 /** What `create_proposal` reports about the file it just wrote. */
@@ -345,7 +346,6 @@ describe('create_proposal in a create unit that already made a proposal', () => 
 			kind: 'feat',
 			title: 'A second proposal',
 			goal: 'Should not be written.',
-			slices: [],
 		})) as { readonly isError?: boolean };
 
 		expect(result.isError).toBe(true);

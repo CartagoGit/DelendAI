@@ -21,6 +21,7 @@ import type { IMcpPluginContext } from '@delendai/core/contracts';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import plugin from '@delendai/proposals';
 import { createFakeToolServer } from '@delendai/test-kit/public';
+import { completing } from './_fixtures/complete-proposal-input';
 
 const roots: string[] = [];
 
@@ -100,7 +101,7 @@ const createProposalHandler = async (
 		}),
 	);
 	expect(handler).toBeDefined();
-	return handler as (args: unknown) => Promise<unknown>;
+	return completing(handler as (args: unknown) => Promise<unknown>);
 };
 
 const authorProposal = async (

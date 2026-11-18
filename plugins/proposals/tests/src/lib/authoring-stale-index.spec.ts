@@ -22,6 +22,7 @@ import {
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { completing } from './_fixtures/complete-proposal-input';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -67,7 +68,9 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 	/** Create f00001 and move it ready/feats/ → in-progress/ WITHOUT re-syncing,
 	 *  exactly what a proposal_transition leaves behind. */
 	const createThenMoveStale = async (): Promise<void> => {
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = completing(
+			await capture(buildCreateProposalRegistration(opts)),
+		);
 		const created = parse(
 			await create({
 				id: 'f00001',

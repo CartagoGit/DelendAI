@@ -10,6 +10,10 @@ import {
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import {
+	completing,
+	DEFAULT_ACCEPTANCE_EVIDENCE,
+} from './_fixtures/complete-proposal-input';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -29,6 +33,8 @@ const capture = async (
 	return h!;
 };
 
+const creator = async (opts: IAuthoringToolOptions) =>
+	completing(await capture(buildCreateProposalRegistration(opts)));
 const parse = (r: { content: Array<{ text: string }> }) =>
 	JSON.parse(r.content[0]?.text ?? '{}');
 
@@ -82,7 +88,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('allows approve from a different agent even on the same host+pid', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00086',
 			title: 'Identity gate',
@@ -105,7 +111,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 				sliceId: 's1',
 				action: 'approve',
 				agent: 'glm-5',
-				evidence: APPROVE_EVIDENCE,
+				evidence: DEFAULT_ACCEPTANCE_EVIDENCE,
 			}),
 		);
 		expect(approved.ok).toBe(true);
@@ -115,7 +121,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('requires evidence for every declared acceptance criterion', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 't00032',
 			title: 'Acceptance coverage',
@@ -176,7 +182,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('rejects approve without empirical evidence after submit', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00090',
 			title: 'Evidence gate',
@@ -208,7 +214,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('refuses self-approval by the same agent', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00089',
 			title: 'Self approval',
@@ -243,7 +249,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('refuses approve before submit with an explicit missing identity reason', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00087',
 			title: 'Approve first',
@@ -271,7 +277,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('allows request_changes without empirical evidence', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00091',
 			title: 'Reject without evidence',
@@ -300,7 +306,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('writes the submit identity log that review approval reads back', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00088',
 			title: 'Identity log',
@@ -327,7 +333,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 	});
 
 	it('reports that status does not release the delegated assignment', async () => {
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00093',
 			title: 'Review status contract',
@@ -353,7 +359,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	it('gives a recovery path when the requested slice is not declared', async () => {
 		process.env.MCP_HOST = 'shared-host';
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = await creator(opts);
 		await create({
 			id: 'f00092',
 			title: 'Missing slice guidance',

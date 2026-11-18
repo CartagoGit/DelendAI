@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { completeProposalInput } from '../../../../../../plugins/proposals/tests/src/lib/_fixtures/complete-proposal-input';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -531,11 +532,11 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
 		const created = await client.callTool({
 			name: 'delendai_proposals_create_proposal',
-			arguments: {
+			arguments: completeProposalInput({
 				id: 'f00001',
 				title: 'demo',
 				slices: [{ sliceId: 's1', files: ['src/a.ts'] }],
-			},
+			}),
 		});
 		expect(created.isError, 'create_proposal').toBeFalsy();
 		const cs = created.structuredContent as { ok: boolean; file: string };
