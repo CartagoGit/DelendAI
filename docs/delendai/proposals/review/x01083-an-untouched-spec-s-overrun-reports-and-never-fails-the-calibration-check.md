@@ -34,12 +34,14 @@ Why that test took 140 ms at load factor 1, from reading the test and the store:
 - global_gate: none
 
 ### S1 — The calibration check reports an untouched spec and fails a touched one
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/test-budget-calibrate.script.ts`, `tools/scripts/ci/test-budget-calibration.ts`, `tools/scripts/ci/test-budget-check.ts`, `tools/scripts/ci/test-budget-check.spec.ts`, `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts`, `packages/core/tests/src/lib/forge-events/forge-event-store.service.e2e.spec.ts`, `packages/test-kit/src/public/index.ts`
 - **Gate**: none
 - shipped-in: `e4ed995bc0f8`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
