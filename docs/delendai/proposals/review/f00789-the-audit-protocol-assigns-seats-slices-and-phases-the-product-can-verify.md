@@ -2,14 +2,14 @@
 id: f00789
 title: "The audit protocol assigns seats, slices and phases the product can verify"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 3c384bd2-ce63-40d0-ab8f-a7e5cbb98183
-last-correlation-id: 3c384bd2-ce63-40d0-ab8f-a7e5cbb98183
-last-transition-from: ready
-last-transition-at: 2026-11-18T06:51:18.455Z
+last-transition-id: b80e525a-0338-4fe9-b1e9-42e666d6f655
+last-correlation-id: b80e525a-0338-4fe9-b1e9-42e666d6f655
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T06:51:58.233Z
 ---
 
 # f00789 — The audit protocol assigns seats, slices and phases the product can verify
@@ -31,17 +31,13 @@ Joint audit a00095, on its own protocol. C2: reviewers assign themselves seats a
 - global_gate: type
 
 ### S1 — Seats and phases
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/audit/src/lib/tools/audit-consolidate.tool.ts`, `plugins/audit/src/lib/services/audit-seats.service.ts`, `plugins/audit/src/lib/contracts/constants/audit-protocol.constant.ts`, `plugins/audit/src/lib/contracts/interfaces/audit-protocol.interface.ts`, `plugins/audit/tests/src/lib/services/audit-protocol.spec.ts`
 - **Gate**: type
 - acceptance:
   - "A seat is claimed with an exclusive create and two reviewers cannot hold one (C2)."
   - "A reviewer's Phase A file is committed before it can read the others' (G75)."
 - shipped-in: `5c9c99b52b42`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-m3.1-flash
-- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S1, the seats and the phases.
 
 WHAT IS WRONG. The first criterion is delivered: a seat is claimed with an exclusive create and a second reviewer is refused it, and the spec proves it. The second criterion is not: the Phase A gate is the reader's to invoke, and a reader that does not name itself is never checked.
 
@@ -52,9 +48,12 @@ HOW TO REPRODUCE. Call the consolidate tool over an audit directory that holds s
 WHAT MUST HOLD. A reader of the others' reports is checked, not the one who asks to be checked: the reviewer is required whenever the audit directory holds seat claims, and the close path checks the seats' Phase A state before it reads the reports. The criterion is a guarantee about the protocol, and a guarantee the caller can switch off is not the guarantee the criterion names.
 
 The type gate exited 0 and the audit protocol's spec passes 8 of 8.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S1, the seats and the phases.
 
 ### S2 — Contract, inventory and closure
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/audit/src/lib/services/audit-contract.service.ts`, `plugins/audit/src/lib/tools/audit-close.tool.ts`, `plugins/audit/src/index.ts`, `apps/web/src/i18n/tools/delendai_audit_close.ts`, `apps/web/src/i18n/tools/index.ts`, `plugins/audit/tests/src/lib/tools/audit-close.tool.spec.ts`, `plugins/audit/src/lib/services/audit-path-policy.service.ts`, `plugins/audit/skills/audit-runner/SKILL.md`
 - **Gate**: type
 - acceptance:
@@ -62,10 +61,6 @@ The type gate exited 0 and the audit protocol's spec passes 8 of 8.
   - "The inventory and the proposal inventory are generated (G77, G150)."
   - "Closing records the consensus and its threshold per finding (G78)."
 - shipped-in: `5c9c99b52b42`
-- review-state: changes_requested
-- review-implementer: claude-opus-5-5
-- review-reviewer: minimax-m3.1-flash
-- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S2, the contract, the inventory and the closure.
 
 WHAT IS WRONG. The first and the third criteria are delivered: the required fields are checked and the incomplete findings are listed, and the closing record holds the consensus and its threshold per finding. The second is not: the inventories are computed, rendered and answered, and then dropped on the floor.
 
@@ -76,6 +71,9 @@ HOW TO REPRODUCE. Close an audit and look in the audit directory: .audit/closure
 WHAT MUST HOLD. The inventory and the proposal inventory are written into the audit record: the rendered inventory and its rows land in the audit directory beside the closure, and a spec reads them back from the directory rather than from the answer.
 
 The type gate exited 0 and the close tool's spec passes 4 of 4.
+- review-state: in_review
+- review-implementer: claude-opus-5-5
+- review-log: requested_changes by minimax-m3.1-flash — Changes requested on slice S2, the contract, the inventory and the closure.
 
 ## acceptance
 
