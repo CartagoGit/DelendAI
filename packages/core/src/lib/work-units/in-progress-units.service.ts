@@ -13,6 +13,24 @@ import type { IInvariantResult } from '../contracts/interfaces/workflow-invarian
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
+/** The proposals some branch of `branches` is a unit of, here or on the forge. */
+export const proposalsHeldByUnits = (
+	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
+	branches: readonly string[],
+): ReadonlySet<string> => {
+	const work = bare(policy.branches.workRefPrefix);
+	const publication = bare(policy.branches.publicationRefPrefix);
+	return new Set(
+		branches.flatMap((branch) => {
+			const asWork = branch.startsWith(publication)
+				? `${work}${branch.slice(publication.length)}`
+				: branch;
+			const proposal = workUnitIdentityOf(policy, asWork)?.proposal;
+			return proposal === undefined ? [] : [proposal];
+		}),
+	);
+};
+
 /**
  * The invariant, from the proposals in progress on the integration branch
  * and every branch name there is, here and on the forge.
@@ -22,17 +40,7 @@ export const strandedProposalsInvariant = (input: {
 	readonly inProgress: readonly string[];
 	readonly branches: readonly string[];
 }): IInvariantResult => {
-	const work = bare(input.policy.branches.workRefPrefix);
-	const publication = bare(input.policy.branches.publicationRefPrefix);
-	const held = new Set(
-		input.branches.flatMap((branch) => {
-			const asWork = branch.startsWith(publication)
-				? `${work}${branch.slice(publication.length)}`
-				: branch;
-			const proposal = workUnitIdentityOf(input.policy, asWork)?.proposal;
-			return proposal === undefined ? [] : [proposal];
-		}),
-	);
+	const held = proposalsHeldByUnits(input.policy, input.branches);
 	const stranded = [...new Set(input.inProgress)]
 		.filter((proposal) => !held.has(proposal))
 		.sort();
@@ -45,6 +53,6 @@ export const strandedProposalsInvariant = (input: {
 			stranded.length === 0
 				? 'all held'
 				: `${String(stranded.length)} with no unit: ${stranded.slice(0, 5).join(', ')}`,
-		remedy: 'enter it again to go on (`delendai work enter --proposal=<id>`), or move it to where it stands: review, ready, blocked or paused',
+		remedy: 'enter it again to go on (`delendai work enter --proposal=<id>`), or move it to where it stands: review, ready, blocked or paused; when every slice shipped, `delendai work revalidate` hands them all over in one batch',
 	};
 };

@@ -35,6 +35,8 @@ export interface IRevalidateSelection {
 /** The ports the command runs on. */
 export interface IRevalidateReadPorts {
 	readonly proposals: () => Promise<readonly IRevalidateProposal[]>;
+	/** The proposals a live unit holds, here or on the forge. */
+	readonly heldByUnits: () => Promise<ReadonlySet<string>>;
 	readonly print: (line: string) => void;
 }
 

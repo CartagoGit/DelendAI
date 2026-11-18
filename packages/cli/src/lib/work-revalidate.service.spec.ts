@@ -12,6 +12,7 @@ import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.cons
 
 import {
 	parseRevalidateProposal,
+	revalidateRefusalOf,
 	rewriteDeclaredPath,
 	readReadyProposals,
 	revalidateBatch,
@@ -41,7 +42,7 @@ const FIXTURE: readonly IRevalidateProposal[] = [
 	proposal('f1', [slice(), slice({ id: 'S2' })]),
 	proposal('f2', [slice(), slice({ id: 'S2', shippedIn: undefined })]),
 	proposal('f3', [slice({ reviewState: 'in_review' })]),
-	proposal('f4', [slice()], 'in-progress'),
+	proposal('f4', [slice()], 'review'),
 	proposal('f5', [
 		slice(),
 		slice({ id: 'S2', status: 'retired', shippedIn: undefined }),
@@ -52,6 +53,7 @@ const okPorts = (
 	proposals: readonly IRevalidateProposal[],
 ): IWorkRevalidatePorts => ({
 	proposals: async () => proposals,
+	heldByUnits: async () => new Set<string>(),
 	print: () => undefined,
 	enter: async () => '/unit',
 	developSha: async () => 'abcdef0123456789',
@@ -177,6 +179,7 @@ describe('revalidateBatch units and transitions', () => {
 		};
 		const ports: IWorkRevalidatePorts = {
 			proposals: async () => THREE,
+			heldByUnits: async () => new Set<string>(),
 			print: () => undefined,
 			enter: async () => {
 				calls.enter += 1;
@@ -416,6 +419,56 @@ describe('revalidateBatch declared files', () => {
 		const result = await revalidateBatch(ports, undefined);
 		expect(calls.transitions).toEqual([]);
 		expect(result.data.retired).toEqual([]);
+	});
+});
+
+describe('in-progress proposals', () => {
+	const finished = (id: string, stage = 'in-progress') =>
+		proposal(id, [slice({ reviewState: undefined })], stage);
+
+	it('[<50ms] accepts a finished in-progress proposal no unit holds', () => {
+		expect(revalidateRefusalOf(finished('i1'))).toBeUndefined();
+	});
+
+	it('[<50ms] refuses one with an unshipped slice, naming it', () => {
+		const open = proposal(
+			'i2',
+			[slice({ shippedIn: undefined })],
+			'in-progress',
+		);
+		expect(revalidateRefusalOf(open)).toContain('S1 has no shipped-in');
+	});
+
+	it('[<50ms] refuses one a live unit holds, naming the unit', () => {
+		expect(revalidateRefusalOf(finished('i3'), new Set(['i3']))).toContain(
+			'a live unit holds it',
+		);
+	});
+
+	it('[<100ms] hands an in-progress proposal over with review as its only step, a ready one in-progress then review', async () => {
+		const steps: string[] = [];
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([finished('i1'), proposal('r1', [slice()])]),
+			transition: async ({ id, to }) => {
+				steps.push(`${id}:${to}`);
+				return { ok: true };
+			},
+		};
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.transitioned).toEqual(['i1', 'r1']);
+		expect(steps).toEqual(['i1:review', 'r1:in-progress', 'r1:review']);
+	});
+
+	it('[<100ms] leaves a held proposal out of the batch', async () => {
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([finished('i3')]),
+			heldByUnits: async () => new Set(['i3']),
+		};
+		const result = await revalidateBatch(ports, 'i3');
+		expect(result.data.refused).toEqual([
+			{ id: 'i3', reason: 'a live unit holds it' },
+		]);
+		expect(result.data.chosen).toEqual([]);
 	});
 });
 

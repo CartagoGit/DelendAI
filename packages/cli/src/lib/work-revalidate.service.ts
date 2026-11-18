@@ -11,7 +11,10 @@ import { readdir, readFile } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
-import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.constant';
+import {
+	IN_PROGRESS_PROPOSALS_DIR,
+	READY_PROPOSALS_DIR,
+} from '../contracts/constants/work-revalidate.constant';
 import type {
 	IRevalidateOutcome,
 	IRevalidateProposal,
@@ -31,15 +34,19 @@ const isLive = (slice: IRevalidateSlice): boolean =>
 /** Why `proposal` is not for revalidation; undefined when it is. */
 export const revalidateRefusalOf = (
 	proposal: IRevalidateProposal,
+	held: ReadonlySet<string> = new Set(),
 ): string | undefined => {
-	if (proposal.stage !== 'ready') {
-		return `it is in ${proposal.stage}, not ready`;
+	if (proposal.stage !== 'ready' && proposal.stage !== 'in-progress') {
+		return `it is in ${proposal.stage}, not ready or in-progress`;
 	}
 	const live = proposal.slices.filter(isLive);
 	if (live.length === 0) return 'it has no live slice';
 	const unshipped = live.find((slice) => slice.shippedIn === undefined);
 	if (unshipped !== undefined) {
 		return `slice ${unshipped.id} has no shipped-in`;
+	}
+	if (proposal.stage === 'in-progress') {
+		return held.has(proposal.id) ? 'a live unit holds it' : undefined;
 	}
 	const other = live.find(
 		(slice) => slice.reviewState !== 'changes_requested',
@@ -58,12 +65,14 @@ export const revalidateRefusalOf = (
 export const selectRevalidation = (
 	proposals: readonly IRevalidateProposal[],
 	named?: readonly string[],
+	held: ReadonlySet<string> = new Set(),
 ): IRevalidateSelection => {
 	if (named === undefined) {
 		return {
 			chosen: proposals
 				.filter(
-					(proposal) => revalidateRefusalOf(proposal) === undefined,
+					(proposal) =>
+						revalidateRefusalOf(proposal, held) === undefined,
 				)
 				.map((proposal) => proposal.id),
 			refused: [],
@@ -76,7 +85,7 @@ export const selectRevalidation = (
 		const reason =
 			proposal === undefined
 				? 'no such proposal'
-				: revalidateRefusalOf(proposal);
+				: revalidateRefusalOf(proposal, held);
 		if (reason === undefined) chosen.push(id);
 		else refused.push({ id, reason });
 	}
@@ -183,16 +192,17 @@ const markdownFilesOf = async (dir: string): Promise<readonly string[]> => {
 	return nested.flat();
 };
 
-/** The ready proposals of the project at `root`. */
-export const readReadyProposals = async (
+const readStage = async (
 	root: string,
+	dir: string,
+	stage: string,
 ): Promise<readonly IRevalidateProposal[]> => {
-	const files = await markdownFilesOf(join(root, READY_PROPOSALS_DIR));
+	const files = await markdownFilesOf(join(root, dir));
 	const parsed = await Promise.all(
 		files.map(async (file) =>
 			parseRevalidateProposal(
 				await readFile(file, 'utf8'),
-				'ready',
+				stage,
 				relative(root, file),
 			),
 		),
@@ -201,6 +211,20 @@ export const readReadyProposals = async (
 		(proposal): proposal is IRevalidateProposal => proposal !== undefined,
 	);
 };
+
+/** The ready proposals of the project at `root`. */
+export const readReadyProposals = (
+	root: string,
+): Promise<readonly IRevalidateProposal[]> =>
+	readStage(root, READY_PROPOSALS_DIR, 'ready');
+
+/** The ready and the in-progress proposals of the project at `root`. */
+export const readRevalidationProposals = async (
+	root: string,
+): Promise<readonly IRevalidateProposal[]> => [
+	...(await readReadyProposals(root)),
+	...(await readStage(root, IN_PROGRESS_PROPOSALS_DIR, 'in-progress')),
+];
 
 /** `--proposals=a,b` as ids; undefined when the flag is absent. */
 export const namedProposalsOf = (
@@ -386,8 +410,9 @@ const judgeFiles = (
 	};
 };
 
-/** The steps a proposal takes: ready to in-progress, then to review. */
-const STEPS = ['in-progress', 'review'] as const;
+/** The steps a proposal takes: ready goes to in-progress then review; in-progress only to review. */
+const stepsOf = (stage: string): readonly ('in-progress' | 'review')[] =>
+	stage === 'in-progress' ? ['review'] : ['in-progress', 'review'];
 
 /**
  * Move one proposal through its steps, once each, stopping at the first
@@ -399,9 +424,14 @@ const transitionProposal = async (
 	id: string,
 	worktree: string,
 	sha: string | undefined,
+	stage: string,
 ): Promise<string | undefined> => {
-	const reason = `Re-validated with fresh evidence${sha === undefined ? '' : ` at ${sha.slice(0, 12)}`}: the slices shipped and their review round was stale.`;
-	for (const to of STEPS) {
+	const why =
+		stage === 'in-progress'
+			? 'every slice shipped and no unit holds it'
+			: 'the slices shipped and their review round was stale';
+	const reason = `Re-validated with fresh evidence${sha === undefined ? '' : ` at ${sha.slice(0, 12)}`}: ${why}.`;
+	for (const to of stepsOf(stage)) {
 		try {
 			const refusal = refusalOf(
 				await ports.transition({ id, to, reason, worktree }),
@@ -467,6 +497,7 @@ export const revalidateBatch = async (
 	const selection = selectRevalidation(
 		proposals,
 		namedProposalsOf(proposalsFlag),
+		await ports.heldByUnits(),
 	);
 	for (const { id, reason } of selection.refused) {
 		ports.print(`left out ${id}: ${reason}`);
@@ -509,7 +540,13 @@ export const revalidateBatch = async (
 			renamed ??
 			(verdict.kind === 'retire'
 				? await retireProposal(ports, id, worktree, verdict)
-				: await transitionProposal(ports, id, worktree, sha));
+				: await transitionProposal(
+						ports,
+						id,
+						worktree,
+						sha,
+						proposal?.stage ?? 'ready',
+					));
 		if (reason === undefined) {
 			(verdict.kind === 'retire' ? retired : transitioned).push(id);
 			continue;
