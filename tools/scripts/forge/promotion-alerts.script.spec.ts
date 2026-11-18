@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	analysisCoversTip,
 	judge,
-	type TForgeAsk,
+	type IForgeAsk,
 	openAlertsOf,
 	promotionAlertReport,
 	uncoveredReport,
@@ -80,7 +80,7 @@ describe('judging a tip the latest analysis does not cover', () => {
 	const tip = 'a'.repeat(40);
 	const analysed = 'b'.repeat(40);
 	const forge =
-		(alerts: readonly object[]): TForgeAsk =>
+		(alerts: readonly object[]): IForgeAsk =>
 		(path) => {
 			if (path.startsWith('commits/'))
 				return JSON.stringify({ sha: tip });

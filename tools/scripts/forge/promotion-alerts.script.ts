@@ -92,10 +92,10 @@ export const uncoveredReport = (
 	`✖ promotion-alerts: no completed code scanning analysis covers ${branch} at ${tip.slice(0, 12)} (${analysed === undefined ? 'none yet' : `latest is ${analysed.slice(0, 12)}`}); its open alerts are unknown. Wait for the push-started scan.`;
 
 /** Answers a forge API path of one repository with its raw JSON. */
-export type TForgeAsk = (path: string, paginate?: boolean) => string;
+export type IForgeAsk = (path: string, paginate?: boolean) => string;
 
 const ghAsk =
-	(repository: string): TForgeAsk =>
+	(repository: string): IForgeAsk =>
 	(path, paginate = false) =>
 		execFileSync(
 			'gh',
@@ -117,7 +117,7 @@ export const judgedAtLatestReport = (tip: string, analysed: string): string =>
  * that analysis instead (one line says so); no analysis at all still refuses.
  */
 const coverageRefusal = (
-	ask: TForgeAsk,
+	ask: IForgeAsk,
 	branch: string,
 	latestAnalysed: boolean,
 ): string | undefined => {
@@ -140,7 +140,7 @@ const coverageRefusal = (
 /** Judges `branch` with the forge answers `ask` gives; the exit code. */
 export const judge = (
 	branch: string,
-	ask: TForgeAsk,
+	ask: IForgeAsk,
 	latestAnalysed: boolean,
 ): number => {
 	let rows: readonly IAlertRow[];
