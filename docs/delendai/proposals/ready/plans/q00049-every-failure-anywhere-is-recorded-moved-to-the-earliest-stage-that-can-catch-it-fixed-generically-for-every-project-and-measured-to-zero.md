@@ -23,20 +23,21 @@ Owner, 2026-11-18: a failure must never be fixed only where it happened; dogfood
 - Sending failure data off the machine; observations hold no argument values or free text beyond the redacted bounded signature.
 - Changing what any gate accepts or refuses; this only records, classifies, routes and measures.
 - An agent deciding when a failure becomes a proposal; that is code over a confidence policy.
+- Sharing lessons across the projects of one person (f00817), or mixing delendai's own tooling failures seen in another project into that project's lessons (those go to error-reporting).
 - A second store or ledger next to self-learning, or replacing error-reporting.
 
 ## slices
 
 - global_gate: lint
 
-### S0 — Activate self-learning by policy here and as an opt-in pack for every project
+### S0 — self-learning is on by default in the main packs
 - **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/preset-catalog.ts`, `packages/core/tests/src/lib/plugins/preset-catalog.spec.ts`, `delendai.config.json`
 - **Gate**: lint
-- **Decisions**: self-learning, project-kpis and error-reporting form an opt-in learning pack added to the dogfood and team-pr presets in preset-catalog.ts (a project not choosing them is unchanged), and this repository activates it in delendai.config.json; the self-learning observations and lessons tools are reachable through the compact router once active. Nothing is enabled implicitly for other projects.
+- **Decisions**: self-learning and project-kpis are members of the team-pr, swarm and dogfood packs (everything already lists them; the packs are those of f00803, packs by purpose), so a project on any of them learns by default; the minimal and solo packs are unchanged. A project turns it off only by an explicit per-plugin choice in its policy (plugins.self-learning disabled), which the pack resolution already honours. This repository uses the dogfood pack, so it learns here with no extra step; the lessons and observations tools are reachable through the compact router once active. self-learning always learns about the project it runs in: in another project its lessons are that project's, never delendai's. Failures of delendai's own tooling seen in another project go to the error-reporting plugin, which already reports delendai bugs upstream, and are kept apart from the project's lessons. Sharing lessons across the projects of one person stays f00817's job and is not done here.
 - acceptance:
-  - "packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the dogfood and team-pr presets list self-learning and project-kpis and the minimal preset does not"
-  - "plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts: the lessons tool answers ok through the compact router when the learning pack is active"
+  - "packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the team-pr, swarm and dogfood packs list self-learning and project-kpis, minimal and solo do not, and a policy that disables self-learning removes it from the resolved members"
+  - "packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the dogfood pack resolves self-learning for this repository"
 
 ### S1 — Failure collectors write observations into the self-learning store
 - **Status**: pending
@@ -103,8 +104,8 @@ Owner, 2026-11-18: a failure must never be fixed only where it happened; dogfood
 
 ## acceptance
 
-- packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the dogfood and team-pr presets list self-learning and project-kpis and the minimal preset does not
-- plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts: the lessons tool answers ok through the compact router when the learning pack is active
+- packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the team-pr, swarm and dogfood packs list self-learning and project-kpis, minimal and solo do not, and a policy that disables self-learning removes it from the resolved members
+- packages/core/tests/src/lib/plugins/preset-catalog.spec.ts: the dogfood pack resolves self-learning for this repository
 - plugins/self-learning/tests/src/lib/collectors/failure-collectors.service.spec.ts: a failing gate, hook, CI job, land verdict, tool error and deliver refusal each append one observation carrying class, stage, files, unit and minutes lost
 - plugins/self-learning/tests/src/lib/collectors/failure-collectors.service.spec.ts: a secret-looking argument value never reaches an observation and a store write failure does not change the caller's result
 - plugins/self-learning/tests/src/lib/lessons/late-catch.helper.spec.ts: a file-size breach observed at CI is a late catch against the commit hook and the same breach at the commit hook is not
