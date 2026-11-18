@@ -2,14 +2,14 @@
 id: x01095
 title: "A dependency version reaches the tree only after a cooldown, from the registry, with its integrity hash"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: ecfcd912-d25e-46f3-b1fa-74f27e0aacaa
-last-correlation-id: ecfcd912-d25e-46f3-b1fa-74f27e0aacaa
-last-transition-from: ready
-last-transition-at: 2026-11-18T08:07:00.467Z
+last-transition-id: 1843bf26-a6d6-4bd1-bc35-618963fbd3b2
+last-correlation-id: 1843bf26-a6d6-4bd1-bc35-618963fbd3b2
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T08:17:09.464Z
 ---
 
 # x01095 — A dependency version reaches the tree only after a cooldown, from the registry, with its integrity hash
@@ -33,16 +33,19 @@ The supply-chain checks today catch what is already known: dependency-advisories
 - global_gate: lint
 
 ### S1 — bun and Dependabot wait three days for a new version
-- **Status**: pending
+- **Status**: review
 - **Files**: `bunfig.toml`, `.github/dependabot.yml`
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:
   - "bunfig.toml [install] sets minimumReleaseAge to 259200 seconds (3 days), with a comment naming this proposal's reason; `bun install --frozen-lockfile` still succeeds on the current lockfile."
   - "Every update block in .github/dependabot.yml sets `cooldown: default-days: 3`, and the github-actions ecosystem keeps SHA-pinned actions; `bun run lint:workflow-yaml` passes."
+- shipped-in: `e2344bc517c6`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — A lint refuses a young, foreign-sourced or hashless lockfile entry
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Files**: `new:tools/scripts/lint/lockfile-provenance.script.ts`, `new:tools/scripts/lint/lockfile-provenance.script.spec.ts`, `new:config/delendai/lockfile-provenance-exceptions.json`, `package.json`
 - **Gate**: lint
@@ -52,6 +55,9 @@ The supply-chain checks today catch what is already known: dependency-advisories
   - "For entries added or changed against the integration branch's lockfile, `bun run lint:lockfile-provenance` asks the registry's publish time and fails for a version younger than the cooldown in bunfig.toml (read from there, one source of truth); a registry that cannot be read fails the check, as dependency-advisories does; lockfile-provenance.script.spec.ts injects the registry read."
   - "`delendai work prove --only=lint-security` runs lint:lockfile-provenance beside dependency-advisories, so every proof and CI candidate runs it; it refuses an empty scan and states how many entries it read."
   - "lockfile-provenance.script.spec.ts drives it over fixture lockfiles: a clean one, a git-sourced entry, a hashless entry, a new entry published one hour ago (registry read injected), and an excepted entry, each with its own message."
+- shipped-in: `1552e22145cf`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
