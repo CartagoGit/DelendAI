@@ -172,7 +172,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			plugins: Record<string, { enabled?: boolean }>;
 		}>(configFile?.content);
 		// x00166: dogfood mirrors delendai.config.json's `plugins` keys
-		// exactly (38 total in the current dogfood snapshot), including
+		// exactly (39 total in the current dogfood snapshot), including
 		// proposals (orchestration/swarm) — no independent-preset chain
 		// inheritance involved, this is just what the live config loads.
 		//
@@ -182,8 +182,8 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		const enabled = Object.entries(config.plugins)
 			.filter(([, entry]) => entry.enabled !== false)
 			.map(([id]) => id);
-		expect(enabled.length).toBe(38);
-		expect(Object.keys(config.plugins).length).toBeGreaterThan(38);
+		expect(enabled.length).toBe(39);
+		expect(Object.keys(config.plugins).length).toBeGreaterThan(39);
 		for (const required of [
 			'audit',
 			'auto-agent-selector',

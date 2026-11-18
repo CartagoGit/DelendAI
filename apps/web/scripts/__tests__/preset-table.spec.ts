@@ -47,7 +47,7 @@ describe('preset-table', () => {
 			expect(row('swarm')?.effective).not.toContain('audit');
 			expect(row('everything')?.effective).toContain('issues');
 			const dogfood = row('dogfood');
-			expect(dogfood?.effective.length).toBe(38);
+			expect(dogfood?.effective.length).toBe(39);
 			expect(dogfood?.effective).toContain('proposals');
 			expect(dogfood?.effective).not.toContain('refactor');
 		});
