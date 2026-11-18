@@ -70,6 +70,15 @@ const describeFailure = (
 };
 
 /**
+ * `env` with git's pager off: a spawned git never waits on `less`, and a
+ * stray `less` command never writes a file into the checkout. Set only on
+ * the environment of the git this CLI spawns, never on the user's shell.
+ */
+export const withoutPager = (
+	env: NodeJS.ProcessEnv = process.env,
+): NodeJS.ProcessEnv => ({ ...env, PAGER: 'cat', GIT_PAGER: 'cat' });
+
+/**
  * Invoke the real `git` in `cwd`, optionally with extra environment.
  * Never throws — failures come back as `{ ok: false, reason }`, matching
  * the shared runner's contract so callers stay uniform.
@@ -95,10 +104,12 @@ export const createScopedGitRunner =
 					encoding: 'utf8',
 					timeout: timeoutMs,
 					maxBuffer: 8 * 1024 * 1024,
-					env: withoutOptionalLocks(
-						env === undefined
-							? process.env
-							: { ...process.env, ...env },
+					env: withoutPager(
+						withoutOptionalLocks(
+							env === undefined
+								? process.env
+								: { ...process.env, ...env },
+						),
 					),
 				},
 				(error, stdout, stderr) => {
