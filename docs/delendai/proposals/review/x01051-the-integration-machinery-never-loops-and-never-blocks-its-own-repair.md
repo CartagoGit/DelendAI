@@ -32,7 +32,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - global_gate: none
 
 ### S1 — One predicate for a work ref's landed reading: publisher and ref-maintenance cannot disagree
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/landed-work-ref.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`, `tools/scripts/git/work-ref-fate-agreement.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -40,11 +40,13 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "A spec on a real repository gives the checkout publisher (settleLanded) and maintainRefNamespace the same ref in each state (at the integration tip, contained in it, ahead of it, no net change, local develop lagging the forge's) and asserts that one never withdraws what the other restores"
   - "A ref sitting exactly at the integration tip is never landed, whichever caller reads it"
 - shipped-in: `2569ce8f73b7`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S2 — A delivered publication waiting for its pull request is not orphaned
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/publication-standings.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/publication-standings.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -52,11 +54,13 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "The same publication past the recovery window is orphaned (finished), so nothing waits forever"
   - "readOrphans passes each publication's tip time to publicationPresence, and a spec shows a just-published publication is absent from the orphans and reads owner alive"
 - shipped-in: `b148381d3c4f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S3 — The queue falls back to each accepted candidate's own merge when the train cannot run
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/forge/train-fallback.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -65,11 +69,13 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "When the train ran or is running, nothing changes: landing is cleared as before"
   - "A spec covers pushFailure, dispatch false, a throwing assemble, a healthy train and a train waiting on its run"
 - shipped-in: `e7dfafa7d04b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S4 — --urgent travels onto the pull request and the queue leads with it
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S3]
 - **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/work.command.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none
@@ -79,11 +85,13 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "queueOrder sorts urgent candidates first, then by number; the train composition in queue-order.ts is untouched"
   - "A spec shows an urgent later pull request ahead of an earlier plain one, and the note is read back by the publication"
 - shipped-in: `ad0565d8f4a9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S5 — Startup reconciliation leaves a merge, rebase or cherry-pick in progress alone while its unit is live
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/src/lib/work-units/unit-operation-in-progress.service.ts`, `packages/core/src/lib/work-units/unit-uncommitted-work.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -91,11 +99,13 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "The same merge in a unit that is not live is kept with a message that names the merge (the commit it merges); a rebase or cherry-pick in progress is reported and left alone, because committing in the middle of one corrupts it"
   - "A spec covers both cases on a real repository"
 - shipped-in: `eb868435ddd6`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S6 — Urgent repairs wait behind nothing in the one-by-one path, and a missing Urgent line is added
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S4]
 - **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none
@@ -104,8 +114,10 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "A pull request whose body lacks the Urgent line but whose unit noted urgency gets the line added when the queue reads it (bodyWithUrgentLine, urgencyNotePathOfPublication)"
   - "Specs cover the shared order, the disposition order and the body line"
 - shipped-in: `5c9a30da9c2b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ## acceptance
 
