@@ -53,14 +53,14 @@ const by = (root: string, id: string) => {
 };
 
 describe('workflow invariants (x00573)', () => {
-	it('holds on a checkout that is doing nothing wrong', () => {
+	it('[<600ms] holds on a checkout that is doing nothing wrong', () => {
 		const { root } = repo();
 		const report = check(root);
 		expect(report.broken).toBe(0);
 		expect(report.results.length).toBeGreaterThanOrEqual(7);
 	});
 
-	it('sees a modification in the shared checkout', () => {
+	it('[<600ms] sees a modification in the shared checkout', () => {
 		const { root } = repo();
 		writeFileSync(join(root, 'a.txt'), 'changed\n');
 		expect(by(root, 'checkout-clean').holds).toBe(false);
@@ -71,7 +71,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(staged.observed).toContain('a.txt');
 	});
 
-	it('sees a checkout that left the integration node', () => {
+	it('[<600ms] sees a checkout that left the integration node', () => {
 		const { root } = repo();
 		git(root, 'switch', '-q', '-c', 'somewhere-else');
 		const result = by(root, 'checkout-anchored');
@@ -80,7 +80,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.remedy).toContain('develop');
 	});
 
-	it('accepts a work ref a worktree is working on, and refuses one nobody is', () => {
+	it('[<600ms] accepts a work ref a worktree is working on, and refuses one nobody is', () => {
 		const { root } = repo();
 		const live = 'delendai/wip/claude-opus-5/x1-S1-g1/live';
 		git(root, 'worktree', 'add', '-q', join(root, 'wt'), '-b', live);
@@ -92,7 +92,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.observed).toContain('abandoned');
 	});
 
-	it('refuses a worktree that is not standing on a work ref', () => {
+	it('[<600ms] refuses a worktree that is not standing on a work ref', () => {
 		const { root } = repo();
 		git(
 			root,
@@ -108,7 +108,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.observed).toContain('stray');
 	});
 
-	it('[<400ms] accepts the branch-runtime worktrees of the integration and release branches', () => {
+	it('[<600ms] accepts the branch-runtime worktrees of the integration and release branches', () => {
 		const { root } = repo();
 		const twoBranch = resolveDevelopmentPolicy({
 			development: {
@@ -145,7 +145,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(leftover()?.holds).toBe(false);
 	});
 
-	it('refuses a publication ref with no agent, slice or generation in it', () => {
+	it('[<600ms] refuses a publication ref with no agent, slice or generation in it', () => {
 		const { root, remote } = repo();
 		git(
 			root,
@@ -173,7 +173,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'publications-canonical').holds).toBe(true);
 	});
 
-	it('takes the four-component shape the template names for canonical, and the old three for not', () => {
+	it('[<600ms] takes the four-component shape the template names for canonical, and the old three for not', () => {
 		const { root, remote } = repo();
 		git(
 			root,
@@ -202,7 +202,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'publications-canonical').holds).toBe(true);
 	});
 
-	it('does not require the checkout on the integration branch when the profile does not anchor it', () => {
+	it('[<600ms] does not require the checkout on the integration branch when the profile does not anchor it', () => {
 		const { root } = repo();
 		git(root, 'switch', '-q', '-c', 'somewhere-else');
 		const unanchored = resolveDevelopmentPolicy({
@@ -221,7 +221,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result?.holds).toBe(true);
 	});
 
-	it('does not hold a candidate that is behind to be a fault', () => {
+	it('[<600ms] does not hold a candidate that is behind to be a fault', () => {
 		const { root } = repo();
 		git(
 			root,
@@ -240,7 +240,7 @@ describe('workflow invariants (x00573)', () => {
 		);
 	});
 
-	it('sees a work ref that outlived its publication on the forge', () => {
+	it('[<600ms] sees a work ref that outlived its publication on the forge', () => {
 		const { root } = repo();
 		git(
 			root,
@@ -252,7 +252,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'no-remote-work-refs').holds).toBe(false);
 	});
 
-	it('keeps a live unit backed up on the forge, and flags one nobody works on', () => {
+	it('[<600ms] keeps a live unit backed up on the forge, and flags one nobody works on', () => {
 		const { root } = repo();
 		const live = 'delendai/wip/claude-opus-5/x1-S1-g1/live';
 		git(root, 'worktree', 'add', '-q', join(root, 'wt'), '-b', live);
@@ -265,7 +265,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.remedy).toContain('publish');
 	});
 
-	it('sees a publication that holds nothing the integration branch lacks', () => {
+	it('[<600ms] sees a publication that holds nothing the integration branch lacks', () => {
 		const { root } = repo();
 		const spent = 'delendai/pr/claude-opus-5/x1-S1-g1/landed';
 		git(root, 'push', '-q', 'origin', `HEAD:refs/heads/${spent}`);
@@ -286,7 +286,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'publications-hold-work').holds).toBe(true);
 	});
 
-	it('sees a local integration branch holding commits the forge lacks', () => {
+	it('[<600ms] sees a local integration branch holding commits the forge lacks', () => {
 		const { root } = repo();
 		git(root, 'fetch', '-q', 'origin');
 		expect(by(root, 'integration-follows-forge').holds).toBe(true);
@@ -300,7 +300,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.remedy).toContain('work enter');
 	});
 
-	it('sees a unit kept with nothing in it once the integration branch moved on', () => {
+	it('[<600ms] sees a unit kept with nothing in it once the integration branch moved on', () => {
 		const { root } = repo();
 		const kept = 'delendai/wip/claude-opus-5/x1-S1-g1/kept';
 		git(root, 'worktree', 'add', '-q', join(root, 'wt'), '-b', kept);
@@ -322,7 +322,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(by(root, 'units-hold-work').holds).toBe(true);
 	});
 
-	it("leaves somebody's backup on the forge alone until it has been silent too long", () => {
+	it("[<600ms] leaves somebody's backup on the forge alone until it has been silent too long", () => {
 		const { root } = repo();
 		const backup = 'delendai/wip/claude-opus-5/x1-S1-g1/elsewhere';
 		git(root, 'switch', '-q', '-c', 'scratch');
@@ -346,7 +346,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(later?.observed).toContain('silent');
 	});
 
-	it('sees a ref kept by hand, a retired unit copied here, and a remote that is gone', () => {
+	it('[<600ms] sees a ref kept by hand, a retired unit copied here, and a remote that is gone', () => {
 		const { root } = repo();
 		expect(by(root, 'no-stray-refs').holds).toBe(true);
 		git(root, 'tag', 'v1');
@@ -362,7 +362,7 @@ describe('workflow invariants (x00573)', () => {
 		expect(result.remedy).toContain('work retire');
 	});
 
-	it('answers about the shared checkout when a hook in a worktree asks', () => {
+	it('[<600ms] answers about the shared checkout when a hook in a worktree asks', () => {
 		const { root } = repo();
 		const wt = `${root}-wt`;
 		roots.push(wt);
@@ -394,7 +394,7 @@ describe('workflow invariants (x00573)', () => {
 		}
 	});
 
-	it('reports what it observed even when the invariant holds', () => {
+	it('[<600ms] reports what it observed even when the invariant holds', () => {
 		// A check that only speaks when it fails cannot be trusted to have
 		// looked at anything.
 		const { root } = repo();
@@ -403,7 +403,7 @@ describe('workflow invariants (x00573)', () => {
 		}
 	});
 
-	it('renders one screen naming every broken promise and its fix', () => {
+	it('[<600ms] renders one screen naming every broken promise and its fix', () => {
 		const { root } = repo();
 		git(root, 'switch', '-q', '-c', 'wandered');
 		const text = renderInvariantReport(check(root));
