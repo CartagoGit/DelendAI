@@ -77,7 +77,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S4 — A reconciler keep commit may carry a tool-recorded verdict
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/verdicts-through-the-tool.script.ts`, `tools/scripts/lint/verdicts-through-the-tool.script.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -85,8 +85,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "The spec reproduces the shape of c8a5c88f0 (transition 0f533c39) both accepted and, with an unrecorded id, refused."
   - "A tool's write is never left uncommitted: it is committed by the tool (S3), which is the preferred path."
 - shipped-in: `3a1a24a67772`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S5 — Review approve and release reuse the open review unit
 - **Status**: review
