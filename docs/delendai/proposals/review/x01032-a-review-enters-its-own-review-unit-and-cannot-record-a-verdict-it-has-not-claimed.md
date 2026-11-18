@@ -2,14 +2,14 @@
 id: x01032
 title: "A review enters its own review unit and cannot record a verdict it has not claimed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-11-04
-last-transition-id: 541a2213-79e2-416d-88eb-d2030a5ef9b9
-last-correlation-id: 541a2213-79e2-416d-88eb-d2030a5ef9b9
-last-transition-from: review
-last-transition-at: 2026-11-10T03:13:14.513Z
+last-transition-id: b490da65-32f4-4ea2-a400-146fb9725bbd
+last-correlation-id: b490da65-32f4-4ea2-a400-146fb9725bbd
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T07:33:58.520Z
 shipped-in:
   - "6578eb7c5"
 ---
@@ -46,16 +46,15 @@ PR #1771, a gpt-5.3-codex review pack, shows four defects. (0) Root cause: the r
 - review-log: approved by claude-opus-5-5 — verified at 6578eb7c5, validate exit 0 and tests 58/58 claimed, no recorded run cited; acceptance 1/1: (1) packages/core/src/lib/work-units/review-kind.service.ts withReviewKind (called at work-unit-enter.service.ts:171): batch with no kind or review -> --kind=revie… — withReviewKind wired into work enter; batch refuses other kinds naming review next; a review/ proposal with no kind becomes the batch review unit. Reading: 'a contradicting --kind is refused' is met for the batch; an explicit kind on a review/ proposal is kept on purpose (fix after review), documented in review-kind.service.ts and specced.
 
 ### S2 — The review tools enter or reuse the reviewer's review unit
-- **Status**: in-progress
+- **Status**: review
 - **Files**: `plugins/proposals/src/lib/tools/review-claim.tool.ts`, `plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "review_claim called outside a review unit writes nothing and refuses, naming the one way in (`review next`, which derives kind review); review_queue stays read-only and reads the caller's review unit when one exists; a spec covers the refusal."
 - notes: The first acceptance had the tools enter the unit. One way to enter a review unit already exists (`work enter` derives kind review, S1), so a second entry inside two tools would add a path, make a read-only queue create a worktree, and couple the proposals plugin to the work-unit service for every host. The refusal names the single command, costs a reviewer one call, and needs no host-specific behaviour. S1 also named a spec that q00045 renamed to `.e2e.spec.ts`; the path is corrected.
 - shipped-in: `0fb7224c8398`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: claude-opus-5-5
 - review-log: requested_changes by claude-opus-5-5 — Acceptance not met as written. (1) plugins/proposals/src/lib/tools/review-claim.tool.ts:170-182: review_claim called outside a review unit REFUSES and tells the agent to run 'delendai review next'; it does not enter or reuse the caller's review unit. (2) plugins/proposals/src/lib/tools/review-queue.tool.ts:70-78 only reads an existing unit via reviewUnitOfAgent; with no unit it enters nothing. (3) No spec shows an agent with no unit ending in kind review: plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts:118 asserts the refusal instead. Either make review_claim/review_queue enter-or-reuse the review unit (with that spec), or amend S2's acceptance to the refusal that shipped (commit 0fb7224c8 subject already says 'is refused') and hand it over again.
 
 ### S3 — proposal_review refuses a verdict on an unclaimed proposal
