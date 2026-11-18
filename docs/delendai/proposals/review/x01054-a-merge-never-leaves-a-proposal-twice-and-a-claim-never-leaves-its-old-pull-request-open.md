@@ -63,7 +63,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — The land rehearsal's gates judge for the branch they rehearse
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lib/rehearsed-branch.ts`, `tools/scripts/lib/rehearsed-branch.spec.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/forge/land-rehearsal.script.ts`
 - **Gate**: type
 - acceptance:
@@ -71,8 +71,10 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
   - "the rehearsal names the branch it stands in for in the environment of its gates (DELENDAI_REHEARSED_BRANCH, not an agent marker), and proposal-hygiene reads it when the checkout has no branch of its own"
   - "a spec proves the environment is set only for a real branch and that hygiene exempts the reopened proposal from a detached clone and flags it without the variable"
 - shipped-in: `62df6c0c6000`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
