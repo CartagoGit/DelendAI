@@ -2,17 +2,17 @@
 id: x01013
 title: "La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-03
 shipped-in:
   - "9740e9514"
   - "5e2124099"
-last-transition-id: 2b016fae-7b8a-485f-9118-ceff04196f9d
-last-correlation-id: 2b016fae-7b8a-485f-9118-ceff04196f9d
-last-transition-from: ready
-last-transition-at: 2026-11-18T06:23:06.344Z
+last-transition-id: ed84c1a1-6a68-413c-915a-0e9a9e6a23f7
+last-correlation-id: ed84c1a1-6a68-413c-915a-0e9a9e6a23f7
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T06:24:02.514Z
 ---
 
 # x01013 — La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir
@@ -39,7 +39,7 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
 - global_gate: lint
 
 ### S1 — El watcher de VS Code ignora la raíz de caché
-- **Status**: pending
+- **Status**: review
 - **Files**: `.vscode/settings.json`
 - **Gate**: lint
 - acceptance:
@@ -48,13 +48,12 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
   - "El fichero sigue siendo JSONC válido: se parsea con el parser JSONC del repo y conserva sus comentarios."
   - "La exclusión cubre `.cache/delendai/.worktrees/`, la ruta donde el enjambre abre sus worktrees."
 - shipped-in: `9740e9514`
-- review-state: changes_requested
-- review-implementer: minimax-m3.1-flash
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 9740e9514 is stale: .vscode/settings.json changed afterward (e.g. 2261aa0a1). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and JSONC-parse evidence.
 
 ### S2 — El directorio de unidades sigue al `cacheDir` configurado
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/units-directory.constant.ts`, `packages/core/src/lib/work-units/units-directory.service.ts`, `packages/core/src/lib/work-units/development-policy.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/tests/src/lib/work-units/units-directory.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -64,9 +63,8 @@ La segunda mitad es la causa que el repositorio puede cerrar para siempre: `cach
   - "Un `cacheDir` absoluto coloca las unidades fuera del checkout, sin dejar un directorio suelto en la rama de integración."
   - "El typecheck del paquete core pasa y los tests del motor de trabajo pasan."
 - shipped-in: `5e2124099`
-- review-state: changes_requested
-- review-implementer: minimax-m3.1-flash
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Please resubmit S2 with explicit empirical evidence bundle (typecheck + work-unit tests + absolute cacheDir scenario) in the review payload; current round lacks reviewer-verifiable run references.
 
 ## acceptance
