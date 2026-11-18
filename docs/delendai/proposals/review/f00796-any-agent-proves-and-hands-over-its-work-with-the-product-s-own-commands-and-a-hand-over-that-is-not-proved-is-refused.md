@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-10T02:57:28.714Z
 shipped-in:
   - "26aa84e29054cace69e611675dbf6a6c84789c3a"
+  - "e51eaf2d8c7fd0bcea14ac06305ae5cbdbd0b836"
 ---
 
 # f00796 — Any agent proves and hands over its work with the product's own commands, and a hand-over that is not proved is refused
@@ -51,14 +52,16 @@ Measured on 14 hand-overs on 2026-10-29: the fast proof took about 90 s (typeche
 - review-log: approved by mai-code-2 — verified at 26aa84e29054, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) near-specs.spec.ts covers changed specs, mirrors, direct importers, source-importer fallback and read-map readers; prove-plan.script.spec.ts covers nearest-spe… — Reviewed the delivered commit and the later proof-plan evolutions listed by the queue. The five named suites pass 59/59 and the current 80-workspace typecheck is green. Near-spec selection still covers changed specs, mirrors, path importers and read-map readers; later x01067 work narrows bun-owned execution but does not invalidate the delivered selector/proof foundation.
 
 ### S2 — This repository declares its proof
-- **Status**: review
+- **Status**: done
 - **Files**: `package.json`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
   - "This repository's `prove` script is the fast proof (`prove-plan.script.ts --fast`) and `prove:plan` is the full plan, so the proof publishing runs is declared in the repository and nothing in a home directory is part of the flow."
 - shipped-in: `4bd7c10993ec`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e51eaf2d8c7f, validate exit 0 and tests 59/59 claimed, no recorded run cited; acceptance 1/1: (1) package.json declares prove as the local prove-plan runner with --fast and prove:plan as the full runner; candidateProofSteps reads package.json from the integ… — Reviewed the delivered repository scripts and current package.json. The five focused proof suites pass 59/59 and the all-workspaces typecheck passes; the fast `prove` and full `prove:plan` commands are declared in the repository rather than inferred from a home-directory script.
 
 ### S3 — Publishing a pull request runs the declared proof and refuses a red one
 - **Status**: review
