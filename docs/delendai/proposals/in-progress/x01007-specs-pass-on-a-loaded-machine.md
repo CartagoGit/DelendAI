@@ -2,14 +2,14 @@
 id: x01007
 title: "Specs pass on a loaded machine"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: a19b7b39-d614-44aa-95f6-aed3d282d5b4
-last-correlation-id: a19b7b39-d614-44aa-95f6-aed3d282d5b4
-last-transition-from: review
-last-transition-at: 2026-11-04T19:09:28.245Z
+last-transition-id: 78fae0a8-8d40-44f0-937b-e26e922d79a1
+last-correlation-id: 78fae0a8-8d40-44f0-937b-e26e922d79a1
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:21:32.278Z
 ---
 
 # x01007 — Specs pass on a loaded machine
