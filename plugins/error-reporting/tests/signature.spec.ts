@@ -223,16 +223,27 @@ describe('buildIssueTitle / buildIssueBody', () => {
 		},
 	} as const;
 
-	it('prefixes the title and bounds its length', () => {
+	it('titles the issue by the one template and bounds its length', () => {
 		const title = buildIssueTitle(report);
 		expect(
-			title.startsWith('[auto] PERFORMANCE @delendai/error-reporting:'),
+			title.startsWith(
+				'fix(error-reporting): PERFORMANCE @delendai/error-reporting:',
+			),
 		).toBe(true);
 		expect(title.length).toBeLessThanOrEqual(180);
 	});
 
 	it('renders safe DTO detail and opt-in instructions', () => {
 		const body = buildIssueBody(report);
+		for (const heading of [
+			'## Summary',
+			'## Where',
+			'## Evidence',
+			'## Expected and Actual',
+			'## Proposal link',
+		]) {
+			expect(body).toContain(heading);
+		}
 		expect(body).toContain('Automatic error report');
 		expect(body).toContain('PLUGIN_REGISTER_TIMEOUT');
 		expect(body).toContain('@delendai/error-reporting/src/index.ts:1:2');

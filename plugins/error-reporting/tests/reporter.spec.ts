@@ -219,7 +219,7 @@ describe('createSafeReporter.submitSafeReport', () => {
 		expect(joined).toContain('--label bug');
 		expect(joined).not.toContain('consumer-private-label');
 		expect(joined).toContain(
-			'[auto] PERFORMANCE @delendai/error-reporting: PLUGIN_REGISTER_TIMEOUT',
+			'fix(error-reporting): PERFORMANCE @delendai/error-reporting: PLUGIN_REGISTER_TIMEOUT',
 		);
 		expect(capturedOptions).toEqual({ cwd: '/tmp/proj' });
 	});

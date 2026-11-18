@@ -123,7 +123,12 @@ describe('live-mode (autoReport: true, severity: critical)', () => {
 		expect(createIssue).toHaveBeenCalledTimes(1);
 		expect(createIssue).toHaveBeenCalledWith(
 			expect.objectContaining({
-				title: 'incident: test_tool — critical',
+				title: expect.stringMatching(
+					/^fix\([a-z-]+\): incident test_tool: critical$/u,
+				) as string,
+				body: expect.stringMatching(
+					/^## Summary[\s\S]*## Where[\s\S]*## Evidence[\s\S]*## Expected and Actual[\s\S]*## Proposal link/u,
+				) as string,
 			}),
 		);
 
