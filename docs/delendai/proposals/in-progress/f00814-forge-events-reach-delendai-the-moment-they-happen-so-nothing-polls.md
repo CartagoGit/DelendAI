@@ -49,6 +49,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - acceptance:
   - "GitHub push, pull_request, check_run, pull_request_review, issues and issue_comment payloads map to the normalised events."
   - "A delivery whose signature does not verify is refused; the secret is generated per connection and kept in memory, never in config, and never logged."
+- shipped-in: `25a5f66b53f0`
 
 ### S3 — Events reach a dev machine with no public address
 - **Status**: pending
@@ -58,6 +59,7 @@ The owner wants it to work like a websocket subscription: GitHub says instantly 
 - acceptance:
   - "The architecture recommendation is implemented behind the port: the receiver connects out, so no inbound port or public IP is needed."
   - "A dropped connection reconnects and asks the forge once for what was missed; it does not poll."
+- shipped-in: `d8440cbea62a`
 
 ### S4 — Sessions subscribe and are notified
 - **Status**: pending
