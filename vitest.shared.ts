@@ -142,7 +142,7 @@ export const sharedTestOptions = {
 			dirname(fileURLToPath(import.meta.url)),
 			'tools/scripts/test/run-temp-root.global-setup.ts',
 		),
-	],
+	] as string[],
 } as const;
 
 /** The spec files still allowed tests with no budget. It only shrinks. */

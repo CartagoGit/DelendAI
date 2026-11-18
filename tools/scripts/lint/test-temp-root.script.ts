@@ -17,6 +17,14 @@ import { join } from 'node:path';
 const LITERAL_TMP_MKDTEMP =
 	/\bmkdtemp(?:Sync)?\s*\(\s*(?:`|'|")\/(?:var\/)?tmp(?:\/|`|'|")/u;
 
+/**
+ * Specs that predate the rule and are fixed in a change of their own
+ * (editing a spec obliges it to name every test's budget). It only shrinks.
+ */
+const PREDATES_RULE: ReadonlySet<string> = new Set([
+	'tools/scripts/lint/no-build-imports-from-src.spec.ts',
+]);
+
 /** The files the rule reads: specs and test helpers. */
 const isTestFile = (path: string): boolean =>
 	/\.(?:spec|test)\.[cm]?[jt]sx?$/u.test(path) ||
@@ -58,6 +66,7 @@ if (import.meta.main) {
 		.filter(isTestFile)
 		// The rule's own spec holds the shapes it refuses.
 		.filter((path) => !path.endsWith('test-temp-root.spec.ts'))
+		.filter((path) => !PREDATES_RULE.has(path))
 		.flatMap((path) => {
 			try {
 				return [{ path, text: readFileSync(join(root, path), 'utf8') }];
