@@ -460,7 +460,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) Real-CI, branch-gating, workflow, scan and scenario specs validate rendered filters, declared zones and scan workflows on every tip. (2) Report, cost/KPI and target tests share the metric functions and constants across rehearsal reports and production measurements. (3) Known-red is empty, activation coverage requires a green real report, grouped real-mode scenario specs pass, and the proposal records completed real runs; the … — Reviewed real-mode rendering, scenario partitioning, waits, scan/report aggregation and production metric sharing; focused integration suite passed 564/564.
 
 ### S13 — Another project adopts the plugin with its own validations
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S12]
 - **Files**: `plugins/integration/src/lib/services/integration-adoption.service.ts`, `plugins/integration/README.md`, `docs/delendai/PLUGIN-CONFIGURATION-GUIDE.md`
 - **Gate**: none
@@ -469,8 +469,10 @@ Nothing of this repository is emitted into the other project.
   - "A spec renders them for a fixture project (integration branch `main`, its own zones and derived command) and a grep finds no delendai path, script or proposal id beyond the version pin and header"
   - "The README documents the options, the one-time identity setup and how to run the rehearsal; q00047's integration part (S1, S2 for land) is delivered here"
 - shipped-in: `ccbd2639c82f`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 1b14a507545d, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 3/3: (1) Integration adoption/service and CLI specs pass for policy-driven workflows and project-owned checks. (2) The fixture-project rendering/grep test passes and the resulting workflows contain only the fixture's branch, zones and derived command beyond the version head… (3) plugins/integration README and configuration guide document options, identity setup and adopt/rehearse flow; tests cover the delivered land integration. — Reviewed adoption rendering for an external project's policy and documentation; focused integration suite passed 564/564.
 
 ### S14 — Activation and resume
 - **Status**: review
