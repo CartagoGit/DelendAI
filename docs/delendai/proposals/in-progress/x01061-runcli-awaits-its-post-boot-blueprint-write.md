@@ -2,10 +2,14 @@
 id: x01061
 title: "runCli awaits its post-boot blueprint write"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-13
+last-transition-id: 6bbb5423-6360-4898-bd39-93ab3e0c9349
+last-correlation-id: 6bbb5423-6360-4898-bd39-93ab3e0c9349
+last-transition-from: ready
+last-transition-at: 2026-11-18T03:35:15.923Z
 ---
 
 # x01061 — runCli awaits its post-boot blueprint write
