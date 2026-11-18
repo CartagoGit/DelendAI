@@ -27,6 +27,7 @@ import {
 	withCsp,
 } from '@delendai/ui-extension/webview';
 import { SIDE_BAR_LAYOUT_CSS } from '../contracts/constants/side-bar-layout-css.constant';
+import { DASHBOARD_SECTION_KEY } from '../contracts/constants/dashboard-section-key.constant';
 import { DASHBOARD_MESSAGE_SCHEMA } from '../contracts/constants/dashboard-message-schema.constant';
 import { OPEN_PROPOSAL_COMMAND } from '../commands/open-proposal';
 import { OPEN_DASHBOARD_TAB_COMMAND } from '../commands/open-dashboard';
@@ -226,6 +227,27 @@ export const renderLiveSection = (
 			`saved: ${String(tokens.tokensSaved)} (${String(tokens.savingsPercent)}%)`,
 		],
 	)}</section>`;
+};
+
+/**
+ * The page reports each section the viewer opens and, once loaded, opens the
+ * remembered one. The section names are the dashboard's own tab ids. The
+ * editor lets a page acquire its API once, so the first acquisition is kept
+ * and handed to whoever asks next.
+ */
+const withSectionMemory = (
+	html: string,
+	section: string | undefined,
+): string => {
+	const share =
+		"<script>(function(){var a=window.acquireVsCodeApi,c;if(typeof a==='function'){window.acquireVsCodeApi=function(){return c||(c=a());};}})();</script>";
+	const remember = `<script>(function(){var h=typeof acquireVsCodeApi==='function'?acquireVsCodeApi():null;var s=${JSON.stringify(section ?? null).replace(/</gu, '\\u003c')};document.querySelectorAll('[data-sidebar-trigger]').forEach(function(b){b.addEventListener('click',function(){h&&h.postMessage({command:'section',section:b.getAttribute('data-sidebar-trigger')});});});if(s){var t=document.querySelector('[data-sidebar-trigger="'+s+'"]');t&&t.click();}})();</script>`;
+	const withShare = /<\/head>/iu.test(html)
+		? html.replace(/<\/head>/iu, () => `${share}</head>`)
+		: `${share}${html}`;
+	return /<\/body>/iu.test(withShare)
+		? withShare.replace(/<\/body>/iu, () => `${remember}</body>`)
+		: `${withShare}${remember}`;
 };
 
 const withSideBarLayout = (html: string): string =>
@@ -512,19 +534,29 @@ export class DashboardWebviewViewProvider {
 			withCsp(
 				'dashboard',
 				withLiveSection(
-					withSideBarLayout(
-						renderDashboard(models, {
-							docsUrl: resolveDocsUrl(this.deps.getConfig),
-							refreshCommand: REFRESH_COMMAND,
-							openDocsCommand: OPEN_DOCS_COMMAND,
-							lang: dictsByLang[lang],
-							settings,
-						}),
+					withSectionMemory(
+						withSideBarLayout(
+							renderDashboard(models, {
+								docsUrl: resolveDocsUrl(this.deps.getConfig),
+								refreshCommand: REFRESH_COMMAND,
+								openDocsCommand: OPEN_DOCS_COMMAND,
+								lang: dictsByLang[lang],
+								settings,
+							}),
+						),
+						this.rememberedSection(),
 					),
 					renderLiveSection(live, models),
 				),
 			),
 		);
+	}
+
+	private rememberedSection(): string | undefined {
+		const stored = this.deps.globalState?.get<unknown>(
+			DASHBOARD_SECTION_KEY,
+		);
+		return typeof stored === 'string' ? stored : undefined;
 	}
 
 	private async readLive(): Promise<IDashboardLiveState | undefined> {
@@ -596,6 +628,13 @@ export class DashboardWebviewViewProvider {
 				parsed.data.action === 'expand'
 					? OPEN_DASHBOARD_TAB_COMMAND
 					: REFRESH_COMMAND,
+			);
+			return;
+		}
+		if (parsed.data.command === 'section') {
+			await this.deps.globalState?.update?.(
+				DASHBOARD_SECTION_KEY,
+				parsed.data.section,
 			);
 			return;
 		}
