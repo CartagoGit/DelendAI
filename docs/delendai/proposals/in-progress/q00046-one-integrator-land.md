@@ -267,7 +267,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 - **Decisions**: none
 - acceptance:
   - "work-unit-enter.service.spec.ts asserts a draft pull request exists after enter; a deliver case asserts it is marked ready; claim opens no new pull request."
-  - "ci.yml skips draft pull requests; a large proposal lands as sequential pull requests, never stacked."
+  - "`git grep -n "draft" .github/workflows/ci.yml` shows ci.yml skipping draft pull requests; a large proposal lands as sequential pull requests, never stacked."
 
 ### S5g — The branch flow, part 7: the publication path is deleted
 - **Status**: pending
