@@ -26,10 +26,19 @@
  * that disagreed with the writer is no longer expressible, and renders it
  * for messages so a refusal cannot teach a spelling nothing produces.
  */
+import { DEFAULT_WORK_KIND } from '../development-policy/profiles.constant';
 import { compileWorkRefParser } from '../startup-reconciler/index';
 
 import type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 
+export {
+	isScopeProposal,
+	isScopeSlice,
+	parseWorkScope,
+	renderWorkScope,
+	scopeOfUnit,
+} from '../development-policy/work-ref-placeholders';
+export type { IWorkScope } from '../development-policy/work-ref-placeholders';
 export type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 
 const AGENT_MARKER = '${agent}/';
@@ -59,8 +68,12 @@ export const parseWorkSubject = (
 	});
 	if (parser === undefined) return undefined;
 	const at = template.indexOf(AGENT_MARKER);
+	// A kind placed before the agent is not part of the subject: the
+	// subject is read as the default kind's unit.
 	const name =
-		at === -1 ? subject : `${template.slice(0, at)}agent/${subject}`;
+		at === -1
+			? subject
+			: `${template.slice(0, at).replace('${kind}', DEFAULT_WORK_KIND)}agent/${subject}`;
 	const identity = parser.parse(
 		name.startsWith('refs/') ? name : `refs/${name}`,
 	);
