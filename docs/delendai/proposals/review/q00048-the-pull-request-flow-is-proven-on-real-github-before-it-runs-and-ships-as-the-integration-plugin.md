@@ -398,7 +398,7 @@ Nothing of this repository is emitted into the other project.
 - review-implementer: claude-sonnet-5-5
 
 ### S11b — Sessions are told within 10 s p95 through a relay transport
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S11a]
 - **Files**: none yet
 - **Gate**: none
@@ -406,8 +406,10 @@ Nothing of this repository is emitted into the other project.
   - "Sessions are told within 10 s p95 through a relay transport behind the f00814 port; gh webhook forward stays a development transport (one forwarder per repository, unsupported in production per GitHub docs)"
   - "Scenario F7 is green and the session-notified-p95 target is measured"
 - **Decision (2026-11-15)**: real-time delivery needs a relay transport; deferred, no service or account is assumed. S11 is split because GitHub documents that gh webhook forward allows one forwarder per repository and is not supported in production. S11a delivers the local-only follow-ups and the offline catch-up; S14 depends on S11a, not on S11b.
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — No deliverable exists for S11b: the slice declares Files: none yet, names the relay transport as deferred, and contains no service/account implementation. Acceptance requires relay delivery through the f00814 port, F7 green, and measured session-notified p95 <10 s; none can be verified. Implement and exercise a production relay transport, or retire/re-scope the slice instead of submitting an empty implementation for approval.
 
 ### S12 — Real CI timing mode, and the same targets measured in production
 - **Status**: review
