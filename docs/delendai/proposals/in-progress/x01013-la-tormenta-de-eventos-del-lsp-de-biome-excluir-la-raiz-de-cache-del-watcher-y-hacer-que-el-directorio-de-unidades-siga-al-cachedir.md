@@ -2,17 +2,17 @@
 id: x01013
 title: "La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-03
 shipped-in:
   - "9740e9514"
   - "5e2124099"
-last-transition-id: 5f52335c-801d-4ea8-a5b8-98c9ebda0d03
-last-correlation-id: 5f52335c-801d-4ea8-a5b8-98c9ebda0d03
-last-transition-from: review
-last-transition-at: 2026-11-04T19:55:14.992Z
+last-transition-id: 2b016fae-7b8a-485f-9118-ceff04196f9d
+last-correlation-id: 2b016fae-7b8a-485f-9118-ceff04196f9d
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:23:06.344Z
 ---
 
 # x01013 — La tormenta de eventos del LSP de Biome: excluir la raíz de caché del watcher y hacer que el directorio de unidades siga al cacheDir
