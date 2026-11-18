@@ -68,14 +68,16 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S4 — A train that cannot run leaves its riders to the individual path
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
   - "When no pushed train carries a behind rider and the integration tip has stood past the grace, the rider is not left to the train: it is brought forward by the individual path (queue order, urgent first, capped per pass), re-runs its own checks and lands by its own merge once green; while a train carries it, or within the grace, it is left to the train (queue-acceptance.spec.ts)."
 - shipped-in: `a3263946a749`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S5 — Every train regenerates its derived files once, conflict or not
 - **Status**: review
