@@ -249,7 +249,32 @@ const readAudit = (
 	}
 };
 
+/**
+ * Whether this run may use the network. The audit and the registry are
+ * network gates, and a candidate proof or a pull-request run into the
+ * integration branch has to be deterministic and offline (c00537): they
+ * run on the promotion into the release branch, on the scheduled sweep,
+ * and wherever `--network` asks for them.
+ */
+export const networkAllowed = (
+	env: Readonly<Record<string, string | undefined>>,
+	argv: readonly string[],
+): boolean => {
+	if (argv.includes('--network')) return true;
+	const event = env.GITHUB_EVENT_NAME;
+	if (event === 'schedule' || event === 'workflow_dispatch') return true;
+	if (event === 'pull_request') return env.GITHUB_BASE_REF === 'main';
+	if (event === 'push') return env.GITHUB_REF === 'refs/heads/main';
+	return false;
+};
+
 export const main = async (): Promise<number> => {
+	if (!networkAllowed(process.env, process.argv.slice(2))) {
+		console.log(
+			'✓ dependency-advisories: skipped, a network gate; it runs on the promotion into main and on the schedule (or with --network).',
+		);
+		return 0;
+	}
 	const root = repoRoot();
 	let lockfile: Readonly<Record<string, readonly IAdvisory[]>>;
 	try {
