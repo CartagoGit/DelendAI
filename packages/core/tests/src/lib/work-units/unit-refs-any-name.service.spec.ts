@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createGitRepoTemplate } from '@delendai/test-kit';
 
+import { READABLE_WORK_REF_SHAPE } from '@delendai/core/lib/development-policy/profiles.constant';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import { unitRefsAnyName } from '@delendai/core/lib/work-units/unit-refs-any-name.service';
 
@@ -34,7 +35,7 @@ const policy = resolveDevelopmentPolicy({
 });
 
 describe('unitRefsAnyName', () => {
-	it('finds a unit under both namespaces, whatever its topic', () => {
+	it('[<200ms] finds a unit under both namespaces, whatever its topic', () => {
 		const root = template.copy().root;
 		const old =
 			'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/one';
@@ -61,7 +62,7 @@ describe('unitRefsAnyName', () => {
 		).toEqual([old, fresh].sort());
 	});
 
-	it('looks for nothing when the arguments name every part', () => {
+	it('[<200ms] looks for nothing when the arguments name every part', () => {
 		expect(
 			unitRefsAnyName(
 				'/nonexistent',
@@ -72,5 +73,48 @@ describe('unitRefsAnyName', () => {
 				'S1',
 			),
 		).toEqual([]);
+	});
+});
+
+describe('unitRefsAnyName under the scope grammar (f00808)', () => {
+	const readable = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: {
+				namespacePrefix: '',
+				workRefTemplate: `heads/wip/${READABLE_WORK_REF_SHAPE}`,
+			},
+		},
+	});
+	const find = (root: string, of: typeof policy): readonly string[] =>
+		unitRefsAnyName(
+			root,
+			['--kind=implement'],
+			of,
+			'agent-a',
+			'x00001',
+			'S1',
+		);
+
+	it('[<200ms] finds a generation-1 unit under the new shape, which spells no -G1', () => {
+		const root = template.copy().root;
+		const first = 'refs/heads/wip/implement/agent-a/x00001-S1/one';
+		const second = 'refs/heads/wip/implement/agent-a/x00001-S1-G2/two';
+		git(root, 'update-ref', first, 'HEAD');
+		git(root, 'update-ref', second, 'HEAD');
+		git(
+			root,
+			'update-ref',
+			'refs/heads/wip/implement/agent-b/x00001-S1/one',
+			'HEAD',
+		);
+		expect([...find(root, readable)].sort()).toEqual([second, first]);
+	});
+
+	it('[<200ms] finds a generation-1 unit under the old shape too', () => {
+		const root = template.copy().root;
+		const old = 'refs/heads/wip/agent-a/implement/x00001-S1-g1/one';
+		git(root, 'update-ref', old, 'HEAD');
+		expect([...find(root, policy)]).toEqual([old]);
 	});
 });
