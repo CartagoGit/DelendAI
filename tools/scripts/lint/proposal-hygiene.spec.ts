@@ -28,7 +28,7 @@ const proposal = (body: string): string =>
 	].join('\n');
 
 describe('unfilled scaffold', () => {
-	it('flags a placeholder left where the scaffold put it', () => {
+	it('[<20ms] flags a placeholder left where the scaffold put it', () => {
 		const findings = checkProposal(
 			'p.md',
 			proposal('## Goal\n\nTODO: describe the goal.\n'),
@@ -37,7 +37,7 @@ describe('unfilled scaffold', () => {
 		expect(findings[0]?.rule).toBe('unfilled-scaffold');
 	});
 
-	it('flags a placeholder left as a list item', () => {
+	it('[<20ms] flags a placeholder left as a list item', () => {
 		const findings = checkProposal(
 			'p.md',
 			proposal(
@@ -47,7 +47,7 @@ describe('unfilled scaffold', () => {
 		expect(findings).toHaveLength(1);
 	});
 
-	it('does NOT flag prose that quotes the placeholder', () => {
+	it('[<20ms] does NOT flag prose that quotes the placeholder', () => {
 		// The real false positive: the proposal that documents this gate
 		// names the placeholder in a sentence, and a substring search
 		// reported it for the explanation.
@@ -62,7 +62,7 @@ describe('unfilled scaffold', () => {
 });
 
 describe('heading/id mismatch', () => {
-	it('flags an H1 that names a different proposal', () => {
+	it('[<20ms] flags an H1 that names a different proposal', () => {
 		const text = [
 			'---',
 			'id: x00424',
@@ -77,7 +77,7 @@ describe('heading/id mismatch', () => {
 		expect(findings[0]?.detail).toContain('x00419');
 	});
 
-	it('passes when they agree', () => {
+	it('[<20ms] passes when they agree', () => {
 		expect(checkProposal('p.md', proposal('## Goal\n\nReal.\n'))).toEqual(
 			[],
 		);
@@ -88,7 +88,7 @@ describe('duplicates', () => {
 	const withFiles = (files: string) =>
 		proposal(`## Slices\n\n### S1 — x\n- **Files**: ${files}\n`);
 
-	it('flags two open proposals whose slices name the same files', () => {
+	it('[<20ms] flags two open proposals whose slices name the same files', () => {
 		const findings = findDuplicates(
 			new Map([
 				['a.md', withFiles('`src/a.ts`, `src/a.spec.ts`')],
@@ -118,7 +118,7 @@ describe('duplicates', () => {
 		).toEqual([]);
 	});
 
-	it('reports the later one, so fixing it does not move the finding', () => {
+	it('[<20ms] reports the later one, so fixing it does not move the finding', () => {
 		const findings = findDuplicates(
 			new Map([
 				['b.md', withFiles('`src/a.ts`')],
@@ -128,7 +128,7 @@ describe('duplicates', () => {
 		expect(findings.map((f) => f.file)).toEqual(['b.md']);
 	});
 
-	it('reads a file list written under the Files line, not just its first item', () => {
+	it('[<20ms] reads a file list written under the Files line, not just its first item', () => {
 		const listed = (...files: string[]) =>
 			proposal(
 				`## Slices\n\n### S1 — x\n- **Status**: review\n- **Files**:\n${files.map((file) => `  - \`${file}\``).join('\n')}\n- **Gate**: x\n`,
@@ -151,7 +151,7 @@ describe('duplicates', () => {
 		).toHaveLength(1);
 	});
 
-	it('does not flag two proposals that merely touch one file each', () => {
+	it('[<20ms] does not flag two proposals that merely touch one file each', () => {
 		const findings = findDuplicates(
 			new Map([
 				['a.md', withFiles('`src/a.ts`')],
@@ -161,7 +161,7 @@ describe('duplicates', () => {
 		expect(findings).toEqual([]);
 	});
 
-	it('ignores a proposal with no slice files rather than matching it to another', () => {
+	it('[<20ms] ignores a proposal with no slice files rather than matching it to another', () => {
 		// Two proposals that both declare nothing are not the same
 		// proposal; treating "unknown" as a value is how a fingerprint
 		// starts pairing unrelated documents.
@@ -195,7 +195,7 @@ describe('delivered but still in progress', () => {
 		].join('\n');
 	const IN_PROGRESS = 'docs/delendai/proposals/in-progress/x00001-a.md';
 
-	it('flags a proposal in progress whose every slice is delivered', () => {
+	it('[<20ms] flags a proposal in progress whose every slice is delivered', () => {
 		const findings = checkProposal(
 			IN_PROGRESS,
 			withSlices('review — shipped in #1', 'done'),
@@ -208,7 +208,7 @@ describe('delivered but still in progress', () => {
 		]);
 	});
 
-	it('leaves the proposal of the unit standing here, reopened for a fix', () => {
+	it('[<20ms] leaves the proposal of the unit standing here, reopened for a fix', () => {
 		const text = `---\nid: x00001\n---\n${withSlices('review', 'done')}`;
 		expect(checkProposal(IN_PROGRESS, text, 'x00001')).toEqual([]);
 		expect(checkProposal(IN_PROGRESS, text, 'x00002')).not.toEqual([]);
@@ -218,13 +218,13 @@ describe('delivered but still in progress', () => {
 		expect(unitProposalOf('develop')).toBeUndefined();
 	});
 
-	it('leaves one with a slice still to deliver', () => {
+	it('[<20ms] leaves one with a slice still to deliver', () => {
 		expect(
 			checkProposal(IN_PROGRESS, withSlices('review', 'pending')),
 		).toEqual([]);
 	});
 
-	it('leaves the same proposal once it is in review', () => {
+	it('[<20ms] leaves the same proposal once it is in review', () => {
 		expect(
 			checkProposal(
 				'docs/delendai/proposals/review/x00001-a.md',

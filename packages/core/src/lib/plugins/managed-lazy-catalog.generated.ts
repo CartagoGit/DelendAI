@@ -1352,7 +1352,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 						'Read proposal workflow conventions and template.',
 					proposal_get: 'Read a proposal or list them with filters.',
 					round_context:
-						'Persisted round digest for resumed swarm work.',
+						'Persisted multi-agent round digest for resumed swarm work.',
 					agent_names:
 						'Name the whole agent tree (orchestrator included): assign/release/heartbeat/list/tree/who_uses/gc/reconcile.',
 					continue_proposal:
@@ -1362,8 +1362,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					plan: 'Validate a set of work slices: file disjointness + which are claimable now (parallel plan).',
 					delegate:
 						'Hand a slice to a subagent: assign a name + claim its files, returning a handoff packet.',
-					proposal_transition:
-						'Move a proposal to a new status; its folder follows.',
+					proposal_transition: 'Move a proposal to a new status.',
 					proposals_close_plan:
 						'Close a `type: plan` proposal; refuses with blockers until every child, sub-plan and own slice is done and peer-reviewed.',
 					create_proposal:
@@ -1387,7 +1386,7 @@ export const MANAGED_LAZY_PLUGIN_CATALOG: readonly IManagedLazyPluginCatalogEntr
 					auto_fix_queue:
 						'Queue reproducible low/medium incident drafts for auto-fix; optionally write them as proposals.',
 					state_health:
-						'Read-only swarm health: locks, livelocks, orphans.',
+						'Read-only swarm health: locks, livelocks, backpressure, orphans.',
 					state_repair:
 						'Heal stale locks, due queue entries and orphans. Dry-run by default.',
 					compact_status:

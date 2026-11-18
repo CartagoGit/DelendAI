@@ -50,7 +50,7 @@ export const buildProposalTransitionRegistration = (
 	id: 'proposal_transition',
 	effects: ['write'],
 	writeRoot: 'caller-checkout',
-	summary: 'Move a proposal to a new status; its folder follows.',
+	summary: 'Move a proposal to a new status.',
 	tags: ['work'],
 	register: async (server) => {
 		server.registerTool(
