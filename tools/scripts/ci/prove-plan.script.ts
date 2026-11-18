@@ -425,7 +425,7 @@ const runChecks = async (
 		(check) =>
 			wanted(check.job, only) &&
 			jobMustRun({ ...plan, job: check.job }) &&
-			(!isProposalOnly(changed) || PROPOSAL_CHECKS.has(check.job)),
+			staticJobRuns(changed, check.job),
 	);
 	const first = await runTogether(
 		[
@@ -487,7 +487,13 @@ const step = (label: string, command: readonly string[]): boolean => {
 	return ok;
 };
 
-/** A proposal file: prose the proposal gates read, that no code reads. */
+/**
+ * A proposal file: prose the proposal gates read, that no code reads. It
+ * is the only path a proposal-only change may touch, generated files
+ * included: the transitions a revalidation batch applies write nothing but
+ * the proposal documents (their commits, 2026-11-18, changed only
+ * `in-progress/` and `review/` documents), so no generated path is admitted.
+ */
 const PROPOSAL_FILE = /^docs\/delendai\/proposals\//u;
 
 /**
@@ -508,8 +514,20 @@ export const PROPOSAL_CHECKS: ReadonlySet<string> = new Set([
 	'lint-security',
 ]);
 
+/**
+ * Whether a static check runs for this change: all of them, except that a
+ * proposal-only change runs only the ones that read proposals.
+ */
+export const staticJobRuns = (
+	changed: readonly string[],
+	job: string,
+): boolean => !isProposalOnly(changed) || PROPOSAL_CHECKS.has(job);
+
 /** The generators that read proposals, each checked on its own (seconds). */
-const PROPOSAL_GENERATORS: readonly (readonly [string, readonly string[]])[] = [
+export const PROPOSAL_GENERATORS: readonly (readonly [
+	string,
+	readonly string[],
+])[] = [
 	[
 		'agent-catalog current',
 		[

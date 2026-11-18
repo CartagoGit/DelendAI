@@ -221,7 +221,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		"Open the promotion into a branch from the branch its rule names, by the target branch's own route.",
 	'release follow':
 		'Make each branch that follows another take in what it has moved on, by its own route.',
-	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
+	work: 'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires; `revalidate` re-validates the shipped proposals sent back for fresh evidence in one batch.',
 	review: REVIEW_COMMAND.summary,
 	integration: INTEGRATION_COMMAND.summary,
 };

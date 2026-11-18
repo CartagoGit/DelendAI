@@ -10,7 +10,7 @@ export const WORK_COMMAND = {
 	offline: (args: readonly string[]): boolean =>
 		args[0] !== 'deliver' && args[0] !== 'revalidate',
 	summary:
-		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires.',
+		'Persist work to its own ref without moving the shared checkout, and report whether the checkout is where the policy requires; `revalidate` re-validates the shipped proposals sent back for fresh evidence in one batch.',
 	usage: 'work <status|progress|swarm|doctor|claim|enter|checkpoint|prove|deliver|revalidate|publish|retire|retired|reap|rescue> [--proposal=<id>] [--slice=<id>] [--paths=<a,b>] [--message=<text>] [--agent=<who>] [--generation=<n>] [--topic=<text>] [--urgent=<reason>] [--only=<gate>[,<gate>]] [--alongside] [--print-path] [--all] [--watch] [--agents] [--workspace=<path>]',
 	flags: [
 		'proposal',

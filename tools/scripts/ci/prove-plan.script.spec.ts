@@ -9,6 +9,9 @@ import {
 	earlySteps,
 	familyPlanOf,
 	isProposalOnly,
+	PROPOSAL_CHECKS,
+	PROPOSAL_GENERATORS,
+	staticJobRuns,
 	proveGatesOf,
 	timingTableOf,
 	fastSteps,
@@ -306,5 +309,47 @@ describe('--only', () => {
 		expect(partialVerdictOf(true, new Set(['typecheck']), 3)).toBe(
 			'prove: ok --only=typecheck in 3s; partial: the unit is not proved',
 		);
+	});
+});
+
+describe('the proof of a proposal-only batch', () => {
+	const batch = [
+		'docs/delendai/proposals/in-progress/f1-a.md',
+		'docs/delendai/proposals/review/f2-b.md',
+	];
+	const withCode = [...batch, 'packages/cli/src/a.ts'];
+
+	it('[<50ms] runs only the proposal generators and the proposal static checks', () => {
+		expect(earlySteps(batch)).toEqual(PROPOSAL_GENERATORS);
+		for (const job of PROPOSAL_CHECKS) {
+			expect(staticJobRuns(batch, job)).toBe(true);
+		}
+		expect(staticJobRuns(batch, 'typecheck')).toBe(false);
+		expect(staticJobRuns(batch, 'lint-architecture')).toBe(false);
+	});
+
+	it('[<50ms] runs the full plan for a change with one code file', () => {
+		expect(earlySteps(withCode)).not.toEqual(PROPOSAL_GENERATORS);
+		expect(staticJobRuns(withCode, 'typecheck')).toBe(true);
+		expect(staticJobRuns(withCode, 'lint-architecture')).toBe(true);
+	});
+
+	it('[<50ms] admits no generated path and no code path', () => {
+		expect(isProposalOnly([...batch, 'docs/delendai/AGENT.md'])).toBe(
+			false,
+		);
+		expect(isProposalOnly([...batch, 'docs/delendai/x.generated.md'])).toBe(
+			false,
+		);
+		expect(isProposalOnly([...batch, 'tools/scripts/a.ts'])).toBe(false);
+	});
+
+	it('[<50ms] plans no dependency install for a proposal-only change', () => {
+		const planned = [
+			...earlySteps(batch).map(([label, command]) =>
+				[label, ...command].join(' '),
+			),
+		];
+		expect(planned.some((step) => /install/u.test(step))).toBe(false);
 	});
 });
