@@ -92,14 +92,16 @@ With S1–S4 on develop the train was still declined: a member that left the int
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S6 — A train's CI run passes the commit-branch lint
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Gate**: none
 
 Once trains were pushed, every train run went red, even a train of one green pull request: `commit-branch-discipline` judged the CI checkout `delendai/train/…` as outside every namespace the policy declares. It was a third copy of the namespace list (after the guard and the ruleset), and the queue's bisection then blamed innocent members as culprits. The lint now reads the train namespaces from core's `ownedTrainPrefixes`, the source the guard and the ruleset read.
 - shipped-in: `bd78b3e79e8b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S7 — The refresher judges riders as the queue does
 - **Status**: review
