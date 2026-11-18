@@ -51,7 +51,7 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
 - review-log: approved by mai-code-2 — verified at 92329ad5f4d3, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 5/5: (1) sharedTestOptions.globalSetup points to run-temp-root.global-setup.ts; enterRunTempRoot creates delendai-test-run-<pid>, sets all three variables, deduplicates… (2) The Bun wrapper calls enterRunTempRoot, passes withRunTempRoot(process.env, run.root) to spawnSync, and invokes run.leave() in finally before propagating the c… (3) forgeConfigDir uses mkdtempSync(join(tmpdir(),'delendai-gh-')); while either runner is active tmpdir() resolves to its run root, so the established teardown ow… (4) The spec constructs the exact leaking fixture and child config, records readdirSync before/after, runs it, and both the pass and equality assertions pass. (5) Reviewed the delivered file scope: the S1 implementation adds/changes only run-temp-root.global-setup.spec.ts among specs; existing unrelated specs are untouch… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The two focused spec files pass 6/6, including the child-vitest before/after test, and the temp-root lint exits 0. The global setup, Bun wrapper, and helper all share one removable run root.
 
 ### S2 — A lint refuses a test helper that writes outside the run root
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/lint/test-temp-root.script.ts`, `tools/scripts/lint/test-temp-root.spec.ts`, `package.json`
 - **Gate**: lint
@@ -60,8 +60,10 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
   - "The lint is wired into lint:architecture so CI runs it."
   - "It passes on the current tree and fails on a fixture with mkdtempSync('/tmp/x-')."
 - shipped-in: `8e80c0426110`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 92329ad5f4d3, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 3/3: (1) literalTmpMkdtemps returns path, 1-based line, and text for a literal `/tmp`/`/var/tmp` mkdtemp call; the script emits one `file:line — text` finding per match… (2) package.json includes `lint:test-temp-root` in the lint:architecture chain; the new script is the direct command invoked by that entry. (3) The live command printed `✓ test-temp-root: no test makes a directory outside tmpdir().`; the spec feeds the exact fixture and asserts line 2 plus the source t… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The focused lint spec passes 2/2 (6/6 in the combined focused run), and running `bun run lint:test-temp-root` on the current tree exits 0. The lint is scoped to test files/helpers and wired into the architecture gate.
 
 ## acceptance
 
