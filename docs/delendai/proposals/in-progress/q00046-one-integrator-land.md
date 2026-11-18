@@ -243,7 +243,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5k — The branch flow, part 3b: delivered units are ended by the reconciler through a clone-side adapter, and unit-reaper goes
 - **Status**: pending
 - **DependsOn**: [S5c]
-- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/unit-edits-kept.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-reaped.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-edits-kept.service.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
@@ -253,12 +253,12 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5l — The branch flow, part 3c: worktree husks are ended by the reconciler, and worktree-husks goes
 - **Status**: pending
 - **DependsOn**: [S5k]
-- **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/work-units/worktree-husks.service.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/husk-directories.service.ts`, `packages/core/src/lib/contracts/interfaces/husk-directories.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/ref-reconciler/husk-directories.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "clone-forge.service.spec.ts adds the husk cases: a husk directory is ended and a stray file inside one is kept, as the husk spec asserted before it was deleted."
-  - "worktree-husks.service.ts, its interface and its spec are deleted, workflow-doctor.service.ts and work-unit-reap.service.ts import from the reconciler, and `git grep -n 'reapHusks\|keepStrayFiles\|huskDirectories\|husksInvariant' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
+  - "reapHusks and keepStrayFiles are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function reapHusks'` finds one definition)."
 
 ### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending

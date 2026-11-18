@@ -1,5 +1,5 @@
 /**
- * unit-reaper-landed.service.e2e.spec.ts — a unit whose every commit is on
+ * clone-forge-landed.service.e2e.spec.ts — a unit whose every commit is on
  * the integration branch ends once its owner is idle, whoever owns it,
  * even while its proposal is still in progress for other slices.
  */
@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
-import { reapDeliveredUnits } from '@delendai/core/lib/work-units/unit-reaper.service';
+import { endDeliveredUnits } from '@delendai/core/lib/ref-reconciler/clone-forge-ports.service';
 import { readUnitStandings } from '@delendai/core/lib/work-units/unit-standings.service';
 
 import {
@@ -18,7 +18,7 @@ import {
 	unitPolicy,
 	unitRef,
 	unitRepo,
-} from './unit-repo.helper';
+} from '../work-units/unit-repo.helper';
 
 afterEach(cleanUnitRepos);
 
@@ -46,7 +46,7 @@ const landedInProgressUnit = async (agent: string) => {
 	return { repo, ref, worktree, start };
 };
 
-describe('reapDeliveredUnits, a landed unit of an in-progress proposal', () => {
+describe('endDeliveredUnits, a landed unit of an in-progress proposal', () => {
 	it('[<2000ms] [<1500ms] is idle, not delivered, while its proposal is in progress', async () => {
 		const { repo, ref, start } = await landedInProgressUnit('another');
 		const standings = await readUnitStandings({
@@ -60,7 +60,7 @@ describe('reapDeliveredUnits, a landed unit of an in-progress proposal', () => {
 	it('[<2000ms] [<1500ms] is ended whatever agent owns it once the owner is idle', async () => {
 		const { repo, ref, worktree, start } =
 			await landedInProgressUnit('another');
-		const [reaped] = await reapDeliveredUnits({
+		const [reaped] = await endDeliveredUnits({
 			root: repo.root,
 			policy: unitPolicy,
 			apply: true,
@@ -73,7 +73,7 @@ describe('reapDeliveredUnits, a landed unit of an in-progress proposal', () => {
 
 	it('[<2000ms] [<1500ms] is only listed without --apply', async () => {
 		const { repo, worktree, start } = await landedInProgressUnit('another');
-		const [reaped] = await reapDeliveredUnits({
+		const [reaped] = await endDeliveredUnits({
 			root: repo.root,
 			policy: unitPolicy,
 			apply: false,
@@ -87,7 +87,7 @@ describe('reapDeliveredUnits, a landed unit of an in-progress proposal', () => {
 		const { repo, ref, worktree, start } =
 			await landedInProgressUnit('another');
 		repo.commit(worktree, 'unmerged.ts');
-		const reaped = await reapDeliveredUnits({
+		const reaped = await endDeliveredUnits({
 			root: repo.root,
 			policy: unitPolicy,
 			apply: true,
@@ -100,7 +100,7 @@ describe('reapDeliveredUnits, a landed unit of an in-progress proposal', () => {
 	it('[<2000ms] [<1500ms] is kept, edits named, when its worktree holds an uncommitted edit', async () => {
 		const { repo, worktree, start } = await landedInProgressUnit('another');
 		writeFileSync(join(worktree, 'draft.ts'), 'export {};\n');
-		const [reaped] = await reapDeliveredUnits({
+		const [reaped] = await endDeliveredUnits({
 			root: repo.root,
 			policy: unitPolicy,
 			apply: true,

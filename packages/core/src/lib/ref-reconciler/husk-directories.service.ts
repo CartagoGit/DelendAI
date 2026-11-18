@@ -1,5 +1,5 @@
 /**
- * worktree-husks.service.ts — a directory beside the units that is no
+ * husk-directories.service.ts — a directory beside the units that is no
  * unit is removed, and what it held is kept first.
  *
  * Removing a worktree removes what git put there. Whatever writes into
@@ -25,11 +25,14 @@ import type {
 	IHusk,
 	IKeptStrayFile,
 	IReapedHusk,
-} from '../contracts/interfaces/worktree-husks.interface';
-import { EMPTY_TREE, HUSK_SEARCH_DEPTH } from './units-directory.constant';
-import { resolveUnitsDirectory } from './units-directory.service';
-import { readGit } from './work-unit-shared.service';
-import { namespacedRef } from './namespaced-ref.helper';
+} from '../contracts/interfaces/husk-directories.interface';
+import {
+	EMPTY_TREE,
+	HUSK_SEARCH_DEPTH,
+} from '../work-units/units-directory.constant';
+import { resolveUnitsDirectory } from '../work-units/units-directory.service';
+import { readGit } from '../work-units/work-unit-shared.service';
+import { namespacedRef } from '../work-units/namespaced-ref.helper';
 
 const SKIPPED = new Set(['node_modules', '.git']);
 

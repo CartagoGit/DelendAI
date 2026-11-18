@@ -84,7 +84,7 @@ The cause is that what ends a branch here is not part of the product:
 
 ### S5 — An abandoned unit ends
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-reaper.service.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`
 - **Gate**: type
 - acceptance:
   - "A unit past the recovery window that nobody adopts, reviewer units included, is retired with its tip kept and named in the next status, so no unit stays half-done for good."

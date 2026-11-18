@@ -3,6 +3,7 @@
  * decides and the port through which it acts.
  */
 import type { RECONCILE_TRIGGERS } from '../constants/ref-kinds.constant';
+import type { IUnitStanding } from '../../work-units/unit-lease.interface';
 import type {
 	IObservedPullRequest,
 	IObservedRef,
@@ -99,4 +100,41 @@ export type IReconcileTrigger = (typeof RECONCILE_TRIGGERS)[number];
 export interface IReconcilerRunPorts {
 	readonly exists: (script: string) => Promise<boolean>;
 	readonly spawn: (script: string, args: readonly string[]) => void;
+}
+
+/** A unit as the registry judges it. */
+export interface ICloneUnit {
+	readonly ref: string;
+	readonly standing: IUnitStanding;
+	readonly delivered: boolean;
+	readonly silentSeconds: number | null;
+}
+
+/** What the adapter reads and does in a clone; a spec injects fakes. */
+export interface ICloneForgePorts {
+	readonly units: () => Promise<readonly ICloneUnit[]>;
+	/** The local branch's tip, or nothing when the unit has no local branch. */
+	readonly tipOf: (ref: string) => string | undefined;
+	readonly worktreeOf: (ref: string) => string | null;
+	readonly inspect: (worktree: string) => {
+		readonly edited: readonly string[];
+		readonly regenerable: readonly string[];
+	};
+	/** The integration branch holds every commit of `sha`. */
+	readonly isLanded: (sha: string) => boolean;
+	/** The unit carries no commit of its own beyond the integration branch. */
+	readonly carriesNothing: (ref: string) => boolean;
+	/** The remote keeps `sha` under a retired ref. */
+	readonly keptOnRemote: (sha: string) => boolean;
+	readonly alive: (ref: string, worktree: string | null) => Promise<boolean>;
+	/** Keeps the uncommitted edits on the forge; the ref, or nothing. */
+	readonly keepEdits: (ref: string, worktree: string) => string | undefined;
+	/** Removes the worktree and the branch at `tip`; whether the branch went. */
+	readonly removeCheckout: (
+		ref: string,
+		tip: string,
+		editsKept: boolean,
+	) => Promise<boolean>;
+	readonly dropForgeCopy: (ref: string, tip: string) => void;
+	readonly report: (line: string) => void;
 }
