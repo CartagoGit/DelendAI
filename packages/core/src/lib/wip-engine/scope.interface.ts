@@ -18,3 +18,12 @@ export interface IScopeValidation {
 	readonly valid: readonly string[];
 	readonly invalid: readonly IInvalidScopePath[];
 }
+
+/** The machine identity a `Delendai-Wip-Ref` trailer carries (f00808). */
+export interface IWorkRefTrailerIdentity {
+	readonly agent: string;
+	readonly kind: string;
+	readonly proposal: string;
+	readonly slices: readonly string[];
+	readonly generation: number;
+}

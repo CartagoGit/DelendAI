@@ -24,12 +24,17 @@ import { join } from 'node:path';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import { gitOutput } from './git-command';
 
-import type { IInvalidScopePath, IScopeValidation } from './scope.interface';
+import type {
+	IInvalidScopePath,
+	IScopeValidation,
+	IWorkRefTrailerIdentity,
+} from './scope.interface';
 import { SCOPE_TRAILER, DIGEST_TRAILER, REF_TRAILER } from './scope.constant';
 
 export type {
 	IInvalidScopePath,
 	IScopeValidation,
+	IWorkRefTrailerIdentity,
 } from './scope.interface';
 export {
 	SCOPE_TRAILER,
@@ -203,6 +208,16 @@ export const expandScope = async (
 	return [...files].sort();
 };
 
+/** The identity as `key=value` pairs, one line, `,` joining slices. */
+const renderRefIdentity = (identity: IWorkRefTrailerIdentity): string =>
+	[
+		`agent=${identity.agent}`,
+		`kind=${identity.kind}`,
+		`proposal=${identity.proposal}`,
+		`slices=${identity.slices.join(',')}`,
+		`generation=${identity.generation}`,
+	].join(' ');
+
 /**
  * Append the scope, digest and ref trailers to a commit message. Kept
  * separate from message composition: callers own their prose, the engine
@@ -212,13 +227,17 @@ export const withScopeTrailers = (
 	message: string,
 	scope: readonly string[],
 	digest: string,
-	ref?: string,
+	ref?: string | IWorkRefTrailerIdentity,
 ): string => {
 	const body = stripMachineTrailers(message).trimEnd();
 	const trailers = [
 		...[...scope].sort().map((path) => `${SCOPE_TRAILER}: ${path}`),
 		`${DIGEST_TRAILER}: ${digest}`,
-		...(ref === undefined ? [] : [`${REF_TRAILER}: ${ref}`]),
+		...(ref === undefined
+			? []
+			: [
+					`${REF_TRAILER}: ${typeof ref === 'string' ? ref : renderRefIdentity(ref)}`,
+				]),
 	];
 	return `${body}\n\n${trailers.join('\n')}\n`;
 };
@@ -268,3 +287,38 @@ export const isWithinScope = (
 	scope: readonly string[],
 ): boolean =>
 	scope.some((claimed) => path === claimed || path.startsWith(`${claimed}/`));
+
+/**
+ * The machine identity a message's `Delendai-Wip-Ref` trailer carries, or
+ * `undefined` when it has none (or names a plain ref instead).
+ */
+export const parseRefIdentityTrailer = (
+	message: string,
+): IWorkRefTrailerIdentity | undefined => {
+	for (const line of message.split('\n').reverse()) {
+		const match = /^Delendai-Wip-Ref:\s*(.+)$/u.exec(line.trim());
+		if (match?.[1] === undefined) continue;
+		const fields = new Map<string, string>();
+		for (const pair of match[1].trim().split(/\s+/u)) {
+			const at = pair.indexOf('=');
+			if (at > 0) fields.set(pair.slice(0, at), pair.slice(at + 1));
+		}
+		const agent = fields.get('agent');
+		const kind = fields.get('kind');
+		const proposal = fields.get('proposal');
+		const generation = Number(fields.get('generation'));
+		if (
+			agent === undefined ||
+			kind === undefined ||
+			proposal === undefined ||
+			!Number.isInteger(generation)
+		) {
+			return undefined;
+		}
+		const slices = (fields.get('slices') ?? '')
+			.split(',')
+			.filter((slice) => slice.length > 0);
+		return { agent, kind, proposal, slices, generation };
+	}
+	return undefined;
+};

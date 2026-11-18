@@ -17,7 +17,10 @@
  */
 
 import { DEFAULT_WORK_KIND } from '../development-policy/profiles.constant';
-import { workRefPlaceholderPattern } from '../development-policy/work-ref-placeholders';
+import {
+	scopeOfUnit,
+	workRefPlaceholderPattern,
+} from '../development-policy/work-ref-placeholders';
 
 import type { IWorkRefVariables } from './ref-name.interface';
 
@@ -70,6 +73,16 @@ export const expandWorkRefTemplate = (
 			return sanitizeRefComponent(variables.kind ?? DEFAULT_WORK_KIND);
 		if (key === 'proposal') return sanitizeRefComponent(variables.proposal);
 		if (key === 'slice') return sanitizeRefComponent(variables.slice);
+		if (key === 'scope') {
+			// Already in the scope grammar (`+` is a legal ref character);
+			// sanitising would turn a set into a dash-run.
+			if (variables.scope !== undefined) return variables.scope;
+			return scopeOfUnit(
+				sanitizeRefComponent(variables.proposal),
+				sanitizeRefComponent(variables.slice),
+				Number(variables.generation),
+			);
+		}
 		if (key === 'topic')
 			return sanitizeRefComponent(variables.topic ?? 'work');
 		return sanitizeRefComponent(String(variables.generation));
