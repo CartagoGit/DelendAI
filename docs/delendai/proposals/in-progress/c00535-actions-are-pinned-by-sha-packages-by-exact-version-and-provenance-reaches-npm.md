@@ -2,14 +2,14 @@
 id: c00535
 title: "Actions are pinned by SHA, packages by exact version, and provenance reaches npm"
 kind: chore
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 255e690e-657c-4adb-92bd-b32a4ac68be7
-last-correlation-id: 255e690e-657c-4adb-92bd-b32a4ac68be7
-last-transition-from: review
-last-transition-at: 2026-11-05T00:47:52.783Z
+last-transition-id: b9a3325c-b0a3-4e2a-be11-42a643d43ae7
+last-correlation-id: b9a3325c-b0a3-4e2a-be11-42a643d43ae7
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:57:12.971Z
 ---
 
 # c00535 — Actions are pinned by SHA, packages by exact version, and provenance reaches npm
@@ -57,7 +57,7 @@ Joint audit a00095 and gpt-6.1-sol. G130: the 74 GitHub action references use mu
 
 ### S3 — One zod range
 - **Status**: pending
-- **Files**: `docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
+- **Files**: `docs/delendai/proposals/in-progress/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md`
 - **Gate**: type
 - acceptance:
   - "Both declare the monorepo zod range and lint:dependency-versions keeps them aligned (G45). Already true at c00535: both declare ^4.6.6, and the lint governs zod; no manifest change was needed."
