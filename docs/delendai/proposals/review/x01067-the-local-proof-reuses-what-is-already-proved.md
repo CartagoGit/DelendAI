@@ -49,7 +49,7 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
 - review-log: approved by mai-code-2 — verified at 31e5d80c428b, validate exit 0 and tests 49/49 claimed, no recorded run cited; acceptance 3/3: (1) proved-ancestors.store.ts writes proved-commits.json beside the compute slot; recordPassedProof refuses dirty trees and stores commit/tree/base/scope/at; livin… (2) chooseSelectionBase caps candidates at MAX_PROVED_CANDIDATES=20, requires an ancestor of HEAD, compares changedFileCount, and emits a message; specs cover the … (3) runChecks keeps base for gates and uses selectionBase only for lintChanged; earlySteps and proveGatesOf receive base; chooseSelectionBase depends on IProofGitR… — Reviewed the delivered diff and current implementation; no later change touches these slice files. All 49 focused specs pass and the type gate passes. Selection, shared-store pruning, and preservation of merge-base for whole-repository steps meet the acceptance criteria without changing CI behavior.
 
 ### S2 — Per-step result reuse
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/step-reuse.ts`, `tools/scripts/ci/step-reuse.spec.ts`, `tools/scripts/ci/step-inputs.constant.ts`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
@@ -58,8 +58,10 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
   - "Failures are never cached; steps without declared inputs always run; --no-reuse and an environment variable force everything; reuse is keyed on the presence of the store, never on CI."
   - "lint-docs, lint-security, quality-gate, land rehearsal and lint-governance declare the paths their scripts read."
 - shipped-in: `afb39fe2c54a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — Acceptance is not met for the declared input inventory. In tools/scripts/ci/step-inputs.constant.ts, STEP_INPUTS contains only `lint-docs`; `lint-security`, `quality-gate`, `land rehearsal`, and `lint-governance` are deliberately absent, so createStepReuse always runs and never records them. Reproduce by importing STEP_INPUTS and checking those labels, or read step-reuse.spec.ts's explicit expectation that lint-security has no declared inputs. To approve, each named step must have pathspecs covering the scripts/files it actually reads, with tests proving lookup and clean-input reuse; if these checks are intentionally dynamic, revise the proposal's acceptance criterion and behavior/design in the same unit rather than claiming they declare inputs.
 
 ### S3 — test:sqlite near the change
 - **Status**: review
