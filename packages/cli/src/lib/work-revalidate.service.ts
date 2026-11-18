@@ -13,12 +13,14 @@ import { join } from 'node:path';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { READY_PROPOSALS_DIR } from '../contracts/constants/work-revalidate.constant';
 import type {
+	IRevalidateOutcome,
 	IRevalidateProposal,
 	IRevalidateRefusal,
 	IRevalidateSelection,
 	IRevalidateSlice,
 	IWorkRevalidatePorts,
 } from '../contracts/interfaces/work-revalidate.interface';
+import { refusalOf } from './work-deliver.service';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
 
 const NOT_LIVE = new Set(['retired', 'dropped']);
@@ -173,17 +175,78 @@ export const namedProposalsOf = (
 				.map((id) => id.trim())
 				.filter((id) => id !== '');
 
-/** Select, print what was chosen and what was left out, change nothing. */
+/** The steps a proposal takes: ready to in-progress, then to review. */
+const STEPS = ['in-progress', 'review'] as const;
+
+/**
+ * Move one proposal through its steps, once each, stopping at the first
+ * refusal or failure. The reason carries the integration commit the batch
+ * is validated at: the service's own field for why it moved.
+ */
+const transitionProposal = async (
+	ports: IWorkRevalidatePorts,
+	id: string,
+	worktree: string,
+	sha: string | undefined,
+): Promise<string | undefined> => {
+	const reason = `Re-validated with fresh evidence${sha === undefined ? '' : ` at ${sha.slice(0, 12)}`}: the slices shipped and their review round was stale.`;
+	for (const to of STEPS) {
+		try {
+			const refusal = refusalOf(
+				await ports.transition({ id, to, reason, worktree }),
+			);
+			if (refusal !== undefined) return refusal;
+		} catch (error) {
+			return error instanceof Error ? error.message : String(error);
+		}
+	}
+	return undefined;
+};
+
+/**
+ * Select, print what was chosen before anything changes, then enter one
+ * unit for the batch and move each proposal through the transition
+ * service, one at a time. A proposal that fails is reported and undone;
+ * the rest go on. Nothing retries.
+ */
 export const revalidateBatch = async (
 	ports: IWorkRevalidatePorts,
 	proposalsFlag: string | undefined,
-): Promise<ICliCommandResult & { readonly data: IRevalidateSelection }> => {
-	const named = namedProposalsOf(proposalsFlag);
-	const selection = selectRevalidation(await ports.proposals(), named);
+): Promise<ICliCommandResult & { readonly data: IRevalidateOutcome }> => {
+	const selection = selectRevalidation(
+		await ports.proposals(),
+		namedProposalsOf(proposalsFlag),
+	);
 	for (const { id, reason } of selection.refused) {
 		ports.print(`left out ${id}: ${reason}`);
 	}
 	if (selection.chosen.length === 0) ports.print('chose none');
 	for (const id of selection.chosen) ports.print(id);
-	return { code: EXIT_CODE.OK, data: selection, suppressDefaultPrint: true };
+	if (selection.chosen.length === 0) {
+		return {
+			code: EXIT_CODE.OK,
+			data: { ...selection, transitioned: [], failed: [] },
+			suppressDefaultPrint: true,
+		};
+	}
+	const worktree = await ports.enter();
+	const sha = await ports.developSha(worktree);
+	const transitioned: string[] = [];
+	const failed: IRevalidateRefusal[] = [];
+	for (const id of selection.chosen) {
+		const mark = ports.mark(worktree);
+		const reason = await transitionProposal(ports, id, worktree, sha);
+		if (reason === undefined) {
+			transitioned.push(id);
+			continue;
+		}
+		if (mark !== undefined) ports.undo(worktree, mark);
+		failed.push({ id, reason });
+		ports.print(`failed ${id}: ${reason}`);
+	}
+	return {
+		code: EXIT_CODE.OK,
+		data: { ...selection, worktree, transitioned, failed },
+		suppressDefaultPrint: true,
+	};
 };

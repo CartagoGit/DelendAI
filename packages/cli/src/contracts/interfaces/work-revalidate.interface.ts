@@ -29,7 +29,38 @@ export interface IRevalidateSelection {
 }
 
 /** The ports the command runs on. */
-export interface IWorkRevalidatePorts {
+export interface IRevalidateReadPorts {
 	readonly proposals: () => Promise<readonly IRevalidateProposal[]>;
 	readonly print: (line: string) => void;
 }
+
+/** The ports the batch's unit and transitions run on. */
+export interface IRevalidateUnitPorts {
+	/** Enters the one unit of the batch; the worktree it prints. */
+	readonly enter: () => Promise<string>;
+	/** The integration commit the batch is validated at. */
+	readonly developSha: (worktree: string) => Promise<string | undefined>;
+	/** The unit's current tip, to return to when a proposal fails. */
+	readonly mark: (worktree: string) => string | undefined;
+	/** Drops what a failed proposal left in the unit, back to `mark`. */
+	readonly undo: (worktree: string, mark: string) => void;
+	/** One transition of the proposals service, committed by the flow. */
+	readonly transition: (input: {
+		readonly id: string;
+		readonly to: 'in-progress' | 'review';
+		readonly reason: string;
+		readonly worktree: string;
+	}) => Promise<unknown>;
+}
+
+/** What the batch did. */
+export interface IRevalidateOutcome extends IRevalidateSelection {
+	readonly worktree?: string;
+	readonly transitioned: readonly string[];
+	readonly failed: readonly IRevalidateRefusal[];
+}
+
+/** Every port the command runs on. */
+export interface IWorkRevalidatePorts
+	extends IRevalidateReadPorts,
+		IRevalidateUnitPorts {}

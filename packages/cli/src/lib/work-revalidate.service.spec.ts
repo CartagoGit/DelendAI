@@ -12,6 +12,7 @@ import {
 import type {
 	IRevalidateProposal,
 	IRevalidateSlice,
+	IWorkRevalidatePorts,
 } from '../contracts/interfaces/work-revalidate.interface';
 
 const slice = (over: Partial<IRevalidateSlice> = {}): IRevalidateSlice => ({
@@ -38,6 +39,18 @@ const FIXTURE: readonly IRevalidateProposal[] = [
 		slice({ id: 'S2', status: 'retired', shippedIn: undefined }),
 	]),
 ];
+
+const okPorts = (
+	proposals: readonly IRevalidateProposal[],
+): IWorkRevalidatePorts => ({
+	proposals: async () => proposals,
+	print: () => undefined,
+	enter: async () => '/unit',
+	developSha: async () => 'abcdef0123456789',
+	mark: () => 'mark',
+	undo: () => undefined,
+	transition: async () => ({ ok: true }),
+});
 
 describe('selectRevalidation', () => {
 	it('[<50ms] selects only the proposal whose live slices are all shipped and changes_requested', () => {
@@ -106,7 +119,10 @@ describe('revalidateBatch', () => {
 	) => {
 		const lines: string[] = [];
 		const result = await revalidateBatch(
-			{ proposals: async () => proposals, print: (l) => lines.push(l) },
+			{
+				...okPorts(proposals),
+				print: (l) => lines.push(l),
+			},
 			flag,
 		);
 		return { lines, result };
@@ -128,5 +144,72 @@ describe('revalidateBatch', () => {
 		const { lines } = await run(FIXTURE, 'f1,f3');
 		expect(lines[0]).toContain('left out f3');
 		expect(lines).toContain('f1');
+	});
+});
+
+describe('revalidateBatch units and transitions', () => {
+	const THREE: readonly IRevalidateProposal[] = [
+		proposal('f1', [slice()]),
+		proposal('f2', [slice()]),
+		proposal('f3', [slice()]),
+	];
+
+	const unit = (refusing: readonly string[] = []) => {
+		const calls = { enter: 0, undo: 0, transitions: [] as string[] };
+		const ports: IWorkRevalidatePorts = {
+			proposals: async () => THREE,
+			print: () => undefined,
+			enter: async () => {
+				calls.enter += 1;
+				return '/unit';
+			},
+			developSha: async () => 'abcdef0123456789',
+			mark: () => 'mark',
+			undo: () => {
+				calls.undo += 1;
+			},
+			transition: async ({ id, to, reason }) => {
+				calls.transitions.push(`${id}:${to}`);
+				expect(reason).toContain('abcdef012345');
+				return refusing.includes(id)
+					? { ok: false, reason: `${id} refused` }
+					: { ok: true };
+			},
+		};
+		return { calls, ports };
+	};
+
+	it('[<100ms] enters one unit for a selection of three proposals', async () => {
+		const { calls, ports } = unit();
+		const result = await revalidateBatch(ports, undefined);
+		expect(calls.enter).toBe(1);
+		expect(result.data.transitioned).toEqual(['f1', 'f2', 'f3']);
+	});
+
+	it('[<100ms] reports the refused proposal by id and still transitions the other two', async () => {
+		const { calls, ports } = unit(['f2']);
+		const result = await revalidateBatch(ports, undefined);
+		expect(result.data.transitioned).toEqual(['f1', 'f3']);
+		expect(result.data.failed).toEqual([
+			{ id: 'f2', reason: 'f2 refused' },
+		]);
+		expect(calls.undo).toBe(1);
+	});
+
+	it('[<100ms] calls the service once for a failing proposal, never retrying', async () => {
+		const { calls, ports } = unit(['f2']);
+		await revalidateBatch(ports, undefined);
+		expect(calls.transitions.filter((t) => t.startsWith('f2'))).toEqual([
+			'f2:in-progress',
+		]);
+	});
+
+	it('[<100ms] enters no unit when nothing is chosen', async () => {
+		const { calls, ports } = unit();
+		await revalidateBatch(
+			{ ...ports, proposals: async () => [] },
+			undefined,
+		);
+		expect(calls.enter).toBe(0);
 	});
 });
