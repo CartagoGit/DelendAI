@@ -75,7 +75,7 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
 ### S4 — The batch is published as one pull request titled by the product, and documented
 - **Status**: pending
 - **DependsOn**: [S3]
-- **Files**: `packages/cli/src/contracts/constants/help-translation.constant.ts`, `.claude/skills/delendai-work-unit-playbook/SKILL.md`
+- **Files**: `packages/cli/src/contracts/constants/help-translation.constant.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
 - acceptance:
   - "Decision: the command publishes the unit with the existing publish path so the product titles the pull request; it passes no title of its own, and one pull request is opened for the whole batch (publication-target.service.ts:233 publishes a batch whole)"
