@@ -29,6 +29,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 5
     commit-message:
       prefix: "deps"
@@ -45,6 +47,8 @@ updates:
     schedule:
       interval: "weekly"
       day: "monday"
+    cooldown:
+      default-days: 3
     open-pull-requests-limit: 3
     commit-message:
       prefix: "ci"
