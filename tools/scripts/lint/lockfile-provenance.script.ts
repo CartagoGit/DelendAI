@@ -200,7 +200,7 @@ export const registryPublishTime = (
 		if (times === undefined) {
 			times = (async () => {
 				const response = await fetchFn(
-					`${REGISTRY}${name.replace('/', '%2f')}`,
+					`${REGISTRY}${encodeURIComponent(name)}`,
 				);
 				if (!response.ok)
 					throw new Error(
