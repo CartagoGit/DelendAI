@@ -403,7 +403,6 @@
 		"packages/core/tests/src/lib/development-policy/publication-unit.spec.ts",
 		"packages/core/tests/src/lib/development-policy/release-target.spec.ts",
 		"packages/core/tests/src/lib/development-policy/served-agent-identity.spec.ts",
-		"packages/core/tests/src/lib/development-policy/shared-checkout-clean.spec.ts",
 		"packages/core/tests/src/lib/development-policy/stale-runtime-advisory.spec.ts",
 		"packages/core/tests/src/lib/development-policy/validate.spec.ts",
 		"packages/core/tests/src/lib/development-policy/work-isolation.spec.ts",
