@@ -3,6 +3,7 @@
  * pull request, rendered by the one template (f00809) from what the
  * unit's commits and files say.
  */
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { renderChangeText } from '../change-text/change-text-template.service';
 import type {
 	IChangeTextProposalKind,
@@ -87,9 +88,16 @@ const verdictPack = (
 	};
 };
 
-/** The proposal and slice a unit's branch names (`…/x00875-S23-g1/…`). */
-const UNIT_OF_BRANCH =
-	/(?:^|\/)(?<proposal>[a-z]\d{5,})-(?<slice>[^/]+?)-g\d+(?:\/|$)/iu;
+/** The proposal and slice a unit's branch names, in either spelling. */
+const unitOfBranch = (
+	branch: string,
+): { proposal: string; slice: string } | undefined => {
+	const identity = unitOfName(branch);
+	// A review batch names no one proposal.
+	return identity === undefined || !/^[a-z]\d{5,}$/iu.test(identity.proposal)
+		? undefined
+		: { proposal: identity.proposal, slice: identity.slice };
+};
 
 /**
  * Whether `subject` cites the unit `branch` names. A unit that merged
@@ -97,11 +105,11 @@ const UNIT_OF_BRANCH =
  * them when they were the oldest.
  */
 const citesUnitOf = (subject: string, branch: string): boolean => {
-	const unit = UNIT_OF_BRANCH.exec(branch)?.groups;
-	if (unit?.proposal === undefined || unit.slice === undefined) return false;
+	const unit = unitOfBranch(branch);
+	if (unit === undefined) return false;
 	const cited = subject.toLowerCase();
 	const proposal = unit.proposal.toLowerCase();
-	return unit.slice.toLowerCase() === 'all'
+	return unit.slice === '' || unit.slice.toLowerCase() === 'all'
 		? cited.includes(proposal)
 		: cited.includes(`${proposal} ${unit.slice.toLowerCase()}`);
 };
@@ -121,13 +129,13 @@ const PROPOSAL_KINDS: readonly string[] = [
 
 /** The proposal and slice a unit's branch names, in the template's terms. */
 const proposalsOfBranch = (branch: string): IChangeTextProposalRef[] => {
-	const unit = UNIT_OF_BRANCH.exec(branch)?.groups;
-	if (unit?.proposal === undefined) return [];
-	const all = unit.slice?.toLowerCase() === 'all';
+	const unit = unitOfBranch(branch);
+	if (unit === undefined) return [];
+	const all = unit.slice === '' || unit.slice.toLowerCase() === 'all';
 	return [
 		{
 			proposal: unit.proposal.toLowerCase(),
-			slices: all || unit.slice === undefined ? [] : [unit.slice],
+			slices: all ? [] : unit.slice.split('+'),
 		},
 	];
 };

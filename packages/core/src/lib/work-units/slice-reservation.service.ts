@@ -14,6 +14,7 @@
  * silent unit is given when it has not been pushed yet; after that the
  * next agent takes it over.
  */
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { randomUUID } from 'node:crypto';
 
 import type { ISliceReservation } from '../contracts/interfaces/slice-reservation.interface';
@@ -251,8 +252,9 @@ export const sliceHeldOnForge = (input: {
 	// the one it has. Told only "wait or take another slice", an agent
 	// with a conflict to resolve in its own pull request had no way in.
 	if (reservation.agent === input.agent) {
-		const [, generation = '', topic = ''] =
-			/-g(\d+)\/([^/]+)$/u.exec(reservation.unit) ?? [];
+		const named = unitOfName(reservation.unit);
+		const generation = String(named?.generation ?? '');
+		const topic = named?.topic ?? '';
 		return refused(
 			`${input.proposal} ${reservation.slice} is reserved on the forge by your own unit, \`${reservation.unit}\`, which this entry would not have resumed.`,
 			`Go back to it: add --generation=${generation} --topic=${topic}. If it is published, bring its pull request in first (\`git merge origin/${publication}${reservation.unit}\`) and publish again from there.`,
