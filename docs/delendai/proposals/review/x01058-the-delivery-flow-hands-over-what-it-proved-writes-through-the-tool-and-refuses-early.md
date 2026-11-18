@@ -33,7 +33,7 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
 - global_gate: type
 
 ### S1 — Deliver hands over only the slice it proved
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`, `plugins/proposals/src/lib/services/review-entry.service.ts`, `plugins/proposals/tests/src/lib/services/review-entry.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -41,8 +41,10 @@ On 2026-11-10 delivering one slice of a multi-slice proposal moved the whole pro
   - "With other slices undelivered, deliver leaves the proposal in progress and reports which slices remain; the last slice moves it to review."
   - "[<Nms] specs cover: one slice delivered of three, all delivered, and a whole-proposal deliver unchanged."
 - shipped-in: `23b3ed8a110e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — Deliver runs the hand-over preflight before the proof
 - **Status**: review
