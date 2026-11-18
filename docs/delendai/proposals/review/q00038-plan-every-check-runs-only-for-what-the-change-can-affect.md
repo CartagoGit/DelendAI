@@ -105,15 +105,17 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S5 — Tools are verified for the plugins the change reaches
-- **Status**: done
+- **Status**: pending
 - **Files**: `tools/scripts/verify/affected-plugins.helper.ts`, `tools/scripts/verify/affected-plugins.helper.spec.ts`, `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/ci/affected-specs.service.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
   - "On a pull request, verify:tools verifies the plugins the change reaches by symbol, every plugin when it reaches the harness or a root manifest, and none for a change no plugin loads; a spec covers each case."
   - "A run without --affected-since, as on the integration branch, still verifies every plugin."
 - shipped-in: `3d7174504930`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S6 — Each publishable package is packed once
 - **Status**: done
