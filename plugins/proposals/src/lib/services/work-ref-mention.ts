@@ -29,7 +29,8 @@ const bare = (prefix: string): string => {
 };
 
 /** Characters a ref name may carry; anything else ends the token. */
-const REF_TOKEN_RE = /[A-Za-z0-9._\-/]+/gu;
+// `+` joins the parts of a scope set (`x01003-S1+S4`).
+const REF_TOKEN_RE = /[A-Za-z0-9._+\-/]+/gu;
 
 /** Every place in `token` where `prefix` starts a path component. */
 const componentStarts = (token: string, prefix: string): number[] => {
