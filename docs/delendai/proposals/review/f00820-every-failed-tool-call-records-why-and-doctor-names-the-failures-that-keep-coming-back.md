@@ -64,7 +64,7 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
 - review-log: approved by mai-code-2 — verified at 64d614baf4ee, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 2/2: (1) runFailuresView reads <workspace>/<cacheDir>/runtime/events.jsonl with a default 7-day window, summariseToolFailures folds tool.completed/tool.failed events an… (2) kpis.command.spec.ts supplies JSONL with completed/failed events, asserts b before a, exact calls/failureShare/topCodes order in JSON, missing/odd-line behavio… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The 28 focused specs pass and the lint gate exits 0. The failures view reads project runtime events, folds calls/failures and ranks failure codes consistently in text and JSON.
 
 ### S3 — doctor reports a recurring failure code
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S2]
 - **Files**: `packages/cli/src/commands/doctor-checks/recurring-tool-failures.check.ts`, `packages/cli/src/commands/doctor-checks/recurring-tool-failures.check.spec.ts`, `packages/cli/src/commands/doctor.ts`
 - **Gate**: lint
@@ -73,8 +73,10 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
   - "The check passes when no code reaches the threshold; the threshold and window are constants in the check file."
   - "The spec covers a fixture over the threshold, one under it, and an events file with no failure field (events written before S1), which the check ignores."
 - shipped-in: `88021e7c2f23`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — The behavior is present, but one acceptance item is not delivered as specified: `recurring-tool-failures.check.ts` imports RECURRING_FAILURE_WINDOW_DAYS and RECURRING_FAILURE_THRESHOLD from `packages/cli/src/contracts/constants/recurring-tool-failures.constant.ts`; the check file does not declare the threshold/window constants, and that constants file is outside the slice's declared Files scope. Reproduce by inspecting the imports at the top of recurring-tool-failures.check.ts. To approve, either move the two constants into the check file (and keep tests using the same source) as the acceptance says, or revise the acceptance/scope in the same implementation unit to explicitly allow the shared constants module and list that file; do not close under wording the delivery does not meet.
 
 ## acceptance
 
