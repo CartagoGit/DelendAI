@@ -14,6 +14,7 @@ shipped-in:
   - "acf8cfdd116a9a0ada6b55093b0c96cd54aa6897"
   - "1b14a507545dfb58193eb3854974f3075906f25c"
   - "7c5f13a76a7af86544450905fc2de3094e1390c3"
+  - "7a9c228afcfe476c531812a286cf84bef2d2bb68"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -336,7 +337,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: requested_changes by mai-code-2 — Acceptance still requires a pull_request_target integrator on opened/reopened/synchronize/ready_for_review/labeled/unlabeled/converted_to_draft/closed, but the recorded 2026-11-14 design decision explicitly removes pull_request_target and the rendered workflow uses push plus workflow_dispatch/land-signal. The focused workflow spec confirms that implementation. Bring the acceptance criterion and trigger contract into agreement before approval: either retain the decision and rewrite acceptance, or restore the required trigger. Evidence: q00048 S6 acceptance vs S6 Decision (2026-11-14); tools/scripts/forge/land-workflow.spec.ts passes with land-signal dispatching at the base ref.
 
 ### S7 — Verdicts are reconciled, never flipped
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S6]
 - **Files**: `packages/core/src/lib/integration/land/land-verdict.helper.ts`, `packages/core/src/lib/integration/land/land.helper.ts`
 - **Gate**: none
@@ -346,8 +347,10 @@ Nothing of this repository is emitted into the other project.
   - "Every pass prints one reason line for every open pull request"
   - "Scenario F3 is green: across at least three passes the authored-conflict pull request has exactly one `labeled` and no `unlabeled` event until its head changes"
 - shipped-in: `edd7b73cd055`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 7a9c228afcfe, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) Land verdict/helper and land.spec reconciliation cases passed in the focused suite. (2) F3-oriented label stability specs assert no premature removal and one comment per head/reason. (3) Land reporting specs assert a reason line for each open PR. (4) Rehearsal F3/scenario expectations and land verdict tests pass, covering multi-pass label stability. — Reviewed verdict reconciliation and label-difference behavior; focused integration suite passed 564/564.
 
 ### S8 — One CI per overlapping group, and the integrator brings heads forward
 - **Status**: review
