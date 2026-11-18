@@ -824,7 +824,6 @@
 		"packages/core/tests/src/lib/work-units/work-publish.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-ref-moves.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-retire.service.e2e.spec.ts",
-		"packages/core/tests/src/lib/work-units/work-swarm-relations.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-swarm.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-unit-claim.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts",

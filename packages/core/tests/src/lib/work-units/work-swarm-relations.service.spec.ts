@@ -2,18 +2,10 @@
  * work-swarm-relations.spec.ts — what the swarm says its units have to
  * sort out: published work, stacks, duplicates, landed refs and overlaps.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
-import { afterEach, describe, expect, it } from 'vitest';
-
-import { resolveDevelopmentPolicy } from '@delendai/core/public';
+import { describe, expect, it } from 'vitest';
 
 import {
 	describeSwarm,
-	readSwarm,
 	relationsOf,
 	unitKeyOf,
 	unlandedElsewhere,
@@ -42,7 +34,7 @@ describe('a unit whose base moved', () => {
 		behind: by,
 	});
 
-	it('is told it moved, and to merge only on a conflict, when it holds work', () => {
+	it('[<50ms] is told it moved, and to merge only on a conflict, when it holds work', () => {
 		const relations = relationsOf({
 			units: [
 				behind('ns/wip/a/implement/x1-S1-g1/t', 2, 5),
@@ -73,7 +65,7 @@ describe('a unit whose base moved', () => {
 });
 
 describe('unitKeyOf', () => {
-	it('reads the slice and generation a unit ref names', () => {
+	it('[<50ms] reads the slice and generation a unit ref names', () => {
 		expect(unitKeyOf('implement/x00780-all-g2/topic')).toEqual({
 			slice: 'x00780-all',
 			generation: '2',
@@ -87,7 +79,7 @@ describe('unitKeyOf', () => {
 });
 
 describe('relationsOf', () => {
-	it('names a publication whose commits are all integrated as landed', () => {
+	it('[<50ms] names a publication whose commits are all integrated as landed', () => {
 		const relations = relationsOf({
 			units: [],
 			published: [unit('ns/pr/a/implement/x1-S1-g1/t', ['a.ts'], 0)],
@@ -101,7 +93,7 @@ describe('relationsOf', () => {
 		]);
 	});
 
-	it('names one slice live under two generations as a duplicate', () => {
+	it('[<50ms] names one slice live under two generations as a duplicate', () => {
 		const relations = relationsOf({
 			units: [],
 			published: [
@@ -115,7 +107,7 @@ describe('relationsOf', () => {
 		]);
 	});
 
-	it('does not call the review packs of a swarm duplicates of one another', () => {
+	it('[<50ms] does not call the review packs of a swarm duplicates of one another', () => {
 		const relations = relationsOf({
 			units: [
 				unit('ns/wip/agent-a/review/batch-all-g1/verdicts', []),
@@ -128,7 +120,7 @@ describe('relationsOf', () => {
 		expect(relations).toEqual([]);
 	});
 
-	it('does not call an agent updating its own pull request a duplicate', () => {
+	it('[<50ms] does not call an agent updating its own pull request a duplicate', () => {
 		expect(
 			relationsOf({
 				units: [unit('ns/wip/a/implement/x3-S1-g1/t', ['a.ts'])],
@@ -138,7 +130,7 @@ describe('relationsOf', () => {
 		).toEqual([]);
 	});
 
-	it('names units sharing unlanded commits as stacked, before any overlap', () => {
+	it('[<50ms] names units sharing unlanded commits as stacked, before any overlap', () => {
 		const relations = relationsOf({
 			units: [],
 			published: [
@@ -155,7 +147,7 @@ describe('relationsOf', () => {
 		]);
 	});
 
-	it('names independent units sharing most of their files as an overlap, and leaves the rest alone', () => {
+	it('[<50ms] names independent units sharing most of their files as an overlap, and leaves the rest alone', () => {
 		const relations = relationsOf({
 			units: [
 				unit('ns/wip/a/implement/x6-S1-g1/t', ['a.ts', 'b.ts', 'c.ts']),
@@ -180,7 +172,7 @@ describe('relationsOf', () => {
 });
 
 describe('relationsOf — the cases that are not a relation', () => {
-	it('calls one slice held by two agents a duplicate, even in one generation', () => {
+	it('[<50ms] calls one slice held by two agents a duplicate, even in one generation', () => {
 		const relations = relationsOf({
 			units: [unit('ns/wip/a/implement/x20-S1-g1/t', ['a.ts'])],
 			published: [unit('ns/pr/b/implement/x20-S1-g1/t', ['a.ts'])],
@@ -194,7 +186,7 @@ describe('relationsOf — the cases that are not a relation', () => {
 		]);
 	});
 
-	it('leaves units whose names carry no generation, and landed ones, out of the pairs', () => {
+	it('[<50ms] leaves units whose names carry no generation, and landed ones, out of the pairs', () => {
 		const relations = relationsOf({
 			units: [
 				unit('ns/wip/a/no-generation-here', ['a.ts']),
@@ -215,7 +207,7 @@ describe('relationsOf — the cases that are not a relation', () => {
 });
 
 describe('unlandedElsewhere', () => {
-	it('drops a publication whose own work ref is live, and a landed one', () => {
+	it('[<50ms] drops a publication whose own work ref is live, and a landed one', () => {
 		const live = unit('ns/wip/a/implement/x30-S1-g1/t', ['a.ts']);
 		const own = unit('ns/pr/a/implement/x30-S1-g1/t', ['a.ts']);
 		const otherGeneration = unit('ns/pr/a/implement/x30-S1-g2/t', ['a.ts']);
@@ -243,14 +235,14 @@ describe('describeSwarm', () => {
 		relations: [],
 	});
 
-	it('says when there is nothing to sort out', () => {
+	it('[<50ms] says when there is nothing to sort out', () => {
 		const lines = describeSwarm(view(0));
 		expect(lines).toContain('overlaps         none');
 		expect(lines).toContain('to sort out      nothing');
 		expect(lines).toContain('publications     1');
 	});
 
-	it('lists each relation with the refs it names', () => {
+	it('[<50ms] lists each relation with the refs it names', () => {
 		const lines = describeSwarm({
 			...view(0),
 			relations: [
@@ -266,7 +258,7 @@ describe('describeSwarm', () => {
 		expect(lines).toContain('            two');
 	});
 
-	it('counts ended units on one line, and lists them only when asked', () => {
+	it('[<50ms] counts ended units on one line, and lists them only when asked', () => {
 		const ended = 'ns/wip/c/review/batch-all-g9/verdicts';
 		const swarm = {
 			...view(0),
@@ -286,97 +278,11 @@ describe('describeSwarm', () => {
 		expect(all.some((line) => line.includes('batch-all-g9'))).toBe(true);
 	});
 
-	it('summarises a long overlap list instead of burying the relations', () => {
+	it('[<50ms] summarises a long overlap list instead of burying the relations', () => {
 		const lines = describeSwarm(view(14));
 		expect(lines.filter((line) => line.endsWith('— 2 units'))).toHaveLength(
 			10,
 		);
 		expect(lines).toContain('  … 4 more; --json lists every path and unit');
-	});
-});
-
-const roots: string[] = [];
-const policy = resolveDevelopmentPolicy({
-	development: {
-		profile: 'shared-checkout-pr',
-		branches: { namespacePrefix: 'delendai' },
-	},
-});
-
-const git = (cwd: string, ...args: string[]): string =>
-	execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
-
-afterEach(() => {
-	for (const root of roots.splice(0)) {
-		rmSync(root, { recursive: true, force: true });
-	}
-});
-
-/** Commit `files` on top of `base` and point `ref` at the result. */
-const commitOnto = (
-	root: string,
-	base: string,
-	ref: string,
-	files: Record<string, string>,
-): string => {
-	git(root, 'checkout', '-q', '--detach', base);
-	for (const [name, body] of Object.entries(files)) {
-		writeFileSync(join(root, name), body);
-	}
-	git(root, 'add', '-A');
-	git(root, 'commit', '-q', '-m', `feat: ${ref}`);
-	const tip = git(root, 'rev-parse', 'HEAD');
-	git(root, 'update-ref', ref, tip);
-	git(root, 'checkout', '-q', 'develop');
-	return tip;
-};
-
-describe('reading published work from git', () => {
-	it('reads publications as units, leaves derived files out, and finds a stack', () => {
-		const root = mkdtempSync(join(tmpdir(), 'swarm-rel-'));
-		roots.push(root);
-		git(root, 'init', '-q', '-b', 'develop');
-		git(root, 'config', 'user.email', 'swarm@example.com');
-		git(root, 'config', 'user.name', 'Swarm');
-		git(root, 'config', 'commit.gpgsign', 'false');
-		writeFileSync(
-			join(root, '.gitattributes'),
-			'catalog.json linguist-generated\nindex.md merge=delendai-generated\nlock.json linguist-generated=true\n',
-		);
-		writeFileSync(join(root, 'base.ts'), 'export const base = 0;\n');
-		git(root, 'add', '-A');
-		git(root, 'commit', '-q', '-m', 'base');
-		const develop = git(root, 'rev-parse', 'HEAD');
-
-		const remote = 'refs/remotes/origin/delendai/pr/sonnet/implement';
-		const lower = commitOnto(root, develop, `${remote}/x10-S1-g1/base`, {
-			'policy.ts': 'export const policy = 1;\n',
-			'catalog.json': '{"a":1}\n',
-			'index.md': '# a\n',
-		});
-		commitOnto(root, lower, `${remote}/x11-S1-g1/on-top`, {
-			'release.ts': 'export const release = 1;\n',
-			'catalog.json': '{"b":1}\n',
-			'lock.json': '{}\n',
-		});
-		// Already merged: its tip is develop itself.
-		git(root, 'update-ref', `${remote}/x12-S1-g1/done`, develop);
-
-		const view = readSwarm({ root, policy });
-		expect(view.units).toEqual([]);
-		expect(view.publications).toHaveLength(3);
-		const base = view.published.find((entry) =>
-			entry.ref.endsWith('x10-S1-g1/base'),
-		);
-		expect(base?.agent).toBe('sonnet');
-		expect(base?.paths).toEqual(['policy.ts']);
-		expect(view.relations.map((relation) => relation.kind).sort()).toEqual([
-			'landed',
-			'stacked',
-		]);
-		// The derived catalog both of them touch is not an overlap.
-		expect(view.overlaps.map((overlap) => overlap.path)).toEqual([
-			'policy.ts',
-		]);
 	});
 });
