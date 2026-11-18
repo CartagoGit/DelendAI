@@ -2,10 +2,14 @@
 id: f00823
 title: "A delivery fails in seconds on what the proof would refuse, and a slice cannot be ready with an unrealistic scope"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-18
+last-transition-id: 67bbe311-deac-458c-a2cb-d41acf04e299
+last-correlation-id: 67bbe311-deac-458c-a2cb-d41acf04e299
+last-transition-from: ready
+last-transition-at: 2026-11-18T21:34:51.184Z
 ---
 
 # f00823 — A delivery fails in seconds on what the proof would refuse, and a slice cannot be ready with an unrealistic scope

@@ -11,6 +11,11 @@ export interface IWorkDeliverPorts {
 		branch: string,
 	) => Promise<string | undefined>;
 	readonly locate: () => Promise<ICliCommandResult>;
+	/**
+	 * The proof's cheap static gates, scoped to the change, run before the
+	 * compute slot is taken (`work prove --only=precheck`).
+	 */
+	readonly precheck: () => Promise<ICliCommandResult>;
 	readonly prove: () => Promise<ICliCommandResult>;
 	/** Ask the tool whether the hand-over would be accepted; nothing is moved. */
 	readonly preflight: (checkout: string | undefined) => Promise<unknown>;
