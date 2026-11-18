@@ -111,14 +111,16 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — S6 evidence is stale: shipped-in is fa8e4df71afe, but packages/cli/src/commands/review.command.ts changed afterward on develop. Please redeliver S6 on current HEAD with fresh shipped-in and updated scoped type-gate evidence.
 
 ### S7 — A claim that times out reports what actually happened
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/services/review-claim.service.ts`
 - **Gate**: type
 - acceptance:
   - "When a review claim's git call times out under load, the tool checks whether the claim commit landed and reports the claim as held when it did, instead of 'Could not claim'."
 - shipped-in: `abc442fef686`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver S7 with fresh scoped evidence for this review round so the timeout-claim behavior can be verified on current HEAD before approval.
 
 ### S8 — A failed proof step keeps its whole output
 - **Status**: review
