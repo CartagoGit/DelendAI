@@ -98,9 +98,29 @@ export const selectRevalidation = (
 const FIELD =
 	/^- (shipped-in|review-state|\*\*Status\*\*|\*\*Files\*\*):\s*(.*)$/;
 
-/** The backticked paths of a Files line's value. */
+/** A path a slice creates is declared `new:<path>`; the file is the path. */
+const NEW_PREFIX = 'new:';
+
+/** The backticked paths of a Files line's value, without the `new:` marker. */
 const declaredPathsOf = (value: string): readonly string[] =>
-	[...value.matchAll(/`([^`]+)`/g)].flatMap((match) => match[1] ?? []);
+	[...value.matchAll(/`([^`]+)`/g)].flatMap((match) =>
+		match[1] === undefined
+			? []
+			: [
+					match[1].startsWith(NEW_PREFIX)
+						? match[1].slice(NEW_PREFIX.length)
+						: match[1],
+				],
+	);
+
+/** The agent a batch acts as: the flag, else the one the environment declares. */
+export const batchAgentOf = (
+	flag: string | undefined,
+	env: Readonly<Record<string, string | undefined>>,
+): string | undefined => {
+	const declared = flag ?? env.DELENDAI_AGENT_ID;
+	return declared === undefined || declared === '' ? undefined : declared;
+};
 
 /** `text` with `from` replaced by `to` in slice `sliceId`'s Files line; undefined when it is not there. */
 export const rewriteDeclaredPath = (
@@ -117,7 +137,10 @@ export const rewriteDeclaredPath = (
 		if (heading !== null)
 			inSlice = line.startsWith('### ') && heading[1] === sliceId;
 		if (!inSlice || !/^- \*\*Files\*\*:/.test(line)) continue;
-		const next = line.split(`\`${from}\``).join(`\`${to}\``);
+		const plain = line.split(`\`${from}\``).join(`\`${to}\``);
+		const next = plain
+			.split(`\`${NEW_PREFIX}${from}\``)
+			.join(`\`${NEW_PREFIX}${to}\``);
 		if (next === line) return undefined;
 		lines[index] = next;
 		return lines.join('\n');
