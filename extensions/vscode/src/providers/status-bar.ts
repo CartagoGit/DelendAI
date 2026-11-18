@@ -8,12 +8,14 @@ import {
 
 import { OPEN_DASHBOARD_COMMAND } from '../commands/open-dashboard';
 import { SHOW_OVERVIEW_COMMAND } from '../extension';
+import type { IStatusBarTooltip } from '../contracts/interfaces/status-bar-tooltip.interface';
 
-const BASE_TOOLTIP = 'delendai Dashboard (click to open)';
+/** The label is the extension's display name, exactly. */
+const STATUS_BAR_LABEL = 'DelendAI';
 
 export interface IStatusBarItem {
 	text: string;
-	tooltip?: string;
+	tooltip?: string | IStatusBarTooltip;
 	command?: string;
 	show(): void;
 	dispose(): void;
@@ -70,6 +72,67 @@ const STATUS_BAR_EVENT_NAMES = Object.keys(
 	STATUS_BAR_EVENTS,
 ) as readonly INotificationEventName[];
 
+interface IStatusAnswer {
+	readonly runtime?: { readonly summary?: string };
+	readonly maintenance?: {
+		readonly maintains?: boolean;
+		readonly maintainer?: string;
+	};
+}
+
+interface IWorkAnswer {
+	readonly data?: {
+		readonly computeSlot?: { readonly holder?: string };
+		readonly units?: Readonly<Record<string, number>>;
+		readonly publications?: readonly unknown[];
+	};
+}
+
+const markdownText = (value: string): string =>
+	value.replace(/[\\`*_{}[\]()#+!|<>~-]/gu, (char) => `\\${char}`);
+
+const unitsText = (units: Readonly<Record<string, number>> | undefined) =>
+	units === undefined || Object.keys(units).length === 0
+		? 'none'
+		: Object.entries(units)
+				.map(([state, count]) => `${String(count)} ${state}`)
+				.join(', ');
+
+const markdownTooltip = (value: string): IStatusBarTooltip => ({
+	value,
+	isTrusted: false,
+	supportThemeIcons: true,
+});
+
+/** The tooltip, in Markdown, from what the server last said. */
+const tooltipMarkdown = (answers: {
+	readonly status?: IStatusAnswer | undefined;
+	readonly work?: IWorkAnswer | undefined;
+}): string => {
+	const { status, work } = answers;
+	if (status === undefined && work === undefined) {
+		return `**${STATUS_BAR_LABEL}**\n\nConnection: not connected yet. Click to open the dashboard.`;
+	}
+	const data = work?.data;
+	const maintenance = status?.maintenance;
+	const maintainer =
+		maintenance === undefined
+			? 'unknown'
+			: maintenance.maintains === true
+				? 'this server'
+				: (maintenance.maintainer ?? 'nobody yet');
+	return [
+		`**${STATUS_BAR_LABEL}**`,
+		`Version: ${markdownText(status?.runtime?.summary ?? 'unknown')}`,
+		'Connection: connected',
+		`Maintained by: ${markdownText(maintainer)}`,
+		`Compute slot: ${markdownText(data?.computeSlot?.holder ?? 'free')}`,
+		`Active units: ${markdownText(unitsText(data?.units))}`,
+		`Open PRs: ${String(data?.publications?.length ?? 0)}`,
+		'Click to open the dashboard.',
+	].join('\n\n');
+};
+
 /**
  * `DelendaiStatusBar` — VS Code status bar summary, upgraded in f00022
  * to include the same KPIs the dashboard exposes (tools, proposals,
@@ -93,7 +156,7 @@ export class DelendaiStatusBar {
 
 	constructor(
 		private readonly item: IStatusBarItem,
-		private readonly overview: Pick<OverviewService, 'listTools'>,
+		_overview: Pick<OverviewService, 'listTools'>,
 		private readonly client: Pick<McpStdioClient, 'request'>,
 		private readonly notifications?: INotificationsLike,
 		private readonly openDashboardCommand: string = OPEN_DASHBOARD_COMMAND,
@@ -106,8 +169,8 @@ export class DelendaiStatusBar {
 	start(): void {
 		if (this.disposed) return;
 		this.item.command = this.openDashboardCommand;
-		this.item.tooltip = BASE_TOOLTIP;
-		this.item.text = '$(delendai) delendai';
+		this.item.text = STATUS_BAR_LABEL;
+		this.item.tooltip = markdownTooltip(tooltipMarkdown({}));
 		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
 				void this.update();
@@ -123,35 +186,31 @@ export class DelendaiStatusBar {
 			);
 		}
 		this.item.show();
+		void this.update();
 	}
 
+	/** Rewrites the tooltip from the server's own answers; the label never changes. */
 	async update(): Promise<void> {
 		if (this.disposed) return;
-		const tools = await this.overview.listTools();
-		const proposalCount = await this.proposalCount();
-		const tokenSummary = await this.tokensSummary();
-		const agentCount = await this.agentCount();
-		const segments: string[] = ['$(delendai) delendai'];
-		segments.push(`${tools.length} tools`);
-		segments.push(`${proposalCount} proposals`);
-		if (tokenSummary !== undefined) segments.push(tokenSummary);
-		if (agentCount !== undefined) segments.push(`${agentCount} agents`);
-		this.item.text = segments.join(' • ');
-		const runtime = await this.runtimeSummary();
-		this.item.tooltip =
-			runtime === undefined
-				? BASE_TOOLTIP
-				: `${BASE_TOOLTIP}\n${runtime}`;
+		const [status, work] = await Promise.all([
+			this.read<IStatusAnswer>('status', {}),
+			this.read<IWorkAnswer>('work', { action: 'status' }),
+		]);
+		if (this.disposed) return;
+		this.item.text = STATUS_BAR_LABEL;
+		this.item.tooltip = markdownTooltip(tooltipMarkdown({ status, work }));
 	}
 
-	/** What the server runs, exactly as the status tool words it: the bar adds no formatting. */
-	private async runtimeSummary(): Promise<string | undefined> {
+	/** One shared-client call; `undefined` when the server does not answer. */
+	private async read<T>(
+		tool: string,
+		input: Record<string, unknown>,
+	): Promise<T | undefined> {
 		try {
-			const status = await this.client.request<
-				Record<string, never>,
-				{ readonly runtime?: { readonly summary?: string } }
-			>(formatToolName(this.namespacePrefix, 'status'), {});
-			return status.runtime?.summary;
+			return await this.client.request<Record<string, unknown>, T>(
+				formatToolName(this.namespacePrefix, tool),
+				input,
+			);
 		} catch {
 			return undefined;
 		}
@@ -172,65 +231,5 @@ export class DelendaiStatusBar {
 		}
 		this.registeredListeners.clear();
 		this.item.dispose();
-	}
-
-	private async proposalCount(): Promise<number | string> {
-		try {
-			const board = await this.client.request<
-				Record<string, never>,
-				IProposalBoardSummary
-			>(
-				formatToolName(
-					this.namespacePrefix,
-					'proposals_proposal_board',
-				),
-				{},
-			);
-			return board.proposals.length;
-		} catch {
-			return '?';
-		}
-	}
-
-	private async tokensSummary(): Promise<string | undefined> {
-		try {
-			const snap = await this.client.request<
-				Record<string, never>,
-				{
-					readonly totals: { readonly totalBytes: number };
-				}
-			>(formatToolName(this.namespacePrefix, 'metrics'), {});
-			const tokens = Math.ceil(snap.totals.totalBytes * 0.25);
-			if (tokens < 1000) return `${tokens} tok`;
-			return `${(tokens / 1000).toFixed(1)}k tok`;
-		} catch {
-			return undefined;
-		}
-	}
-
-	private async agentCount(): Promise<number | undefined> {
-		try {
-			const result = await this.client.request<
-				{ readonly action: 'list' },
-				{
-					readonly agents?: readonly { readonly name: string }[];
-					readonly assignments?: readonly {
-						readonly agent_name: string;
-						readonly status?: 'active' | 'cooldown' | 'orphan';
-					}[];
-				}
-			>(formatToolName(this.namespacePrefix, 'proposals_agent_names'), {
-				action: 'list',
-			});
-			if (Array.isArray(result.agents)) return result.agents.length;
-			if (Array.isArray(result.assignments)) {
-				return result.assignments.filter(
-					(a) => a.status === undefined || a.status === 'active',
-				).length;
-			}
-			return 0;
-		} catch {
-			return undefined;
-		}
 	}
 }
