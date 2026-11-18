@@ -99,14 +99,16 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver S5 with fresh scoped evidence for this review round (including the deleted-directory launcher fallback path) so this old hand-in can be verified against current branch context before approval.
 
 ### S6 — review next fits its queue request in the response budget
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/commands/review.command.ts`
 - **Gate**: type
 - acceptance:
   - "With 25 proposals and 58 slices in review, review next hands out a pack instead of failing with response-too-large; it asks for the queue in pages or without detail."
 - shipped-in: `fa8e4df71afe`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S6 evidence is stale: shipped-in is fa8e4df71afe, but packages/cli/src/commands/review.command.ts changed afterward on develop. Please redeliver S6 on current HEAD with fresh shipped-in and updated scoped type-gate evidence.
 
 ### S7 — A claim that times out reports what actually happened
 - **Status**: review
