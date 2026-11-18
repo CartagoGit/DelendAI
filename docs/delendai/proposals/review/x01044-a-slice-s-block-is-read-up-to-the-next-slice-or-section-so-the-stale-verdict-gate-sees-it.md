@@ -31,7 +31,7 @@ Found while delivering f00806 (S4): `sliceBlockOf` in `plugins/proposals/src/lib
 - global_gate: none
 
 ### S1 — One slice reader, ending at the next slice or section
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-stage.ts`, `plugins/proposals/src/lib/tools/transition/delivery-evidence.tool.ts`, `plugins/proposals/src/lib/tools/transition/peer-review-gate.tool.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-stage.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/peer-review-gate.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/delivery-evidence.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/validate-evidence.tool.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,8 +39,10 @@ Found while delivering f00806 (S4): `sliceBlockOf` in `plugins/proposals/src/lib
   - "With the block read whole, `review -> done` refuses a close on an approval a newer delivery superseded (spec with the delivery history faked); the gate's spec moves to its mirror path, and the delivery-evidence helpers get one."
   - "`sliceBlockOf` is removed; the stale-verdict gate reads blocks through `sliceBlockById`, the reader f00806's review-state derivation already uses, which now also stops at the next `## ` section."
 - shipped-in: `1445cb73cbe5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
