@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-17T13:05:12.647Z
 shipped-in:
   - "acf8cfdd116a9a0ada6b55093b0c96cd54aa6897"
+  - "1b14a507545dfb58193eb3854974f3075906f25c"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -242,7 +243,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) land-cutover.e2e.spec and land-workflow.spec passed; the later activation is a distinct S14 state change. (2) The delivered implementation preserves the paused-label resume input used by integration activation; the named list is forge state recorded in the proposal, no… (3) Focused suite 564/564 includes the engine-none cutover assertion. (4) The activation/report path distinguishes pre-activation manual merges while the pause invariant is active. — Approved on the delivered pause state; S14 later activates the engine by design. Focused integration validation passed 564/564.
 
 ### S2 — The rehearsal harness on real GitHub
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Files**: `plugins/integration/package.json`, `plugins/integration/plugin.manifest.ts`, `plugins/integration/src/index.ts`, `plugins/integration/src/lib/services/rehearsal-run.service.ts`, `plugins/integration/src/lib/services/rehearsal-cleanup.service.ts`, `plugins/integration/src/lib/services/rehearsal-report.service.ts`, `plugins/integration/src/lib/services/rehearsal-ci-workflow.helper.ts`, `plugins/integration/tests/src/lib/services/rehearsal-report.service.spec.ts`, `.github/workflows/rehearsal.yml`
 - **Gate**: none
@@ -255,8 +256,10 @@ Nothing of this repository is emitted into the other project.
   - "`.github/workflows/rehearsal.yml` is rendered from the plugin's template, runs on demand and on every pull request touching the integration code, concurrency 1, and always reports a status"
   - "The plugin has its logo, publish order entry, build, file roles and contracts like every plugin"
 - shipped-in: `1fd67e07a1fc`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 1b14a507545d, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 7/7: (1) Integration rehearsal run/setup specs and workflow helper pass in 564/564. (2) Rehearsal scenario and workflow tests exercise declarations and declared-duration conclusions. (3) Rehearsal report service specs cover JSON/text evidence and target rows. (4) Cleanup service specs cover closure, branch/label/webhook deletion, leftover failure and stale-root sweep. (5) Rehearsal log-scan helper specs pass for downloaded logs, token shapes and secret hits. (6) Rehearsal workflow specs validate template rendering, triggers, concurrency and always-report steps. (7) The integration plugin package/manifest/index and focused tests build in the current workspace; the plugin is registered with the normal package metadata. — Reviewed rehearsal run, cleanup and report services and their rendered workflow. Focused integration suite passed 564/564.
 
 ### S3 — Every case and every production failure is a scenario, red where production failed
 - **Status**: review
