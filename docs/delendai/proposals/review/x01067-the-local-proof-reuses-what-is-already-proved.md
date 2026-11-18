@@ -10,6 +10,8 @@ last-transition-id: 79f153c7-95a9-4b74-9aeb-c19a7722ad4a
 last-correlation-id: 79f153c7-95a9-4b74-9aeb-c19a7722ad4a
 last-transition-from: in-progress
 last-transition-at: 2026-11-17T22:13:24.429Z
+shipped-in:
+  - "31e5d80c428bef3d55ea914fa9b7e90a41d25243"
 ---
 
 # x01067 — The local proof reuses what is already proved
@@ -33,7 +35,7 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
 - global_gate: type
 
 ### S1 — Proved ancestors narrow the diff
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/proved-ancestors.ts`, `tools/scripts/ci/proved-ancestors.store.ts`, `tools/scripts/ci/proved-ancestors.spec.ts`, `tools/scripts/ci/proved-ancestors.e2e.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`
 - **Gate**: type
 - acceptance:
@@ -41,8 +43,10 @@ Measured from prove-timings: a proof takes 10-18 minutes a round and units need 
   - "The base for selection is the candidate with the fewest changed files against HEAD among merge-base(develop, HEAD) and the 20 most recent proved commits that are ancestors of HEAD, and the proof prints which it used and why."
   - "Generated-files, tool budgets and typecheck steps keep the merge-base; the choice is a pure function with specs over an in-memory git reader."
 - shipped-in: `afb39fe2c54a`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 31e5d80c428b, validate exit 0 and tests 49/49 claimed, no recorded run cited; acceptance 3/3: (1) proved-ancestors.store.ts writes proved-commits.json beside the compute slot; recordPassedProof refuses dirty trees and stores commit/tree/base/scope/at; livin… (2) chooseSelectionBase caps candidates at MAX_PROVED_CANDIDATES=20, requires an ancestor of HEAD, compares changedFileCount, and emits a message; specs cover the … (3) runChecks keeps base for gates and uses selectionBase only for lintChanged; earlySteps and proveGatesOf receive base; chooseSelectionBase depends on IProofGitR… — Reviewed the delivered diff and current implementation; no later change touches these slice files. All 49 focused specs pass and the type gate passes. Selection, shared-store pruning, and preservation of merge-base for whole-repository steps meet the acceptance criteria without changing CI behavior.
 
 ### S2 — Per-step result reuse
 - **Status**: review
