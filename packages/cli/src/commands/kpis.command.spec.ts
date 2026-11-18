@@ -6,6 +6,7 @@ import type {
 	ICliCommandContext,
 } from '../contracts/interfaces/cli-command.interface';
 import { kpisCommands, runKpisCommandBody } from './kpis.command';
+import { KPI_VIEWS } from './kpis-options';
 
 const snapshot = {
 	contract: 'project-kpis.snapshot',
@@ -444,6 +445,53 @@ describe('kpis command', () => {
 		expect(errorsReport.payload.tables[1]?.rows[0]?.classification).toBe(
 			'tool-error',
 		);
+	});
+
+	it('[<100ms] renders every view in text and json', async () => {
+		for (const view of KPI_VIEWS) {
+			const text = await runKpisCommandBody(
+				[view],
+				buildStubContext(),
+				runtime,
+			);
+			expect(text.text ?? '').toContain(`kpis ${view}`);
+			const json = await runKpisCommandBody(
+				[`--view=${view}`, '--limit=1', '--window-days=30'],
+				buildStubContext(true),
+				runtime,
+			);
+			expect((json.data as { view: string }).view).toBe(view);
+		}
+	});
+
+	it('[<100ms] renders the views without any persisted evidence', async () => {
+		const bare = { pathExists: () => false };
+		for (const view of KPI_VIEWS) {
+			const result = await runKpisCommandBody(
+				[view],
+				buildStubContext(),
+				bare,
+			);
+			expect(result.text ?? '').toContain(`kpis ${view}`);
+		}
+	});
+
+	it('[<100ms] rejects bad options', async () => {
+		for (const args of [
+			['nope'],
+			['--limit=x'],
+			['--window-days=0'],
+			['--max-bytes=-1'],
+			['--watch-interval-ms=0'],
+			['--threshold=bad'],
+		]) {
+			const result = await runKpisCommandBody(
+				args,
+				buildStubContext(),
+				runtime,
+			);
+			expect(result.code).toBe(EXIT_CODE.USAGE);
+		}
 	});
 
 	it('[<100ms] fails validation when a configured threshold is breached', async () => {
