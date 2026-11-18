@@ -32,7 +32,7 @@ Five deliveries failed in one day because workers ran their own approximation of
 - global_gate: none
 
 ### S1 — One gate of the proof runs alone, exactly as the proof runs it
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove-only.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove-only.e2e.spec.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
 - acceptance:
@@ -45,8 +45,10 @@ Five deliveries failed in one day because workers ran their own approximation of
   - "the script takes the compute slot itself, only when a selected gate is heavy (coverage, tests, land rehearsal, test:sqlite); typecheck and the lints already wrap themselves in with-compute-lock"
   - "the proof already ran its seconds-long steps and the typecheck beside the static checks before any test; the order is unchanged"
 - shipped-in: `525139a8e4b9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S1 evidence is stale: shipped-in is 525139a8e4b9, but multiple slice files changed afterward on develop (including prove-plan script/spec and work-deliver/work-command files). Please redeliver S1 on current HEAD with fresh shipped-in and refreshed scoped evidence before re-review.
 
 ## acceptance
 
