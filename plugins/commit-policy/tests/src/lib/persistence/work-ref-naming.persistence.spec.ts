@@ -78,7 +78,7 @@ describe('checkpoint work ref naming', () => {
 			throw new Error(`checkpoint refused: ${JSON.stringify(outcome)}`);
 		}
 		expect(outcome.report.ref).toBe(
-			`refs/${policy.branches.workRefPrefix}codex-mcp-client/implement/x00056-S1-g1/tetris-mock-with-occupied-slots`,
+			`refs/${policy.branches.workRefPrefix}implement/codex-mcp-client/x00056-S1/tetris-mock-with-occupied-slots`,
 		);
 		expect(topicRequests).toEqual([
 			{ proposalId: 'x00056', sliceId: 'S1' },
@@ -86,7 +86,7 @@ describe('checkpoint work ref naming', () => {
 		// The remote holds the ref under the same name.
 		const remoteRefs = await repo.git('ls-remote', 'origin');
 		expect(remoteRefs).toContain(
-			'codex-mcp-client/implement/x00056-S1-g1/tetris-mock-with-occupied-slots',
+			'implement/codex-mcp-client/x00056-S1/tetris-mock-with-occupied-slots',
 		);
 	});
 
@@ -103,7 +103,7 @@ describe('checkpoint work ref naming', () => {
 				others: [
 					{
 						agent: 'agent-b',
-						ref: 'wip/agent-b/implement/x00056-S1-g1/theirs',
+						ref: 'wip/implement/agent-b/x00056-S1/theirs',
 					},
 				],
 				own: undefined,
@@ -138,7 +138,7 @@ describe('checkpoint work ref naming', () => {
 			/^heads\//u,
 			'',
 		);
-		const own = `${logicalPrefix}agent-a/implement/x00056-S1-g1/first-topic`;
+		const own = `${logicalPrefix}implement/agent-a/x00056-S1/first-topic`;
 		const persistence = createPolicyPersistence({
 			policy,
 			run: createWriteGitRunner(repo.cwd),

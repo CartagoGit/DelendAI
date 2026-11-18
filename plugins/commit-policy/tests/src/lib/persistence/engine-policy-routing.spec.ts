@@ -192,7 +192,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		// literal `refs/wip/` stopped matching once work refs became visible.
 		expect(
 			ref.startsWith(
-				`refs/${expandProfile('shared-checkout-pr').branches.workRefPrefix}agent-a/`,
+				`refs/${expandProfile('shared-checkout-pr').branches.workRefPrefix}implement/agent-a/`,
 			),
 		).toBe(true);
 		expect(await h.repo.git('rev-parse', ref)).toBe(

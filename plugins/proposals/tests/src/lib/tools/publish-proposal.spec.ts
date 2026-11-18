@@ -97,7 +97,7 @@ describe('publicationRefFor', () => {
 				title: 'A proposal: keeps one branch!',
 			}),
 		).toBe(
-			'delendai/pr/claude-opus-5.5/create/f00551-all-g1/a-proposal-keeps-one-branch',
+			'delendai/pr/create/claude-opus-5.5/f00551-all/a-proposal-keeps-one-branch',
 		);
 	});
 
@@ -107,7 +107,7 @@ describe('publicationRefFor', () => {
 				agent: 'a',
 				title: 't',
 			}),
-		).toBe('team/publish/a/create/f00551-all-g1/t');
+		).toBe('team/publish/create/a/f00551-all/t');
 	});
 
 	it('says unattributed when nothing declares the agent, never a guess', () => {
@@ -116,7 +116,7 @@ describe('publicationRefFor', () => {
 				agent: '',
 				title: '',
 			}),
-		).toBe('delendai/pr/unattributed/create/f00551-all-g1/proposal');
+		).toBe('delendai/pr/create/unattributed/f00551-all/proposal');
 	});
 });
 
@@ -146,7 +146,7 @@ describe('protectedPushTarget', () => {
 	it('leaves an ordinary publication ref alone', () => {
 		expect(
 			protectedPushTarget(
-				'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+				'delendai/pr/create/agent-a/f00551-all/a-proposal',
 				PR_POLICY,
 			),
 		).toBeUndefined();
@@ -164,7 +164,7 @@ describe('publishProposalOnRef', () => {
 
 		expect(outcome).toEqual({
 			published: true,
-			ref: 'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+			ref: 'delendai/pr/create/agent-a/f00551-all/a-proposal',
 			sha: 'c0ffee1234567',
 		});
 		// Based on the integration branch, never on whatever HEAD is.
@@ -185,7 +185,7 @@ describe('publishProposalOnRef', () => {
 			'push',
 			'--',
 			'origin',
-			'c0ffee1234567:refs/heads/delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+			'c0ffee1234567:refs/heads/delendai/pr/create/agent-a/f00551-all/a-proposal',
 		]);
 	});
 
@@ -236,7 +236,7 @@ describe('publishProposalOnRef', () => {
 		// The ref is still reported: the agent needs to know which ref
 		// the work is owed on.
 		expect(outcome.ref).toBe(
-			'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+			'delendai/pr/create/agent-a/f00551-all/a-proposal',
 		);
 	});
 
@@ -271,7 +271,7 @@ describe('publishProposalOnRef', () => {
 		// no reachable policy makes a publication ref collide with a
 		// branch, which is why there is no integration case for it here.
 		// The default policy's prefix, never a spelled namespace (f00808).
-		expect(outcome.ref).toBe('pr/agent-a/create/f00551-all-g1/a-proposal');
+		expect(outcome.ref).toBe('pr/create/agent-a/f00551-all/a-proposal');
 		expect(outcome.published).toBe(true);
 	});
 
@@ -290,6 +290,6 @@ describe('publicationRefFor with no prefix (f00808)', () => {
 			agent: 'agent-a',
 			title: 'A proposal',
 		});
-		expect(ref.startsWith('pr/agent-a/')).toBe(true);
+		expect(ref.startsWith('pr/create/agent-a/')).toBe(true);
 	});
 });
