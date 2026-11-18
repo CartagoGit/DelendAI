@@ -46,15 +46,17 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver S1 with fresh, explicit scoped evidence for this review round. This proposal is old and multi-slice; before approval we need a current-head hand-in that re-attests the dead-pid takeover behavior and refusal semantics under the present branch state.
 
 ### S2 — Every proof names its agent and the waiter follows the holder
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`
 - **Gate**: type
 - acceptance:
   - "The proof request carries the agent the work command already resolved (agentFor), which the proof label uses instead of reading DELENDAI_AGENT_ID; prove and publish both pass it, so no proof reads 'an unidentified agent' when the caller is identified."
   - "A proof with no agent at all fails the work command with the reason instead of being labelled unidentified."
 - shipped-in: `dfd2c2c9fb2e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S2 evidence is stale: shipped-in is dfd2c2c9fb2e, but key S2 files changed on develop afterward (work-unit-prove.service.ts and work-unit-publish.service.ts). Please redeliver S2 on current HEAD with fresh shipped-in and updated scoped type-gate evidence.
 
 ### S3 — The compute-slot waiter re-prints when the holder changes
 - **Status**: review
