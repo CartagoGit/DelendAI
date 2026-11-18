@@ -2,10 +2,14 @@
 id: f00820
 title: "Every failed tool call records why, and doctor names the failures that keep coming back"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: feats
 date: 2026-11-18
+last-transition-id: 84a8ddbb-18bf-4933-8b75-ff70752f8c12
+last-correlation-id: 84a8ddbb-18bf-4933-8b75-ff70752f8c12
+last-transition-from: ready
+last-transition-at: 2026-11-18T02:09:25.006Z
 ---
 
 # f00820 — Every failed tool call records why, and doctor names the failures that keep coming back
