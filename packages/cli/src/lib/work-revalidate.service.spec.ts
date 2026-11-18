@@ -55,6 +55,7 @@ const okPorts = (
 	proposals: async () => proposals,
 	heldByUnits: async () => new Set<string>(),
 	handoverRefusal: async () => undefined,
+	release: async () => undefined,
 	print: () => undefined,
 	enter: async () => '/unit',
 	developSha: async () => 'abcdef0123456789',
@@ -182,6 +183,7 @@ describe('revalidateBatch units and transitions', () => {
 			proposals: async () => THREE,
 			heldByUnits: async () => new Set<string>(),
 			handoverRefusal: async () => undefined,
+			release: async () => undefined,
 			print: () => undefined,
 			enter: async () => {
 				calls.enter += 1;
@@ -479,6 +481,30 @@ describe('in-progress proposals', () => {
 		const result = await revalidateBatch(ports, undefined);
 		expect(result.data.transitioned).toEqual(['i1']);
 		expect(lines).toContain('left out i2: S2 is undelivered');
+	});
+
+	it('[<100ms] runs the preflight in the unit worktree, entered once, and retires the unit when nothing is chosen', async () => {
+		const seen: string[] = [];
+		let released = 0;
+		let entries = 0;
+		const ports: IWorkRevalidatePorts = {
+			...okPorts([finished('i1')]),
+			enter: async () => {
+				entries += 1;
+				return '/unit';
+			},
+			handoverRefusal: async (_id, worktree) => {
+				seen.push(worktree);
+				return 'refused';
+			},
+			release: async () => {
+				released += 1;
+			},
+		};
+		await revalidateBatch(ports, undefined);
+		expect(seen).toEqual(['/unit']);
+		expect(entries).toBe(1);
+		expect(released).toBe(1);
 	});
 
 	it('[<100ms] prints a held in-progress proposal left out when no --proposals is given', async () => {
