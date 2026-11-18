@@ -46,7 +46,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S2 — A delivered publication waiting for its pull request is not orphaned
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/publication-standings.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/publication-standings.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -54,8 +54,10 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "The same publication past the recovery window is orphaned (finished), so nothing waits forever"
   - "readOrphans passes each publication's tip time to publicationPresence, and a spec shows a just-published publication is absent from the orphans and reads owner alive"
 - shipped-in: `b148381d3c4f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S3 — The queue falls back to each accepted candidate's own merge when the train cannot run
 - **Status**: review
