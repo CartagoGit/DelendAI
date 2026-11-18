@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-18T02:42:43.711Z
 shipped-in:
   - "83d022a1235b6764b1d9b0fd50d0b287bca47438"
+  - "e4f1b787e1b487fda2bccc52e8c02fd2a96abce3"
 ---
 
 # f00816 — A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs
@@ -114,15 +115,17 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 2/2: (1) compaction-policy/helper and host constant specs render the native threshold variable plus before-compaction/session-start handover commands. (2) Renderer specs cover variable-only, hooks-only and directive hosts across the full host list. — Reviewed host-neutral compaction rendering, native hooks and MCP fallback directive. Focused f00816 suite passed 86/86.
 
 ### S1b — Task-class tier policy wired to plugin config
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/auto-agent-selector` (`index.ts` options schema)
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/tests/src/index.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/tools/auto-run.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The plugin options carry `taskClassTiers` and `ownerAuthorizedTopTier`; `auto_run` caps the ladder at the tier of the task class and returns a blocker when the top tier lacks the owner authorization."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 1/1: (1) index.spec accepts/refuses the policy options; auto-run.tool.spec caps the ladder and returns a named blocker for unauthorized top tier. — Reviewed plugin options and auto_run tier cap/authorization blocker. Focused f00816 suite passed 86/86.
 
 ### S5a — Ledger record and cost per correct result
 - **Status**: review
