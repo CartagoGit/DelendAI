@@ -38,8 +38,9 @@ const NUMBER_OF_URL = /\/(?<number>\d+)\/?$/u;
 
 /**
  * A republished pull request says what it ships now (x01023): the title
- * and summary are rewritten from the final diff and the slices the unit
- * carries, by the adapter of the forge that hosts it (a GitHub pull
+ * and summary are rewritten, through the one template of f00809 (the
+ * same text `work publish` opens it with), from the final diff and the
+ * slices the unit carries, by the adapter of the forge that hosts it (a GitHub pull
  * request, a GitLab merge request). A change request whose text already
  * matches is left alone; one no installed adapter can rewrite is reported.
  */
