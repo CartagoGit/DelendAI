@@ -157,7 +157,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 2/2: (1) budget-tracker.spec passes each call/turn/retry/concurrency overrun and asserts a blocker names the exact limit. (2) Budget tracker spec stops after the configured barren-turn count via the orchestrator progress signal. — Reviewed budget limit blockers, concurrency release and no-progress stop. Focused f00816 suite passed 86/86.
 
 ### S5c — Proof reuse and duplicate-work detection
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S5a]
 - **Extends**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
@@ -165,8 +165,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "Duplicate work is detected across units and a still-valid result or proof is reused."
   - "The report states what cannot be technically guaranteed on each host."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — The delivery only keys and reuses a proof for the same work-unit tree/command; it does not detect equivalent duplicate work across units or reuse another unit's still-valid result. work-unit-proof.service.spec exercises same-unit proof reuse, reruns after any substantive commit, and proposal-transition invalidation, but has no cross-unit duplicate detector or reuse case. The service also emits no per-host report of what cannot be technically guaranteed. Add an across-unit equivalence key/lookup and reuse evidence plus a host-capability limitations report, then cover both acceptance items with specs.
 
 ## acceptance
 
