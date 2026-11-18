@@ -1453,6 +1453,14 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
               run: bun run lint:ref-lifecycle
 
+            # The reconciler acts on refs by kind: a ref in a folder no
+            # kind owns is one nobody reconciles. Reads every remote branch.
+            - name: Every ref under the namespace has a kind
+              run: |
+                  set -euo pipefail
+                  git fetch --no-tags origin '+refs/heads/*:refs/remotes/origin/*'
+                  bun run lint:ref-kinds
+
             # Reporting is not refusing. This checks that the forge still
             # REFUSES a branch created outside the policy's namespaces —
             # the only mechanism here that prevents rather than describes.
