@@ -37,7 +37,7 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
   - "packages/cli/src/lib/work-deliver-precheck.service.spec.ts: a candidate with an over-budget unit spec, a missing mirror spec, a types-in-contracts breach and a file over the size limit is refused with the proof's own messages and the compute slot is never requested"
   - "packages/cli/src/lib/work-deliver.service.spec.ts: a clean candidate passes the pre-check and proceeds to the slot"
   - "tools/scripts/ci/prove-plan.script.spec.ts: the pre-check gate list equals the plan's static gates for the same changed files"
-  - "delendai work deliver on a candidate with a known lint breach exits non-zero in under 30 seconds without starting the proof"
+  - "`delendai work deliver` on a candidate with a known lint breach exits non-zero in under 30 seconds without starting the proof"
 
 ### S2 — Changed-file coverage pre-check with mirror specs only
 - **Status**: pending
@@ -48,7 +48,7 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
 - acceptance:
   - "packages/cli/src/lib/work-deliver-coverage-precheck.service.spec.ts: a changed module whose only coverage comes from a non-mirror spec is refused with the coverage gate's message"
   - "tools/scripts/ci/changed-file-coverage.script.spec.ts: the fast path and the gate agree on the same fixture"
-  - "delendai work deliver on a changed module without a mirror spec refuses in under 60 seconds"
+  - "`delendai work deliver` on a changed module without a mirror spec refuses in under 60 seconds"
 
 ### S3 — Readiness refuses slices with an unrealistic scope
 - **Status**: pending
@@ -59,7 +59,7 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
   - "tools/scripts/lint/proposal-readiness.spec.ts: a missing non-new file is refused naming it"
   - "tools/scripts/lint/proposal-readiness.spec.ts: a deletion slice that omits an importer is refused naming the importer"
   - "tools/scripts/lint/proposal-readiness.spec.ts: a CLI-behaviour slice whose acceptance has no real command run is refused"
-  - "bun run lint:proposal-readiness exits 0 on the current tree"
+  - "`bun run lint:proposal-readiness` exits 0 on the current tree"
 
 ### S4 — kpis reports deliver attempts and time lost per gate
 - **Status**: pending
@@ -69,21 +69,21 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
 - acceptance:
   - "packages/cli/src/commands/kpis-deliver.spec.ts: a fixture with three attempts, two failing on distinct gates, reports 3 attempts, the enter-to-PR minutes and the minutes lost per gate"
   - "packages/cli/src/commands/kpis.command.spec.ts: the per-slice delivery section is rendered"
-  - "delendai kpis in this repository prints the per-slice delivery section"
+  - "`delendai kpis` in this repository prints the per-slice delivery section"
 
 ## acceptance
 
 - packages/cli/src/lib/work-deliver-precheck.service.spec.ts: a candidate with an over-budget unit spec, a missing mirror spec, a types-in-contracts breach and a file over the size limit is refused with the proof's own messages and the compute slot is never requested
 - packages/cli/src/lib/work-deliver.service.spec.ts: a clean candidate passes the pre-check and proceeds to the slot
 - tools/scripts/ci/prove-plan.script.spec.ts: the pre-check gate list equals the plan's static gates for the same changed files
-- delendai work deliver on a candidate with a known lint breach exits non-zero in under 30 seconds without starting the proof
+- `delendai work deliver` on a candidate with a known lint breach exits non-zero in under 30 seconds without starting the proof
 - packages/cli/src/lib/work-deliver-coverage-precheck.service.spec.ts: a changed module whose only coverage comes from a non-mirror spec is refused with the coverage gate's message
 - tools/scripts/ci/changed-file-coverage.script.spec.ts: the fast path and the gate agree on the same fixture
-- delendai work deliver on a changed module without a mirror spec refuses in under 60 seconds
+- `delendai work deliver` on a changed module without a mirror spec refuses in under 60 seconds
 - tools/scripts/lint/proposal-readiness.spec.ts: a missing non-new file is refused naming it
 - tools/scripts/lint/proposal-readiness.spec.ts: a deletion slice that omits an importer is refused naming the importer
 - tools/scripts/lint/proposal-readiness.spec.ts: a CLI-behaviour slice whose acceptance has no real command run is refused
-- bun run lint:proposal-readiness exits 0 on the current tree
+- `bun run lint:proposal-readiness` exits 0 on the current tree
 - packages/cli/src/commands/kpis-deliver.spec.ts: a fixture with three attempts, two failing on distinct gates, reports 3 attempts, the enter-to-PR minutes and the minutes lost per gate
 - packages/cli/src/commands/kpis.command.spec.ts: the per-slice delivery section is rendered
-- delendai kpis in this repository prints the per-slice delivery section
+- `delendai kpis` in this repository prints the per-slice delivery section
