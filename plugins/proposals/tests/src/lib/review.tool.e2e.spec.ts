@@ -86,7 +86,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('allows approve from a different agent even on the same host+pid', async () => {
+	it('[<200ms] allows approve from a different agent even on the same host+pid', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -119,7 +119,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(approved.reviewer).toBe('glm-5');
 	});
 
-	it('requires evidence for every declared acceptance criterion', async () => {
+	it('[<10000ms] requires evidence for every declared acceptance criterion', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -180,7 +180,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(complete.status).toBe('done');
 	});
 
-	it('rejects approve without empirical evidence after submit', async () => {
+	it('[<5000ms] rejects approve without empirical evidence after submit', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -212,7 +212,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(approved.error.reason).toMatch(/commitHash/);
 	});
 
-	it('refuses self-approval by the same agent', async () => {
+	it('[<5000ms] refuses self-approval by the same agent', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -247,7 +247,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		});
 	});
 
-	it('refuses approve before submit with an explicit missing identity reason', async () => {
+	it('[<2000ms] refuses approve before submit with an explicit missing identity reason', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -275,7 +275,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		).toContain('IMPLEMENTER');
 	});
 
-	it('allows request_changes without empirical evidence', async () => {
+	it('[<5000ms] allows request_changes without empirical evidence', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -304,7 +304,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(requestedChanges.status).toBe('changes_requested');
 	});
 
-	it('writes the submit identity log that review approval reads back', async () => {
+	it('[<2000ms] writes the submit identity log that review approval reads back', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
@@ -332,7 +332,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		expect(record.agent).toBe('copilot-minimax-m3');
 	});
 
-	it('reports that status does not release the delegated assignment', async () => {
+	it('[<2000ms] reports that status does not release the delegated assignment', async () => {
 		const create = await creator(opts);
 		await create({
 			id: 'f00093',
@@ -357,7 +357,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 		});
 	});
 
-	it('gives a recovery path when the requested slice is not declared', async () => {
+	it('[<2000ms] gives a recovery path when the requested slice is not declared', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({

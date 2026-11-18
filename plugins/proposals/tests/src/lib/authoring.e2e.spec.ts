@@ -97,7 +97,7 @@ describe('proposal authoring (create → board → close)', async () => {
 
 	// f00016 S13: id is now optional — omit it and pass `kind` to get a
 	// race-safe allocated id instead.
-	it('allocates an id from kind when id is omitted', async () => {
+	it('[<5000ms] allocates an id from kind when id is omitted', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -120,7 +120,7 @@ describe('proposal authoring (create → board → close)', async () => {
 	// proposal would overwrite... no, different ids still differ, but
 	// the filename gives the user zero signal their title was even
 	// used. slugFromTitle falls back to the (always-unique) id instead.
-	it('falls back to the proposal id in the filename for a non-ASCII title (x00157 S1)', async () => {
+	it('[<2000ms] falls back to the proposal id in the filename for a non-ASCII title (x00157 S1)', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -130,7 +130,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(created.file).not.toBe('ready/feats/f00001-.md');
 	});
 
-	it('errors clearly when neither id nor kind is provided', async () => {
+	it('[<200ms] errors clearly when neither id nor kind is provided', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -138,7 +138,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(result).toMatchObject({ isError: true });
 	});
 
-	it('rejects explicit ids that would create a lint-invalid document', async () => {
+	it('[<200ms] rejects explicit ids that would create a lint-invalid document', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -147,7 +147,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(parse(result).error.reason).toMatch(/invalid proposal id/);
 	});
 
-	it('creates a proposal with disjoint slices, lists it on the board, and closes a slice', async () => {
+	it('[<2000ms] creates a proposal with disjoint slices, lists it on the board, and closes a slice', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -208,7 +208,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(doc).toMatch(/### S1[\s\S]*?- \*\*Status\*\*: done/);
 	});
 
-	it('returns a typed no-op persistence result when mode is none', async () => {
+	it('[<5000ms] returns a typed no-op persistence result when mode is none', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -235,7 +235,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		});
 	});
 
-	it('does not close or release when commit-and-push is incomplete', async () => {
+	it('[<2000ms] does not close or release when commit-and-push is incomplete', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -287,7 +287,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 	});
 
-	it('refuses close_slice until a distinct agent has approved the slice', async () => {
+	it('[<2000ms] refuses close_slice until a distinct agent has approved the slice', async () => {
 		const gated: IAuthoringToolOptions = {
 			...opts,
 			requirePeerReview: true,
@@ -326,7 +326,7 @@ describe('proposal authoring (create → board → close)', async () => {
 	// collide). Every claim made the recommended way was never actually
 	// released — `close_slice` still reported `lockReleased: true` because
 	// it never inspected the release engine's result, hiding the leak.
-	it('actually releases a lock claimed with the auto_work-recommended composite task_id', async () => {
+	it('[<5000ms] actually releases a lock claimed with the auto_work-recommended composite task_id', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -370,7 +370,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(statusBody.active_write_lanes).toBe(0);
 	});
 
-	it('releases the delegated assignment and lease when closing a slice', async () => {
+	it('[<5000ms] releases the delegated assignment and lease when closing a slice', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -419,7 +419,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(heartbeat).toMatchObject({ isError: true });
 	});
 
-	it('returns a schema-valid review status without releasing ownership', async () => {
+	it('[<2000ms] returns a schema-valid review status without releasing ownership', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -447,7 +447,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		});
 	});
 
-	it('closes the last slice without appending the done marker outside the slice block', async () => {
+	it('[<5000ms] closes the last slice without appending the done marker outside the slice block', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -496,7 +496,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 	});
 
-	it('redacts secrets pasted into the goal before persisting (M23)', async () => {
+	it('[<2000ms] redacts secrets pasted into the goal before persisting (M23)', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -515,7 +515,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(doc).toContain('[REDACTED]');
 	});
 
-	it('runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
+	it('[<500ms] runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -617,7 +617,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(reviewLog).toContain('"reviewer":"owl"');
 	});
 
-	it('targets the exact slice even when the sliceId has regex metacharacters', async () => {
+	it('[<5000ms] targets the exact slice even when the sliceId has regex metacharacters', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -625,7 +625,7 @@ describe('proposal authoring (create → board → close)', async () => {
 			id: 'f00085',
 			title: 'Meta',
 			goal: 'work',
-			// 'axb' first: an UNescaped /### a.b —/ would match it (`.`=`x`) — the
+			// 'axb' first: an UNescaped /### a.b —/ would match 'axb' (`.`=`x`) — the
 			// wrong block. The escape pins the match to the literal 'a.b'.
 			slices: [
 				{ sliceId: 'axb', files: ['src/b.ts'] },
@@ -657,7 +657,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		);
 	});
 
-	it('rejects overlapping slices', async () => {
+	it('[<200ms] rejects overlapping slices', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
@@ -716,7 +716,7 @@ describe('proposal_board — index points to a file that does not exist', () => 
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('says it instead of returning an empty slices list', async () => {
+	it('[<200ms] says it instead of returning an empty slices list', async () => {
 		// The projection is built from the markdown, so it never names a
 		// file that is not there; a registry written before the file went
 		// away can, and the board must still say so.
@@ -747,7 +747,7 @@ describe('proposal_board — index points to a file that does not exist', () => 
 		expect(p.unreadable).toContain('sync_proposals');
 	});
 
-	it('a proposal without a slices section is not confused either', async () => {
+	it('[<2000ms] a proposal without a slices section is not confused either', async () => {
 		mkdirSync(join(root, 'docs/delendai/proposals/ready'), {
 			recursive: true,
 		});
@@ -813,7 +813,7 @@ describe('x00055: redactSecrets on reviewer note in proposal_review', () => {
 		review = await capture(buildReviewRegistration(opts));
 	});
 
-	it('redacts a secret pasted into the reviewer note before persisting the review-log bullet', async () => {
+	it('[<5000ms] redacts a secret pasted into the reviewer note before persisting the review-log bullet', async () => {
 		// The review state machine requires the slice to be in_review
 		// before a request_changes can land (the implementer must
 		// have submitted first). Mirror the flow the existing M35

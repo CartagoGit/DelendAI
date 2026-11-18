@@ -51,7 +51,7 @@ describe('create_proposal concurrency', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('allocates distinct ids under concurrent create_proposal calls', async () => {
+	it('[<10000ms] allocates distinct ids under concurrent create_proposal calls', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);

@@ -127,7 +127,7 @@ const authorProposal = async (
 };
 
 describe('register() wires the project’s publish step into create_proposal', () => {
-	it('returns the project command, with the new proposal’s id and path filled in', async () => {
+	it('[<2000ms] returns the project command, with the new proposal’s id and path filled in', async () => {
 		const root = makeWorkspace();
 		const handler = await createProposalHandler(
 			contextFor(
@@ -152,7 +152,7 @@ describe('register() wires the project’s publish step into create_proposal', (
 		expect(created.nextAction).toMatch(/proposal-f\d{5}/u);
 	});
 
-	it('falls back to the development policy’s own words when no command is declared', async () => {
+	it('[<2000ms] falls back to the development policy’s own words when no command is declared', async () => {
 		const root = makeWorkspace();
 		const handler = await createProposalHandler(
 			contextFor(
@@ -168,7 +168,7 @@ describe('register() wires the project’s publish step into create_proposal', (
 		expect(created.nextAction).toContain('pull request');
 	});
 
-	it('never tells a project that merges locally to open a pull request', async () => {
+	it('[<2000ms] never tells a project that merges locally to open a pull request', async () => {
 		const root = makeWorkspace();
 		const handler = await createProposalHandler(
 			contextFor(
@@ -185,7 +185,7 @@ describe('register() wires the project’s publish step into create_proposal', (
 		expect(created.nextAction).toContain('untracked');
 	});
 
-	it('says only that the file must be tracked when the host declares no policy', async () => {
+	it('[<2000ms] says only that the file must be tracked when the host declares no policy', async () => {
 		const root = makeWorkspace();
 		const handler = await createProposalHandler(
 			contextFor(root, {
@@ -269,7 +269,7 @@ const proposalReadyForReview = (root: string): void => {
 };
 
 describe('register() hands the transition tool the evidence policy', () => {
-	it('lets a project that turned requireValidateEvidence off close without validate evidence', async () => {
+	it('[<5000ms] lets a project that turned requireValidateEvidence off close without validate evidence', async () => {
 		const root = makeWorkspace();
 		proposalReadyForReview(root);
 		const transition = await transitionHandler(
@@ -288,7 +288,7 @@ describe('register() hands the transition tool the evidence policy', () => {
 		expect(JSON.stringify(moved)).not.toContain('validate required');
 	});
 
-	it('asks for validate evidence to close when the project leaves the default on', async () => {
+	it('[<2000ms] asks for validate evidence to close when the project leaves the default on', async () => {
 		const root = makeWorkspace();
 		proposalReadyForReview(root);
 		const transition = await transitionHandler(

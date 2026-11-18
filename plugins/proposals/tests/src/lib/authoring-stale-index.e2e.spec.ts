@@ -88,7 +88,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		);
 	};
 
-	it('close_slice succeeds right after a folder move, without a manual sync', async () => {
+	it('[<5000ms] close_slice succeeds right after a folder move, without a manual sync', async () => {
 		await createThenMoveStale();
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const closed = parse(
@@ -102,7 +102,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		expect(closed.closed).toBe(true);
 	});
 
-	it('proposal_review status succeeds right after a folder move', async () => {
+	it('[<5000ms] proposal_review status succeeds right after a folder move', async () => {
 		await createThenMoveStale();
 		const review = await capture(buildReviewRegistration(opts));
 		const status = parse(
@@ -116,7 +116,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		expect(status.status).toBe('none');
 	});
 
-	it('a genuinely missing proposal still errors after the single re-sync', async () => {
+	it('[<20000ms] a genuinely missing proposal still errors after the single re-sync', async () => {
 		await createThenMoveStale();
 		const close = await capture(buildCloseSliceRegistration(opts));
 		const missing = parse(
@@ -130,7 +130,7 @@ describe('indexed-path tools self-heal a stale index (x00106 S1)', () => {
 		expect(missing.error.reason).toContain('f09999');
 	});
 
-	it('a deleted file (still indexed) errors with the same structured reason', async () => {
+	it('[<10000ms] a deleted file (still indexed) errors with the same structured reason', async () => {
 		await createThenMoveStale();
 		// Delete the file entirely: the heal re-sync drops it from the
 		// index, so the retry reports not-in-index instead of a raw path.

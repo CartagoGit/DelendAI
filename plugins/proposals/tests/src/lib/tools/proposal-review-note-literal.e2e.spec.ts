@@ -41,7 +41,7 @@ const okOf = async (result: Promise<{ content: { text: string }[] }>) =>
 		.ok;
 
 describe('a review note is text, not a replacement pattern', () => {
-	it("keeps a note quoting `$'` whole, and the document unchanged around it", async () => {
+	it("[<5000ms] keeps a note quoting `$'` whole, and the document unchanged around it", async () => {
 		const root = mkdtempSync(join(tmpdir(), 'review-note-literal-'));
 		const opts: IAuthoringToolOptions = {
 			namespacePrefix: 'proposals',

@@ -195,7 +195,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		{ name: 'delendai_proposals_get_proposal_workflow' },
 	];
 
-	it('every read-only tool returns schema-valid structuredContent', async () => {
+	it('[<20000ms] every read-only tool returns schema-valid structuredContent', async () => {
 		// List first, as every host does. Only a client that has listed
 		// tools validates structuredContent against each output schema, and
 		// it does so strictly (undeclared keys are rejected). Without this
@@ -228,7 +228,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	});
 
 	// M31: overview surfaces per-tool side effects; read-only tools have none.
-	it('overview declares tool side-effects (write/spawn) and omits them for read-only tools', async () => {
+	it('[<5000ms] overview declares tool side-effects (write/spawn) and omits them for read-only tools', async () => {
 		const res = await client.callTool({
 			name: 'delendai_overview',
 			arguments: {},
@@ -252,7 +252,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect(effOf('delendai_overview')).toBeUndefined();
 	});
 
-	it('overview keeps the full payload in structuredContent and a compact summary in text', async () => {
+	it('[<5000ms] overview keeps the full payload in structuredContent and a compact summary in text', async () => {
 		const res = await client.callTool({
 			name: 'delendai_overview',
 			arguments: {},
@@ -272,7 +272,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	// M24: every public tool must declare an outputSchema (a permissive
 	// catchall object is allowed for action-multiplexed tools, but `undefined`
 	// is not). This guard fails the build the moment a new tool ships without one.
-	it('every registered tool declares an outputSchema', async () => {
+	it('[<10000ms] every registered tool declares an outputSchema', async () => {
 		const { tools } = await client.listTools();
 		const missing = tools
 			.filter(
@@ -285,7 +285,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		expect(tools.length).toBeGreaterThan(20);
 	});
 
-	it('exposes proposals_close_plan with outputSchema on the native surface and validates a dry-run success over the protocol', async () => {
+	it('[<5000ms] exposes proposals_close_plan with outputSchema on the native surface and validates a dry-run success over the protocol', async () => {
 		seedClosePlanFixture(workspace, {
 			id: 'q12345',
 			status: 'in-progress',
@@ -317,7 +317,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		});
 	});
 
-	it('preserves proposals_close_plan outputSchema through managed lazy activation', async () => {
+	it('[<10000ms] preserves proposals_close_plan outputSchema through managed lazy activation', async () => {
 		const managedWorkspace = mkdtempSync(join(tmpdir(), 'e2e-os-managed-'));
 		execFileSync('git', ['init', '-q'], { cwd: managedWorkspace });
 		writeFileSync(join(managedWorkspace, 'README.md'), '# managed\n');
@@ -393,7 +393,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		}
 	});
 
-	it('coordinates proposals locks with notification await_lock over MCP', async () => {
+	it('[<10000ms] coordinates proposals locks with notification await_lock over MCP', async () => {
 		const claimed = await client.callTool({
 			name: 'delendai_proposals_agent_lock',
 			arguments: {
@@ -502,7 +502,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 	// IServerBlueprint — assert the generated JSON Schema's root is no
 	// longer a permissive catchall (no `additionalProperties: true`/`{}`
 	// at the top level, and concrete `properties` are declared).
-	it('hardened bootstrap tool outputSchemas are no longer permissive catchalls', async () => {
+	it('[<5000ms] hardened bootstrap tool outputSchemas are no longer permissive catchalls', async () => {
 		const { tools } = await client.listTools();
 		const HARDENED = [
 			'delendai_analyze_project',
@@ -529,7 +529,7 @@ describe('e2e: outputSchema validation over the protocol (N16)', async () => {
 		}
 	});
 
-	it('validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
+	it('[<10000ms] validates write-tool outputSchemas over the protocol (create_proposal → close_slice)', async () => {
 		const created = await client.callTool({
 			name: 'delendai_proposals_create_proposal',
 			arguments: completeProposalInput({

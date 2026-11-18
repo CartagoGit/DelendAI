@@ -56,7 +56,7 @@ describe('proposal serialization withFileMutex', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('serializes concurrent close_slice operations', async () => {
+	it('[<10000ms] serializes concurrent close_slice operations', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
