@@ -29,7 +29,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '@delendai/core/contracts';
-import { fakePartial } from '@delendai/test-kit';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 import plugin from '../../src/index';
 
@@ -144,16 +144,9 @@ describe('the self-learning plugin entry', () => {
 				| ((args: { collect: boolean }) => Promise<unknown>)
 				| undefined;
 			await tool?.register(
-				fakePartial<
-					Parameters<NonNullable<typeof tool>['register']>[0],
-					'registerTool'
-				>({
-					registerTool: (
-						_name: string,
-						_config: unknown,
-						fn: (args: { collect: boolean }) => Promise<unknown>,
-					) => {
-						handler = fn;
+				createFakeToolServer({
+					onRegisterTool: (call) => {
+						handler = call.handler as typeof handler;
 					},
 				}),
 			);

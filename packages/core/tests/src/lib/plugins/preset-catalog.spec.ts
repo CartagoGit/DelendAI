@@ -3,10 +3,13 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
+	isPresetKind,
 	normalizePresetInput,
+	presetAliasOf,
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
+	resolveProgressiveDisclosure,
 	resolveStackPackMembers,
 } from '@delendai/core/lib/plugins/preset-catalog';
 import {
@@ -536,5 +539,24 @@ describe('normalizePresetInput — single-frontier contract (x00504 / reviewer)'
 		} finally {
 			process.stderr.write = originalWrite;
 		}
+	});
+});
+
+describe('preset guards', () => {
+	it('[<20ms] recognises a pack id and nothing else', () => {
+		expect(isPresetKind('swarm')).toBe(true);
+		expect(isPresetKind('vertex')).toBe(false);
+		expect(isPresetKind(undefined)).toBe(false);
+	});
+
+	it('[<20ms] answers a retired id with the pack that replaces it', () => {
+		expect(presetAliasOf('vertex').replacement).toBe('dogfood');
+	});
+
+	it('[<20ms] lets an explicit setting beat the pack default for progressive disclosure', () => {
+		expect(resolveProgressiveDisclosure(undefined, 'swarm')).toBe(true);
+		expect(resolveProgressiveDisclosure(false, 'swarm')).toBe(false);
+		expect(resolveProgressiveDisclosure(undefined, 'minimal')).toBe(false);
+		expect(resolveProgressiveDisclosure(undefined, undefined)).toBe(false);
 	});
 });
