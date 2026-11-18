@@ -3,13 +3,10 @@
  * answer when an agent enters a unit. The tests that load a plugin or run a
  * real repository are in work-enter.command.e2e.spec.ts.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ICliCommandContext } from '../contracts/interfaces/cli-command.interface';
+import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
 import { createNoopContext } from '../lib/noop-context.factory';
 import {
 	createWorkCommand,
@@ -219,50 +216,59 @@ describe('deliverPortsOf', () => {
 });
 
 describe('revalidatePortsOf', () => {
-	const git = (cwd: string, ...args: string[]): string =>
-		execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
-
-	const repo = (): string => {
-		const dir = mkdtempSync(join(tmpdir(), 'revalidate-ports-'));
-		git(dir, 'init', '-q');
-		git(dir, 'config', 'user.email', 'a@b.c');
-		git(dir, 'config', 'user.name', 'a');
-		git(dir, 'config', 'commit.gpgsign', 'false');
-		writeFileSync(join(dir, 'a.md'), 'one');
-		git(dir, 'add', '.');
-		git(dir, 'commit', '-q', '-m', 'one');
-		return dir;
+	/** A git that keeps its commits in memory: no process is spawned. */
+	const memoryGit = () => {
+		const log: string[] = ['base'];
+		const dirty = new Set<string>();
+		const git: IGitInCheckout = (args) => {
+			const [verb] = args;
+			if (verb === 'rev-parse') {
+				return args[1] === 'HEAD'
+					? { ok: true, out: `${log.at(-1) ?? ''}\n` }
+					: { ok: false, out: '' };
+			}
+			if (verb === 'status') {
+				return {
+					ok: true,
+					out: [...dirty].map((path) => `?? ${path}`).join('\0'),
+				};
+			}
+			if (verb === 'commit') {
+				log.push(`c${String(log.length)}`);
+				dirty.clear();
+			}
+			if (verb === 'reset') {
+				log.splice(log.indexOf(args[2] ?? '') + 1);
+			}
+			return { ok: true, out: '' };
+		};
+		return { git, log, dirty };
 	};
 
-	it('[<2000ms] commits what a transition wrote, marks the unit and undoes back to the mark', async () => {
-		const dir = repo();
-		try {
-			const ctx = {
-				...createNoopContext(dir, globals(true)),
-				request: async () => {
-					mkdirSync(join(dir, 'docs'), { recursive: true });
-					writeFileSync(join(dir, 'docs', 'p.md'), 'moved');
-					return { ok: true };
-				},
-			};
-			const ports = revalidatePortsOf(ctx, 'claude-sonnet-5-5');
-			const mark = ports.mark(dir);
-			expect(mark).toHaveLength(40);
-			const answer = await ports.transition({
-				id: 'f1',
-				to: 'review',
-				reason: 'why',
-				worktree: dir,
-			});
-			expect(answer).toEqual({ ok: true });
-			expect(git(dir, 'rev-list', '--count', 'HEAD')).toBe('2');
-			ports.undo(dir, mark ?? '');
-			expect(git(dir, 'rev-list', '--count', 'HEAD')).toBe('1');
-			expect(await ports.developSha(dir)).toBeUndefined();
-			expect(await ports.proposals()).toEqual([]);
-		} finally {
-			rmSync(dir, { recursive: true, force: true });
-		}
+	it('[<50ms] commits what a transition wrote, marks the unit and undoes back to the mark', async () => {
+		const { git, log, dirty } = memoryGit();
+		const ctx = {
+			...createNoopContext('/work', globals(true)),
+			request: (async () => {
+				dirty.add('docs/p.md');
+				return { ok: true };
+			}) as ICliCommandContext['request'],
+		};
+		const ports = revalidatePortsOf(ctx, 'claude-sonnet-5-5', () => git);
+		const mark = ports.mark('/unit');
+		expect(mark).toBe('base');
+		const answer = await ports.transition({
+			id: 'f1',
+			to: 'review',
+			reason: 'why',
+			worktree: '/unit',
+		});
+		expect(answer).toEqual({ ok: true });
+		expect(log).toEqual(['base', 'c1']);
+		ports.undo('/unit', mark ?? '');
+		expect(log).toEqual(['base']);
+		expect(await ports.developSha('/unit')).toBeUndefined();
+		expect(await ports.proposals()).toEqual([]);
 	});
 
 	it('[<50ms] prints a line to stdout', () => {

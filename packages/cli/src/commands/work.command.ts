@@ -263,11 +263,9 @@ const REVALIDATION_UNIT_FLAGS = [
 export const revalidatePortsOf = (
 	ctx: ICliCommandContext,
 	agent: string | undefined,
+	gitIn: (where: string) => IGitInCheckout = (where) => (gitArgs) =>
+		runGitCommand(where, gitArgs),
 ): IWorkRevalidatePorts => {
-	const gitIn =
-		(where: string): IGitInCheckout =>
-		(gitArgs) =>
-			runGitCommand(where, gitArgs);
 	return {
 		proposals: () => readReadyProposals(ctx.cwd),
 		print: (line) => process.stdout.write(`${line}\n`),

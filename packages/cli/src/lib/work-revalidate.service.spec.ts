@@ -222,7 +222,7 @@ describe('revalidateBatch units and transitions', () => {
 });
 
 describe('readReadyProposals', () => {
-	it('[<500ms] reads the ready proposals of a project and skips what has no id', async () => {
+	it('[<200ms] reads the ready proposals of a project and skips what has no id', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'revalidate-read-'));
 		try {
 			const dir = join(root, READY_PROPOSALS_DIR, 'feats');
