@@ -2,14 +2,16 @@
 id: x01028
 title: "The governed fetch connects to the address it validated"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 0ca53564-fbad-4b11-bb30-630f3ba70a87
-last-correlation-id: 0ca53564-fbad-4b11-bb30-630f3ba70a87
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:21:58.988Z
+last-transition-id: 1291251f-346d-4f3c-aa76-c315a9cd9c2b
+last-correlation-id: 1291251f-346d-4f3c-aa76-c315a9cd9c2b
+last-transition-from: review
+last-transition-at: 2026-11-18T03:06:10.533Z
+shipped-in:
+  - "3a58a349edc71f34406f130387541fa151b662cc"
 ---
 
 # x01028 — The governed fetch connects to the address it validated
@@ -31,7 +33,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The connection uses the validated address
-- **Status**: review
+- **Status**: done
 - **Files**: `plugins/web-fetch/src/lib/services/engine.ts`, `plugins/web-fetch/src/lib/services/pinned-connection.ts`, `plugins/web-fetch/src/lib/contracts/interfaces/fetch.interface.ts`, `plugins/web-fetch/README.md`, `plugins/web-fetch/tests/src/lib/services/engine.spec.ts`, `plugins/web-fetch/tests/src/lib/services/pinned-connection.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -39,9 +41,11 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "A resolver that answers a public address first and a private one second cannot reach the private one (spec)."
   - "The comment that admits the second resolution is removed because it is no longer true."
 - shipped-in: `7f77000da636`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
+- review-log: approved by mai-code-2 — verified at 3a58a349edc7, validate exit 0 and tests 20/20 claimed, no recorded run cited; acceptance 3/3: (1) pinnedRequestOptions sets host/family to validated address, URL host header, and requested hostname as TLS servername; engine uses pinnedFetch. 20/20 passed. (2) pinned-connection.spec.ts asserts one resolver call and validated-address-only connection; rebinding test cannot reach private answer. (3) Engine security model now states the validated address is used directly and pinned-connection explains no second name resolution. — Verified 3a58a349: network fetches pin the socket to the address accepted by policy while retaining requested Host and TLS servername; injected fetchers receive that address and never resolve twice. The web-fetch scoped specs pass, including the public-then-private rebinding case and real host echo.
 
 ## acceptance
 

@@ -31,15 +31,17 @@ On 2026-11-01 the queue's reaper listed pull requests moments before #1614 opene
 - global_gate: type
 
 ### S1 — The tip decides
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`
 - **Gate**: type
 - acceptance:
   - "A publication ref whose tip differs from the head of its merged pull request is not spent, and is not reaped while fresh."
 - shipped-in: `77c9f1adbb7c`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 77c9f1adbb7c is stale: slice files changed afterward (e.g. 78448c63b). Redeliver S1 on current HEAD and resubmit with fresh shipped-in plus scoped evidence.
+- review-log: requested_changes by mai-code-2 — The delivery lineage is still not a fresh, self-consistent review target: the queue resolves latest delivery to 1fc7c701 while the slice still says shipped-in 77c9f1ad and all three scoped files changed afterward (including 78448c63b and later commits). Reconcile the proposal's shipped-in/current delivery commit, redeliver S1 on the intended tip, and resubmit so another reviewer can reproduce and typecheck that exact state.
 
 ## acceptance
 
