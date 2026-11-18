@@ -2,14 +2,14 @@
 id: x01019
 title: "Vitest keeps modules between spec files in core, proposals and tools"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: e6f5c5e8-37ac-4a87-b98e-0e46a05624cd
-last-correlation-id: e6f5c5e8-37ac-4a87-b98e-0e46a05624cd
-last-transition-from: ready
-last-transition-at: 2026-11-18T06:44:00.768Z
+last-transition-id: 28fdb6a8-eb8c-4b85-bdad-6278e087777a
+last-correlation-id: 28fdb6a8-eb8c-4b85-bdad-6278e087777a
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T06:44:42.068Z
 ---
 
 # x01019 — Vitest keeps modules between spec files in core, proposals and tools
@@ -31,15 +31,14 @@ Measured on a 30-spec sample across core, cli, proposals, tools and e2e at maxWo
 - global_gate: none
 
 ### S1 — Share the module graph in core, proposals and tools
-- **Status**: pending
+- **Status**: review
 - **Files**: `vitest.shared.ts`, `packages/core/vitest.config.ts`, `plugins/proposals/vitest.config.ts`, `tools/vitest.config.ts`
 - **Gate**: none
 - acceptance:
   - "The 30-spec sample passes 228 of 228 tests under the changed config and runs faster than before."
 - shipped-in: `f4a8b291f6e0`
-- review-state: changes_requested
-- review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 - review-log: requested_changes by gpt-5.3-codex — Stale due to post-shipped-in drift: the slice files changed after `f4a8b291f6e0` on develop (`da3d5a486`, `5f76c7077`). Rebase the slice and re-run the 30-spec evidence on current develop before approval.
 
 ## acceptance
