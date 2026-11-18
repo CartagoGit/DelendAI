@@ -2,14 +2,14 @@
 id: x00975
 title: "The selectors and optimizers use every input they accept"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: 2a274772-8570-4209-a04e-705d8848652c
-last-correlation-id: 2a274772-8570-4209-a04e-705d8848652c
-last-transition-from: review
-last-transition-at: 2026-11-04T20:15:43.876Z
+last-transition-id: 447ce399-eb88-4dda-8f6f-7a5502d4a9e7
+last-correlation-id: 447ce399-eb88-4dda-8f6f-7a5502d4a9e7
+last-transition-from: ready
+last-transition-at: 2026-11-18T06:15:50.907Z
 shipped-in:
   - "1f0c5d911"
 ---
