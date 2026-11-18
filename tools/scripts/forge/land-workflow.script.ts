@@ -51,13 +51,8 @@ const REPO_VALUES: Parameters<typeof landWorkflowInputOf>[0] = {
 	setupSteps: SETUP_STEPS,
 	upkeep: [
 		{
-			name: 'Reap the refs whose pull requests are finished',
-			run: 'bun run lint:ref-lifecycle -- --reap',
-			env: { REF_LIFECYCLE_SCOPE: 'repository' },
-		},
-		{
-			name: 'Close the pull requests not opened from a publication',
-			run: 'bun tools/scripts/forge/close-unpublished-prs.script.ts --apply',
+			name: 'Reconcile the refs, the periodic safety pass',
+			run: 'bun tools/scripts/forge/reconcile-refs.script.ts --apply --trigger=upkeep',
 		},
 		{
 			name: 'Fail while something hangs on the forge',
