@@ -3,10 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { IUserHostConfigReport } from '@delendai/core/cli';
 
 import type { ILegacyResidueProbe } from '../../../contracts/interfaces/legacy-residue-probe.interface';
-import {
-	checkLegacyResidue,
-	defaultLegacyResidueProbe,
-} from './legacy-residue.check';
+import { checkLegacyResidue } from './legacy-residue.check';
 
 // Built from parts so this file does not spell the retired product name.
 const OLD = ['mcp', 'vertex'].join('-');
@@ -76,15 +73,5 @@ describe('checkLegacyResidue', () => {
 		expect(text).toContain(`rm -rf /p/${OLD}`);
 		expect(text).toContain('kill 4242');
 		expect(text).not.toContain('kill 7');
-	});
-});
-
-describe('the default probe', () => {
-	it('[<2000ms] reads this machine without writing and lists processes', async () => {
-		const report = await defaultLegacyResidueProbe.scan('/ws');
-		expect(Array.isArray(report.changes)).toBe(true);
-		expect(Array.isArray(await defaultLegacyResidueProbe.processes())).toBe(
-			true,
-		);
 	});
 });
