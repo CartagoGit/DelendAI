@@ -1,5 +1,5 @@
 /**
- * worktree-husks.service.spec.ts — a directory beside the units that is
+ * husk-directories.service.spec.ts — a directory beside the units that is
  * no unit is removed, and what it held is kept first.
  */
 import { execFileSync } from 'node:child_process';
@@ -19,7 +19,7 @@ import {
 	huskDirectories,
 	husksInvariant,
 	reapHusks,
-} from '@delendai/core/lib/work-units/worktree-husks.service';
+} from '@delendai/core/lib/ref-reconciler/husk-directories.service';
 
 const UNITS = '.cache/delendai/.worktrees';
 const WINDOW = 60;

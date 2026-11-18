@@ -17,7 +17,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { PRE_X01091_TEST_TEMP_PREFIXES } from '@delendai/core/lib/contracts/constants/test-temp-prefixes.constant';
 import { reapTestTempLeftovers } from '@delendai/core/lib/work-units/test-temp-leftovers.service';
-import { keepStrayFiles } from '@delendai/core/lib/work-units/worktree-husks.service';
+import { keepStrayFiles } from '@delendai/core/lib/ref-reconciler/husk-directories.service';
 
 const roots: string[] = [];
 afterEach(() => {

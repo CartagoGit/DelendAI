@@ -89,7 +89,7 @@
 	"packages/core/tests/src/lib/work-units/workflow-invariants.service.e2e.spec.ts": 2,
 	"packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts": 2,
 	"packages/core/tests/src/lib/work-units/worktree-agent.service.spec.ts": 1,
-	"packages/core/tests/src/lib/work-units/worktree-husks.service.spec.ts": 2,
+	"packages/core/tests/src/lib/ref-reconciler/husk-directories.service.spec.ts": 2,
 	"packages/core/tests/src/lib/workspace-migration/development-policy.migrator.spec.ts": 1,
 	"packages/core/tests/src/lib/workspace-migration/legacy-migration.service.spec.ts": 1,
 	"packages/core/tests/src/lib/workspace-migration/legacy-records-relocation.service.spec.ts": 1,
