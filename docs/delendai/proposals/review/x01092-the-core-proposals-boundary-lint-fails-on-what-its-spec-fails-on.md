@@ -2,14 +2,14 @@
 id: x01092
 title: "The core-proposals boundary lint fails on what its spec fails on"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: 5675c9d6-01fa-4e47-b2ae-5a363de5e654
-last-correlation-id: 5675c9d6-01fa-4e47-b2ae-5a363de5e654
-last-transition-from: ready
-last-transition-at: 2026-11-18T01:57:13.253Z
+last-transition-id: 76932e7d-9036-4096-acd9-33e18172776a
+last-correlation-id: 76932e7d-9036-4096-acd9-33e18172776a
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T02:01:17.573Z
 ---
 
 # x01092 — The core-proposals boundary lint fails on what its spec fails on
@@ -32,7 +32,7 @@ On 2026-11-18 develop went red after f00809 S1 (c7fe02f52) moved a classified li
 - global_gate: lint
 
 ### S1 — The lint runs the inventory scan and compares the committed inventory
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/core-proposals-boundary.script.ts`, `tools/scripts/lint/core-proposals-boundary.script.spec.ts`
 - **Gate**: lint
 - acceptance:
@@ -40,6 +40,9 @@ On 2026-11-18 develop went red after f00809 S1 (c7fe02f52) moved a classified li
   - "The lint fails when renderInventoryMarkdown(result) differs from docs/delendai/CORE-PROPOSALS-BOUNDARY-INVENTORY.md, naming the command that regenerates it."
   - "core-proposals-boundary.script.spec.ts drives the lint over a fixture tree with one unclassified line, one missing finding and one stale inventory, asserts each fails with its own message, and asserts the fixed tree passes."
   - "On the develop tree that carries the boundary classification from #1957 the lint passes."
+- shipped-in: `943fdf1e55b3`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
