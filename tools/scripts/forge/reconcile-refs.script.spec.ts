@@ -4,10 +4,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
+import {
+	REPOSITORY_SLUG,
+	RefReconcilerService,
+	type IObservedPullRequest,
+} from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { RefReconcilerService } from '@delendai/core/lib/ref-reconciler/reconciler.service';
-import type { IObservedPullRequest } from '@delendai/core/lib/ref-lifecycle/reconcile.interface';
 
 import { GitForgeRefs, type IForgeRefsDeps } from './reconcile-refs.script';
 

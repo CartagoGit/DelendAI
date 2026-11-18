@@ -15,26 +15,22 @@
  */
 import { execFileSync } from 'node:child_process';
 
-import { REPOSITORY_SLUG } from '@delendai/core/lib/contracts/constants/repository-identity.constant';
-import type { IPolicyBranches } from '@delendai/core/lib/contracts/interfaces/development-policy.interface';
-import type {
-	IReconcileAction,
-	IRefForge,
-	IRefSnapshot,
-} from '@delendai/core/lib/contracts/interfaces/ref-reconciler.interface';
-import { branchesForRef } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
 import {
+	REPOSITORY_SLUG,
+	RefReconcilerService,
+	branchesForRef,
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
+	reconcileRefs,
 	retiredMachineryPrefixes,
 	shortName as shortRef,
-} from '@delendai/core/lib/integration/decisions/namespaces.helper';
-import type {
-	IObservedPullRequest,
-	IObservedRef,
-} from '@delendai/core/lib/ref-lifecycle/reconcile.interface';
-import { reconcileRefs } from '@delendai/core/lib/ref-lifecycle/reconcile.service';
-import { RefReconcilerService } from '@delendai/core/lib/ref-reconciler/reconciler.service';
+	type IObservedPullRequest,
+	type IObservedRef,
+	type IPolicyBranches,
+	type IReconcileAction,
+	type IRefForge,
+	type IRefSnapshot,
+} from '@delendai/core/cli';
 
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
@@ -79,7 +75,8 @@ export class GitForgeRefs implements IRefForge {
 	) {}
 
 	snapshot(): Promise<IRefSnapshot> {
-		const { deps, branches } = this;
+		const deps = this.deps;
+		const branches = this.branches;
 		const observed = deps.observed();
 		this.onForge = new Set(observed.map((branch) => branch.name));
 		const workPrefixes = ownedWorkRefPrefixes(branches)
@@ -167,7 +164,7 @@ export class GitForgeRefs implements IRefForge {
 	}
 
 	apply(action: IReconcileAction): Promise<void> {
-		const { deps } = this;
+		const deps = this.deps;
 		if (!this.applying) {
 			deps.report(`would ${action.kind} ${action.ref}`);
 			return Promise.resolve();

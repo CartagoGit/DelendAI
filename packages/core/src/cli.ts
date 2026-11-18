@@ -99,6 +99,7 @@ export {
 	ownedWorkRefPrefixes,
 	policyNamespaces,
 	publicationPrefixesOf,
+	retiredMachineryPrefixes,
 	retiredRefRoots,
 	shortName,
 	underNamespace,
@@ -200,7 +201,24 @@ export type {
 	ILandWorkflowInput,
 	ILandWorkflowIdentity,
 } from './lib/integration/land/land.interface';
-export { compileOwnedWorkRefParser } from './lib/development-policy/owned-work-ref-parser';
+export {
+	branchesForRef,
+	compileOwnedWorkRefParser,
+} from './lib/development-policy/owned-work-ref-parser';
+// The reconciler: one pass that derives and converges the desired state of every ref.
+export { REPOSITORY_SLUG } from './lib/contracts/constants/repository-identity.constant';
+export { reconcileRefs } from './lib/ref-lifecycle/reconcile.service';
+export { RefReconcilerService } from './lib/ref-reconciler/reconciler.service';
+export type { IPolicyBranches } from './lib/contracts/interfaces/development-policy.interface';
+export type {
+	IReconcileAction,
+	IRefForge,
+	IRefSnapshot,
+} from './lib/contracts/interfaces/ref-reconciler.interface';
+export type {
+	IObservedPullRequest,
+	IObservedRef,
+} from './lib/ref-lifecycle/reconcile.interface';
 export {
 	DEFAULT_WORK_KIND,
 	REVIEW_BATCH_ID,
