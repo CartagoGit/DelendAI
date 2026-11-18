@@ -2,14 +2,14 @@
 id: x01082
 title: "A flame-graph capture does not fail under a loaded runner"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: 19e27e3a-8c03-408a-957c-9c1301f68f9a
-last-correlation-id: 19e27e3a-8c03-408a-957c-9c1301f68f9a
-last-transition-from: review
-last-transition-at: 2026-11-18T07:17:00.854Z
+last-transition-id: e877fe2b-fae7-4b12-9141-03b78752c431
+last-correlation-id: e877fe2b-fae7-4b12-9141-03b78752c431
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T07:25:41.681Z
 ---
 
 # x01082 — A flame-graph capture does not fail under a loaded runner
@@ -38,7 +38,7 @@ Root cause: the unit spec `a flame-graph capture > keeps the CPU profile it reco
 - global_gate: none
 
 ### S1 — Injected exec seam, deadline reason, real-process spec in the e2e tier
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/perf/src/lib/profile/real-perf-profile-deps.ts`, `plugins/perf/src/lib/contracts/interfaces/perf.interface.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.spec.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps-deadline.spec.ts`, `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: The e2e spec's profiler deadline is 20000 ms times loadFactorFromEnv of LOAD_FACTOR_ENV, the factor that stretches the e2e test budget. The workload is unchanged: measured locally it runs in 0.07 s and --prof-process in 0.9 s, so the CI overrun was load, not workload size.
@@ -49,9 +49,8 @@ Root cause: the unit spec `a flame-graph capture > keeps the CPU profile it reco
   - "The real-process capture is real-perf-profile-deps.e2e.spec.ts, in the e2e tier whose budget stretches with the runner load, and asserts on the whole result so a red run shows why."
   - "real-perf-profile-deps.e2e.spec.ts passes: the e2e spec's profiler timeoutMs is 20000 ms times the load factor the runner stretches the test budget by (LOAD_FACTOR_ENV), so the inner deadline and the [<20000ms] budget scale together."
 - shipped-in: `7891a84831a5`
-- review-state: changes_requested
+- review-state: in_review
 - review-implementer: claude-sonnet-5-5
-- review-reviewer: gpt-5.3-codex
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
