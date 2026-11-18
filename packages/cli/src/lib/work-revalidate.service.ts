@@ -244,9 +244,24 @@ export const revalidateBatch = async (
 		failed.push({ id, reason });
 		ports.print(`failed ${id}: ${reason}`);
 	}
+	if (transitioned.length === 0) {
+		return {
+			code: EXIT_CODE.OK,
+			data: { ...selection, worktree, transitioned, failed },
+			suppressDefaultPrint: true,
+		};
+	}
+	const published = await ports.publish();
 	return {
-		code: EXIT_CODE.OK,
-		data: { ...selection, worktree, transitioned, failed },
+		code: published.code === 0 ? EXIT_CODE.OK : EXIT_CODE.VALIDATION,
+		data: {
+			...selection,
+			worktree,
+			transitioned,
+			failed,
+			publication: published.data,
+		},
+		...(published.error === undefined ? {} : { error: published.error }),
 		suppressDefaultPrint: true,
 	};
 };
