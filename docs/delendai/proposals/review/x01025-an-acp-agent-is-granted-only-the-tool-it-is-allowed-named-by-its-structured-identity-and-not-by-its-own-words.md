@@ -2,14 +2,14 @@
 id: x01025
 title: "An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 4c60de2e-dcd1-4825-9481-94ce4259001c
-last-correlation-id: 4c60de2e-dcd1-4825-9481-94ce4259001c
-last-transition-from: review
-last-transition-at: 2026-11-04T21:32:13.899Z
+last-transition-id: d59a4f91-77ae-41c7-9aaf-5a825d3a3bb6
+last-correlation-id: d59a4f91-77ae-41c7-9aaf-5a825d3a3bb6
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T11:35:46.423Z
 ---
 
 # x01025 — An ACP agent is granted only the tool it is allowed, named by its structured identity and not by its own words
@@ -46,7 +46,7 @@ External review in a ChatGPT conversation about develop (the reviewer looked at 
 
 ### S2 — Starting a package that is not installed needs the project to allow it
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/contracts/constants/trusted-agent-packages.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/acp-client.service.spec.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
+- **Files**: `packages/core/src/lib/shared/acp-client.service.ts`, `packages/core/src/lib/shared/declared-agents.service.ts`, `packages/core/src/lib/plugins/agents-flow.service.ts`, `packages/core/src/lib/plugins/config-plugin-schema.constant.ts`, `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/src/lib/plugins/load-config-file.ts`, `packages/core/src/lib/contracts/constants/trusted-agent-packages.constant.ts`, `packages/core/src/lib/contracts/interfaces/declared-agent.interface.ts`, `packages/core/schema/delendai.config.schema.json`, `packages/core/tests/src/lib/shared/acp-client.service.e2e.spec.ts`, `packages/core/tests/src/lib/shared/declared-agents.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "An agent that needs npx or uvx to fetch its package starts only when the project allows fetching it; otherwise the refusal names the setting that allows it."
