@@ -18,7 +18,7 @@
  */
 
 import {
-	READABLE_WORK_REF_SHAPE,
+	LEGACY_WORK_REF_SHAPE,
 	WORK_KINDS,
 	WORK_REF_SHAPE,
 } from '../development-policy/profiles.constant';
@@ -231,11 +231,11 @@ const compileOneParser = (
 
 /** The other spelling of `template`: the scope grammar and `-g{n}`. */
 const alternateTemplate = (template: string): string | undefined => {
-	if (template.endsWith(READABLE_WORK_REF_SHAPE)) {
-		return `${template.slice(0, -READABLE_WORK_REF_SHAPE.length)}${WORK_REF_SHAPE}`;
-	}
 	if (template.endsWith(WORK_REF_SHAPE)) {
-		return `${template.slice(0, -WORK_REF_SHAPE.length)}${READABLE_WORK_REF_SHAPE}`;
+		return `${template.slice(0, -WORK_REF_SHAPE.length)}${LEGACY_WORK_REF_SHAPE}`;
+	}
+	if (template.endsWith(LEGACY_WORK_REF_SHAPE)) {
+		return `${template.slice(0, -LEGACY_WORK_REF_SHAPE.length)}${WORK_REF_SHAPE}`;
 	}
 	if (template.includes('${scope}')) {
 		return template.replace(

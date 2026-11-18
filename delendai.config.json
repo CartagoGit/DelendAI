@@ -12,7 +12,8 @@
 		"branches": {
 			"integration": "develop",
 			"release": "main",
-			"namespacePrefix": "delendai"
+			"namespacePrefix": "",
+			"formerNamespacePrefixes": ["delendai"]
 		},
 		"integration": {
 			"requiredChecks": ["delendai-validate", "CodeQL"],

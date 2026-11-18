@@ -36,6 +36,8 @@ import { spawnSync } from 'node:child_process';
 import {
 	isRunningInProjectCi,
 	ownedBatchPrefixes,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
 	shortName as shortRef,
 	underNamespace as inNamespace,
 } from '@delendai/core/cli';
@@ -336,7 +338,13 @@ const main = async (): Promise<number> => {
 			workRefPrefix: branches.workRefPrefix,
 			workRefTemplate: branches.workRefTemplate,
 			publicationRefPrefix: branches.publicationRefPrefix,
-			batchRefPrefixes: ownedBatchPrefixes(branches),
+			// Every owned root, so a unit entered under a former namespace
+			// keeps committing after the config switches (f00808 S8).
+			batchRefPrefixes: [
+				...ownedBatchPrefixes(branches),
+				...ownedWorkRefPrefixes(branches),
+				...ownedPublicationRefPrefixes(branches),
+			],
 			releaseBranch: branches.release,
 		};
 	} catch {

@@ -32,6 +32,8 @@ import { createWorkCommand } from './work.command';
 const PREVIOUS_SHAPES: readonly string[] = [
 	// Until f00644: no kind segment.
 	'heads/delendai/wip/${agent}/${proposal}-${slice}-g${generation}/${topic}',
+	// Until f00808 S8: agent first, proposal-slice-generation scope.
+	'heads/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
 ];
 
 const UNIT = {
@@ -118,7 +120,7 @@ describe('a work-ref shape change keeps old units working (x00679)', () => {
 		// still carry the old one, and the cases below prove they keep
 		// working.
 		expect(WORK_REF_NAMING.shape).toBe(
-			'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+			'${kind}/${agent}/${scope}/${topic}',
 		);
 	});
 
