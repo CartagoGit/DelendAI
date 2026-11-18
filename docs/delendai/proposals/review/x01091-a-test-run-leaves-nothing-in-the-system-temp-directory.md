@@ -10,6 +10,8 @@ last-transition-id: f1e3610e-49b0-428d-b870-6903086e52cc
 last-correlation-id: f1e3610e-49b0-428d-b870-6903086e52cc
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T02:58:15.811Z
+shipped-in:
+  - "92329ad5f4d38718843fce63f7df7e4a30aecda2"
 ---
 
 # x01091 — A test run leaves nothing in the system temp directory
@@ -33,7 +35,7 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
 - global_gate: lint
 
 ### S1 — One run-scoped temp root for vitest and bun test runs
-- **Status**: review
+- **Status**: done
 - **Files**: `vitest.shared.ts`, `tools/scripts/test/run-temp-root.global-setup.ts`, `tools/scripts/test/run-temp-root.global-setup.spec.ts`, `tools/scripts/test/bun-owned-specs.script.ts`, `packages/test-kit/src/lib/hermetic-environment.helper.ts`
 - **Gate**: e2e
 - acceptance:
@@ -43,8 +45,10 @@ Measured 2026-11-18 on the owner's machine: /tmp holds 241,362 entries, 134,223 
   - "run-temp-root.global-setup.spec.ts runs a child vitest over a fixture spec that calls mkdtempSync(join(tmpdir(), 'leak-')) and asserts the system temp directory holds the same entry names before and after the child run."
   - "No spec file outside S1 changes."
 - shipped-in: `4bd2b1c6e289`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 92329ad5f4d3, validate exit 0 and tests 6/6 claimed, no recorded run cited; acceptance 5/5: (1) sharedTestOptions.globalSetup points to run-temp-root.global-setup.ts; enterRunTempRoot creates delendai-test-run-<pid>, sets all three variables, deduplicates… (2) The Bun wrapper calls enterRunTempRoot, passes withRunTempRoot(process.env, run.root) to spawnSync, and invokes run.leave() in finally before propagating the c… (3) forgeConfigDir uses mkdtempSync(join(tmpdir(),'delendai-gh-')); while either runner is active tmpdir() resolves to its run root, so the established teardown ow… (4) The spec constructs the exact leaking fixture and child config, records readdirSync before/after, runs it, and both the pass and equality assertions pass. (5) Reviewed the delivered file scope: the S1 implementation adds/changes only run-temp-root.global-setup.spec.ts among specs; existing unrelated specs are untouch… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The two focused spec files pass 6/6, including the child-vitest before/after test, and the temp-root lint exits 0. The global setup, Bun wrapper, and helper all share one removable run root.
 
 ### S2 — A lint refuses a test helper that writes outside the run root
 - **Status**: review
