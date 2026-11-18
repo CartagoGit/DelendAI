@@ -310,6 +310,7 @@ export {
 	validationGateSteps,
 } from './lib/work-units/validation-gate-steps.service';
 export type { IValidationGateStep } from './lib/contracts/interfaces/local-certification.interface';
+export { proposalsHeldByUnits } from './lib/work-units/in-progress-units.service';
 export {
 	checkWorkflowInvariants,
 	renderInvariantReport,

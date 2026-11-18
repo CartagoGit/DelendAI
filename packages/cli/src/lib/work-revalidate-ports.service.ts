@@ -6,7 +6,11 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { readWorkspacePolicy, runWorkUnit } from '@delendai/core/cli';
+import {
+	readWorkspacePolicy,
+	runWorkUnit,
+	proposalsHeldByUnits,
+} from '@delendai/core/cli';
 import { runGitCommand } from '@delendai/core/runtime';
 import { REVALIDATION_UNIT_FLAGS } from '../contracts/constants/work-revalidate.constant';
 
@@ -20,7 +24,7 @@ import {
 	toolCommitSubject,
 } from './work-deliver-commit.service';
 import {
-	readReadyProposals,
+	readRevalidationProposals,
 	rewriteDeclaredPath,
 } from './work-revalidate.service';
 
@@ -33,7 +37,31 @@ export const revalidatePortsOf = (
 		runGitCommand(where, gitArgs),
 ): IWorkRevalidatePorts => {
 	return {
-		proposals: () => readReadyProposals(ctx.cwd),
+		proposals: () => readRevalidationProposals(ctx.cwd),
+		heldByUnits: async () => {
+			const policy = await readWorkspacePolicy(ctx.cwd).catch(
+				() => undefined,
+			);
+			if (policy === undefined) return new Set<string>();
+			const here = gitIn(ctx.cwd);
+			const names = (args: readonly string[]): readonly string[] => {
+				const listed = here(args);
+				return listed.ok
+					? listed.out.split('\n').filter((line) => line !== '')
+					: [];
+			};
+			return proposalsHeldByUnits(policy, [
+				...names([
+					'for-each-ref',
+					'--format=%(refname:short)',
+					'refs/heads',
+				]),
+				...names(['ls-remote', '--heads', '--', 'origin']).map(
+					(line) =>
+						line.split('\t')[1]?.replace('refs/heads/', '') ?? '',
+				),
+			]);
+		},
 		print: (line) => process.stdout.write(`${line}\n`),
 		enter: async () => {
 			const entered = await runWorkUnit(

@@ -8,3 +8,6 @@ export const REVALIDATION_UNIT_FLAGS = [
 	'--kind=review',
 	'--topic=revalidation',
 ] as const;
+
+/** The folder of the in-progress proposals `work revalidate` also reads. */
+export const IN_PROGRESS_PROPOSALS_DIR = 'docs/delendai/proposals/in-progress';
