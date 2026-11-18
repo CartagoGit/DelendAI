@@ -90,7 +90,7 @@ were still stuck:
   - `plugins/proposals/tests/src/lib/tools/proposal-review-claim.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition.tool.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts`
-  - `plugins/proposals/tests/src/lib/review.tool.spec.ts`
+  - `plugins/proposals/tests/src/lib/review.tool.e2e.spec.ts`
   - `plugins/proposals/tests/src/lib/services/projection-follows-every-writer.spec.ts`
 - review-state: done
 - review-implementer: claude-opus-5-5

@@ -2419,7 +2419,7 @@ Re-audit-22 `git status`:
 
 **Severado**: INFO — S3 implementation file.
 
-### F271 — `plugins/proposals/tests/src/lib/authoring.spec.ts` + `auto-work.spec.ts` + `proposal-transition.tool.spec.ts` modified — S3 tests (INFO)
+### F271 — `plugins/proposals/tests/src/lib/authoring.e2e.spec.ts` + `auto-work.spec.ts` + `proposal-transition.tool.spec.ts` modified — S3 tests (INFO)
 
 **Severado**: INFO — S3 test files evolution.
 

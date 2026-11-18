@@ -663,7 +663,7 @@ first (accounting for `close_slice`'s existing s1/S1 case-insensitivity
 via the existing `canonicalSliceId` helper), falls back to the bare
 sliceId, and returns whether an entry was **actually** removed instead
 of assuming success. Verified: `bun test
-plugins/proposals/tests/src/lib/authoring.spec.ts` — new regression
+plugins/proposals/tests/src/lib/authoring.e2e.spec.ts` — new regression
 test claims with `f00082-S1`, closes with `sliceId: 's1'`, and asserts
 BOTH `lockReleased: true` AND (via a real `agent_lock status` call)
 `active_write_lanes: 0` afterward; full `plugins/proposals` suite

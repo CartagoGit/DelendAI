@@ -748,7 +748,7 @@ const FOOTER = {
 #### 39. [MINOR] `plugins/proposals/src/lib/tools/authoring.tool.ts` is 1,400+ LOC with only 2 spec files
 **File**: [plugins/proposals/src/lib/tools/authoring.tool.ts](plugins/proposals/src/lib/tools/authoring.tool.ts)
 
-**Problem**: combined surface for create/edit/review/close-slice. Tests at [plugins/proposals/tests/src/lib/authoring.spec.ts](plugins/proposals/tests/src/lib/authoring.spec.ts) and [authoring-stale-index.spec.ts](plugins/proposals/tests/src/lib/authoring-stale-index.spec.ts).
+**Problem**: combined surface for create/edit/review/close-slice. Tests at [plugins/proposals/tests/src/lib/authoring.e2e.spec.ts](plugins/proposals/tests/src/lib/authoring.e2e.spec.ts) and [authoring-stale-index.spec.ts](plugins/proposals/tests/src/lib/authoring-stale-index.e2e.spec.ts).
 
 **Resolution Track**: split into at least 3 specs (create/edit, review/close, board/list).
 

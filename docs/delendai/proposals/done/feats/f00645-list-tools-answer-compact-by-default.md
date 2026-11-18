@@ -152,10 +152,10 @@ one call, under the tool it reached.
   - `plugins/proposals/src/index.ts`
   - `plugins/proposals/src/public/index.ts`
   - `plugins/proposals/src/generated/tool-outputs.ts`
-  - `plugins/proposals/tests/src/lib/authoring.spec.ts`
+  - `plugins/proposals/tests/src/lib/authoring.e2e.spec.ts`
   - `plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts`
   - `plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts`
-- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/authoring.spec.ts plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts`
+- **Gate**: `npx vitest run plugins/proposals/tests/src/lib/authoring.e2e.spec.ts plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts plugins/proposals/tests/src/lib/tools/agent-names.tool.spec.ts`
 - acceptance:
   - "Each of the five largest list tools by measured total returns compact entries by default, the full item for its id, and the whole page with `detail: true`."
 - review-state: done

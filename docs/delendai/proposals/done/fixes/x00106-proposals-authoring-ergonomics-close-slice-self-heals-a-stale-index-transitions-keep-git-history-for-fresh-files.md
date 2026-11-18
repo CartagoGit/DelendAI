@@ -35,7 +35,7 @@ Audit a00054 F-2/F-3. Evidence: authoring.tool.ts:473,658,699 (three "proposal f
 
 ### S1 — close_slice (and siblings reading the indexed path) re-sync once on missing file, then retry
 - **Status**: done
-- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/authoring-stale-index.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/authoring.tool.ts`, `plugins/proposals/tests/src/lib/authoring-stale-index.e2e.spec.ts`
 - **Gate**: e2e
 - acceptance:
   - "Spec: create → transition (index now stale) → close_slice succeeds without a manual sync_proposals; a genuinely missing proposal still errors with the same structured reason after the single re-sync."
