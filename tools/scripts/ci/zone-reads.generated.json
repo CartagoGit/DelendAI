@@ -5658,7 +5658,7 @@
 					],
 					"listed": []
 				},
-				"packages/core/tests/src/lib/work-units/workflow-invariants.service.spec.ts": {
+				"packages/core/tests/src/lib/work-units/workflow-invariants.service.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
