@@ -1,5 +1,5 @@
 /**
- * review-queue-unit.tool.spec.ts — review_queue reads the caller's review
+ * review-queue-unit.tool.e2e.spec.ts — review_queue reads the caller's review
  * unit when it has one and enters none itself (x01032 S2).
  */
 import {
@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('review_queue unit', () => {
-	it('reads the caller review unit when it has one, and the checkout otherwise, writing nothing (x01032)', async () => {
+	it('[<1000ms] reads the caller review unit when it has one, and the checkout otherwise, writing nothing (x01032)', async () => {
 		repo.proposalInReview(SLICE_S1('review'), 'x00001');
 		const parent = realpathSync(mkdtempSync(join(tmpdir(), 'queue-unit-')));
 		const path = join(parent, 'wt');
