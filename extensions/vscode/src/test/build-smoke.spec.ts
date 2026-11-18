@@ -149,7 +149,7 @@ describe('VS Code production build', () => {
 			cwd: project,
 			encoding: 'utf8',
 			env: { ...process.env, PROJECT_ROOT: project },
-			timeout: 55_000,
+			timeout: 8_000,
 		});
 
 		expect(run.status, run.stderr).toBe(0);
