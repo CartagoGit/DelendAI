@@ -51,6 +51,7 @@
 		"extensions/vscode/src/test/adopt-command.spec.ts",
 		"extensions/vscode/src/test/agent-catalog.spec.ts",
 		"extensions/vscode/src/test/agent-timeline.spec.ts",
+		"extensions/vscode/src/test/build-smoke.spec.ts",
 		"extensions/vscode/src/test/commands.spec.ts",
 		"extensions/vscode/src/test/configuration-center-dev-page.spec.ts",
 		"extensions/vscode/src/test/configuration-center.spec.ts",
