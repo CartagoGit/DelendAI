@@ -262,7 +262,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at 1b14a507545d, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 7/7: (1) Integration rehearsal run/setup specs and workflow helper pass in 564/564. (2) Rehearsal scenario and workflow tests exercise declarations and declared-duration conclusions. (3) Rehearsal report service specs cover JSON/text evidence and target rows. (4) Cleanup service specs cover closure, branch/label/webhook deletion, leftover failure and stale-root sweep. (5) Rehearsal log-scan helper specs pass for downloaded logs, token shapes and secret hits. (6) Rehearsal workflow specs validate template rendering, triggers, concurrency and always-report steps. (7) The integration plugin package/manifest/index and focused tests build in the current workspace; the plugin is registered with the normal package metadata. — Reviewed rehearsal run, cleanup and report services and their rendered workflow. Focused integration suite passed 564/564.
 
 ### S3 — Every case and every production failure is a scenario, red where production failed
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S2]
 - **Files**: `plugins/integration/src/lib/contracts/constants/rehearsal-scenarios.constant.ts`, `plugins/integration/src/lib/contracts/constants/rehearsal-known-red.constant.ts`, `plugins/integration/tests/src/lib/services/rehearsal-scenarios.spec.ts`
 - **Gate**: none
@@ -272,8 +272,10 @@ Nothing of this repository is emitted into the other project.
   - "The known-red list names each red scenario and the slice that fixes it; it may only shrink, and activation requires it empty"
   - "Where today's triggers cannot fire from a non-default branch, the harness dispatches the pass and counts each such wake as a manual step, so F4 shows as red"
 - shipped-in: `1fd67e07a1fc`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) rehearsal-scenarios.spec and catalogue/run specs exercise all named cases and expected outcomes. (2) The scenario catalogue declares F1-F9 with expected pre-fix outcomes and regression assertions; focused suite passed. (3) REHEARSAL_KNOWN_RED is empty at the reviewed tip and activation-spec requires an empty known-red list. (4) Idle-wake, step and scenario specs cover dispatching/counting a harness wake and red evidence. — Reviewed scenario catalogue and known-red handling against the production cases; focused integration suite passed 564/564.
 
 ### S4 — `delendai integration pass`: a project that adopts the flow runs the integrator without this repository's tools
 - **Status**: review
