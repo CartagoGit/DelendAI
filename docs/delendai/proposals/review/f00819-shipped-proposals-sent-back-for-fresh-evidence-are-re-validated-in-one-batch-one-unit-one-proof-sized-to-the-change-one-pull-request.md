@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: architecture
 date: 2026-11-17
-last-transition-id: be7a8488-999a-4a94-b8a5-7b338e647c03
-last-correlation-id: be7a8488-999a-4a94-b8a5-7b338e647c03
+last-transition-id: f5e80b6b-42f4-455d-93e5-2286849cdaf8
+last-correlation-id: f5e80b6b-42f4-455d-93e5-2286849cdaf8
 last-transition-from: in-progress
-last-transition-at: 2026-11-18T07:10:57.484Z
+last-transition-at: 2026-11-18T08:23:19.409Z
 ---
 
 # f00819 — Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request
