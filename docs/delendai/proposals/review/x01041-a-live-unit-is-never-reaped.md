@@ -32,7 +32,7 @@ On 2026-11-05 the worktree of a live unit (f00808-S8) was removed while its proo
 - global_gate: none
 
 ### S1 — One liveness judgement; the branch goes before the worktree
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-liveness.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/work-units/unit-removal.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/work-units/unit-liveness.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-removal.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -42,8 +42,10 @@ On 2026-11-05 the worktree of a live unit (f00808-S8) was removed while its proo
   - "Liveness is re-checked immediately before the branch deletion and before the worktree removal; a unit that came alive in between gets its branch back at the judged tip and keeps its worktree."
   - "A worktree holding edits that are not kept elsewhere, or a live process, is never removed with --force."
 - shipped-in: `d62b6d6e1f79`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Requesting fresh evidence package bound to current tip because current review context has substantial drift and cannot be safely approved as-is.
 
 ## acceptance
 
