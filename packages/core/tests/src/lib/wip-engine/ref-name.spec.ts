@@ -12,6 +12,7 @@ import { READABLE_WORK_REF_SHAPE } from '@delendai/core/lib/development-policy/p
 import { renderWorkScope } from '@delendai/core/lib/development-policy/work-ref-placeholders';
 import {
 	parseRefIdentityTrailer,
+	refTrailerFor,
 	withScopeTrailers,
 } from '@delendai/core/lib/wip-engine/scope';
 import {
@@ -169,5 +170,44 @@ describe('the readable branch shape (f00808)', () => {
 				withScopeTrailers('m', [], 'd', 'refs/wip/x'),
 			),
 		).toBeUndefined();
+	});
+
+	it('[<50ms] a trailer missing a field or with a bad generation reads as undefined', () => {
+		const line = (value: string): string =>
+			`m\n\nDelendai-Wip-Ref: ${value}\n`;
+		expect(
+			parseRefIdentityTrailer(line('agent=a kind=implement')),
+		).toBeUndefined();
+		expect(
+			parseRefIdentityTrailer(
+				line('agent=a kind=implement proposal=x1 generation=two'),
+			),
+		).toBeUndefined();
+		expect(
+			parseRefIdentityTrailer(
+				line('agent=a kind=implement proposal=x1 generation=3'),
+			),
+		).toStrictEqual({
+			agent: 'a',
+			kind: 'implement',
+			proposal: 'x1',
+			slices: [],
+			generation: 3,
+		});
+	});
+
+	it('[<50ms] refTrailerFor gives the identity of a unit ref and the name of any other', () => {
+		expect(
+			refTrailerFor('refs/wip/implement/agent-a/x00001-S1+S4-G2/t'),
+		).toStrictEqual({
+			agent: 'agent-a',
+			kind: 'implement',
+			proposal: 'x00001',
+			slices: ['S1', 'S4'],
+			generation: 2,
+		});
+		expect(refTrailerFor('refs/heads/not-a-unit')).toBe(
+			'refs/heads/not-a-unit',
+		);
 	});
 });

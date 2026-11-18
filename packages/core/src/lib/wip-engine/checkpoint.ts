@@ -45,6 +45,7 @@ import {
 	isWithinScope,
 	readRefScope,
 	validateScopePaths,
+	refTrailerFor,
 	withScopeTrailers,
 	expandGlobDeclarations,
 } from './scope';
@@ -290,7 +291,7 @@ export const createOrUpdateWipRef = async (
 				request.message,
 				scope,
 				patchDigest,
-				request.ref,
+				refTrailerFor(request.ref),
 			),
 			...(request.author !== undefined ? { author: request.author } : {}),
 		});

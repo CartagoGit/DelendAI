@@ -27,7 +27,7 @@ import type { IWipEngineContext } from './checkpoint';
 import { gitOutput, resolveRevision, withTemporaryIndex } from './git-command';
 import { resolveUnmergedPaths } from './merge-resolve';
 import { computePatchDigest, parseObjectListing } from './patch-digest';
-import { parseScopeTrailers, withScopeTrailers } from './scope';
+import { parseScopeTrailers, refTrailerFor, withScopeTrailers } from './scope';
 import type { IWipRebaseRequest, IWipRebaseResult } from './types.interface';
 
 const failed = (ref: string, reason: string): IWipRebaseResult => ({
@@ -163,7 +163,7 @@ export const rebaseWipOntoNewBase = async (
 				request.message ?? message,
 				scope,
 				patchDigest,
-				request.ref,
+				refTrailerFor(request.ref),
 			),
 			...(request.author !== undefined ? { author: request.author } : {}),
 		});
