@@ -63,7 +63,7 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — Entering a unit reports the exact install command and the bun mismatch
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-dependencies.service.ts`, `packages/core/tests/src/lib/work-units/unit-dependencies.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -71,8 +71,10 @@ Observed 2026-11-15 with three agents: a bare bun install in a fresh unit worktr
   - "When the running bun differs from packageManager the answer says so with both versions."
   - "A spec proves the message and the mismatch case."
 - shipped-in: `b2d30e6435f3`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
