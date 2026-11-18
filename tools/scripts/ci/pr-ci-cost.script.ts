@@ -17,8 +17,6 @@ import { execFileSync } from 'node:child_process';
 
 import { judgePrCiWall, wallSecondsOf } from '@delendai/integration';
 
-import { coordinationCostOf } from '@delendai/core/lib/work-units/coordination-cost.service';
-
 import type {
 	IFailureCause,
 	IGhJob,
@@ -33,6 +31,8 @@ import type {
 
 const SLOWEST = 5;
 const TOP_FAILURES = 5;
+/** A commit that coordinates rather than delivers: the same subjects `work status` counts as bookkeeping. */
+const BOOKKEEPING = /^chore\((?:generated|delendai|review)\)[:!]/u;
 const HOUR_MS = 3_600_000;
 const WEEK_MS = 7 * 24 * HOUR_MS;
 const UNEXPLAINED_WAIT_MS = 30 * 60_000;
@@ -227,10 +227,14 @@ export const weeklyCost = (input: IWeeklyInput): readonly IWeeklyCost[] => {
 		const runs = input.prRuns.filter((each) => numbers.has(each.pr));
 		const ms = (from: string, to: string): number =>
 			Date.parse(to) - Date.parse(from);
-		const commits = coordinationCostOf(
-			(linesByWeek.get(week) ?? []).join('\n'),
-			7,
-		);
+		const lines = linesByWeek.get(week) ?? [];
+		const bookkeeping = lines.filter((line) => {
+			const [parents = '', subject = ''] = line.split('\t');
+			return (
+				parents.trim().split(' ').length === 1 &&
+				BOOKKEEPING.test(subject)
+			);
+		}).length;
 		return {
 			week,
 			developRedHours: round(red.get(week) ?? 0, 1),
@@ -269,9 +273,7 @@ export const weeklyCost = (input: IWeeklyInput): readonly IWeeklyCost[] => {
 					) > UNEXPLAINED_WAIT_MS,
 			).length,
 			bookkeepingShare:
-				commits.commits === 0
-					? 0
-					: round(commits.bookkeeping / commits.commits, 3),
+				lines.length === 0 ? 0 : round(bookkeeping / lines.length, 3),
 		};
 	});
 };
