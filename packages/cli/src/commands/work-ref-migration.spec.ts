@@ -174,3 +174,51 @@ describe('a work-ref shape change keeps old units working (x00679)', () => {
 		});
 	}
 });
+
+describe('work rename-namespace (f00808 S7)', () => {
+	it('[<1500ms] refuses when the forge cannot be read and renames nothing', async () => {
+		const { root, branch } = repoWithUnitUnder(PREVIOUS_SHAPES[0] ?? '');
+		git(root, 'push', '-q', 'origin', `${branch}:refs/heads/${branch}`);
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				development: {
+					profile: 'shared-checkout-pr',
+					branches: {
+						namespacePrefix: '',
+						formerNamespacePrefixes: ['delendai'],
+					},
+				},
+			}),
+		);
+		const result = await command.run(
+			['rename-namespace', '--apply'],
+			contextFor(root),
+		);
+		expect(result.error ?? '').toContain('forge cannot be read');
+	});
+
+	it('[<1500ms] names the config line to remove when nothing is left', async () => {
+		const { root } = repoWithUnitUnder(PREVIOUS_SHAPES[0] ?? '');
+		writeFileSync(
+			join(root, 'delendai.config.json'),
+			JSON.stringify({
+				development: {
+					profile: 'shared-checkout-pr',
+					branches: {
+						namespacePrefix: '',
+						formerNamespacePrefixes: ['delendai'],
+					},
+				},
+			}),
+		);
+		const result = await command.run(
+			['rename-namespace'],
+			contextFor(root),
+		);
+		expect(result.code).toBe(0);
+		expect(JSON.stringify(result.data)).toContain(
+			'formerNamespacePrefixes',
+		);
+	});
+});

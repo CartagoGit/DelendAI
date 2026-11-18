@@ -14,7 +14,6 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import {
 	ownedPublicationRefPrefixes,
 	ownedWorkRefPrefixes,
-	retiredRefRoots,
 	shortName,
 } from '../integration/decisions/namespaces.helper';
 import type {
@@ -24,6 +23,7 @@ import type {
 	INamespaceRenamePorts,
 	INamespaceRenameReport,
 } from '../contracts/interfaces/namespace-rename.interface';
+import { namespacedRef } from './namespaced-ref.helper';
 import { runGitCommand } from '../shared/git-command.helper';
 
 const CONFIG_LINE =
@@ -83,7 +83,7 @@ export const renameNamespace = (input: {
 		return refused(
 			`open pull requests have their head under a former prefix (${blocking.join(', ')}); rename nothing until they end`,
 		);
-	const retiredRoot = retiredRefRoots(policy.branches)[0] ?? 'refs/retired/';
+	const retiredRoot = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
 	const renamed: INamespaceRenamed[] = [];
 	for (const ref of refs) {
 		const move = moves.find(([former]) => ref.name.startsWith(former));
