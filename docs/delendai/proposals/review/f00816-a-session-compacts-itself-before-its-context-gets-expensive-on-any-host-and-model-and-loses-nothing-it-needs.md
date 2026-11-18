@@ -84,7 +84,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) renderTaskPack/renderClosedContract tests enumerate every required section and limits. (2) Closed-contract renderer spec checks the no-redesign/no-widen/no-agents instruction and the unit reference in the contract. (3) task-pack.spec passes the refusal case and verifies the named missing sections. — Reviewed the closed contract shape, renderer, unit binding and missing-section refusal. Focused f00816 suite passed 86/86.
 
 ### S3 — Session handover from delendai's own stores
-- **Status**: review
+- **Status**: done
 - **Extends**: `packages/core/src/lib/work-units/work-unit.service.ts`, `plugins/usage-tracking/src/lib/services/checkpoint-advisory.service.ts`
 - **Files**: `packages/core/src/lib/work-units/session-handover.service.ts`, `packages/core/src/lib/work-units/session-handover.interface.ts`, `packages/core/tests/src/lib/work-units/session-handover.service.spec.ts`
 - **Gate**: type
@@ -93,8 +93,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "After compaction a bounded index is re-injected and details are fetched selectively on demand."
   - "A resumed session rebuilds from the stores, never from a model summary; missing information is fetched from its source, never invented."
 - shipped-in: `e9063b122825`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) session-handover.service.spec reads all 12 sections from store ports and persists/reloads the snapshot. (2) Index/detail spec bounds entries and summaries and fetches one full record by section/id. (3) Resume specs rebuild every available section, fall back only to the persisted store artifact for missing sections and assert nothing is invented when neither a… — Reviewed store rebuild, persistence, bounded index, selective detail and no-invention fallback. Focused f00816 suite passed 86/86.
 
 ### S4 — Compaction threshold rendered per host from one policy
 - **Status**: review
