@@ -46,7 +46,7 @@ const parseAnswers = (
 ): IInitAnswers => InitAnswers.parse({ workspaceRoot, ...partial });
 
 describe('renderInitBundle (f00084 S2-S5)', () => {
-	it('produces config + .vscode/mcp.json + .agent.md + host-instructions + migration proposal for swarm', async () => {
+	it('[<200ms] produces config + .vscode/mcp.json + .agent.md + host-instructions + migration proposal for swarm', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ preset: 'swarm' }, '/tmp/example-ws'),
 		);
@@ -71,7 +71,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(rels.some((r) => r.includes('adopt-delendai'))).toBe(true);
 	});
 
-	it('renders both MCP config entries from the canonical launch builder', async () => {
+	it('[<200ms] renders both MCP config entries from the canonical launch builder', async () => {
 		const bundle = await renderInitBundle(parseAnswers());
 		const vscode = JSON.parse(
 			bundle.files.find((file) => file.relPath === '.vscode/mcp.json')
@@ -95,7 +95,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		);
 	});
 
-	it('skips .agent.md AND the Claude Code AND the Codex subagents when generateAgentMd=false', async () => {
+	it('[<200ms] skips .agent.md AND the Claude Code AND the Codex subagents when generateAgentMd=false', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ generateAgentMd: false }),
 		);
@@ -110,7 +110,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		).toBe(false);
 	});
 
-	it('skips host-instructions blocks when hostInstructions=skip', async () => {
+	it('[<200ms] skips host-instructions blocks when hostInstructions=skip', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ hostInstructions: 'skip' }),
 		);
@@ -123,7 +123,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		).toBe(false);
 	});
 
-	it('skips migration proposal when migrateFromLegacy=false', async () => {
+	it('[<200ms] skips migration proposal when migrateFromLegacy=false', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ migrateFromLegacy: false }),
 		);
@@ -132,7 +132,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		).toBe(false);
 	});
 
-	it('resolves swarm plugin set with audit added and issues excluded', () => {
+	it('[<200ms] resolves swarm plugin set with audit added and issues excluded', () => {
 		const resolved = resolvePluginSet(
 			parseAnswers({
 				preset: 'swarm',
@@ -145,7 +145,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(resolved).not.toContain('issues');
 	});
 
-	it('emits a valid JSON config payload', async () => {
+	it('[<200ms] emits a valid JSON config payload', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ preset: 'swarm' }),
 		);
@@ -160,7 +160,7 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 		expect(parsed.plugins.git).toBeDefined();
 	});
 
-	it('renders the `dogfood` preset as an independent plugin set (no swarm inheritance)', async () => {
+	it('[<200ms] renders the `dogfood` preset as an independent plugin set (no swarm inheritance)', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ preset: 'dogfood' }, '/tmp/example-ws'),
 		);
@@ -243,7 +243,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 	// exists to prevent, just on a different code path than x00201
 	// fixed. It also emitted a bare, un-namespaced tool list with at
 	// least one stale entry (search_search is not a real tool).
-	it('marks the orchestrator user-invocable and every subagent not', async () => {
+	it('[<200ms] marks the orchestrator user-invocable and every subagent not', async () => {
 		const files = await renderAgentFiles('/no-catalog', { locale: 'en' });
 		const githubFiles = files.filter((f) =>
 			f.relPath.startsWith('.github/agents/'),
@@ -260,7 +260,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		}
 	});
 
-	it('grants the default server, not one named after the namespace prefix', async () => {
+	it('[<200ms] grants the default server, not one named after the namespace prefix', async () => {
 		const files = await renderAgentFiles('/no-catalog', {
 			namespacePrefix: 'acme',
 			locale: 'en',
@@ -281,7 +281,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		['DelendAI', 'delendai'],
 		['My Project MCP', 'my-project-mcp'],
 	])(
-		'grants server %s by the reference the host gives it (%s)',
+		'[<200ms] grants server %s by the reference the host gives it (%s)',
 		async (serverName, reference) => {
 			const files = await renderAgentFiles('/no-catalog', {
 				locale: 'en',
@@ -297,7 +297,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		},
 	);
 
-	it("writes agents only for the hosts the project declares, in each one's format", async () => {
+	it("[<200ms] writes agents only for the hosts the project declares, in each one's format", async () => {
 		const files = await renderAgentFiles('/no-catalog', {
 			locale: 'en',
 			hosts: ['opencode', 'cursor'],
@@ -312,7 +312,7 @@ describe('renderAgentFiles — Copilot user-invocable + server key (x00202 S1)',
 		expect(entry?.content).toContain('mode: primary');
 	});
 
-	it('uses the namespace for agent files and the configured MCP server key', async () => {
+	it('[<200ms] uses the namespace for agent files and the configured MCP server key', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers(
 				{
@@ -386,7 +386,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	});
 
 	it(
-		'merges CLI plugin option overrides on top of rendered defaults before writing',
+		'[<200ms] merges CLI plugin option overrides on top of rendered defaults before writing',
 		async () => {
 			// Dynamic imports of every standard-preset plugin take ~2-4s
 			// in the test sandbox (env warning lookup); the standard
@@ -437,7 +437,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	);
 
 	it(
-		'warns and skips when a CLI override targets a plugin outside the resolved set',
+		'[<200ms] warns and skips when a CLI override targets a plugin outside the resolved set',
 		async () => {
 			const result = await initCommand.run(
 				[`--delendai-root=${HOST_ENTRY_PATH}`],
@@ -506,7 +506,7 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		await rm(workspace, { recursive: true, force: true });
 	});
 
-	it('writes a fresh config in an empty workspace', async () => {
+	it('[<200ms] writes a fresh config in an empty workspace', async () => {
 		const result = await writeDelendaiConfig(
 			workspace,
 			{ plugins: { git: { options: {} } } },
@@ -523,7 +523,7 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		expect(parsed.plugins.git).toEqual({ options: {} });
 	});
 
-	it('merges generated defaults into a valid existing project config', async () => {
+	it('[<200ms] merges generated defaults into a valid existing project config', async () => {
 		await writeDelendaiConfig(workspace, { plugins: {} }, false);
 		const second = await writeDelendaiConfig(
 			workspace,
@@ -546,7 +546,7 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		expect(parsed.plugins.proposals).toBeDefined();
 	});
 
-	it('overwrites with --force', async () => {
+	it('[<200ms] overwrites with --force', async () => {
 		await writeDelendaiConfig(workspace, { plugins: {} }, false);
 		const second = await writeDelendaiConfig(
 			workspace,
@@ -564,7 +564,7 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 		expect(parsed.plugins.proposals).toBeDefined();
 	});
 
-	it('preserves an invalid existing config unless replacement is explicit', async () => {
+	it('[<200ms] preserves an invalid existing config unless replacement is explicit', async () => {
 		await fsWriteFile(
 			`${workspace}/delendai.config.json`,
 			'{broken',
@@ -593,7 +593,7 @@ describe('writeCoreSkillProjection', () => {
 		await rm(workspace, { recursive: true, force: true });
 	});
 
-	it('writes a project-owned manifest and core bodies, then preserves them', async () => {
+	it('[<200ms] writes a project-owned manifest and core bodies, then preserves them', async () => {
 		const first = await writeCoreSkillProjection(
 			workspace,
 			'docs/delendai',
@@ -618,7 +618,7 @@ describe('writeCoreSkillProjection', () => {
 		expect(second.some((write) => write.kind === 'exists')).toBe(true);
 	});
 
-	it('mergeSkillManifest de-dupes duplicate ids in the existing manifest on next merge', async () => {
+	it('[<200ms] mergeSkillManifest de-dupes duplicate ids in the existing manifest on next merge', async () => {
 		// a00079 (audit): the previous merge logic preserved `current.skills`
 		// verbatim and only filtered the incoming list, so any duplicate
 		// already present in the existing manifest was never stripped.
@@ -661,14 +661,14 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 	const BEGIN = '<!-- delendai:begin -->';
 	const END = '<!-- delendai:end -->';
 
-	it('returns the block when current is undefined', () => {
+	it('[<200ms] returns the block when current is undefined', () => {
 		const next = computeHostInstructionsWrite(undefined, 'hello', 'append');
 		expect(next).toContain(BEGIN);
 		expect(next).toContain('hello');
 		expect(next).toContain(END);
 	});
 
-	it('replaces the block in place when markers are present', () => {
+	it('[<200ms] replaces the block in place when markers are present', () => {
 		const current = `# Title\n\n${BEGIN}\nold\n${END}\n\n# Footer\n`;
 		const next = computeHostInstructionsWrite(current, 'new', 'append');
 		expect(next).toContain('# Title');
@@ -677,14 +677,14 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 		expect(next).not.toContain('old');
 	});
 
-	it('appends when markers are absent', () => {
+	it('[<200ms] appends when markers are absent', () => {
 		const current = '# Existing\n';
 		const next = computeHostInstructionsWrite(current, 'hello', 'append');
 		expect(next?.startsWith('# Existing')).toBe(true);
 		expect(next).toContain('hello');
 	});
 
-	it('is idempotent: a second call with the previous output produces the same bytes', () => {
+	it('[<200ms] is idempotent: a second call with the previous output produces the same bytes', () => {
 		const first = computeHostInstructionsWrite(
 			undefined,
 			'first body',
@@ -699,7 +699,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 		expect(second).toBe(first);
 	});
 
-	it('replaces the whole file in overwrite mode', () => {
+	it('[<200ms] replaces the whole file in overwrite mode', () => {
 		const current = '# Existing\n';
 		const next = computeHostInstructionsWrite(
 			current,
@@ -711,7 +711,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 		expect(next).not.toContain('# Existing');
 	});
 
-	it('returns undefined in skip mode', () => {
+	it('[<200ms] returns undefined in skip mode', () => {
 		expect(
 			computeHostInstructionsWrite('# x', 'body', 'skip'),
 		).toBeUndefined();
@@ -719,7 +719,7 @@ describe('computeHostInstructionsWrite (f00084 S4)', () => {
 });
 
 describe('deriveScope (workspace → proposal scope slug)', () => {
-	it('derives a slugified scope from the workspace basename', () => {
+	it('[<200ms] derives a slugified scope from the workspace basename', () => {
 		expect(deriveScope('/tmp/AZUR LX--develop')).toMatch(
 			/^azur-lx-develop/,
 		);
@@ -742,7 +742,7 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 		await rm(workspace, { recursive: true, force: true });
 	});
 
-	it('produces a self-consistent bundle and a second render is byte-identical (idempotent append)', async () => {
+	it('[<200ms] produces a self-consistent bundle and a second render is byte-identical (idempotent append)', async () => {
 		const answers = parseAnswers({ preset: 'swarm' }, workspace);
 		const first = await renderInitBundle(answers);
 
@@ -765,7 +765,7 @@ describe('renderInitBundle end-to-end (f00084 S6)', () => {
 });
 
 describe('plugin defaults (f00087 S1 preview)', () => {
-	it('initialises audit with its neutral default and NOT with our docs path', async () => {
+	it('[<200ms] initialises audit with its neutral default and NOT with our docs path', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers(
 				{
@@ -793,7 +793,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		expect(parsed.plugins.audit.options.auditDir).toBeUndefined();
 	});
 
-	it('memory initialises with bm25 defaults', async () => {
+	it('[<200ms] memory initialises with bm25 defaults', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ preset: 'swarm' }),
 		);
@@ -809,7 +809,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		expect(parsed.plugins.memory.options.bm25B).toBe(0.75);
 	});
 
-	it('a00063: search roots are derived from the REAL workspace layout, not stamped from the monorepo', async () => {
+	it('[<200ms] a00063: search roots are derived from the REAL workspace layout, not stamped from the monorepo', async () => {
 		// An Angular-shaped app: src/ + e2e/, no packages/plugins/apps.
 		// Stamping delendai's own monorepo roots here made every
 		// search scan 0 files — the "agent went crazy" incident.
@@ -843,7 +843,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		}
 	});
 
-	it('a00063: search roots are OMITTED when no known source dir exists (engine walks "." safely)', async () => {
+	it('[<200ms] a00063: search roots are OMITTED when no known source dir exists (engine walks "." safely)', async () => {
 		const ws = await mkdtemp(join(tmpdir(), 'init-bare-'));
 		try {
 			const bundle = await renderInitBundle(
@@ -861,7 +861,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		}
 	});
 
-	it('web-fetch is empty by default (fail closed)', async () => {
+	it('[<200ms] web-fetch is empty by default (fail closed)', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ preset: 'everything' }),
 		);
@@ -874,7 +874,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		expect(parsed.plugins['web-fetch'].options.allowList).toEqual([]);
 	});
 
-	it('issues repo answer overrides the issues plugin repo option', async () => {
+	it('[<200ms] issues repo answer overrides the issues plugin repo option', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({
 				preset: 'everything',
@@ -890,7 +890,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		expect(parsed.plugins.issues.options.repo).toBe('octo/example');
 	});
 
-	it('web-fetch allow-list answer overrides the default empty allow-list', async () => {
+	it('[<200ms] web-fetch allow-list answer overrides the default empty allow-list', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({
 				preset: 'everything',
@@ -909,7 +909,7 @@ describe('plugin defaults (f00087 S1 preview)', () => {
 		]);
 	});
 
-	it('unknown plugins produce an empty options object', async () => {
+	it('[<200ms] unknown plugins produce an empty options object', async () => {
 		const bundle = await renderInitBundle(
 			parseAnswers({ preset: 'minimal' }),
 		);
