@@ -98,6 +98,12 @@ const unitsText = (units: Readonly<Record<string, number>> | undefined) =>
 				.map(([state, count]) => `${String(count)} ${state}`)
 				.join(', ');
 
+const markdownTooltip = (value: string): IStatusBarTooltip => ({
+	value,
+	isTrusted: false,
+	supportThemeIcons: true,
+});
+
 /** The tooltip, in Markdown, from what the server last said. */
 const tooltipMarkdown = (answers: {
 	readonly status?: IStatusAnswer | undefined;
@@ -164,7 +170,7 @@ export class DelendaiStatusBar {
 		if (this.disposed) return;
 		this.item.command = this.openDashboardCommand;
 		this.item.text = STATUS_BAR_LABEL;
-		this.item.tooltip = { markdown: tooltipMarkdown({}) };
+		this.item.tooltip = markdownTooltip(tooltipMarkdown({}));
 		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
 				void this.update();
@@ -192,9 +198,7 @@ export class DelendaiStatusBar {
 		]);
 		if (this.disposed) return;
 		this.item.text = STATUS_BAR_LABEL;
-		this.item.tooltip = {
-			markdown: tooltipMarkdown({ status, work }),
-		};
+		this.item.tooltip = markdownTooltip(tooltipMarkdown({ status, work }));
 	}
 
 	/** One shared-client call; `undefined` when the server does not answer. */

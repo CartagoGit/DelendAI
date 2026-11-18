@@ -49,7 +49,7 @@ const fakeNotifications = (
 });
 
 describe('DelendaiStatusBar disposal (reload-leak contract)', async () => {
-	it('removes every listener it registered, with the same callback refs [<50ms]', async () => {
+	it('[<50ms] removes every listener it registered, with the same callback refs', async () => {
 		const recorder: IRecordingNotifications = {
 			addCalls: [],
 			removeCalls: [],
@@ -88,7 +88,7 @@ describe('DelendaiStatusBar disposal (reload-leak contract)', async () => {
 		]);
 	});
 
-	it('dispose() is idempotent — second call removes nothing extra [<50ms]', async () => {
+	it('[<50ms] dispose() is idempotent — second call removes nothing extra', async () => {
 		const recorder: IRecordingNotifications = {
 			addCalls: [],
 			removeCalls: [],
@@ -114,7 +114,7 @@ describe('DelendaiStatusBar disposal (reload-leak contract)', async () => {
 		expect(recorder.removeCalls).toHaveLength(3);
 	});
 
-	it('update() is a no-op after dispose() — does not crash on stale listeners [<50ms]', async () => {
+	it('[<50ms] update() is a no-op after dispose() — does not crash on stale listeners', async () => {
 		const recorder: IRecordingNotifications = {
 			addCalls: [],
 			removeCalls: [],

@@ -64,11 +64,11 @@ const serverAnswering = (
 
 const tooltipOf = (item: IStatusBarItem): string => {
 	const tip = item.tooltip;
-	return typeof tip === 'object' ? tip.markdown : (tip ?? '');
+	return typeof tip === 'object' ? tip.value : (tip ?? '');
 };
 
 describe('DelendaiStatusBar', async () => {
-	it('labels the item DelendAI and puts the live data in a rich tooltip [<50ms]', async () => {
+	it('[<50ms] labels the item DelendAI and puts the live data in a rich tooltip', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(item, overview, serverAnswering());
 
@@ -88,7 +88,7 @@ describe('DelendaiStatusBar', async () => {
 		expect(item.shown).toBe(true);
 	});
 
-	it('says it is not connected when the server answers nothing [<50ms]', async () => {
+	it('[<50ms] says it is not connected when the server answers nothing', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(
 			item,
@@ -105,7 +105,7 @@ describe('DelendaiStatusBar', async () => {
 		expect(tooltipOf(item)).toContain('not connected');
 	});
 
-	it('rewrites the tooltip when a notification arrives, with no timer [<200ms]', async () => {
+	it('[<200ms] rewrites the tooltip when a notification arrives, with no timer', async () => {
 		const item = createItem();
 		let units: Record<string, number> = { live: 1 };
 		const client = McpStdioClient.fromTransport({
@@ -137,7 +137,7 @@ describe('DelendaiStatusBar', async () => {
 		expect(tooltipOf(item)).toContain('Active units: 3 live');
 	});
 
-	it('a click opens the dashboard directly [<50ms]', async () => {
+	it('[<50ms] a click opens the dashboard directly', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(item, overview, serverAnswering());
 		await bar.start();
@@ -147,7 +147,7 @@ describe('DelendaiStatusBar', async () => {
 });
 
 describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
-	it('subscribes to every union event and removes them on dispose [<50ms]', async () => {
+	it('[<50ms] subscribes to every union event and removes them on dispose', async () => {
 		const subscribed: string[] = [];
 		const removed: string[] = [];
 		const notifications = {
@@ -182,7 +182,7 @@ describe('STATUS_BAR_EVENTS discriminated union (H30)', () => {
 		expect(removed.sort()).toEqual(subscribed.sort());
 	});
 
-	it('keys the config map on the discriminated union (compile-time OCP) [<50ms]', () => {
+	it('[<50ms] keys the config map on the discriminated union (compile-time OCP)', () => {
 		// A status-bar event config is the value shape of the exhaustive
 		// map. Adding a new INotificationEventName without a map entry is a
 		// *compile* error in status-bar.ts (Record<INotificationEventName>),

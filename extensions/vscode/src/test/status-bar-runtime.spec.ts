@@ -14,7 +14,7 @@ const createItem = (): IStatusBarItem => ({
 });
 
 describe('the status-bar tooltip runtime state', () => {
-	it('shows what the server runs in the tooltip, as the status tool words it [<50ms]', async () => {
+	it('[<50ms] shows what the server runs in the tooltip, as the status tool words it', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(
 			item,
@@ -44,11 +44,11 @@ describe('the status-bar tooltip runtime state', () => {
 		await bar.update();
 
 		expect(item.tooltip).toMatchObject({
-			markdown: expect.stringContaining('develop@abcdef123456 behind 2'),
+			value: expect.stringContaining('develop@abcdef123456 behind 2'),
 		});
 	});
 
-	it('says the version is unknown when the server states no runtime [<50ms]', async () => {
+	it('[<50ms] says the version is unknown when the server states no runtime', async () => {
 		const item = createItem();
 		const bar = new DelendaiStatusBar(
 			item,
@@ -67,7 +67,7 @@ describe('the status-bar tooltip runtime state', () => {
 		await bar.update();
 
 		expect(item.tooltip).toMatchObject({
-			markdown: expect.stringContaining('Version: unknown'),
+			value: expect.stringContaining('Version: unknown'),
 		});
 	});
 });

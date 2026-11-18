@@ -21,8 +21,6 @@ import type {
 	IWebviewPanel,
 } from '@delendai/ui-extension/public';
 
-import type { IStatusBarTooltip } from '../contracts/interfaces/status-bar-tooltip.interface';
-
 const HOST_VERSION = vscode.version;
 
 class VscodeDisposable implements IDisposable {
@@ -53,13 +51,7 @@ class VscodeStatusBarItem implements IStatusBarItem {
 	get tooltip(): string | undefined {
 		return this._tooltip;
 	}
-	set tooltip(value: string | IStatusBarTooltip | undefined) {
-		if (typeof value === 'object') {
-			const rich = new vscode.MarkdownString(value.markdown);
-			this._tooltip = value.markdown;
-			this.inner.tooltip = rich;
-			return;
-		}
+	set tooltip(value: string | undefined) {
 		this._tooltip = value;
 		this.inner.tooltip = value;
 	}

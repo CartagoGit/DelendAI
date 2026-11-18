@@ -1,7 +1,10 @@
 /**
- * A status-bar tooltip written in Markdown. The host adapter turns it into
- * the host's rich tooltip type; a plain string stays a plain tooltip.
+ * A status-bar tooltip written in Markdown. It has the shape of the host's
+ * `MarkdownString` (a `value` of Markdown source), which the host accepts as
+ * a tooltip wherever it accepts a plain string.
  */
 export interface IStatusBarTooltip {
-	readonly markdown: string;
+	readonly value: string;
+	readonly isTrusted: false;
+	readonly supportThemeIcons: true;
 }
