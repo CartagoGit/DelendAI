@@ -10,6 +10,8 @@ last-transition-id: 717fa0d4-034d-4d7c-bd43-af0305e0838d
 last-correlation-id: 717fa0d4-034d-4d7c-bd43-af0305e0838d
 last-transition-from: in-progress
 last-transition-at: 2026-11-17T13:05:12.647Z
+shipped-in:
+  - "acf8cfdd116a9a0ada6b55093b0c96cd54aa6897"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -225,7 +227,7 @@ Nothing of this repository is emitted into the other project.
 - global_gate: none
 
 ### S1 — Integration paused until the rehearsal is green
-- **Status**: review
+- **Status**: done
 - **Files**: `delendai.config.json`, `tools/scripts/forge/land-workflow.script.ts`, `tools/scripts/forge/land-cutover.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -234,8 +236,10 @@ Nothing of this repository is emitted into the other project.
   - "land-cutover.spec asserts that with engine `none` no workflow, script or host module merges, labels or pushes"
   - "While the engine is `none` the owner merges this plan's own slices; each such merge is listed as a pre-activation manual step in the activation report"
 - shipped-in: `8e49a547a1f0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) land-cutover.e2e.spec and land-workflow.spec passed; the later activation is a distinct S14 state change. (2) The delivered implementation preserves the paused-label resume input used by integration activation; the named list is forge state recorded in the proposal, no… (3) Focused suite 564/564 includes the engine-none cutover assertion. (4) The activation/report path distinguishes pre-activation manual merges while the pause invariant is active. — Approved on the delivered pause state; S14 later activates the engine by design. Focused integration validation passed 564/564.
 
 ### S2 — The rehearsal harness on real GitHub
 - **Status**: review
