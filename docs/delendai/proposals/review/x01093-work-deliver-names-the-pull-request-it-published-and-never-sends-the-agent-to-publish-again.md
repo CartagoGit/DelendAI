@@ -2,10 +2,14 @@
 id: x01093
 title: "work deliver names the pull request it published, and never sends the agent to publish again"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: fixes
 date: 2026-11-18
+last-transition-id: a19d9fc1-d280-488b-b36d-be98a0fac1a6
+last-correlation-id: a19d9fc1-d280-488b-b36d-be98a0fac1a6
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T04:02:32.048Z
 ---
 
 # x01093 — work deliver names the pull request it published, and never sends the agent to publish again
@@ -28,13 +32,16 @@ Twice on 2026-11-18 (x01090 #2905, x01091 #2919) deliver answered 'publication p
 - global_gate: lint
 
 ### S1 — deliver reads the pull request by head branch before answering pending
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: lint
 - acceptance:
   - "pullRequestAnswer gains a port that reads the open pull request for the published branch through the existing forge seam (one read, no retry loop); when it finds one, deliver answers { url, number } exactly as when publication returned it."
   - "When none is found, the answer is { pending: true, branch, message } with a message saying the branch is pushed, the forge opens the pull request, nothing is left to do in this unit, and `delendai work status` shows its number; the message names no publish command."
   - "work-deliver.service.spec.ts covers: publication with a pull request; publication without one and the forge read finding it; neither; and a forge read that fails, which answers pending without throwing."
+- shipped-in: `e550ed211370`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 

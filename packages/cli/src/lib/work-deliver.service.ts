@@ -196,8 +196,34 @@ const pullRequestAnswer = (
 	return {
 		pending: true,
 		...(where === undefined ? {} : { branch: where }),
-		message: `publication pushed, pull request pending${where === undefined ? '' : `: ${where}`}`,
+		message: `publication pushed${where === undefined ? '' : ` (${where})`}; the forge opens the pull request, nothing is left to do in this unit, and \`delendai work status\` shows its number`,
 	};
+};
+
+/**
+ * The pull request of a delivery: what the publication answered with, else
+ * the open one the forge holds for the published branch (one read, no
+ * retry), else pending. A failed read is pending, never a thrown error.
+ */
+const pullRequestWithLookup = async (
+	ports: IWorkDeliverPorts,
+	publication: unknown,
+	branch: unknown,
+	slice: string,
+): Promise<Record<string, unknown>> => {
+	const answer = pullRequestOf(publication, branch, slice);
+	if (answer.pending !== true || typeof answer.branch !== 'string') {
+		return answer;
+	}
+	let url: string | undefined;
+	try {
+		url = await ports.readOpenPullRequest(answer.branch);
+	} catch {
+		url = undefined;
+	}
+	return url === undefined || url === ''
+		? answer
+		: pullRequestOf({ pullRequest: { url } }, branch, slice);
 };
 
 export const deliverUnit = async (
@@ -250,9 +276,11 @@ export const deliverUnit = async (
 						delivered: 'slice',
 						remaining,
 						publication: published.data,
-						pullRequest: pullRequestOf(
+						pullRequest: await pullRequestWithLookup(
+							ports,
 							published.data,
 							unit.publication,
+							'all',
 						),
 						proved: proved.data,
 					},
@@ -270,7 +298,8 @@ export const deliverUnit = async (
 						delivered: 'review',
 						republished: true,
 						publication: published.data,
-						pullRequest: pullRequestOf(
+						pullRequest: await pullRequestWithLookup(
+							ports,
 							published.data,
 							unit.publication,
 							ports.slice,
@@ -286,7 +315,8 @@ export const deliverUnit = async (
 				data: {
 					delivered: 'review',
 					publication: unit.publication,
-					pullRequest: pullRequestOf(
+					pullRequest: await pullRequestWithLookup(
+						ports,
 						undefined,
 						unit.publication,
 						ports.slice,

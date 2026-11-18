@@ -6,6 +6,10 @@ export interface IWorkDeliverPorts {
 	readonly slice: string;
 	/** Publish the unit alone, without handing the proposal to review. */
 	readonly publish: () => Promise<ICliCommandResult>;
+	/** The URL of the open pull request for a published branch, one forge read; undefined when none or the read failed. */
+	readonly readOpenPullRequest: (
+		branch: string,
+	) => Promise<string | undefined>;
 	readonly locate: () => Promise<ICliCommandResult>;
 	readonly prove: () => Promise<ICliCommandResult>;
 	/** Ask the tool whether the hand-over would be accepted; nothing is moved. */
