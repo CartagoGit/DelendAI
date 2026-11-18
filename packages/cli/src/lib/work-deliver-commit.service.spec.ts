@@ -39,6 +39,18 @@ describe('commitToolWrites', () => {
 		]);
 	});
 
+	it('[<20ms] reads a rename and its bare source path whole', () => {
+		const git: IGitInCheckout = () => ({
+			ok: true,
+			out: 'R  docs/p/review/x1.md\0docs/p/ready/x1.md\0 M docs/a.md\0',
+		});
+		expect([...dirtyPathsOf(git)]).toEqual([
+			'docs/p/review/x1.md',
+			'docs/p/ready/x1.md',
+			'docs/a.md',
+		]);
+	});
+
 	it('[<20ms] commits the path the tool wrote under the tool subject', () => {
 		const { calls, git } = gitWith(['doc.md']);
 		expect(commitToolWrites(git, new Set(), SUBJECT)).toBeUndefined();
