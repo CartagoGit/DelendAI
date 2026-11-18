@@ -25,6 +25,15 @@ export type InvocationErrorClassification =
 	| 'tool-error'
 	| 'unknown';
 
+/**
+ * Whether the task the call served was done right. Set from a gate result
+ * (see `taskOutcomeFromGate`), never reported by the worker itself.
+ */
+export type ITaskOutcome = 'correct' | 'blocked' | 'failed';
+
+/** What a gate said about the task: the only source of a task outcome. */
+export type IGateResult = 'pass' | 'fail' | 'blocked';
+
 export interface IInvocationCorrelation {
 	readonly id: string;
 	readonly source: 'args' | 'result' | 'error' | 'derived';
@@ -70,6 +79,15 @@ export interface IInvocationRecordTelemetry extends IInvocationRecord {
 	readonly failure?: boolean;
 	readonly errorTelemetry?: IInvocationErrorTelemetry | null;
 	readonly dimensions?: IInvocationDimensions;
+	/** The model the call asked for; differs from `model` when the host swapped it. */
+	readonly requestedModel?: string | null;
+	/** Conversation turns the call took. */
+	readonly turns?: number;
+	/** How many times the call was retried. */
+	readonly retries?: number;
+	/** The class of task the call served (for example `coding`). */
+	readonly taskClass?: string;
+	readonly taskOutcome?: ITaskOutcome;
 }
 
 export interface IBuildInvocationRecordInput {
