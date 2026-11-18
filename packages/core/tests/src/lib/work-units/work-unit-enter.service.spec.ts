@@ -61,7 +61,7 @@ describe('work enter derives the review kind (x01032)', () => {
 		const entered = await enter(root, '--proposal=batch');
 		expect(entered.code).toBe(0);
 		const ref = (entered.data as { ref?: string }).ref ?? '';
-		expect(ref).toContain('/review/batch-all');
+		expect(ref).toMatch(/\/review\/[^/]+\/batch-all/u);
 		expect(ref).toContain('/verdicts');
 	});
 
@@ -69,8 +69,8 @@ describe('work enter derives the review kind (x01032)', () => {
 		const root = repo();
 		const entered = await enter(root, '--proposal=x00900');
 		expect(entered.code).toBe(0);
-		expect((entered.data as { ref?: string }).ref).toContain(
-			'/review/batch-all',
+		expect((entered.data as { ref?: string }).ref).toMatch(
+			/\/review\/[^/]+\/batch-all/u,
 		);
 	});
 });

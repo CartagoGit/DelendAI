@@ -1,3 +1,4 @@
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { argumentsRefused } from './work-arguments.helper';
 import type {
@@ -309,9 +310,8 @@ export const retired = async (
 		}
 	}
 	// What the unit had reserved is free for the next agent.
-	const implemented = /^[^/]+\/implement\/(?<proposal>[^-/]+)-/u.exec(
-		plan.unit,
-	)?.groups?.proposal;
+	const held = unitOfName(plan.unit);
+	const implemented = held?.kind === 'implement' ? held.proposal : undefined;
 	if (implemented !== undefined) {
 		releaseSlices({
 			root,

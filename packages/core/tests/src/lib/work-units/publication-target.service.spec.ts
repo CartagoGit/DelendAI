@@ -153,7 +153,7 @@ describe('which pull request a slice goes to', () => {
 		const target = choose(root, base, policy, 'S1');
 		expect(target).toMatchObject({ unit: 'proposal' });
 		expect('publicationRef' in target && target.publicationRef).toContain(
-			'x00001-all-g1',
+			'x00001-all',
 		);
 	});
 

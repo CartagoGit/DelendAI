@@ -284,7 +284,7 @@ describe('delendai work (x00553)', () => {
 		const next = await command.run(review, contextFor(root));
 
 		expect((next.data as { branch: string }).branch).toContain(
-			'batch-all-g2',
+			'batch-all-G2',
 		);
 	});
 
@@ -299,7 +299,7 @@ describe('delendai work (x00553)', () => {
 		];
 		const first = await command.run(enter, contextFor(root));
 		const data = first.data as { path: string; branch: string };
-		expect(data.branch).toContain('x00001-S1-g1/');
+		expect(data.branch).toContain('x00001-S1/');
 		// Landed the way a forge lands it: a merge naming the publication,
 		// then the unit's branch and worktree are gone.
 		git(data.path, 'commit', '-q', '--allow-empty', '-m', 'feat: the work');
@@ -321,7 +321,7 @@ describe('delendai work (x00553)', () => {
 		);
 
 		expect((again.data as { branch: string }).branch).toContain(
-			'x00001-S1-g2/second',
+			'x00001-S1-G2/second',
 		);
 	});
 
@@ -354,7 +354,7 @@ describe('delendai work (x00553)', () => {
 		);
 
 		expect((next.data as { branch: string }).branch).toContain(
-			'x00001-S1-g2/second',
+			'x00001-S1-G2/second',
 		);
 	});
 
@@ -1441,8 +1441,8 @@ describe('instances entering at once each get a unit (x00731)', () => {
 			.map((result) => (result.data as { ref: string }).ref)
 			.sort();
 		expect(refs).toEqual([
-			'refs/heads/delendai/wip/review/minimax-m3/batch-all/verdicts',
 			'refs/heads/delendai/wip/review/minimax-m3/batch-all-G2/verdicts',
+			'refs/heads/delendai/wip/review/minimax-m3/batch-all/verdicts',
 		]);
 		// The path it reports is the worktree's own, even for an absolute
 		// --dir, so the session is stamped where the next instance reads it.
@@ -1489,6 +1489,6 @@ describe('instances entering at once each get a unit (x00731)', () => {
 		});
 
 		expect(second.code).toBe(0);
-		expect((second.data as { ref: string }).ref).toMatch(/-g2\//u);
+		expect((second.data as { ref: string }).ref).toMatch(/-G2\//u);
 	});
 });

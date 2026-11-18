@@ -155,7 +155,7 @@ describe('holdersOfSlice', () => {
 			unit('codex', 'implement/x00001-S1/t'),
 		]);
 		expect(lines[0]).toContain(
-			'codex holds it in ns/wip/implement/codex/x00001-S1/t',
+			'codex holds it in ns/wip/codex/implement/x00001-S1/t',
 		);
 		expect(lines.join('\n')).toContain('--alongside');
 		expect(lines.join('\n')).toContain('work claim');
@@ -272,6 +272,6 @@ describe('readSliceOwnership', () => {
 		]);
 		expect(stranger.own).toBeUndefined();
 		expect(holder.others).toEqual([]);
-		expect(holder.own).toContain('claude-opus-5/implement/x00001-S1/probe');
+		expect(holder.own).toContain('implement/claude-opus-5/x00001-S1/probe');
 	});
 });

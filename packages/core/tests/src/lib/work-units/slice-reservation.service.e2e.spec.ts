@@ -364,7 +364,7 @@ describe('a slice reservation whose unit is gone', () => {
 			{
 				slice: 'review/x00001',
 				ref: 'refs/delendai/claims/review/x00001',
-				unit: 'agent-c/review/batch-all-g1/verdicts',
+				unit: 'review/agent-c/batch-all/verdicts',
 				outcome: 'released',
 			},
 		]);

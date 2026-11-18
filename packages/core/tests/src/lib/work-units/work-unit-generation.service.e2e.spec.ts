@@ -78,7 +78,7 @@ describe('a unit generation, against real refs', () => {
 
 	it('[<400ms] sends a session back to the generation it holds', () => {
 		const root = repo();
-		const second = NEW.replace('-g1/', '-g2/');
+		const second = NEW.replace('x00001-S1/', 'x00001-S1-G2/');
 		git(root, 'update-ref', second, 'HEAD');
 		worktreeOn(root, second, 's2');
 		expect(

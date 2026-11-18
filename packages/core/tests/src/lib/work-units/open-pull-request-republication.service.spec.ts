@@ -9,7 +9,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	resolvePublicationTarget,
-	unitPublicationPattern,
+	unitPublicationSlice,
 } from '@delendai/core/lib/work-units/open-pull-request-republication.service';
 import type { IPublicationTargetRequest } from '@delendai/core/lib/contracts/interfaces/publication-target.interface';
 
@@ -206,7 +206,7 @@ describe('resolvePublicationTarget', () => {
 			development: { profile: 'shared-direct' },
 		});
 		expect(
-			unitPublicationPattern(direct, {
+			unitPublicationSlice(direct, {
 				agent: AGENT,
 				proposal: 'x01079',
 			}),
