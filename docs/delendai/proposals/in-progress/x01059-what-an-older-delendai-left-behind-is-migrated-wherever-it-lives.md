@@ -99,7 +99,7 @@ Each rename or layout change migrates the repository and leaves the user's machi
 ### S6 — Lint: a rename ships its registry entry
 - **Status**: pending
 - **DependsOn**: [S1]
-- **Files**: `package.json`
+- **Files**: `package.json`, `tools/scripts/lint/legacy-residue-registry.script.ts`, `tools/scripts/lint/legacy-residue-registry.script.spec.ts`, `tools/scripts/lint/legacy-residue-registry.snapshot.json`
 - **Gate**: lint
 - acceptance:
   - "New files declared in prose: tools/scripts/lint/legacy-residue-registry.script.ts, its spec and its baseline, wired into lint:architecture and validate:run."
