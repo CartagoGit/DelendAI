@@ -33,7 +33,7 @@ last-transition-at: 2026-11-18T03:35:15.923Z
 
 ### S1 — await the blueprint write at the end of runCli
 - **Status**: pending
-- **Files**: `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/cli/run-cli.spec.ts`
+- **Files**: `packages/core/src/lib/cli/run-cli.ts`, `packages/core/tests/src/lib/cli/run-cli.e2e.spec.ts`
 - **Gate**: none
 
 ## acceptance
