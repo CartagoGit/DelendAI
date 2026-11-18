@@ -55,14 +55,16 @@ Joint audit a00095. G136: the documentation site is not published: has_pages is 
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — /api is built, not linked
-- **Status**: review
+- **Status**: pending
 - **Files**: `apps/web/scripts/sync-public-api.ts`, `apps/web/package.json`
 - **Gate**: type
 - acceptance:
   - "dev, preview and build generate or copy the API docs and fail when the source is missing or older than the code (G50, D33)."
 - shipped-in: `3638714938ca`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ## acceptance
 
