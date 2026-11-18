@@ -1,7 +1,4 @@
-import type {
-	IToolFailure,
-	ToolFailureClass,
-} from '../contracts/interfaces/runtime-event.interface';
+import type { IToolFailure } from '../contracts/interfaces/runtime-event.interface';
 import type { IToolFailureInput } from '../contracts/interfaces/tool-failure-input.interface';
 import { redactSecrets } from '../shared/redact';
 
@@ -68,7 +65,7 @@ const boundedCode = (raw: string): string => {
 const classify = (
 	input: IToolFailureInput,
 	reason: string,
-): ToolFailureClass => {
+): IToolFailure['class'] => {
 	if (input.cancelled === true) return 'cancelled';
 	if (INPUT_INVALID_RE.test(reason)) return 'input-invalid';
 	return input.error !== undefined ? 'threw' : 'refused';

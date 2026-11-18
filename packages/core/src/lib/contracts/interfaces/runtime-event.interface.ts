@@ -16,15 +16,9 @@ export type RuntimeEventKind =
 	| 'tool.cancelled'
 	| 'plugin.activated';
 
-export type ToolFailureClass =
-	| 'input-invalid'
-	| 'refused'
-	| 'threw'
-	| 'cancelled';
-
 /** Why a tool call failed: a bounded class and a stable, redacted code. */
 export interface IToolFailure {
-	readonly class: ToolFailureClass;
+	readonly class: 'input-invalid' | 'refused' | 'threw' | 'cancelled';
 	readonly code: string;
 }
 

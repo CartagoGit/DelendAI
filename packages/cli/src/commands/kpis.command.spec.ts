@@ -395,11 +395,11 @@ const find = (name: string): ICliCommand => {
 };
 
 describe('kpis command', () => {
-	it('exports the standalone kpis command', () => {
+	it('[<100ms] exports the standalone kpis command', () => {
 		expect(kpisCommands.map((entry) => entry.name)).toEqual(['kpis']);
 	});
 
-	it('renders a scannable human summary by default', async () => {
+	it('[<100ms] renders a scannable human summary by default', async () => {
 		const result = await find('kpis').run([], buildStubContext());
 		expect(result.code).toBe(EXIT_CODE.OK);
 		expect(result.text ?? '').toContain('kpis summary');
@@ -408,7 +408,7 @@ describe('kpis command', () => {
 		expect(result.text ?? '').toContain('limitations:');
 	});
 
-	it('returns stable structured data in json mode', async () => {
+	it('[<100ms] returns stable structured data in json mode', async () => {
 		const ctx = buildStubContext(true);
 		const result = await runKpisCommandBody(
 			['--view=plugins'],
@@ -424,7 +424,7 @@ describe('kpis command', () => {
 		expect(report.payload.tables[0]?.rows[0]?.plugin).toBe('search');
 	});
 
-	it('projects telemetry-backed model and error views without recomputing raw logs', async () => {
+	it('[<100ms] projects telemetry-backed model and error views without recomputing raw logs', async () => {
 		const ctx = buildStubContext(true);
 		const models = await runKpisCommandBody(['models'], ctx, runtime);
 		const errors = await runKpisCommandBody(['errors'], ctx, runtime);
@@ -446,7 +446,7 @@ describe('kpis command', () => {
 		);
 	});
 
-	it('fails validation when a configured threshold is breached', async () => {
+	it('[<100ms] fails validation when a configured threshold is breached', async () => {
 		const ctx = buildStubContext(true);
 		const result = await runKpisCommandBody(
 			['--threshold=health.score>=90'],
@@ -461,7 +461,7 @@ describe('kpis command', () => {
 		expect(report.thresholds.breaches[0]?.raw).toBe('health.score>=90');
 	});
 
-	it('streams repeated watch frames and suppresses default printing when watch ends', async () => {
+	it('[<100ms] streams repeated watch frames and suppresses default printing when watch ends', async () => {
 		const ctx = buildStubContext(true);
 		const writes: string[] = [];
 		const result = await runKpisCommandBody(
@@ -515,7 +515,7 @@ describe('kpis command', () => {
 			now: () => new Date('2026-11-18T00:00:00Z'),
 		};
 
-		it('prints per-tool rows, most failing first, as json', async () => {
+		it('[<100ms] prints per-tool rows, most failing first, as json', async () => {
 			const result = await runKpisCommandBody(
 				['--failures'],
 				buildStubContext(true),
@@ -554,7 +554,50 @@ describe('kpis command', () => {
 			});
 		});
 
-		it('honours --since and renders text', async () => {
+		it('[<100ms] reports no failures for a missing file and skips odd events', async () => {
+			const none = await runKpisCommandBody(
+				['--failures'],
+				buildStubContext(),
+				{ pathExists: () => false },
+			);
+			expect(none.text).toContain('no tool failures recorded');
+			const odd = await runKpisCommandBody(
+				['--failures'],
+				buildStubContext(true),
+				{
+					...failuresRuntime,
+					readTextFile: async () =>
+						[
+							'{"kind":"tool.failed","ts":"2026-11-17T10:00:00Z"}',
+							'{"kind":"tool.failed","toolName":"z"}',
+							'{"kind":"tool.started","toolName":"z","ts":"2026-11-17T10:00:00Z"}',
+							ev('2026-11-17T10:00:00Z', 'tool.failed', 'z'),
+						].join('\n'),
+				},
+			);
+			expect(odd.data).toEqual({
+				rows: [
+					{
+						tool: 'z',
+						calls: 1,
+						failures: 1,
+						failureShare: 1,
+						topCodes: [],
+					},
+				],
+			});
+		});
+
+		it('[<100ms] rejects an invalid --since', async () => {
+			const result = await runKpisCommandBody(
+				['--failures', '--since=0'],
+				buildStubContext(),
+				failuresRuntime,
+			);
+			expect(result.code).toBe(EXIT_CODE.USAGE);
+		});
+
+		it('[<100ms] honours --since and renders text', async () => {
 			const result = await runKpisCommandBody(
 				['--failures', '--since=60'],
 				buildStubContext(),
