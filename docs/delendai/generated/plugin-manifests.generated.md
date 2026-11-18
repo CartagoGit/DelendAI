@@ -532,8 +532,8 @@
 | project-health | dogfood | yes | yes | yes |
 | project-kpis | minimal | no | no | yes |
 | project-kpis | solo | no | no | yes |
-| project-kpis | team-pr | no | no | yes |
-| project-kpis | swarm | no | no | yes |
+| project-kpis | team-pr | no | yes | no |
+| project-kpis | swarm | no | yes | no |
 | project-kpis | audit | no | no | yes |
 | project-kpis | docs-web | no | no | yes |
 | project-kpis | everything | yes | yes | yes |
@@ -628,12 +628,12 @@
 | security | dogfood | yes | yes | yes |
 | self-learning | minimal | no | no | yes |
 | self-learning | solo | no | no | yes |
-| self-learning | team-pr | no | no | yes |
-| self-learning | swarm | no | no | yes |
+| self-learning | team-pr | no | yes | no |
+| self-learning | swarm | no | yes | no |
 | self-learning | audit | no | no | yes |
 | self-learning | docs-web | no | no | yes |
 | self-learning | everything | yes | yes | yes |
-| self-learning | dogfood | no | no | yes |
+| self-learning | dogfood | no | yes | no |
 | skills-pack | minimal | no | no | yes |
 | skills-pack | solo | no | no | yes |
 | skills-pack | team-pr | no | no | yes |

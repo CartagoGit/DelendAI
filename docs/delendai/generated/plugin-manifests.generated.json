@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-15T02:43:42.348Z",
+	"generatedAt": "2026-11-18T18:05:57.791Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -9379,32 +9379,32 @@
 			"pluginId": "project-kpis",
 			"presetId": "team-pr",
 			"declared": false,
-			"catalogMember": false,
-			"matches": true
+			"catalogMember": true,
+			"matches": false
 		},
 		{
 			"pluginId": "project-kpis",
 			"presetId": "swarm",
 			"declared": false,
-			"catalogMember": false,
-			"matches": true
+			"catalogMember": true,
+			"matches": false
 		},
 		{
 			"pluginId": "project-kpis",
 			"presetId": "audit",
-			"declared": false,
-			"catalogMember": false,
-			"matches": true
-		},
-		{
-			"pluginId": "project-kpis",
-			"presetId": "docs-web",
 			"declared": false,
 			"catalogMember": false,
 			"matches": true
 		},
 		{
 			"pluginId": "project-kpis",
+			"presetId": "docs-web",
+			"declared": false,
+			"catalogMember": false,
+			"matches": true
+		},
+		{
+			"pluginId": "project-kpis",
 			"presetId": "everything",
 			"declared": true,
 			"catalogMember": true,
@@ -10051,15 +10051,15 @@
 			"pluginId": "self-learning",
 			"presetId": "team-pr",
 			"declared": false,
-			"catalogMember": false,
-			"matches": true
+			"catalogMember": true,
+			"matches": false
 		},
 		{
 			"pluginId": "self-learning",
 			"presetId": "swarm",
 			"declared": false,
-			"catalogMember": false,
-			"matches": true
+			"catalogMember": true,
+			"matches": false
 		},
 		{
 			"pluginId": "self-learning",
@@ -10086,8 +10086,8 @@
 			"pluginId": "self-learning",
 			"presetId": "dogfood",
 			"declared": false,
-			"catalogMember": false,
-			"matches": true
+			"catalogMember": true,
+			"matches": false
 		},
 		{
 			"pluginId": "skills-pack",
