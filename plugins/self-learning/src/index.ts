@@ -23,7 +23,7 @@ import { buildObservationsToolRegistration } from './lib/tools/observations.tool
  *
  *   delendai --plugins=self-learning
  *
- * On by default in the team-pr, swarm and dogfood packs (q00049): a
+ * On by default in the team-pr, swarm and dogfood packs: a
  * project on one learns about itself with no extra step, and turns it
  * off with `plugins.self-learning.enabled: false`. It always learns the
  * project it runs in, never delendai's own.
