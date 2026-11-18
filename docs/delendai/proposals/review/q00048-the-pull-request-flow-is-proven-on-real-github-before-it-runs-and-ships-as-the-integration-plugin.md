@@ -278,7 +278,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) rehearsal-scenarios.spec and catalogue/run specs exercise all named cases and expected outcomes. (2) The scenario catalogue declares F1-F9 with expected pre-fix outcomes and regression assertions; focused suite passed. (3) REHEARSAL_KNOWN_RED is empty at the reviewed tip and activation-spec requires an empty known-red list. (4) Idle-wake, step and scenario specs cover dispatching/counting a harness wake and red evidence. — Reviewed scenario catalogue and known-red handling against the production cases; focused integration suite passed 564/564.
 
 ### S4 — `delendai integration pass`: a project that adopts the flow runs the integrator without this repository's tools
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Decision (2026-11-14)**: the land workflow does not use `pull_request_target`. Since 2025-12-08 GitHub reads that workflow from the default branch whatever the PR's base, so a land on the integration branch never started on PR events (rehearsal run 43595171791: 15 land runs, all `push`, every scenario timed out), and from 2026-12-02 public repositories without an event policy block it by default. PR events and CI completion wake the land by `workflow_dispatch` at the PR's base ref, sent by `land-signal.yml` and the CI's signal job, which hold only the workflow token with `actions: write`.
 - **Decision (2026-11-14)**: the rehearsal proves batches and wakes. (A) The harness reads the integration branch's first-parent commits only as tips. (B) The pass batches when development.integration.batching is overlap, and the rehearsal policy sets it. (C) The overlapping and red-batch pairs change one shared file on different lines, so they overlap whatever the zones. (D) The rehearsal policy lists the derived-conflict file in derived.paths with an empty derived.command. (E) The land workflow has no workflow-level concurrency: each job has its own group (<group> for the pass, <group>-<job> for the others), so a skipped dispatch never displaces a pending pass. (F) The promotion scenario lands one green pull request.
@@ -296,8 +296,10 @@ Nothing of this repository is emitted into the other project.
   - "`tools/scripts/forge/land.script.ts` is a thin caller of the same function, and a spec with the in-memory forge shows the script and `integration pass` make the same decisions and the same forge calls, in order"
   - "The land workflow renderer emits the command that runs `integration pass`, and the committed file equals the renderer's output; the engine stays `none` and `land.yml` stays absent while integration is paused"
 - shipped-in: `8e49a547a1f0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at acf8cfdd116a, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) Integration pass command/service and land-project ports tests pass; plugin depends on core in the allowed direction. (2) Integration pass specs and project-ports helper cover configuration defaults and external-project operation; no tools/ import remains in plugin production code. (3) land-pass-equivalence.spec.ts passed in the focused 564-test run and checks ordered decisions/calls. (4) land-workflow.spec and land-pass tests passed, including paused engine-none rendering and committed-template parity. — Reviewed plugin composition, generic land ports, CLI and legacy script equivalence. Focused integration suite passed 564/564.
 
 ### S5 — The integration options in the policy
 - **Status**: review
