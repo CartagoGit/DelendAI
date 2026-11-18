@@ -16,11 +16,15 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
-import { namespacedRef } from './namespaced-ref.helper';
-import { heldByForge } from './stray-refs-reap.service';
-import { strayRefs } from './stray-refs.service';
-import { restoreAdvice } from './work-retire.service';
-import { integrationBase, readGit, refused } from './work-unit-shared.service';
+import { namespacedRef } from '../work-units/namespaced-ref.helper';
+import { heldByForge } from '../ref-reconciler/stray-refs-sweep.service';
+import { strayRefs } from '../work-units/stray-refs.service';
+import { restoreAdvice } from '../work-units/work-retire.service';
+import {
+	integrationBase,
+	readGit,
+	refused,
+} from '../work-units/work-unit-shared.service';
 
 /** How much of a commit names a kept stray tip. */
 const SHORT_COMMIT_LENGTH = 12;

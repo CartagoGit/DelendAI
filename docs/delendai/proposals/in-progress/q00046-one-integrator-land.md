@@ -263,12 +263,12 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending
 - **DependsOn**: [S5l]
-- **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/stray-refs-sweep.service.ts`, `packages/core/src/lib/ref-reconciler/stray-refs-sweep.interface.ts`, `packages/core/src/lib/ref-reconciler/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-ref-retire.service.e2e.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "reconciler.service.spec.ts adds the stray-ref cases: a stranded or rescued ref goes only when the forge or the integration branch holds what it carries, otherwise it is kept and reported."
-  - "stray-refs-reap.service.ts, its interface and its two specs are deleted, stray-ref-retire.service.ts reads held-by-forge from the reconciler, and `git grep -n 'reapStrayRefs\|heldByForge\|holdsOnlyEmptyCommits\|patchesLanded' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
+  - "stray-refs-sweep.service.e2e.spec.ts and stray-refs-sweep-kept.service.e2e.spec.ts keep the stray-ref cases under packages/core/tests/src/lib/ref-reconciler: a stranded or rescued ref goes only when the forge or the integration branch holds what it carries, otherwise it is kept and reported."
+  - "reapStrayRefs, retireStrayRef and heldByForge are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function reapStrayRefs\|function heldByForge'` finds one definition each)."
 
 ### S5n — The branch flow, part 3e: retired machinery is reaped by the reconciler, and retired-machinery-reap and work-unit-reap go
 - **Status**: pending

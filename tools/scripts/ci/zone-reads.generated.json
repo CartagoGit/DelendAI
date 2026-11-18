@@ -5520,13 +5520,13 @@
 					],
 					"listed": []
 				},
-				"packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts": {
+				"packages/core/tests/src/lib/ref-reconciler/stray-ref-retire.service.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
 					"listed": []
 				},
-				"packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts": {
+				"packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],

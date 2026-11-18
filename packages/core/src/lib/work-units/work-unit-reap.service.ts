@@ -24,7 +24,7 @@ import {
 	reapHusks,
 } from '../ref-reconciler/husk-directories.service';
 import { reapTestTempLeftovers } from './test-temp-leftovers.service';
-import { reapStrayRefs } from './stray-refs-reap.service';
+import { reapStrayRefs } from '../ref-reconciler/stray-refs-sweep.service';
 import { reapRetiredMachinery } from './retired-machinery-reap.service';
 
 /**

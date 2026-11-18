@@ -1,5 +1,5 @@
 /**
- * stray-refs-reap.service.ts — a ref that is nobody's and carries no
+ * stray-refs-sweep.service.ts — a ref that is nobody's and carries no
  * work is removed from the clone.
  *
  * `no-stray-refs` names refs outside every namespace a clone is expected
@@ -16,10 +16,13 @@
  * person.
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import type { IReapedStrayRef } from './stray-refs-reap.interface';
-import { strayRefs } from './stray-refs.service';
-import { namespacedRef } from './namespaced-ref.helper';
-import { integrationBase, readGit } from './work-unit-shared.service';
+import type { IReapedStrayRef } from './stray-refs-sweep.interface';
+import { strayRefs } from '../work-units/stray-refs.service';
+import { namespacedRef } from '../work-units/namespaced-ref.helper';
+import {
+	integrationBase,
+	readGit,
+} from '../work-units/work-unit-shared.service';
 
 const lines = (text: string | undefined): readonly string[] =>
 	(text ?? '').split('\n').filter((line) => line.length > 0);
