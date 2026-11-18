@@ -18,7 +18,7 @@ const textOf = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
 
 /** Why the tool refused, in its words wherever it put them. */
-const refusalOf = (answer: unknown): string | undefined => {
+export const refusalOf = (answer: unknown): string | undefined => {
 	if (!isRecord(answer) || answer.ok !== false) return undefined;
 	const detail = isRecord(answer.error) ? answer.error.reason : answer.error;
 	return (

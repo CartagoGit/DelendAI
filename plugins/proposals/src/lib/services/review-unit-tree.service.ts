@@ -15,6 +15,7 @@ import { join, relative } from 'node:path';
 
 import type { IGitRunner } from '@delendai/core/contracts';
 import { compileWorkRefParser } from '@delendai/core/public';
+import { isRevalidationIdentity } from '@delendai/core/cli';
 
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import { unitOfRef } from './review-claims.service';
@@ -81,6 +82,7 @@ export const reviewUnitOfAgent = async (input: {
 				unit === undefined ? undefined : parser?.parse(unit);
 			return (
 				identity?.kind === 'review' &&
+				!isRevalidationIdentity(identity) &&
 				identity.agent?.toLowerCase() === agent
 			);
 		});

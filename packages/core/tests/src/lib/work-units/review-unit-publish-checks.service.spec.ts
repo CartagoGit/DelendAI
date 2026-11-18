@@ -19,6 +19,7 @@ const policy = resolveDevelopmentPolicy({
 
 const AGENT = 'claude-sonnet-5-5';
 const REVIEW_REF = `refs/heads/delendai/wip/${AGENT}/review/x01000-all-g1/work`;
+const REVALIDATION_REF = `refs/heads/delendai/wip/${AGENT}/review/batch-all-g1/revalidation`;
 const IMPLEMENT_REF = `refs/heads/delendai/wip/${AGENT}/implement/x01000-S1-g1/work`;
 const DOCS = 'docs/delendai';
 
@@ -69,6 +70,19 @@ describe('reviewUnitRefusal', () => {
 
 	it('[<20ms] lets a review that records a verdict in a document through', async () => {
 		expect(await refuse(REVIEW_REF, {})).toBe(undefined);
+	});
+
+	it('[<20ms] does not refuse a revalidation batch that changes proposal documents, nor mistake it for another reviewer pack', async () => {
+		expect(
+			await refuse(REVALIDATION_REF, {
+				packs: [pack('c1')],
+			}),
+		).toBe(undefined);
+	});
+
+	it('[<20ms] still keeps a revalidation batch to documents', async () => {
+		const refusal = await refuse(REVALIDATION_REF, { changed: 'src/a.ts' });
+		expect(refusal?.error).toContain('src/a.ts');
 	});
 
 	it('[<20ms] refuses a review that changes the product', async () => {
