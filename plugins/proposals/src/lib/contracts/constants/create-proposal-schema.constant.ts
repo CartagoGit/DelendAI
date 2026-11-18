@@ -8,6 +8,8 @@ export const SLICE_IN = z.object({
 	gate: z.enum(['lint', 'type', 'e2e', 'none']).optional(),
 	dependsOn: z.array(z.string()).optional(),
 	acceptance: z.array(z.string()).optional(),
+	/** Choices the slice needs, made up front; omitted means none. */
+	decisions: z.string().optional(),
 });
 
 export const CREATE_PROPOSAL_INPUT_SCHEMA = z.object({
