@@ -303,11 +303,11 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5f — The branch flow, part 6: a draft pull request opens at enter, deliver marks it ready, CI skips drafts
 - **Status**: pending
 - **DependsOn**: [S5e]
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts`, `.github/workflows/ci.yml`
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-enter.service.e2e.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "work-unit-enter.service.spec.ts asserts a draft pull request exists after enter; a deliver case asserts it is marked ready; claim opens no new pull request."
+  - "work-unit-enter.service.e2e.spec.ts asserts a draft pull request exists after enter; a deliver case asserts it is marked ready; claim opens no new pull request."
   - "`git grep -n "draft" .github/workflows/ci.yml` shows ci.yml skipping draft pull requests; a large proposal lands as sequential pull requests, never stacked."
 
 ### S5g — The branch flow, part 7: the publication path is deleted
