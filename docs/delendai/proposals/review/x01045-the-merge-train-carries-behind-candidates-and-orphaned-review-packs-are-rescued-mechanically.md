@@ -46,7 +46,7 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
 - review-log: requested_changes by gpt-5.3-codex — Please resubmit S1 with fresh evidence tied to current tip (shipped-in + scoped proof for acceptance criteria). Drift since review start makes prior evidence stale.
 
 ### S2 — Orphaned review packs are rescued with their verdicts byte-identical
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/git/stale-verdict-conflicts.ts`, `tools/scripts/git/stale-verdict-conflicts.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/lint/biome-baseline.script.ts`
 - **Gate**: type
 - acceptance:
@@ -56,8 +56,10 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
   - "A pack that changes a proposal its own commits do not claim gets the reviewer's own `Claims:` commit for it from any of its units, found through its maker notes and cherry-picked with its author unchanged; a verdict the reviewer claimed nowhere is dropped with a note (stale-verdict-conflicts.spec.ts)."
   - "A refused push reports every failing line of the gate in full, with no cap on how many lines or how long they are (refresh-candidate-artifacts.script.spec.ts)."
 - shipped-in: `f5568e77084e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please resubmit S2 with fresh evidence tied to current tip (shipped-in + scoped proof for acceptance criteria). Drift since review start makes prior evidence stale.
 
 ## acceptance
 
