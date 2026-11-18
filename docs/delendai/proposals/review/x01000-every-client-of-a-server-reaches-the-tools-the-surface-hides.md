@@ -34,7 +34,7 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
 - global_gate: type
 
 ### S1 — The shared client reaches hidden tools
-- **Status**: review
+- **Status**: pending
 - **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `extensions/vscode/src/providers/kpi-dashboard-provider.ts`, `extensions/vscode/src/test/kpi-dashboard-provider.spec.ts`, `extensions/vscode/src/test/tool-names.spec.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/transport/tool-reach.helper.ts`, `packages/client/tests/transport/tool-reach.spec.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/src/lib/proposals/quarantine.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/tools/state-tools.tool.ts`, `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry.spec.ts`, `plugins/proposals/tests/src/lib/state-tools.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `extensions/vscode/scripts/build.ts`, `extensions/vscode/src/test/build-smoke.spec.ts`, `extensions/vscode/package.json`
 - **Gate**: type
 - acceptance:
@@ -43,9 +43,11 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
   - "`state_health` shows the newest 20 quarantine rows and the total; a README is not quarantined and one finding is one entry."
   - "A spec holds every tool name the extension calls against the generated catalog."
 - shipped-in: `9507ac8d5240`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2
 - review-log: requested_changes by gpt-5.3-codex — shipped-in 9507ac8d5240 is stale: many slice files changed afterward (e.g. 549fd6576, 410558f6e, 9b9588197, 19be55632, be1e796df). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and scoped evidence for all acceptance points.
+- review-log: requested_changes by mai-code-2 — The stale-delivery defect named in the previous round is still present: the queue resolves latest delivery to 6da7b7fe while S1 continues to cite shipped-in 9507ac8d5240, and many scoped files changed afterward. Refresh the shipped-in/current delivery lineage on the intended tip, then re-validate hidden-tool reach, quarantine bounds, CLI routing ownership and extension catalogue names against that exact commit before resubmitting.
 
 ## acceptance
 
