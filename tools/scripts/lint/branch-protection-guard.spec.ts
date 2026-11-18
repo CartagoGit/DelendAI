@@ -58,12 +58,12 @@ const live = {
 };
 
 describe('branch-protection-guard', () => {
-	it('accepts a valid declarative policy without bypass entries', () => {
+	it('[<50ms] accepts a valid declarative policy without bypass entries', () => {
 		expect(() => assertDeclaration(declaration)).not.toThrow();
 		expect(declaration.restrictions).toBeNull();
 	});
 
-	it('treats an absent required_status_checks block as "no checks"', () => {
+	it('[<50ms] treats an absent required_status_checks block as "no checks"', () => {
 		// GitHub OMITS the block when nothing is required, rather than
 		// sending an empty list. Reading `strict` off `undefined` used to
 		// compare `undefined` against a boolean.
@@ -78,7 +78,7 @@ describe('branch-protection-guard', () => {
 		);
 	});
 
-	it('refuses a declaration that disagrees with the canonical policy', () => {
+	it('[<50ms] refuses a declaration that disagrees with the canonical policy', () => {
 		// The four booleans come from the policy's own projection, so a
 		// settings file that drifts from it is the failure — in either
 		// direction. Demanding a value the policy never chose is how this
@@ -103,7 +103,7 @@ ${CONTEXTS}
 		);
 	});
 
-	it('names every disagreement at once, not just the first', () => {
+	it('[<50ms] names every disagreement at once, not just the first', () => {
 		const drifted = parseDeclaration(`
 branches:
     - name: develop
@@ -124,7 +124,7 @@ ${CONTEXTS}
 		);
 	});
 
-	it('fails when live required checks diverge', () => {
+	it('[<50ms] fails when live required checks diverge', () => {
 		expect(
 			() =>
 				compareLive(declaration, {
@@ -139,7 +139,7 @@ ${CONTEXTS}
 		).toThrow('required status checks are [wrong-check], declared');
 	});
 
-	it('accepts the live policy when protection and checks match', () => {
+	it('[<50ms] accepts the live policy when protection and checks match', () => {
 		expect(() => compareLive(declaration, live)).not.toThrow();
 	});
 });

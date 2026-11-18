@@ -2183,7 +2183,6 @@
 		"tools/scripts/lint/baseline-growth.helper.spec.ts",
 		"tools/scripts/lint/biome-baseline.script.spec.ts",
 		"tools/scripts/lint/bootstrap-canonical.script.spec.ts",
-		"tools/scripts/lint/branch-protection-guard.spec.ts",
 		"tools/scripts/lint/bun-suite-has-a-ceiling.script.spec.ts",
 		"tools/scripts/lint/cache-before-install.script.spec.ts",
 		"tools/scripts/lint/cache-layout-ratchet.script.spec.ts",
