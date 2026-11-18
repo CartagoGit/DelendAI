@@ -72,7 +72,7 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
 - review-log: requested_changes by gpt-5.3-codex — S3 evidence is stale: shipped-in is dfd2c2c9fb2e, but packages/core/src/lib/shared/compute-slot.service.ts changed afterward on develop. Please redeliver S3 on current HEAD with fresh shipped-in and updated evidence before re-review.
 
 ### S4 — The compute-slot spec leaves no child running and never busy-loops
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/tests/src/lib/shared/compute-slot.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -80,8 +80,10 @@ The 2026-11-09 boot showed three defects. A new server said another server maint
   - "A child waits for the release with fs.watch or an fd/IPC message from the parent, not a setImmediate loop; it uses no CPU while waiting."
   - "afterEach kills every child the spec spawned and the spec ends with none left."
 - shipped-in: `dfd2c2c9fb2e`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — S4 evidence is stale: shipped-in is dfd2c2c9fb2e, but packages/core/tests/src/lib/shared/compute-slot.service.spec.ts changed afterward on develop. Please redeliver S4 on current HEAD with fresh shipped-in and updated evidence before re-review.
 
 ### S5 — The launcher reaches its fallback from a deleted directory
 - **Status**: review
