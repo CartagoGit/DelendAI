@@ -299,8 +299,10 @@ the focused validation pass before committing. The read-only guard is
   commits refuse while it holds loose edits (`delendai work rescue` keeps
   them under a ref); `delendai work status` says where it stands.
 - **No orphaned branches or stashes — always reconcile (this repo).**
-  A unit ends in `delendai work publish` or `delendai work retire`
-  (keeps its tip). Before closing a session run `bun run reclaim:orphans`:
+  A unit ends in `delendai work deliver` (it proves, hands over and
+  publishes) or `delendai work retire` (keeps its tip); the flow, the
+  merge rules and cleanup are in the `delendai-work-unit-playbook`
+  skill. Before closing a session run `bun run reclaim:orphans`:
   live units are no orphans; idle/abandoned ones print their remedy;
   `--apply` removes lossless branches and delivered units, never stashes.
 - **Slice commits are causally bounded (f00417).** A slice commit is
