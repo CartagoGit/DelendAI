@@ -278,6 +278,27 @@ describe('namespaceRuleset depth (x00568 S2)', () => {
 		expect(both).toContain('refs/heads/delendai/queue/**/*');
 	});
 
+	it('[<50ms] admits the work and publication refs of every owned prefix, and renders them in the module', () => {
+		const migrating = policyFor({
+			profile: 'shared-checkout-pr',
+			branches: {
+				namespacePrefix: '',
+				formerNamespacePrefixes: ['delendai'],
+			},
+		});
+		const patterns = (
+			namespaceRuleset(migrating) as {
+				conditions: { ref_name: { exclude: readonly string[] } };
+			}
+		).conditions.ref_name.exclude;
+		expect(patterns).toContain('refs/heads/pr/**/*');
+		expect(patterns).toContain('refs/heads/delendai/pr/**/*');
+		expect(patterns).toContain('refs/heads/delendai/wip/**/*');
+		expect(branchProtectionModule(migrating)).toContain(
+			"publication_prefixes: ['pr/', 'delendai/pr/']",
+		);
+	});
+
 	it('[<50ms] gives work and publication the same depth', () => {
 		const work = exclude.filter((p) => p.includes('/wip/'));
 		const publication = exclude.filter((p) => p.includes('/pr/'));
