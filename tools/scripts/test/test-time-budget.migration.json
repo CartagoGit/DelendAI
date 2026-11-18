@@ -2207,7 +2207,6 @@
 		"tools/scripts/lint/cli-shape.script.spec.ts",
 		"tools/scripts/lint/cli-ui-parity.script.spec.ts",
 		"tools/scripts/lint/closed-frozen-guard.script.spec.ts",
-		"tools/scripts/lint/closed-with-independent-approval.script.spec.ts",
 		"tools/scripts/lint/commit-driver-guard.script.spec.ts",
 		"tools/scripts/lint/commit-msg-conventional.script.spec.ts",
 		"tools/scripts/lint/compact-list-tools.script.spec.ts",
