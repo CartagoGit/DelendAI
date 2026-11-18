@@ -2,14 +2,14 @@
 id: f00816
 title: "A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs"
 kind: feat
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-12
-last-transition-id: 53633e50-1be7-4c81-bdad-ee4a9c59b437
-last-correlation-id: 53633e50-1be7-4c81-bdad-ee4a9c59b437
-last-transition-from: ready
-last-transition-at: 2026-11-18T00:37:16.065Z
+last-transition-id: ff5e4444-376f-492d-a35a-b8e1458cdb8e
+last-correlation-id: ff5e4444-376f-492d-a35a-b8e1458cdb8e
+last-transition-from: in-progress
+last-transition-at: 2026-11-18T00:52:49.672Z
 ---
 
 # f00816 — A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs
@@ -51,7 +51,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - global_gate: lint
 
 ### S1 — Model-selection policy from config
-- **Status**: pending
+- **Status**: review
 - **Extends**: `plugins/auto-agent-selector` (`routing/task-mode.service.ts`, `escalate/run-with-escalation.ts`)
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/src/lib/escalate/run-with-escalation.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/task-class-tier.service.spec.ts`
 - **Gate**: type
@@ -59,9 +59,12 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "Config maps task class to tier: mechanical to the small tier, multi-file coding and debugging to the mid tier, architecture and blockers to the top tier only when an explicit owner authorization is present; no single model is forced."
   - "A worker that needs more capacity returns a blocker; nothing escalates automatically."
   - "The model actually used is recorded and a mismatch with the requested one is reported."
+- shipped-in: `1b07857f5f92`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Closed worker contract
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Extends**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/closed-contract.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts`
@@ -70,9 +73,12 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One generated template carries objective, authorized files, interfaces and expected behaviour, invariants, dependencies, acceptance criteria, exact tests, budget and limits, and stop conditions."
   - "The worker receives only that contract and is told it cannot redesign, widen scope or launch agents; each contract is bound to one isolated unit."
   - "A contract missing a section is refused."
+- shipped-in: `64a1d01af0d0`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — Session handover from delendai's own stores
-- **Status**: pending
+- **Status**: review
 - **Extends**: `packages/core/src/lib/work-units/work-unit.service.ts`, `plugins/usage-tracking/src/lib/services/checkpoint-advisory.service.ts`
 - **Files**: `packages/core/src/lib/work-units/session-handover.service.ts`, `packages/core/src/lib/work-units/session-handover.interface.ts`, `packages/core/tests/src/lib/work-units/session-handover.service.spec.ts`
 - **Gate**: type
@@ -80,9 +86,12 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "Before compaction the handover is persisted from the stores: invariants, decisions with reasons, unit states, pending and done work, branches, commits, PRs, evidence, test results, known errors and blockers."
   - "After compaction a bounded index is re-injected and details are fetched selectively on demand."
   - "A resumed session rebuilds from the stores, never from a model summary; missing information is fetched from its source, never invented."
+- shipped-in: `e9063b122825`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S4 — Compaction threshold rendered per host from one policy
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S3]
 - **Extends**: `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/hosts/host-capability-profile.ts`
 - **Files**: `packages/core/src/lib/hosts/compaction-policy.helper.ts`, `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/tests/src/lib/hosts/compaction-policy.helper.spec.ts`
@@ -90,18 +99,23 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "One policy value renders per host: Claude Code gets CLAUDE_AUTOCOMPACT_PCT_OVERRIDE plus PreCompact and SessionStart hooks that run S3."
   - "A host with a native setting gets it; any other host gets a compact-now directive from the MCP server."
+- shipped-in: `d16f4e651030`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S1b — Task-class tier policy wired to plugin config
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Extends**: `plugins/auto-agent-selector` (`index.ts` options schema)
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/tests/src/index.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/tools/auto-run.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The plugin options carry `taskClassTiers` and `ownerAuthorizedTopTier`; `auto_run` caps the ladder at the tier of the task class and returns a blocker when the top tier lacks the owner authorization."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5a — Ledger record and cost per correct result
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Extends**: `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`, `plugins/usage-tracking/src/lib/contracts/usage-rollup.interface.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup-buckets.helper.ts`, `plugins/usage-tracking/src/lib/services/cost-per-correct.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
@@ -110,9 +124,11 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One invocation record holds requested model, real model, tokens in, out, cache read and cache write, wall time, turns, retries, task class and an outcome (correct, blocked or failed) set from a gate result, never self-reported."
   - "The rollup reports cost per correct result by task class and model, with the sample count."
   - "Records without the new fields still read."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5b — Cost limits and the no-progress stop
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S1]
 - **Extends**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`
 - **Files**: `plugins/agent-orchestrator/src/lib/policy/types.ts`, `plugins/agent-orchestrator/src/lib/policy/policy.ts`, `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts`
@@ -120,9 +136,11 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "The budget policy limits calls, turns, retries and concurrency; exceeding one returns a blocker naming the limit."
   - "A run with N consecutive turns and no progress signal stops, using the progress signal the orchestrator already has."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S5c — Proof reuse and duplicate-work detection
-- **Status**: pending
+- **Status**: review
 - **DependsOn**: [S5a]
 - **Extends**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
@@ -130,6 +148,8 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "Duplicate work is detected across units and a still-valid result or proof is reused."
   - "The report states what cannot be technically guaranteed on each host."
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
