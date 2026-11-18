@@ -149,6 +149,15 @@ const othersRemaining = (
 const NUMBER_OF_URL = /\/pull\/(?<number>\d+)\/?$/u;
 
 /**
+ * Whether a branch's unit is a whole proposal: `…/x1-all-g2/…` before the
+ * scope grammar, a scope that names no slice (`…/x1/…`, `…/x1-G2/…`)
+ * after it (f00808).
+ */
+const publishedWhole = (branch: string): boolean =>
+	/-all-g\d+(?:\/|$)/u.test(branch) ||
+	/\/[a-z]\d{5,}(?:-G\d+)?(?:\/|$)/u.test(branch);
+
+/**
  * Where the pull request of a delivery is: its number and URL when the
  * publication answered with one, and otherwise that the publication was
  * pushed and the pull request is pending, with the branch. A delivery
@@ -167,7 +176,7 @@ export const pullRequestOf = (
 	const whole =
 		slice !== 'all' &&
 		typeof answer.branch === 'string' &&
-		/-all-g\d+(?:\/|$)/u.test(answer.branch)
+		publishedWhole(answer.branch)
 			? {
 					slice,
 					sliceNote: `the proposal is published whole (policy integration.publication), so the branch says all; this unit's slice is ${slice}`,
