@@ -1779,7 +1779,6 @@
 		"plugins/proposals/tests/src/lib/services/task-briefing.service.spec.ts",
 		"plugins/proposals/tests/src/lib/services/transition-evidence.spec.ts",
 		"plugins/proposals/tests/src/lib/services/validate-blocker.spec.ts",
-		"plugins/proposals/tests/src/lib/services/work-ref-mention.spec.ts",
 		"plugins/proposals/tests/src/lib/shared/agent-identity.spec.ts",
 		"plugins/proposals/tests/src/lib/shared/agent-names-list.spec.ts",
 		"plugins/proposals/tests/src/lib/shared/agent-registry-store.spec.ts",

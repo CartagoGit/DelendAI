@@ -58,7 +58,7 @@ describe('findWorkRefMention in the scope grammar (f00808)', () => {
 });
 
 describe('findWorkRefMention', () => {
-	it.each([
+	const FORGES: readonly (readonly [string, string])[] = [
 		['GitHub', `Merge pull request #303 from Owner/delendai/pr/${UNIT}`],
 		['GitLab', `Merge branch 'delendai/pr/${UNIT}' into 'develop'`],
 		['Bitbucket', `Merged in delendai/pr/${UNIT} (pull request #303)`],
@@ -70,14 +70,19 @@ describe('findWorkRefMention', () => {
 			'the engine trailer',
 			`feat: the work\n\nDelendai-Wip-Ref: refs/heads/delendai/wip/${UNIT}`,
 		],
-	])('[<20ms] reads the unit out of a %s message', (_forge, message) => {
-		expect(findWorkRefMention(message, THIS_REPO)).toEqual({
-			ref: `refs/heads/delendai/wip/${UNIT}`,
-			agent: 'claude-opus-5',
-			proposal: 'x00568',
-			slice: 'S1',
-		});
-	});
+	];
+
+	it.each(FORGES)(
+		'[<20ms] reads the unit out of a %s message',
+		(_forge, message) => {
+			expect(findWorkRefMention(message, THIS_REPO)).toEqual({
+				ref: `refs/heads/delendai/wip/${UNIT}`,
+				agent: 'claude-opus-5',
+				proposal: 'x00568',
+				slice: 'S1',
+			});
+		},
+	);
 
 	it('[<200ms] uses the project defaults when no namespace is configured', () => {
 		expect(
