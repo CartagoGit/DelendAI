@@ -18,16 +18,20 @@ edited there.
    worktree path. Edit and commit only there, and pass it as `checkout` to other tools.
 2. Edit, run the gates the slice names, commit in the worktree. Nothing reaches the ref
    from any other checkout: `checkpoint` refuses to take files from the shared checkout.
-3. Prove the candidate in isolation, then `action: publish`. It pushes the pull request
-   branch and opens the pull request into `develop`.
+3. `delendai work deliver` proves the candidate in isolation, hands it over and publishes it;
+   wait until it ends and never run `work publish` after it. The forge opens a pending pull
+   request, and `delendai work status` shows its number. `action: publish` alone is for a unit
+   that is not delivered.
 4. A unit that will not be published ends with `action: retire` (its tip is kept).
+5. `land` merges. Agents never merge by hand; pull requests are batched, and a culprit or
+   needs-update label on yours means refresh your unit and deliver again.
 
 ## Decide in this order
 
 - Unsure what is going on: `status` (your units), `swarm` (everyone's units, idle ones are
   adoptable), `doctor` (invariants that failed).
 - Someone else holds the slice: `claim` tells you; do not enter it.
-- Finished a slice: `publish`. Abandoned: `retire`. Stale refs left behind: `reap`
+- Finished a slice: `deliver`. Abandoned: `retire`. Stale refs left behind: `reap`
   (dry-run first; `apply: true` only after reading it).
 
 ## Rules that bite
@@ -36,6 +40,7 @@ edited there.
 - Never edit the shared checkout. While it holds loose edits every work command and
   commit refuses; `rescue` keeps them under a ref and restores it.
 - Use the same `topic` for `enter` and `publish`.
+- Set `PAGER=cat` and `GIT_PAGER=cat` in agent shells: a pager in the shared checkout wrote a stray file twice.
 - The agent id is lowercase, maker first, then version, then tier; no effort word.
 - Never leave a unit idle: every work command is its heartbeat, and 30 minutes of silence
   lists it for adoption.
@@ -51,7 +56,8 @@ edited there.
 ## Ending and recovering units
 
 - Every unit ends in `publish` or `retire`; a tip is never kept under a hand-made ref and a ref is never deleted with raw git. If the product cannot clean something, that is a missing command: file it, do not script around it.
-- `retire` refuses uncommitted changes; `work retired --drop` removes read, spent work; `reap` removes stale directories.
+- `retire` refuses uncommitted changes; `work retired --drop` removes read, spent work.
+- `delendai work reap --apply` ends landed units of idle owners, removes stranded or rescued refs already on develop, keeps stray files in the worktrees directory and removes old empty test temp directories. Never delete refs or worktrees by hand; `work retire` ends the rest.
 - Before ending a batch of delegated units, list worktrees and your agents' wip refs: each is published, being resumed or abandoned on purpose. After a quota or rate-limit failure, resume the agent with its unit ref.
 - A different `--generation` is a deliberate second attempt; use it only after reading the refusal that names the existing unit.
 - A worktree that reports `Cannot find module` in files you did not touch needs its dependencies installed or linked before you judge the change.
