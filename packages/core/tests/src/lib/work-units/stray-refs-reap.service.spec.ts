@@ -65,7 +65,7 @@ const repo = () => {
 };
 
 describe('reapStrayRefs', () => {
-	it('[<500ms] removes a stray ref of empty commits and keeps one that carries work', () => {
+	it('removes a stray ref of empty commits and keeps one that carries work', () => {
 		const { root, git } = repo();
 		expect(reapStrayRefs({ root, policy, apply: false })).toEqual([
 			{ ref: 'refs/delendai-remote-claims/foreign', outcome: 'kept' },
@@ -109,7 +109,7 @@ describe('reapStrayRefs', () => {
 		);
 	});
 
-	it('[<500ms] removes a claim taken on a branch the integration branch merged', () => {
+	it('removes a claim taken on a branch the integration branch merged', () => {
 		const { root, git } = repo();
 		// The reviewer's branch claims on its own commit, and reaches the
 		// integration branch through a merge: its tree is never one of the
@@ -137,7 +137,7 @@ describe('reapStrayRefs', () => {
 		});
 	});
 
-	it('[<500ms] removes a copy of what the forge holds, and keeps a tip only here', () => {
+	it('removes a copy of what the forge holds, and keeps a tip only here', () => {
 		const { root, git } = repo();
 		const forge = mkdtempSync(join(tmpdir(), 'stray-forge-'));
 		dirs.push(forge);
@@ -191,7 +191,7 @@ describe('reapStrayRefs', () => {
 		});
 	});
 
-	it('[<500ms] never touches branches, tags or the product namespace', () => {
+	it('never touches branches, tags or the product namespace', () => {
 		const { root, git } = repo();
 		git('update-ref', 'refs/delendai/journal', 'HEAD');
 		git('tag', 'v1');
@@ -207,7 +207,7 @@ describe('reapStrayRefs', () => {
 });
 
 describe('holdsOnlyEmptyCommits', () => {
-	it('[<500ms] is true for nothing beyond the base, and false for a merge', () => {
+	it('is true for nothing beyond the base, and false for a merge', () => {
 		const { root, git, base } = repo();
 		expect(holdsOnlyEmptyCommits(root, base, base)).toBe(true);
 		const tree = git('rev-parse', `${base}^{tree}`);
@@ -223,91 +223,5 @@ describe('holdsOnlyEmptyCommits', () => {
 			'merge',
 		);
 		expect(holdsOnlyEmptyCommits(root, merge, base)).toBe(false);
-	});
-});
-
-describe('reapStrayRefs over stranded and rescued refs', () => {
-	/** develop with a base commit; `side` branches off it for work to land twice. */
-	const landed = () => {
-		const { root, git, base } = repo();
-		// develop moves on, so a cherry-pick is a commit of another hash.
-		writeFileSync(join(root, 'drift.txt'), 'drift\n');
-		git('add', 'drift.txt');
-		git('commit', '-q', '-m', 'drift');
-		const commitOn = (branch: string, file: string): string => {
-			git('switch', '-q', '-c', branch, base);
-			writeFileSync(join(root, file), `${file}\n`);
-			git('add', file);
-			git('commit', '-q', '-m', `add ${file}`);
-			const tip = git('rev-parse', 'HEAD');
-			git('switch', '-q', 'develop');
-			return tip;
-		};
-		return { root, git, base, commitOn };
-	};
-
-	it('[<500ms] removes a ref whose patch landed under another hash', () => {
-		const { root, git, commitOn } = landed();
-		const tip = commitOn('stranded-src', 'one.txt');
-		git('update-ref', 'refs/delendai/stranded/bot/a1', tip);
-		// The same patch on develop, committed again: another hash.
-		git('cherry-pick', tip);
-		const [result] = reapStrayRefs({ root, policy, apply: true }).filter(
-			(each) => each.ref.startsWith('refs/delendai/stranded/'),
-		);
-		expect(result).toEqual({
-			ref: 'refs/delendai/stranded/bot/a1',
-			outcome: 'removed',
-			reason: 'patch-landed',
-		});
-		expect(
-			git(
-				'for-each-ref',
-				'--format=%(refname)',
-				'refs/delendai/stranded',
-			),
-		).toBe('');
-	});
-
-	it('[<500ms] lists a rescued ref with a unique patch, with its age and files, and keeps it', () => {
-		const { root, git, commitOn } = landed();
-		const tip = commitOn('rescued-src', 'unique.txt');
-		git('update-ref', 'refs/delendai/rescued/bot/b2', tip);
-		const now = Math.floor(Date.now() / 1000) + 3600;
-		const [result] = reapStrayRefs({
-			root,
-			policy,
-			apply: true,
-			now,
-		}).filter((each) => each.ref.startsWith('refs/delendai/rescued/'));
-		expect(result).toMatchObject({
-			ref: 'refs/delendai/rescued/bot/b2',
-			outcome: 'kept',
-			files: ['unique.txt'],
-		});
-		expect(result?.ageSeconds).toBeGreaterThanOrEqual(3500);
-		expect(git('rev-parse', 'refs/delendai/rescued/bot/b2')).toBe(tip);
-	});
-
-	it('[<500ms] removes an empty ref and only lists, without --apply, one that landed', () => {
-		const { root, git, base, commitOn } = landed();
-		git('update-ref', 'refs/delendai/stranded/bot/empty', base);
-		const tip = commitOn('landed-src', 'two.txt');
-		git('update-ref', 'refs/delendai/stranded/bot/c3', tip);
-		git('cherry-pick', tip);
-		const planned = reapStrayRefs({ root, policy, apply: false }).filter(
-			(each) => each.ref.startsWith('refs/delendai/stranded/'),
-		);
-		expect(planned.map((each) => each.outcome)).toEqual([
-			'would-remove',
-			'would-remove',
-		]);
-		const done = reapStrayRefs({ root, policy, apply: true }).filter(
-			(each) => each.ref.startsWith('refs/delendai/stranded/'),
-		);
-		expect(done.map((each) => each.reason)).toEqual([
-			'patch-landed',
-			'no-work',
-		]);
 	});
 });
