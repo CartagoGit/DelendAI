@@ -12,6 +12,7 @@
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
+import { precheckDelivery } from './work-deliver-precheck.service';
 import { isRecord } from './helpers/cli-command.helper';
 
 const textOf = (value: unknown): string | undefined =>
@@ -256,6 +257,10 @@ export const deliverUnit = async (
 	if (unmet !== undefined && remaining === undefined) {
 		return { code: EXIT_CODE.VALIDATION, error: unmet };
 	}
+	// What the proof's static gates would refuse is refused before it takes
+	// the compute slot: seconds, scoped to the changed files.
+	const refused = await precheckDelivery(ports);
+	if (refused !== undefined) return refused;
 	const proved = await ports.prove();
 	if (proved.code !== 0) return proved;
 	// `--only` runs gates of the proof and proves nothing: not a delivery.
