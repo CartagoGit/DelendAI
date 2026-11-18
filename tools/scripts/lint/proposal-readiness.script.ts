@@ -24,6 +24,12 @@ import { collectProposals } from './proposal-hygiene.script';
 
 const BASELINE = 'tools/scripts/lint/proposal-readiness.baseline.json';
 
+/**
+ * The tracked files generated from the open proposals' text. A scan that
+ * skips the proposals skips these too: they quote slice lines verbatim.
+ */
+export const DERIVED_FROM_PROPOSALS: readonly string[] = [BASELINE];
+
 /** Stable key for baselining, independent of folder and line numbers. */
 export const readinessKey = (item: IReadinessFinding): string =>
 	`${item.proposal}::${item.slice}::${item.rule}::${item.text.replace(/\s+/gu, ' ')}`;
