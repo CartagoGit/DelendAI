@@ -98,12 +98,6 @@ const unitsText = (units: Readonly<Record<string, number>> | undefined) =>
 				.map(([state, count]) => `${String(count)} ${state}`)
 				.join(', ');
 
-const markdownTooltip = (value: string): IStatusBarTooltip => ({
-	value,
-	isTrusted: false,
-	supportThemeIcons: true,
-});
-
 /** The tooltip, in Markdown, from what the server last said. */
 const tooltipMarkdown = (answers: {
 	readonly status?: IStatusAnswer | undefined;
@@ -164,13 +158,15 @@ export class DelendaiStatusBar {
 		// f00081 S2: thread the host namespace prefix so the status-bar's
 		// own direct `client.request(...)` probes hit `<prefix>_*` tools.
 		private readonly namespacePrefix?: string,
+		/** Builds the host's own MarkdownString; absent, a value of its shape. */
+		private readonly markdownString?: (value: string) => IStatusBarTooltip,
 	) {}
 
 	start(): void {
 		if (this.disposed) return;
 		this.item.command = this.openDashboardCommand;
 		this.item.text = STATUS_BAR_LABEL;
-		this.item.tooltip = markdownTooltip(tooltipMarkdown({}));
+		this.item.tooltip = this.markdown(tooltipMarkdown({}));
 		for (const event of STATUS_BAR_EVENT_NAMES) {
 			const handler = (): void => {
 				void this.update();
@@ -198,7 +194,17 @@ export class DelendaiStatusBar {
 		]);
 		if (this.disposed) return;
 		this.item.text = STATUS_BAR_LABEL;
-		this.item.tooltip = markdownTooltip(tooltipMarkdown({ status, work }));
+		this.item.tooltip = this.markdown(tooltipMarkdown({ status, work }));
+	}
+
+	private markdown(value: string): IStatusBarTooltip {
+		return (
+			this.markdownString?.(value) ?? {
+				value,
+				isTrusted: false,
+				supportThemeIcons: true,
+			}
+		);
 	}
 
 	/** One shared-client call; `undefined` when the server does not answer. */
