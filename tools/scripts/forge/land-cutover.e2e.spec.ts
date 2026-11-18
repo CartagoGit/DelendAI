@@ -97,6 +97,9 @@ const UNSCANNED = new Set([
 	'tools/scripts/ci/zone-reads.generated.json',
 	'tools/scripts/test/test-time-budget.migration.json',
 	'tools/scripts/lint/spec-git-init.baseline.json',
+	// Quotes open proposals' slice lines, which may name the removed
+	// mechanism; the proposals themselves are outside the scanned roots.
+	'tools/scripts/lint/proposal-readiness.baseline.json',
 ]);
 
 const tracked = (): readonly string[] =>

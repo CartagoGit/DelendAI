@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-16
-last-transition-id: ccc4746c-fce8-42f1-9085-1fcf24426148
-last-correlation-id: ccc4746c-fce8-42f1-9085-1fcf24426148
+last-transition-id: ea059083-9205-4e1d-a5fb-265aed159f49
+last-correlation-id: ea059083-9205-4e1d-a5fb-265aed159f49
 last-transition-from: in-progress
-last-transition-at: 2026-11-18T05:43:05.358Z
+last-transition-at: 2026-11-18T07:00:54.638Z
 ---
 
 # x01079 — A proposal is ready only when nothing is left to work out
