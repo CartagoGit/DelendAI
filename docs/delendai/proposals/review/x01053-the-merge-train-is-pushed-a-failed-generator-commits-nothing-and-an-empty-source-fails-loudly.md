@@ -31,14 +31,16 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - global_gate: none
 
 ### S1 — A refresh in which a generator failed commits nothing
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`
 - **Gate**: type
 - acceptance:
   - "When any generator fails, refreshGeneratedAfterMerge commits nothing, restores every bounded path from its snapshot and reports the failed generators (generated-refresh.service.spec.ts)."
 - shipped-in: `a6660aac29c5`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S2 — A generator with nothing to generate from fails loudly
 - **Status**: review
