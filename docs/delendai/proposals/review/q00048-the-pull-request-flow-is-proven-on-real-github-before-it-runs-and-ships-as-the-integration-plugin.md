@@ -17,6 +17,7 @@ shipped-in:
   - "7a9c228afcfe476c531812a286cf84bef2d2bb68"
   - "edd7b73cd055"
   - "4d676221b5f5a68724ac3f4a8076da3039736b8e"
+  - "5fc3983d4da8a7d107a50c19bf59f88079162b3b"
 ---
 
 # q00048 — The pull request flow is proven on real GitHub before it runs, and ships as the integration plugin
@@ -406,7 +407,7 @@ Nothing of this repository is emitted into the other project.
 - review-log: approved by mai-code-2 — verified at 4d676221b5f5, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 5/5: (1) Time-budget runner/tier specs and the 564-test integration run validate the two-tier decision, 200ms unit cap and touched-spec-only failure. (2) Load benchmark/helper, spec-duration budget and calibration tests pass; vitest.shared wiring emits the benchmark reference and environment factors. (3) Calibration/time-budget fixtures and focused specs cover the formula, no-unit-write rule, migration exemptions and real-clock fake-timer behavior. (4) Time-budget failure output assertions pass and include tier, limit, factors and duration. (5) The scenario catalogue has no F6 known-red and the focused integration suite passed 564/564. — Reviewed unit/e2e tiering, load benchmark, reporting and calibration; focused integration suite passed 564/564 and the project typecheck had already passed 80 workspaces.
 
 ### S11a — The host does no integration write and tells sessions what they missed
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S6]
 - **Files**: `tools/scripts/host/integration-follow-ups.script.ts`, `tools/scripts/host/host-server.script.ts`, `tools/scripts/host/forge-event-catch-up.service.ts`, `packages/core/src/lib/forge-events/forge-event-catch-up.service.ts`, `packages/core/src/lib/forge-events/forge-event-cursor.service.ts`, `plugins/github/src/lib/catch-up-source.service.ts`, `plugins/integration/src/lib/contracts/constants/rehearsal-scenarios.constant.ts`
 - **Gate**: none
@@ -415,8 +416,10 @@ Nothing of this repository is emitted into the other project.
   - "The follow-up list is read from the checkout at each run, and a process with an older integration protocol refuses every integration action and says to restart"
   - "The host persists the last forge event it delivered per pull request; on connect it asks the forge once for what it missed (merged, failed required check, needs-update, culprit) and delivers each missed notification once to subscribed sessions through the f00814 bridge; a second reconnect with nothing new delivers nothing"
   - "Scenario host-offline is green: one pull request lands while no receiver runs, then a receiver connects and is told of the merge once; the session-notified target reports not measured, and does not fail, while no real-time transport ran"
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 5fc3983d4da8, validate exit 0 and tests 564/564 claimed, no recorded run cited; acceptance 4/4: (1) Host follow-up/catch-up specs and integration transport boundaries pass with only local ports injected. (2) Protocol/version and checkout-refresh specs pass for per-run list reads and stale-process refusal. (3) Forge-event cursor/catch-up and bridge specs pass for persistence, one fetch and idempotent reconnect. (4) Host-offline scenario and notification catch-up specs pass; the result distinguishes not-measured real-time latency from successful offline delivery. — Reviewed host local-only follow-ups, protocol version refusal and offline catch-up deduplication; focused integration suite passed 564/564.
 
 ### S11b — Sessions are told within 10 s p95 through a relay transport
 - **Status**: pending
