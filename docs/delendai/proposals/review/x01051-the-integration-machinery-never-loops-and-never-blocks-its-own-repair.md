@@ -91,7 +91,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S5 — Startup reconciliation leaves a merge, rebase or cherry-pick in progress alone while its unit is live
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/src/lib/work-units/unit-operation-in-progress.service.ts`, `packages/core/src/lib/work-units/unit-uncommitted-work.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -99,8 +99,10 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
   - "The same merge in a unit that is not live is kept with a message that names the merge (the commit it merges); a rebase or cherry-pick in progress is reported and left alone, because committing in the middle of one corrupts it"
   - "A spec covers both cases on a real repository"
 - shipped-in: `eb868435ddd6`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: gpt-5.3-codex
+- review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S6 — Urgent repairs wait behind nothing in the one-by-one path, and a missing Urgent line is added
 - **Status**: review
