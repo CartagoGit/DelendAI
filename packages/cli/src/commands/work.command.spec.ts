@@ -207,9 +207,15 @@ describe('deliverPortsOf', () => {
 		expect(last).not.toHaveProperty('agent');
 	});
 
-	it('[<200ms] runs the unit engine for locate, prove and publish', async () => {
+	it('[<200ms] runs the unit engine for locate, the pre-checks, prove and publish', async () => {
 		const ports = deliverPortsOf(ctx, run);
-		for (const port of [ports.locate, ports.prove, ports.publish]) {
+		for (const port of [
+			ports.locate,
+			ports.precheck,
+			ports.coveragePrecheck,
+			ports.prove,
+			ports.publish,
+		]) {
 			expect((await port()).code).not.toBe(0);
 		}
 	});
