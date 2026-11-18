@@ -2,14 +2,14 @@
 id: f00789
 title: "The audit protocol assigns seats, slices and phases the product can verify"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-23
-last-transition-id: 0f879927-272e-4d63-95f3-0cae2f3b0c9f
-last-correlation-id: 0f879927-272e-4d63-95f3-0cae2f3b0c9f
-last-transition-from: review
-last-transition-at: 2026-11-03T04:35:23.742Z
+last-transition-id: 245e0883-45fb-4a41-89b8-8b97f484add9
+last-correlation-id: 245e0883-45fb-4a41-89b8-8b97f484add9
+last-transition-from: ready
+last-transition-at: 2026-11-18T08:36:26.323Z
 ---
 
 # f00789 — The audit protocol assigns seats, slices and phases the product can verify
