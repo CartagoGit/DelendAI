@@ -2,14 +2,14 @@
 id: x01042
 title: "The id mutex is held only to allocate"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
-last-transition-id: 0233dfb2-62ec-4d01-8d00-75140b8c703e
-last-correlation-id: 0233dfb2-62ec-4d01-8d00-75140b8c703e
-last-transition-from: in-progress
-last-transition-at: 2026-11-07T10:49:28.229Z
+last-transition-id: e0e89ef9-99f1-4351-b820-62c2ee69a092
+last-correlation-id: e0e89ef9-99f1-4351-b820-62c2ee69a092
+last-transition-from: review
+last-transition-at: 2026-11-18T04:46:27.708Z
 ---
 
 # x01042 — The id mutex is held only to allocate
@@ -31,7 +31,7 @@ On 2026-11-07 create_proposal failed twice with `lock contention: proposal-id-co
 - global_gate: none
 
 ### S1 — The critical section is the counter alone
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `plugins/proposals/src/lib/proposals/proposal-id-allocator.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposal-id-allocator-lock.spec.ts`
 - **Gate**: none
 - acceptance:

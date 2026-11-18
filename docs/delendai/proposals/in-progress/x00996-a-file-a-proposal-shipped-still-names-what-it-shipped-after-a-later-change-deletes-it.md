@@ -2,14 +2,14 @@
 id: x00996
 title: "A file a proposal shipped still names what it shipped after a later change deletes it"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: ci
 date: 2026-10-29
-last-transition-id: bac9b344-6464-45fa-8724-55badc6d4ed8
-last-correlation-id: bac9b344-6464-45fa-8724-55badc6d4ed8
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:39:17.160Z
+last-transition-id: 234b1365-1fbc-4ff6-8750-a7acafa5b3e4
+last-correlation-id: 234b1365-1fbc-4ff6-8750-a7acafa5b3e4
+last-transition-from: review
+last-transition-at: 2026-11-18T04:43:46.408Z
 ---
 
 # x00996 — A file a proposal shipped still names what it shipped after a later change deletes it
@@ -31,7 +31,7 @@ On 2026-10-29 #1538 (c00534, which removes the unused `roadmap-sqlite` package) 
 - global_gate: type
 
 ### S1 — Files are judged at the commit that shipped them
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/lint/proposal-files-exist.script.ts`, `tools/scripts/lint/proposal-files-exist.script.spec.ts`, `tools/scripts/lint/proposal-files-exist.baseline.json`
 - **Gate**: type
 - acceptance:

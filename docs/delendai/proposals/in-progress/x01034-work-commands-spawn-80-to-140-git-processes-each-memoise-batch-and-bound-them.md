@@ -2,14 +2,14 @@
 id: x01034
 title: "Work commands spawn 80 to 140 git processes each: memoise, batch and bound them"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-04
-last-transition-id: 0e03edb3-c5f1-477c-bf4e-9859e5bb112d
-last-correlation-id: 0e03edb3-c5f1-477c-bf4e-9859e5bb112d
-last-transition-from: in-progress
-last-transition-at: 2026-11-07T21:28:06.347Z
+last-transition-id: 0c30ddb0-b639-40bb-8356-f1bb6efd0428
+last-correlation-id: 0c30ddb0-b639-40bb-8356-f1bb6efd0428
+last-transition-from: review
+last-transition-at: 2026-11-18T04:45:07.085Z
 shipped-in:
   - "c1a3c73cccb7"
 ---
@@ -95,7 +95,7 @@ Measured 2026-11-04 on a fixture (one commit, bare origin, `shared-checkout-merg
 - review-log: approved by claude-sonnet-5-5 — verified at c1a3c73cccb7, validate exit 0 and tests 27/27 claimed, no recorded run cited; acceptance 2/2: (1) worktree-status.helper.ts and WORKTREE_STATUS_ARGS (status --porcelain=v2 --branch) are the one status; git-invocation-memo.helper.ts:122-179 shares and refres… (2) memo answers ls-remote once (spec :92) and work-git-spawn-budget.spec.ts :114 fails above 1 fetch per invocation across enter..retire; passes — One status and one fetch per invocation, pinned by spec.
 
 ### S5 — Validate arguments first, and pin the spawn budget
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S2, S3, S4]
 - **Files**: `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `packages/core/tests/src/lib/work-units/work-git-spawn-budget.spec.ts`, `packages/core/src/lib/work-units/work-arguments.helper.ts`, `packages/core/src/lib/contracts/constants/work-arguments.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-arguments.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/shared/git-invocation-memo.helper.ts`, `packages/core/tests/src/lib/shared/git-invocation-memo.helper.spec.ts`, `packages/core/src/lib/shared/git-read.helper.ts`, `packages/core/src/lib/shared/git-command.helper.ts`, `packages/core/src/lib/shared/git-write.ts`, `packages/core/src/lib/wip-engine/git-command.ts`, `packages/core/src/lib/development-policy/default-branch.ts`, `packages/core/src/lib/work-units/integration-merges.helper.ts`, `packages/core/src/lib/work-units/agents-seen.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/committed-file-reader.helper.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/local-certification.service.ts`, `packages/core/src/lib/work-units/reviewed-proposal.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type

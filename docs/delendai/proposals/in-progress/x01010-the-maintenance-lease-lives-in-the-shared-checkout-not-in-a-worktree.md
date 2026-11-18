@@ -2,14 +2,14 @@
 id: x01010
 title: "The maintenance lease lives in the shared checkout, not in a worktree"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: b257d91f-6c4b-47cc-b343-ad6c4aebe4d2
-last-correlation-id: b257d91f-6c4b-47cc-b343-ad6c4aebe4d2
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T08:08:32.409Z
+last-transition-id: 66d252aa-70a2-4199-8c1c-ca1b1fff004f
+last-correlation-id: 66d252aa-70a2-4199-8c1c-ca1b1fff004f
+last-transition-from: review
+last-transition-at: 2026-11-18T04:44:47.751Z
 ---
 
 # x01010 — The maintenance lease lives in the shared checkout, not in a worktree
@@ -36,7 +36,7 @@ The CLI assembly (`cli/assemble.ts`) resolved the lease path against the workspa
 - global_gate: none
 
 ### S1 — Put the maintenance lease in the shared checkout
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/development-policy/maintenance-lease-path.ts`, `packages/core/src/lib/cli/assemble.ts`, `packages/core/tests/src/lib/development-policy/maintenance-lease-path.spec.ts`
 - **Gate**: none
 - shipped-in: `56655a4722e2`

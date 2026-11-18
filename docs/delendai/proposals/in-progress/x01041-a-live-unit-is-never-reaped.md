@@ -2,14 +2,14 @@
 id: x01041
 title: "A live unit is never reaped"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
-last-transition-id: 2de06a61-70f5-486d-81e8-a2192cbb5b5a
-last-correlation-id: 2de06a61-70f5-486d-81e8-a2192cbb5b5a
-last-transition-from: in-progress
-last-transition-at: 2026-11-07T10:23:02.210Z
+last-transition-id: 38d6800e-38d8-424a-ac42-02ac51ed84e4
+last-correlation-id: 38d6800e-38d8-424a-ac42-02ac51ed84e4
+last-transition-from: review
+last-transition-at: 2026-11-18T04:46:08.181Z
 ---
 
 # x01041 — A live unit is never reaped
@@ -32,7 +32,7 @@ On 2026-11-05 the worktree of a live unit (f00808-S8) was removed while its proo
 - global_gate: none
 
 ### S1 — One liveness judgement; the branch goes before the worktree
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/unit-liveness.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/work-units/unit-removal.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/workflow-invariants.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/work-units/unit-liveness.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-removal.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`
 - **Gate**: none
 - acceptance:

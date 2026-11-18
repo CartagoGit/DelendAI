@@ -2,14 +2,14 @@
 id: x01044
 title: "A slice's block is read up to the next slice or section, so the stale-verdict gate sees it"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-07
-last-transition-id: 79072a64-5ed5-47ed-a123-ba7d6510c098
-last-correlation-id: 79072a64-5ed5-47ed-a123-ba7d6510c098
-last-transition-from: in-progress
-last-transition-at: 2026-11-07T15:36:27.470Z
+last-transition-id: a9f2c8ce-3d4d-41c5-8b39-6941883a9d8f
+last-correlation-id: a9f2c8ce-3d4d-41c5-8b39-6941883a9d8f
+last-transition-from: review
+last-transition-at: 2026-11-18T04:46:48.467Z
 ---
 
 # x01044 — A slice's block is read up to the next slice or section, so the stale-verdict gate sees it
@@ -31,7 +31,7 @@ Found while delivering f00806 (S4): `sliceBlockOf` in `plugins/proposals/src/lib
 - global_gate: none
 
 ### S1 — One slice reader, ending at the next slice or section
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `plugins/proposals/src/lib/swarm/proposal-stage.ts`, `plugins/proposals/src/lib/tools/transition/delivery-evidence.tool.ts`, `plugins/proposals/src/lib/tools/transition/peer-review-gate.tool.ts`, `plugins/proposals/tests/src/lib/swarm/proposal-stage.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/peer-review-gate.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/delivery-evidence.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/transition/validate-evidence.tool.spec.ts`
 - **Gate**: type
 - acceptance:

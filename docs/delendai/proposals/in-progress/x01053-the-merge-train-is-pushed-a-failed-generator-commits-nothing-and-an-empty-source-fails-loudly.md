@@ -2,14 +2,14 @@
 id: x01053
 title: "The merge train is pushed: a failed generator commits nothing and an empty source fails loudly"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: fe1c877e-6c3c-4103-a4f2-426457fcde4c
-last-correlation-id: fe1c877e-6c3c-4103-a4f2-426457fcde4c
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T19:29:24.508Z
+last-transition-id: 34c8fc95-97bf-4d4d-821a-9b80b52ed638
+last-correlation-id: 34c8fc95-97bf-4d4d-821a-9b80b52ed638
+last-transition-from: review
+last-transition-at: 2026-11-18T04:48:49.601Z
 ---
 
 # x01053 — The merge train is pushed: a failed generator commits nothing and an empty source fails loudly
@@ -31,7 +31,7 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - global_gate: none
 
 ### S1 — A refresh in which a generator failed commits nothing
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/cli/src/lib/generated-refresh.service.ts`, `packages/cli/src/lib/generated-refresh.service.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -43,7 +43,7 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S2 — A generator with nothing to generate from fails loudly
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/generate/managed-lazy-catalog.script.ts`, `tools/scripts/generate/managed-lazy-catalog.script.spec.ts`, `tools/scripts/generate/from-manifests.script.ts`, `tools/scripts/generate/from-manifests.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -56,7 +56,7 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S3 — The train's scratch worktree has the shared dependencies
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/link-train-dependencies.script.ts`, `packages/core/src/cli.ts`
 - **Gate**: type
 - acceptance:
@@ -68,7 +68,7 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S4 — A train that cannot run leaves its riders to the individual path
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`
 - **Gate**: type
 - acceptance:
@@ -80,7 +80,7 @@ Evidence 2026-11-08. assembleTrain (tools/scripts/forge/train-assembly.ts) merge
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S5 — Every train regenerates its derived files once, conflict or not
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`
 - **Gate**: none
 
@@ -92,7 +92,7 @@ With S1–S4 on develop the train was still declined: a member that left the int
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S6 — A train's CI run passes the commit-branch lint
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/lint/commit-branch-discipline.script.ts`, `tools/scripts/lint/commit-branch-discipline.script.spec.ts`
 - **Gate**: none
 
@@ -104,7 +104,7 @@ Once trains were pushed, every train run went red, even a train of one green pul
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD. The review is stale relative to current develop and needs fresh shipped-in evidence for acceptance.
 
 ### S7 — The refresher judges riders as the queue does
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`
 - **Gate**: none
 

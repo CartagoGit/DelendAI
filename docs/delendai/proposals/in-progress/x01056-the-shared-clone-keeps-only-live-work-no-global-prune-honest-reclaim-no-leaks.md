@@ -2,14 +2,14 @@
 id: x01056
 title: "The shared clone keeps only live work: no global prune, honest reclaim, no leaks"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 01d984ec-f732-4a47-860d-f02ae5d25514
-last-correlation-id: 01d984ec-f732-4a47-860d-f02ae5d25514
-last-transition-from: in-progress
-last-transition-at: 2026-11-09T01:01:38.921Z
+last-transition-id: 9f2ece9a-0445-490c-b3a8-360bf72fb582
+last-correlation-id: 9f2ece9a-0445-490c-b3a8-360bf72fb582
+last-transition-from: review
+last-transition-at: 2026-11-18T04:49:49.479Z
 ---
 
 # x01056 — The shared clone keeps only live work: no global prune, honest reclaim, no leaks

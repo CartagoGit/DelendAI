@@ -2,14 +2,14 @@
 id: x00999
 title: "A merged pull request spends only the head it merged"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-01
-last-transition-id: 2053bacf-4d84-4dce-92fc-95bceb52e8ee
-last-correlation-id: 2053bacf-4d84-4dce-92fc-95bceb52e8ee
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:42:39.528Z
+last-transition-id: 6dc3bfe8-4f5e-441e-ab6b-6432e68dd1e2
+last-correlation-id: 6dc3bfe8-4f5e-441e-ab6b-6432e68dd1e2
+last-transition-from: review
+last-transition-at: 2026-11-18T04:44:06.319Z
 ---
 
 # x00999 — A merged pull request spends only the head it merged
@@ -31,7 +31,7 @@ On 2026-11-01 the queue's reaper listed pull requests moments before #1614 opene
 - global_gate: type
 
 ### S1 — The tip decides
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/ref-lifecycle/reconcile.service.ts`, `packages/core/src/lib/ref-lifecycle/reconcile.interface.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`
 - **Gate**: type
 - acceptance:

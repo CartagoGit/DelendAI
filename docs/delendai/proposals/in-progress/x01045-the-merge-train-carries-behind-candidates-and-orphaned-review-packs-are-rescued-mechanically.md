@@ -2,14 +2,14 @@
 id: x01045
 title: "The merge train carries behind candidates and orphaned review packs are rescued mechanically"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-07
-last-transition-id: 4fde1895-c49a-4cdd-807c-0fbd250c06be
-last-correlation-id: 4fde1895-c49a-4cdd-807c-0fbd250c06be
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T01:34:35.905Z
+last-transition-id: 8b1b9f1c-589c-4342-8849-68a7a8440d24
+last-correlation-id: 8b1b9f1c-589c-4342-8849-68a7a8440d24
+last-transition-from: review
+last-transition-at: 2026-11-18T04:47:09.454Z
 ---
 
 # x01045 — The merge train carries behind candidates and orphaned review packs are rescued mechanically
@@ -32,7 +32,7 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
 - global_gate: type
 
 ### S1 — Behind candidates ride trains; derived conflicts are regenerated on the train
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/forge/independent-candidates.ts`, `tools/scripts/forge/independent-candidates.spec.ts`, `tools/scripts/forge/queue-acceptance.ts`, `tools/scripts/forge/queue-acceptance.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`
 - **Gate**: type
 - acceptance:
@@ -46,7 +46,7 @@ Evidence 2026-11-07. The merge train (q00045 S6: tools/scripts/forge/queue-order
 - review-log: requested_changes by gpt-5.3-codex — Please resubmit S1 with fresh evidence tied to current tip (shipped-in + scoped proof for acceptance criteria). Drift since review start makes prior evidence stale.
 
 ### S2 — Orphaned review packs are rescued with their verdicts byte-identical
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/git/stale-verdict-conflicts.ts`, `tools/scripts/git/stale-verdict-conflicts.spec.ts`, `tools/scripts/git/refresh-candidate-artifacts.script.ts`, `tools/scripts/lint/biome-baseline.script.ts`
 - **Gate**: type
 - acceptance:

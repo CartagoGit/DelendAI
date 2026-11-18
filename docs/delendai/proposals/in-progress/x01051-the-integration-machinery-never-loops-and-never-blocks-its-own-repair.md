@@ -2,14 +2,14 @@
 id: x01051
 title: "The integration machinery never loops and never blocks its own repair"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: bacf0da0-67dd-43ae-a2d0-0d4db7073423
-last-correlation-id: bacf0da0-67dd-43ae-a2d0-0d4db7073423
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T17:18:29.103Z
+last-transition-id: 82d5378e-3299-4a47-8ea5-6e0051ae52d9
+last-correlation-id: 82d5378e-3299-4a47-8ea5-6e0051ae52d9
+last-transition-from: review
+last-transition-at: 2026-11-18T04:48:30.398Z
 ---
 
 # x01051 — The integration machinery never loops and never blocks its own repair
@@ -32,7 +32,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - global_gate: none
 
 ### S1 — One predicate for a work ref's landed reading: publisher and ref-maintenance cannot disagree
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/work-ref-lifecycle.service.ts`, `packages/core/src/lib/wip-engine/landed-work-ref.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/git/maintain-ref-namespace.script.ts`, `packages/core/tests/src/lib/work-units/work-ref-lifecycle.service.spec.ts`, `packages/core/tests/src/lib/wip-engine/work-checkout-publisher.spec.ts`, `tools/scripts/git/work-ref-fate-agreement.e2e.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -46,7 +46,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S2 — A delivered publication waiting for its pull request is not orphaned
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/orphaned-work.service.ts`, `packages/core/src/lib/work-units/publication-standings.service.ts`, `packages/core/src/lib/contracts/interfaces/orphaned-work.interface.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.spec.ts`, `packages/core/tests/src/lib/work-units/orphaned-work.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/publication-standings.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -60,7 +60,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S3 — The queue falls back to each accepted candidate's own merge when the train cannot run
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/forge/keep-the-queue-moving.script.ts`, `tools/scripts/forge/train-fallback.ts`, `tools/scripts/forge/train-fallback.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -75,7 +75,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S4 — --urgent travels onto the pull request and the queue leads with it
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S3]
 - **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/lib/work-units/publication-pull-request.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/cli.ts`, `packages/cli/src/commands/work.command.ts`, `tools/scripts/forge/queue-order.interface.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/publication-pull-request.service.spec.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none
@@ -91,7 +91,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S5 — Startup reconciliation leaves a merge, rebase or cherry-pick in progress alone while its unit is live
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `packages/core/src/lib/work-units/unit-operation-in-progress.service.ts`, `packages/core/src/lib/work-units/unit-uncommitted-work.service.ts`, `packages/core/tests/src/lib/work-units/unit-forge-sync.service.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -105,7 +105,7 @@ S1: `work status` reports a wip ref taken off the forge and put back 30 times in
 - review-log: requested_changes by gpt-5.3-codex — Return for fresh review pack on current tip (shipped-in, validate exit, tests, criteria evidence). Current round lacks up-to-date review evidence under observed drift.
 
 ### S6 — Urgent repairs wait behind nothing in the one-by-one path, and a missing Urgent line is added
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S4]
 - **Files**: `packages/core/src/lib/work-units/pull-request-urgency.service.ts`, `packages/core/src/runtime/index.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/queue-order.spec.ts`, `tools/scripts/forge/candidate-disposition.ts`, `tools/scripts/forge/candidate-disposition.spec.ts`, `tools/scripts/forge/keep-the-queue-moving.script.ts`, `packages/core/tests/src/lib/work-units/pull-request-urgency.service.e2e.spec.ts`
 - **Gate**: none

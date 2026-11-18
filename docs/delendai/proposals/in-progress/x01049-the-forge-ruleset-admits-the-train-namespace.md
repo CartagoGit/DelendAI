@@ -2,14 +2,14 @@
 id: x01049
 title: "The forge ruleset admits the train namespace"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-08
-last-transition-id: 57f718e6-dec7-4bf8-a380-dfbf9e9ca965
-last-correlation-id: 57f718e6-dec7-4bf8-a380-dfbf9e9ca965
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T06:13:05.897Z
+last-transition-id: 1b0b5202-2a22-4b51-bec4-859f9f81d3e8
+last-correlation-id: 1b0b5202-2a22-4b51-bec4-859f9f81d3e8
+last-transition-from: review
+last-transition-at: 2026-11-18T04:48:09.353Z
 ---
 
 # x01049 — The forge ruleset admits the train namespace
@@ -31,7 +31,7 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - global_gate: none
 
 ### S1 — Allow the train namespace and report a declined push
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/queue-order.ts`, `tools/scripts/forge/publication-prefixes.ts`
 - **Gate**: none
 - shipped-in: `9fd05bfa54c1`
@@ -41,7 +41,7 @@ The merge-train queue has never pushed a train: the branch-namespace ruleset doe
 - review-log: requested_changes by gpt-5.3-codex — Requesting a fresh submission bound to current HEAD: review has high drift (age and touched files), so prior evidence is no longer sufficient to approve safely.
 
 ### S2 — The pre-push guard admits the train namespace, from one source
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/development-policy/owned-ref-prefixes.ts`, `packages/core/src/lib/development-policy/git-guard-namespaces.ts`, `packages/core/src/cli.ts`, `tools/scripts/forge/publication-prefixes.ts`, `packages/core/tests/src/lib/development-policy/git-guard-namespaces.spec.ts`
 - **Gate**: none
 

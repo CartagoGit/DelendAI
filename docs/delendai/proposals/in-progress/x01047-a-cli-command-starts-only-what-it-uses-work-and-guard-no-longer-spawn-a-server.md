@@ -2,14 +2,14 @@
 id: x01047
 title: "A CLI command starts only what it uses: work and guard no longer spawn a server"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: c1940467-d0d8-46c4-a650-3b0d6e4a25aa
-last-correlation-id: c1940467-d0d8-46c4-a650-3b0d6e4a25aa
-last-transition-from: in-progress
-last-transition-at: 2026-11-08T01:23:31.813Z
+last-transition-id: b6ea1e88-97aa-43bd-9ac8-a675ce00f572
+last-correlation-id: b6ea1e88-97aa-43bd-9ac8-a675ce00f572
+last-transition-from: review
+last-transition-at: 2026-11-18T04:47:49.052Z
 ---
 
 # x01047 — A CLI command starts only what it uses: work and guard no longer spawn a server
@@ -31,7 +31,7 @@ Every CLI command pays for what only some use. On a fixture repo `work status` t
 - global_gate: none
 
 ### S1 — Lazy server context, per-command loading and a startup budget spec
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/lib/lazy-context.factory.ts`, `packages/cli/src/contracts/interfaces/lazy-context.interface.ts`, `packages/cli/src/lib/lazy-context.factory.spec.ts`, `packages/cli/src/lib/command-loader.service.ts`, `packages/cli/src/lib/command-loader.service.spec.ts`, `packages/cli/src/lib/startup-budget.spec.ts`
 - **Gate**: type
 - acceptance:

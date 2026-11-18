@@ -2,14 +2,14 @@
 id: x01054
 title: "A merge never leaves a proposal twice, and a claim never leaves its old pull request open"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: e3387340-4083-47d1-9d1a-c4bdf9c44f93
-last-correlation-id: e3387340-4083-47d1-9d1a-c4bdf9c44f93
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T19:14:53.411Z
+last-transition-id: a5f89c46-e293-444b-b02d-6e7e907e2c6c
+last-correlation-id: a5f89c46-e293-444b-b02d-6e7e907e2c6c
+last-transition-from: review
+last-transition-at: 2026-11-18T04:49:08.862Z
 ---
 
 # x01054 — A merge never leaves a proposal twice, and a claim never leaves its old pull request open
@@ -35,7 +35,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - global_gate: none
 
 ### S1 — Merges keep one copy of each proposal id
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `plugins/proposals/src/lib/proposals/reconcile-duplicate-ids.ts`, `plugins/proposals/src/lib/contracts/constants/status-progress.constant.ts`, `plugins/proposals/src/lib/contracts/interfaces/proposal-copy.interface.ts`, `plugins/proposals/tests/src/lib/proposals/reconcile-duplicate-ids.e2e.spec.ts`, `tools/scripts/proposals/reconcile-duplicate-ids.script.ts`, `tools/scripts/proposals/keep-one-proposal-copy.ts`, `tools/scripts/proposals/keep-one-proposal-copy.spec.ts`, `tools/scripts/forge/train-assembly.ts`, `tools/scripts/forge/train-assembly.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: type
 - acceptance:
@@ -49,7 +49,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — A claim retires the publication it superseded
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/superseded-publication.service.ts`, `packages/core/src/lib/contracts/interfaces/superseded-publication.interface.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/tests/src/lib/work-units/superseded-publication.service.e2e.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -63,7 +63,7 @@ Both defects were seen on 2026-11-08 and each stopped work until a person repair
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — The land rehearsal's gates judge for the branch they rehearse
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/lib/rehearsed-branch.ts`, `tools/scripts/lib/rehearsed-branch.spec.ts`, `tools/scripts/lint/proposal-hygiene.script.ts`, `tools/scripts/forge/land-rehearsal.script.ts`
 - **Gate**: type
 - acceptance:

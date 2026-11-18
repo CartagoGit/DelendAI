@@ -2,14 +2,14 @@
 id: x01036
 title: "The token budget measures the same swarm catalog on every machine"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-05
-last-transition-id: 29804448-81b3-4454-979d-a36b20cce26c
-last-correlation-id: 29804448-81b3-4454-979d-a36b20cce26c
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:35:22.264Z
+last-transition-id: 7e9a488a-bdb8-4db8-9061-bbfba51b6c59
+last-correlation-id: 7e9a488a-bdb8-4db8-9061-bbfba51b6c59
+last-transition-from: review
+last-transition-at: 2026-11-18T04:45:47.386Z
 ---
 
 # x01036 — The token budget measures the same swarm catalog on every machine
@@ -35,7 +35,7 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 - global_gate: none
 
 ### S1 — A spec that boots real plugins gets a worker of its own
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `vitest.shared.ts`, `tools/scripts/report/token-budget-dashboard.e2e.spec.ts`
 - **Gate**: none
 - shipped-in: `5a9224bac`
@@ -47,7 +47,7 @@ That red spec cost two red jobs, not one. The zone's step that uploads its cover
 - review-log: requested_changes by gpt-5.3-codex — S1 review evidence is stale: shipped-in is 5a9224bac, but vitest.shared.ts changed on develop after that delivery. Please redeliver S1 on current HEAD with a fresh shipped-in and updated evidence for the isolate behavior before re-review.
 
 ### S2 — A failed zone still uploads the coverage it measured
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/blob-upload-on-failure.spec.ts`
 - **Gate**: none
 - shipped-in: `9b0900152`

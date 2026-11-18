@@ -2,14 +2,14 @@
 id: x01000
 title: "every client of a server reaches the tools the surface hides"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: extension
 date: 2026-11-01
-last-transition-id: 4feaaa99-cf41-4750-8fa7-3d28480aae7b
-last-correlation-id: 4feaaa99-cf41-4750-8fa7-3d28480aae7b
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:46:05.383Z
+last-transition-id: 756019bf-cdae-4355-9671-a95ea07cc3d9
+last-correlation-id: 756019bf-cdae-4355-9671-a95ea07cc3d9
+last-transition-from: review
+last-transition-at: 2026-11-18T04:44:25.820Z
 ---
 
 # x01000 — every client of a server reaches the tools the surface hides
@@ -34,7 +34,7 @@ Reaching the real server exposed two more defects. `state_health` answered 700 K
 - global_gate: type
 
 ### S1 — The shared client reaches hidden tools
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `docs/delendai/TOKEN-BUDGETS.md`, `extensions/vscode/src/providers/kpi-dashboard-provider.ts`, `extensions/vscode/src/test/kpi-dashboard-provider.spec.ts`, `extensions/vscode/src/test/tool-names.spec.ts`, `packages/cli/src/lib/helpers/cli-command.helper.ts`, `packages/client/src/lib/contracts/interfaces/resolved-capability.interface.ts`, `packages/client/src/lib/transport/mcp-stdio-client.ts`, `packages/client/src/lib/transport/tool-reach.helper.ts`, `packages/client/tests/transport/tool-reach.spec.ts`, `packages/core/src/lib/contracts/constants/preset-metadata.generated.ts`, `plugins/proposals/src/generated/tool-outputs.ts`, `plugins/proposals/src/lib/proposals/quarantine.ts`, `plugins/proposals/src/lib/proposals/sync-proposal-registry.ts`, `plugins/proposals/src/lib/tools/state-tools.tool.ts`, `plugins/proposals/tests/src/lib/proposals/sync-proposal-registry.spec.ts`, `plugins/proposals/tests/src/lib/state-tools.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `extensions/vscode/scripts/build.ts`, `extensions/vscode/src/test/build-smoke.spec.ts`, `extensions/vscode/package.json`
 - **Gate**: type
 - acceptance:

@@ -2,14 +2,14 @@
 id: x01035
 title: "Every CLI command pays about 1 s before it starts: a server child and an eager command registry"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-05
-last-transition-id: 384a8307-1f82-4a2a-9dc3-73e5863c72b1
-last-correlation-id: 384a8307-1f82-4a2a-9dc3-73e5863c72b1
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T10:58:41.861Z
+last-transition-id: cc279ea9-dee9-4e13-a1f3-000ad6ea4fc9
+last-correlation-id: cc279ea9-dee9-4e13-a1f3-000ad6ea4fc9
+last-transition-from: review
+last-transition-at: 2026-11-18T04:45:26.749Z
 ---
 
 # x01035 — Every CLI command pays about 1 s before it starts: a server child and an eager command registry
@@ -33,7 +33,7 @@ Measured 2026-11-05 on a one-commit fixture (bare origin, `shared-checkout-merge
 - global_gate: type
 
 ### S1 — Work subcommands start no server child
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/cli/src/index.ts`, `packages/cli/src/contracts/interfaces/cli-command.interface.ts`, `packages/cli/src/commands/groups/core.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -47,7 +47,7 @@ Measured 2026-11-05 on a one-commit fixture (bare origin, `shared-checkout-merge
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — The CLI loads only the command it runs
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S1]
 - **Files**: `packages/cli/src/commands/registry.ts`, `packages/cli/src/commands/registry-delegation.spec.ts`, `packages/cli/src/lib/command-loader.service.ts`, `packages/cli/src/index.ts`
 - **Gate**: type
