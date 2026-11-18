@@ -258,7 +258,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 - **Decisions**: none
 - acceptance:
   - "clone-forge.service.spec.ts adds the husk cases: a husk directory is ended and a stray file inside one is kept, as the husk spec asserted before it was deleted."
-  - "worktree-husks.service.ts, its interface and its spec are deleted, workflow-doctor.service.ts and work-unit-reap.service.ts import from the reconciler, and `git grep -n 'reapHusks\|keepStrayFiles\|huskDirectories\|husksInvariant' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
+  - "reapHusks and keepStrayFiles are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function reapHusks'` finds one definition)."
 
 ### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending
