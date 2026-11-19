@@ -287,7 +287,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "endFinishedUnits, hydrateKeptUnits and reenteredUnit are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function endFinishedUnits\|function hydrateKeptUnits\|function reenteredUnit' -- packages` finds one definition each)."
+  - "`git grep -n 'endFinishedUnits\\|hydrateKeptUnits\\|reenteredUnit' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler; work-unit-enter creates refs only through the reconciler."
   - "ref-lifecycle-guard.script.spec.ts: the guard only reports; it has no --reap path."
 
 ### S5e — The branch flow, part 5: a proposal whose every slice is approved closes in one reconciler step
