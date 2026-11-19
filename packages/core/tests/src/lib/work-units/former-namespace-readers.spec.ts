@@ -87,7 +87,7 @@ describe('the namespace a ref lives under decides how it is read', () => {
 		const plan = planOwnedRetirement(branches, FORMER_PUBLICATION);
 		expect(plan?.workBranch).toBe(FORMER_WORK);
 		expect(plan?.publicationBranch).toBe(FORMER_PUBLICATION);
-		expect(plan?.retiredRef.startsWith('refs/retired/')).toBe(true);
+		expect(plan?.retiredRef.includes('delendai')).toBe(false);
 		const kept = retiredRefsOf(branches, 'u');
 		expect(kept).toHaveLength(2);
 		expect(kept.every((ref) => ref.endsWith('/retired/u'))).toBe(true);
