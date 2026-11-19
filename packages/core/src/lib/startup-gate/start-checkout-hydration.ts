@@ -20,7 +20,7 @@ import {
 	startHydrationWatch,
 } from '../startup-reconciler/hydration-watch';
 
-import { endFinishedUnits } from '../ref-reconciler/finished-units-end.service';
+import { reconcileFinishedUnits } from '../ref-reconciler/unit-reconcile.service';
 
 import type { IHydrationWatch } from '../startup-reconciler/hydration-watch.interface';
 import type { IStartCheckoutHydrationInput } from './start-checkout-hydration.interface';
@@ -39,7 +39,11 @@ const endUnitsAfterPass = async (
 ): Promise<void> => {
 	try {
 		const ended = (
-			await endFinishedUnits({ root, policy: input.policy, apply: true })
+			await reconcileFinishedUnits({
+				root,
+				policy: input.policy,
+				apply: true,
+			})
 		).filter((unit) => unit.outcome === 'ended');
 		if (ended.length === 0) return;
 		input.onUnitsEnded?.(

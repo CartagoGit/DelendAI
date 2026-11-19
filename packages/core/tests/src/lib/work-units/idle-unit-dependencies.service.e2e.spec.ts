@@ -9,7 +9,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { releaseIdleDependencies } from '@delendai/core/lib/work-units/idle-unit-dependencies.service';
-import { reenteredUnit } from '@delendai/core/lib/ref-reconciler/kept-unit-hydration.service';
+import { reconcileReentry } from '@delendai/core/lib/ref-reconciler/unit-reconcile.service';
 import { enteredDependencies } from '@delendai/core/lib/work-units/unit-dependencies.service';
 
 describe('releaseIdleDependencies', () => {
@@ -72,7 +72,7 @@ describe('releaseIdleDependencies', () => {
 			'skipped',
 		);
 		expect(
-			await reenteredUnit(bare, undefined, 'wip/x', 'develop'),
+			await reconcileReentry(bare, undefined, 'wip/x', 'develop'),
 		).toEqual({});
 	});
 

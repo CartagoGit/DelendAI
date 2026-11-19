@@ -9,7 +9,7 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { withBriefing } from './work-unit-enter-briefing.service';
-import { reenteredUnit } from '../ref-reconciler/kept-unit-hydration.service';
+import { reconcileReentry } from '../ref-reconciler/unit-reconcile.service';
 import { readSwarm } from './work-swarm.service';
 import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
@@ -278,7 +278,7 @@ export const enteredHeld = async (
 			path: path ?? null,
 			created: false,
 			session: claimed,
-			...(await reenteredUnit(root, path, ref, base)),
+			...(await reconcileReentry(root, path, ref, base)),
 		});
 	}
 	// A proposal in progress keeps one branch: later work continues on the
@@ -302,7 +302,7 @@ export const enteredHeld = async (
 			path: continued.path,
 			created: false,
 			session: claimed,
-			...(await reenteredUnit(root, path, continued.ref, base)),
+			...(await reconcileReentry(root, path, continued.ref, base)),
 		});
 	}
 	const createdRef =
