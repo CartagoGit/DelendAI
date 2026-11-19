@@ -49,7 +49,7 @@ vi.mock('@delendai/core/lib/work-units/kept-unit-hydration.service', () => ({
 vi.mock('@delendai/core/lib/work-units/idle-unit-dependencies.service', () => ({
 	releaseIdleDependencies: m.releaseIdleDependencies,
 }));
-vi.mock('@delendai/core/lib/work-units/worktree-husks.service', () => ({
+vi.mock('@delendai/core/lib/ref-reconciler/husk-directories.service', () => ({
 	reapHusks: m.reapHusks,
 	keepStrayFiles: m.keepStrayFiles,
 }));

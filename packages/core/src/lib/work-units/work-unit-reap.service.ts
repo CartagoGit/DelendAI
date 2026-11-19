@@ -19,7 +19,10 @@ import {
 	mainWorktreeOf,
 	openWork,
 } from './work-unit-shared.service';
-import { keepStrayFiles, reapHusks } from './worktree-husks.service';
+import {
+	keepStrayFiles,
+	reapHusks,
+} from '../ref-reconciler/husk-directories.service';
 import { reapTestTempLeftovers } from './test-temp-leftovers.service';
 import { reapStrayRefs } from './stray-refs-reap.service';
 import { reapRetiredMachinery } from './retired-machinery-reap.service';

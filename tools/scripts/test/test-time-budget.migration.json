@@ -833,7 +833,6 @@
 		"packages/core/tests/src/lib/work-units/work-unit.service.e2e.spec.ts",
 		"packages/core/tests/src/lib/work-units/workflow-kpis.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/worktree-agent.service.spec.ts",
-		"packages/core/tests/src/lib/work-units/worktree-husks.service.spec.ts",
 		"packages/core/tests/src/lib/workspace-migration/cache-layout-step.service.spec.ts",
 		"packages/core/tests/src/lib/workspace-migration/classify-residual.service.spec.ts",
 		"packages/core/tests/src/lib/workspace-migration/config-transitions.service.spec.ts",
