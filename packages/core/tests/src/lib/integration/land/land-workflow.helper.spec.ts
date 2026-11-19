@@ -180,3 +180,29 @@ describe('renderLandWorkflow reconcile step', () => {
 		expect(withReconcile()).not.toContain('Reconcile the refs');
 	});
 });
+
+describe('renderLandWorkflow repair', () => {
+	const withRepair = (command?: string): string =>
+		renderLandWorkflow({
+			integrationBranch: 'develop',
+			releaseBranch: 'main',
+			identity: DEFAULT_INTEGRATION_OPTIONS.identity,
+			cron: '*/15 * * * *',
+			passCommand: 'pass',
+			promotionCommand: 'promote',
+			...(command === undefined ? {} : { repairCommand: command }),
+			setupSteps: ['- uses: checkout'],
+		});
+
+	it('[<50ms] runs the repair in the promote job, after the integration branch CI ended', () => {
+		const text = withRepair('repair-it');
+		expect(text).toContain('run: repair-it');
+		expect(text.indexOf('run: promote')).toBeLessThan(
+			text.indexOf('run: repair-it'),
+		);
+	});
+
+	it('[<50ms] renders no repair step when none is declared', () => {
+		expect(withRepair()).not.toContain('Revert the culprit');
+	});
+});
