@@ -2,10 +2,14 @@
 id: f00824
 title: "A delendai upgrade never strands work: proposals carry the version they target, and every format change ships its reader, migration and stamp"
 kind: feat
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-19
+last-transition-id: 6f8fc8e1-a718-40fc-bf9d-057e1f834b46
+last-correlation-id: 6f8fc8e1-a718-40fc-bf9d-057e1f834b46
+last-transition-from: ready
+last-transition-at: 2026-11-19T08:48:19.009Z
 ---
 
 # f00824 — A delendai upgrade never strands work: proposals carry the version they target, and every format change ships its reader, migration and stamp
