@@ -2086,7 +2086,6 @@
 		"tools/scripts/git/harden-git-hooks.script.spec.ts",
 		"tools/scripts/git/prepare-clone.script.spec.ts",
 		"tools/scripts/git/rewrite-llm-attribution.spec.ts",
-		"tools/scripts/hooks/commit-time-checks.script.spec.ts",
 		"tools/scripts/hooks/refuse-integration-commit.script.spec.ts",
 		"tools/scripts/host/forge-seam.service.spec.ts",
 		"tools/scripts/host/host-supervisor-process.spec.ts",
