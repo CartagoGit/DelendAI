@@ -190,6 +190,7 @@ The owner wants this repository, which is delendai itself, to stop prefixing its
   - "After it lands a new unit here enters `wip/<agent>/...` and publishes `pr/<agent>/...`, while every existing `delendai/...` unit keeps entering, checkpointing and publishing under its own name until it ends."
   - "WORK_REF_SHAPE defaults to the readable shape and work-ref-migration.e2e.spec.ts appends the old shape to PREVIOUS_SHAPES."
   - "q00040 S4's 'old namespace' becomes the declared former prefixes, never the current one: bare `wip/` here is current, not legacy; and its rename step obeys S7 (never a ref with an open pull request)."
+  - "Out of scope: the `refs/delendai/claims/`, `refs/delendai/ids/` and `refs/delendai/publish/` machinery roots and the `refs/notes/delendai/` maker notes are not work refs and keep their names."
 - shipped-in: `014e23ff50ec`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
