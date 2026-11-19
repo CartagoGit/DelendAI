@@ -1522,6 +1522,7 @@
         "@delendai/rules": "workspace:*",
         "@delendai/search": "workspace:*",
         "@delendai/security": "workspace:*",
+        "@delendai/self-learning": "workspace:*",
         "@delendai/state": "workspace:*",
         "@delendai/state-sqlite": "workspace:*",
         "@delendai/state-telemetry": "workspace:*",

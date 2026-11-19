@@ -81,6 +81,56 @@ const inReview = {
 	error: { code: 'already-in-review', reason: 'x' },
 };
 
+describe('deliverUnit, failures reach the learning store', () => {
+	it('[<20ms] records a gate failure when a static gate refuses', async () => {
+		const seen: unknown[] = [];
+		const { value } = ports(
+			{},
+			EXIT_CODE.OK,
+			'S1',
+			async () => undefined,
+			EXIT_CODE.VALIDATION,
+		);
+		await deliverUnit({
+			...value,
+			recordFailure: async (failure) => {
+				seen.push(failure);
+			},
+		});
+		expect(seen).toMatchObject([{ source: 'gate', unit: 'S1' }]);
+	});
+
+	it('[<20ms] records a deliver refusal, and a failing sink never changes the result', async () => {
+		const { value } = ports({
+			review: { ok: false, reason: 'nope' },
+		});
+		const seen: unknown[] = [];
+		const refused = await deliverUnit({
+			...value,
+			recordFailure: async (failure) => {
+				seen.push(failure);
+				throw new Error('disk full');
+			},
+		});
+		expect(refused.code).toBe(EXIT_CODE.VALIDATION);
+		expect(seen).toMatchObject([
+			{ source: 'deliverRefusal', subject: 'nope' },
+		]);
+	});
+
+	it('[<20ms] records nothing for a delivery that succeeds', async () => {
+		const seen: unknown[] = [];
+		const { value } = ports({});
+		await deliverUnit({
+			...value,
+			recordFailure: async (failure) => {
+				seen.push(failure);
+			},
+		});
+		expect(seen).toEqual([]);
+	});
+});
+
 describe('deliverUnit', () => {
 	it("[<20ms] refuses with the proof's message before the proof takes its slot when a static gate fails", async () => {
 		const { calls, value } = ports(

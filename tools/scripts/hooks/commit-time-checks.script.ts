@@ -117,6 +117,29 @@ const tellSharedFiles = async (staged: readonly string[]): Promise<void> => {
 	}
 };
 
+/** One hook failure per failed check, through the injected sink. */
+export const recordHookFailures = async (
+	checks: readonly (readonly string[])[],
+	failures: readonly (string | undefined)[],
+	files: readonly string[],
+	record: (report: {
+		readonly subject: string;
+		readonly files: readonly string[];
+	}) => Promise<void>,
+): Promise<void> => {
+	for (const [index, failure] of failures.entries()) {
+		if (failure === undefined) continue;
+		try {
+			await record({
+				subject: (checks[index] ?? []).join(' '),
+				files: files.slice(0, 20),
+			});
+		} catch {
+			// Learning never changes what the hook answers.
+		}
+	}
+};
+
 const main = async (): Promise<number> => {
 	const paths = git('diff', '--cached', '--name-only', '--diff-filter=d')
 		.split('\n')
@@ -127,6 +150,12 @@ const main = async (): Promise<number> => {
 	if (checks.length === 0) return 0;
 	syncAgentNotes();
 	const failures = await Promise.all(checks.map(failureOf));
+	await recordHookFailures(checks, failures, paths, async (report) => {
+		const { recordProjectFailure } = await import(
+			'@delendai/self-learning/public'
+		);
+		await recordProjectFailure(process.cwd(), 'hook', report);
+	});
 	for (const failure of failures) {
 		if (failure !== undefined) process.stderr.write(failure);
 	}
