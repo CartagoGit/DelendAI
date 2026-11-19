@@ -290,6 +290,11 @@ export interface ILandWorkflowInput {
 	 * when the branch is green, files one urgent repair when it is red.
 	 */
 	readonly promotionCommand?: string;
+	/**
+	 * Run in the same job after a red run of the integration branch: opens one
+	 * revert of the culprit merge as a repair (see land-revert.helper).
+	 */
+	readonly repairCommand?: string;
 	/** Run when the release branch moves: carries it back into the integration branch. */
 	readonly forwardSyncCommand?: string;
 	/** Upkeep run on the schedule, every step whatever the previous one concluded. */

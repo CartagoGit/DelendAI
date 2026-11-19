@@ -19,7 +19,7 @@
  * watchdog on the default branch: any work it finds was a missed event.
  */
 
-import { reconcileStep } from './land-workflow-reconcile.helper';
+import { reconcileStep, repairStep } from './land-workflow-reconcile.helper';
 import type {
 	ILandUpkeepStep,
 	ILandWorkflowIdentity,
@@ -288,6 +288,7 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 						'- name: Open the promotion if it is ready, or file its urgent repair',
 						...envLines(token),
 						`  run: ${input.promotionCommand}`,
+						...repairStep(input.repairCommand, envLines(token)),
 					],
 				},
 				input.identity,
