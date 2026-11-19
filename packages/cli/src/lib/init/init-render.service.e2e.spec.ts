@@ -87,7 +87,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			}),
 		);
 		expect(generic.mcpServers.DelendAI).toMatchObject(
-			buildCanonicalLaunch({ workspace: '.', serverName: 'DelendAI' }),
+			buildCanonicalLaunch({
+				workspace: '.',
+				serverName: 'DelendAI',
+			}),
 		);
 	});
 

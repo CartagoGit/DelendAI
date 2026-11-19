@@ -37,6 +37,7 @@
  *     caller-supplied plugins into `--plugins`.
  */
 
+import { CLI_VERSION } from '../contracts/constants/version.constant';
 import type { ICliGlobalOptions } from '../contracts/interfaces/cli-command.interface';
 import {
 	CANONICAL_CLI_BIN,
@@ -208,7 +209,9 @@ export const buildServerArgs = (
 
 /**
  * The single external launch shape. Consumers install/run the published CLI
- * package; the repository-only host script is never part of this result.
+ * package pinned to an exact released version (this CLI's own unless
+ * `version` says otherwise); the repository-only host script is never part
+ * of this result.
  */
 export const buildCanonicalLaunch = (
 	options: ICanonicalLaunchOptions,
@@ -230,7 +233,7 @@ export const buildCanonicalLaunch = (
 		command,
 		args: [
 			'--package',
-			CANONICAL_CLI_PACKAGE,
+			`${CANONICAL_CLI_PACKAGE}@${options.version ?? CLI_VERSION}`,
 			CANONICAL_CLI_BIN,
 			...serverArgs,
 		],
