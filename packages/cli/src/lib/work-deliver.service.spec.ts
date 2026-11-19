@@ -45,6 +45,7 @@ const ports = (
 			code: EXIT_CODE.OK,
 			data: { worktree: '/unit', publication: 'pr/unit' },
 		}),
+		coveragePrecheck: async () => ({ code: EXIT_CODE.OK }),
 		precheck: async () => {
 			calls.push('precheck');
 			return precheckCode === EXIT_CODE.OK

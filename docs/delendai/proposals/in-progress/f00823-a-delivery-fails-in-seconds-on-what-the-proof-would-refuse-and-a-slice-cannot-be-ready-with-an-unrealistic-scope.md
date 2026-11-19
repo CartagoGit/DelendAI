@@ -48,10 +48,10 @@ On 2026-11-18, 92 PRs merged with p50 12 min open-to-merge but p90 about 3 h. Th
 - **DependsOn**: [S1]
 - **Files**: `tools/scripts/ci/changed-file-coverage.script.ts`, `tools/scripts/ci/changed-file-coverage.interface.ts`, `new:packages/cli/src/lib/work-deliver-coverage-precheck.service.ts`, `new:packages/cli/src/lib/work-deliver-coverage-precheck.service.spec.ts`
 - **Gate**: lint
-- **Decisions**: The fast path runs only the mirror unit specs of the changed modules, with coverage collected on only those files, using the same counting rule as the coverage gate (only mirror-named specs count); it runs after the S1 static pre-check and before the slot.
+- **Decisions**: The fast path reuses the proof's own spec selection (mirror and nearest, the same function and the same coverage steps, one source), with coverage collected on the changed files only; it is never stricter or looser than the proof; it runs after the S1 static pre-check and before the slot.
 - acceptance:
   - "packages/cli/src/lib/work-deliver-coverage-precheck.service.spec.ts: a changed module whose only coverage comes from a non-mirror spec is refused with the coverage gate's message"
-  - "tools/scripts/ci/changed-file-coverage.script.spec.ts: the fast path and the gate agree on the same fixture"
+  - "tools/scripts/ci/prove-plan.script.spec.ts: the coverage pre-check selects the same specs and runs the same commands as the proof for the same diff"
   - "`delendai work deliver` on a changed module without a mirror spec refuses in under 60 seconds"
 
 ### S3 — Readiness refuses slices with an unrealistic scope
