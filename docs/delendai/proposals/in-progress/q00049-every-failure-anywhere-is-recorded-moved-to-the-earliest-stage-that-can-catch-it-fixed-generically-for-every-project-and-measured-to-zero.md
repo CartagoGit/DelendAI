@@ -2,10 +2,14 @@
 id: q00049
 title: "Every failure anywhere is recorded, moved to the earliest stage that can catch it, fixed generically for every project, and measured to zero"
 kind: plan
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-18
+last-transition-id: 1e577f3d-455a-462e-b9b9-b27a0295b807
+last-correlation-id: 1e577f3d-455a-462e-b9b9-b27a0295b807
+last-transition-from: ready
+last-transition-at: 2026-11-18T21:00:16.990Z
 ---
 
 # q00049 — Every failure anywhere is recorded, moved to the earliest stage that can catch it, fixed generically for every project, and measured to zero

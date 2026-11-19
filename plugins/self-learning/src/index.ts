@@ -23,9 +23,10 @@ import { buildObservationsToolRegistration } from './lib/tools/observations.tool
  *
  *   delendai --plugins=self-learning
  *
- * Opt-in on purpose, and absent from every preset. What it accumulates
- * is cheap but it is still a file in somebody's repository, and a
- * project that has not asked to be observed should not be.
+ * On by default in the team-pr, swarm and dogfood packs: a
+ * project on one learns about itself with no extra step, and turns it
+ * off with `plugins.self-learning.enabled: false`. It always learns the
+ * project it runs in, never delendai's own.
  *
  * Nothing here leaves the machine. The store lives under
  * `<cacheDir>/self-learning/` and is bounded; `error-reporting` remains
@@ -36,7 +37,7 @@ export default definePlugin({
 	name: 'self-learning',
 	version: '0.3.0',
 	describe:
-		'Accumulates observations the runtime already produces (test failures, command outcomes) per project and answers what this project has taught us. Opt-in; nothing leaves the machine.',
+		'Accumulates observations the runtime already produces (test failures, command outcomes) per project and answers what this project has taught us. On by default in the team-pr, swarm and dogfood packs; nothing leaves the machine.',
 	optionsSchema: z.object({
 		/** Workspace-relative store path. Default `<cacheDir>/self-learning/observations.jsonl`. */
 		storePath: z.string().optional(),

@@ -54,7 +54,7 @@
 | rules | @delendai/rules | public | stable | solo, team-pr, everything, dogfood |
 | search | @delendai/search | public | stable | minimal, solo, team-pr, swarm, audit, docs-web, everything, dogfood |
 | security | @delendai/security | public | stable | team-pr, audit, everything, dogfood |
-| self-learning | @delendai/self-learning | public | experimental | everything |
+| self-learning | @delendai/self-learning | public | experimental | team-pr, swarm, everything, dogfood |
 | skills-pack | @delendai/skills-pack | public | stable | everything |
 | status-marker | @delendai/status-marker | public | stable | team-pr, swarm, everything, dogfood |
 | style-convention | @delendai/style-convention | public | experimental | everything |
@@ -628,12 +628,12 @@
 | security | dogfood | yes | yes | yes |
 | self-learning | minimal | no | no | yes |
 | self-learning | solo | no | no | yes |
-| self-learning | team-pr | no | no | yes |
-| self-learning | swarm | no | no | yes |
+| self-learning | team-pr | yes | yes | yes |
+| self-learning | swarm | yes | yes | yes |
 | self-learning | audit | no | no | yes |
 | self-learning | docs-web | no | no | yes |
 | self-learning | everything | yes | yes | yes |
-| self-learning | dogfood | no | no | yes |
+| self-learning | dogfood | yes | yes | yes |
 | skills-pack | minimal | no | no | yes |
 | skills-pack | solo | no | no | yes |
 | skills-pack | team-pr | no | no | yes |

@@ -41,3 +41,13 @@ export interface IUnitProofReport {
 	/** Why the proof could not run at all; never a pass. */
 	readonly setupFailure?: string;
 }
+
+/** The proof's verdict once develop's failures are subtracted. */
+export interface IBaseSubtraction {
+	/** The unit's own failures: not known, or known and in its footprint. */
+	readonly own: readonly string[];
+	/** Known-failing on develop and outside the unit's footprint: not the unit's. */
+	readonly base: readonly string[];
+	/** The proof passes: it failed only on base failures. */
+	readonly passed: boolean;
+}
