@@ -38,7 +38,7 @@ Evidence:
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "format-registry.constant.ts lists every persisted or exchanged format that delendai owns: work-ref names (work-ref-shape.service.ts), the proposal file format, delendai.config.json, cache layout (cache-layout-ratchet.snapshot.json), tool output schemas, and lockfile/state records. For each it names the current version, the readers of previous versions still supported, and the migration that rewrites one version to the next."
+  - "format-registry.constant.spec.ts: format-registry.constant.ts lists every persisted or exchanged format that delendai owns: work-ref names (work-ref-shape.service.ts), the proposal file format, delendai.config.json, cache layout (cache-layout-ratchet.snapshot.json), tool output schemas, and lockfile/state records. For each it names the current version, the readers of previous versions still supported, and the migration that rewrites one version to the next."
   - "format-registry.constant.spec.ts asserts every listed reader parses a fixture of its version and every migration turns that fixture into one the current reader accepts, idempotently."
 
 ### S2 — A change to a registered format without a reader, a migration and a version bump fails before the PR
@@ -49,7 +49,7 @@ Evidence:
 - **Decisions**: none
 - acceptance:
   - "format-compat.script.spec.ts: a diff changing a registered format's writer or schema with no new registry entry (reader of the old version + migration + bumped version) fails. cache-layout-ratchet.script.ts becomes one case of this lint, not a second mechanism."
-  - "Wired in package.json, in the CI lint job and in the proof (x01099 S5's manifest)."
+  - "`bun run lint:format-compat` exists in package.json, runs in the CI lint job and in the proof (x01099 S5's manifest); format-compat.script.spec.ts asserts the wiring."
 
 ### S3 — Proposals record the delendai version they target, and a command brings them forward
 - **Status**: pending
@@ -69,15 +69,15 @@ Evidence:
 - **Decisions**: none
 - acceptance:
   - "upgrade.service.e2e.spec.ts, in a throwaway project at the previous release: `delendai upgrade --plan` lists every migration and writes nothing. `delendai upgrade` applies them, never renames a ref with an open pull request, and a unit entered before the upgrade still checkpoints and publishes afterwards."
-  - "A second run changes nothing."
+  - "upgrade.service.e2e.spec.ts: a second `delendai upgrade` run changes nothing."
 
 ### S5 — Consumers run a released version, never this repository's moving develop
 - **Status**: pending
-- **Files**: `packages/cli/src/lib/init/host-entry-resolver.service.ts`, `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/commands/init/init.command.ts`, `packages/core/src/lib/adopt/adopt-project.tool.ts`
+- **Files**: `packages/cli/src/lib/init/host-entry-resolver.service.ts`, `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/commands/init/init.command.ts`, `packages/core/src/lib/adopt/adopt-project.tool.ts`, `packages/cli/src/lib/init/host-entry-resolver.service.spec.ts`, `packages/cli/src/commands/init/init.command.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "init/adopt in a consumer (host-entry-resolver.service.ts writes the server entry; adopt-project.tool.ts adopts) pins a released delendai version; the dogfood checkout is opt-in. A develop change here does not restart a consumer's server. Evidence and the problem statement: x01001 (docs/delendai/proposals/blocked/x01001-a-consumer-project-is-not-stopped-by-delendai-or-by-its-development.md), 23 restarts a day; this slice does not duplicate it, it delivers the pinning it describes."
+  - "init.command.spec.ts and host-entry-resolver.service.spec.ts: init/adopt in a consumer (host-entry-resolver.service.ts writes the server entry; adopt-project.tool.ts adopts) pins a released delendai version; the dogfood checkout is opt-in. A develop change here does not restart a consumer's server. Evidence and the problem statement: x01001 (docs/delendai/proposals/blocked/x01001-a-consumer-project-is-not-stopped-by-delendai-or-by-its-development.md), 23 restarts a day; this slice does not duplicate it, it delivers the pinning it describes."
 
 ### S6 — A release is certified only when the previous release's fixtures migrate and its in-flight work enters
 - **Status**: pending
@@ -86,7 +86,7 @@ Evidence:
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "Certification (certify-integration.script.ts) runs S4's e2e from the previous release's tag. A failure blocks the release with the failing format named; nothing else blocks it, so release is the routine output of a green develop."
+  - "certify-integration.script.spec.ts: certification (certify-integration.script.ts) runs S4's e2e from the previous release's tag. A failure blocks the release with the failing format named; nothing else blocks it, so release is the routine output of a green develop."
 
 ## acceptance
 
