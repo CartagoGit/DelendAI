@@ -38,7 +38,7 @@ import {
 } from './server-args.service';
 
 describe('buildCanonicalLaunch', () => {
-	it('launches the published CLI package through bunx by default', () => {
+	it('[<50ms] launches the published CLI package through bunx by default', () => {
 		expect(
 			buildCanonicalLaunch({
 				workspace: '/consumer',
@@ -62,7 +62,7 @@ describe('buildCanonicalLaunch', () => {
 		});
 	});
 
-	it('supports npx without changing the server argv contract', () => {
+	it('[<50ms] supports npx without changing the server argv contract', () => {
 		const bun = buildCanonicalLaunch({ workspace: '/repo' });
 		const npm = buildCanonicalLaunch({ workspace: '/repo', mode: 'npx' });
 		expect(npm.command).toBe('npx');
@@ -78,7 +78,7 @@ const ruleFor = (key: keyof ICliGlobalOptions): IAutoForwardRule => {
 };
 
 describe('SERVER_ARG_MAPPER — rule shapes', async () => {
-	it("renders an 'option' rule as --flag value when non-empty, [] otherwise", async () => {
+	it("[<50ms] renders an 'option' rule as --flag value when non-empty, [] otherwise", async () => {
 		const rule = ruleFor('config');
 		expect(rule.kind).toBe('option');
 		expect(rule.argv('config', 'cfg.json')).toEqual([
@@ -89,7 +89,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 		expect(rule.argv('config', undefined)).toEqual([]);
 	});
 
-	it("renders a 'flag' rule as bare --flag only when true", async () => {
+	it("[<50ms] renders a 'flag' rule as bare --flag only when true", async () => {
 		const rule = ruleFor('mcpProjectCreate');
 		expect(rule.kind).toBe('flag');
 		expect(rule.argv('mcpProjectCreate', true)).toEqual([
@@ -99,7 +99,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 		expect(rule.argv('mcpProjectCreate', undefined)).toEqual([]);
 	});
 
-	it("renders a 'repeatable' rule as a comma-joined, de-duplicated list", async () => {
+	it("[<50ms] renders a 'repeatable' rule as a comma-joined, de-duplicated list", async () => {
 		const rule = ruleFor('plugins');
 		expect(rule.kind).toBe('repeatable');
 		expect(rule.argv('plugins', ['a', 'b', 'a'])).toEqual([
@@ -109,7 +109,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 		expect(rule.argv('plugins', [])).toEqual([]);
 	});
 
-	it("exposes a 'passthrough' rule builder that forwards values verbatim", async () => {
+	it("[<50ms] exposes a 'passthrough' rule builder that forwards values verbatim", async () => {
 		const rule = passthroughRule('plugins');
 		expect(rule.kind).toBe('passthrough');
 		expect(rule.argv('plugins', ['--raw', 'x'])).toEqual(['--raw', 'x']);
@@ -118,7 +118,7 @@ describe('SERVER_ARG_MAPPER — rule shapes', async () => {
 });
 
 describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', async () => {
-	it('forwards every host global delendai is responsible for', async () => {
+	it('[<50ms] forwards every host global delendai is responsible for', async () => {
 		// The host parser knows these forwardable globals. delendai used to
 		// forward only 4; every one of these MUST have a mapper rule or
 		// the host loses a flag silently.
@@ -141,7 +141,7 @@ describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', async () => {
 		}
 	});
 
-	it('is extensible by data (Open/Closed): appending is a pure operation', async () => {
+	it('[<50ms] is extensible by data (Open/Closed): appending is a pure operation', async () => {
 		const before = SERVER_ARG_MAPPER.length;
 		const extra: IAutoForwardRule = {
 			key: 'remote',
@@ -153,7 +153,7 @@ describe('SERVER_ARG_MAPPER — F-001 no silent flag drop', async () => {
 });
 
 describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
-	it('always forwards --workspace (the host requires a workspace)', async () => {
+	it('[<50ms] always forwards --workspace (the host requires a workspace)', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -167,7 +167,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(args[args.indexOf('--workspace') + 1]).toBe('/repo');
 	});
 
-	it('forwards --config only when defined (omits undefined)', async () => {
+	it('[<50ms] forwards --config only when defined (omits undefined)', async () => {
 		const withCfg = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -193,7 +193,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(withoutCfg).not.toContain('--config');
 	});
 
-	it('forwards --preset only when defined', async () => {
+	it('[<50ms] forwards --preset only when defined', async () => {
 		const withPreset = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -217,7 +217,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(withoutPreset).not.toContain('--preset');
 	});
 
-	it('forwards --plugins as a comma-separated list, deduplicated, plus extras', async () => {
+	it('[<50ms] forwards --plugins as a comma-separated list, deduplicated, plus extras', async () => {
 		const args = buildServerArgs(
 			{
 				workspace: '/repo',
@@ -238,7 +238,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(value?.split(',')).toHaveLength(3);
 	});
 
-	it('omits --plugins when both list and extras are empty', async () => {
+	it('[<50ms] omits --plugins when both list and extras are empty', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -251,7 +251,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 	});
 
 	// f00052 S3 — host-scoped --agent-worktree forwarding (tri-state)
-	it('forwards --agent-worktree when agentWorktree is true', async () => {
+	it('[<50ms] forwards --agent-worktree when agentWorktree is true', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -265,7 +265,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(args[args.indexOf('--agent-worktree') + 1]).not.toBe('false');
 	});
 
-	it('forwards --agent-worktree=false when agentWorktree is false', async () => {
+	it('[<50ms] forwards --agent-worktree=false when agentWorktree is false', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -278,7 +278,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(args).toContain('--agent-worktree=false');
 	});
 
-	it('forwards nothing for agent-worktree when undefined (host falls back to default)', async () => {
+	it('[<50ms] forwards nothing for agent-worktree when undefined (host falls back to default)', async () => {
 		const args = buildServerArgs({
 			workspace: '/repo',
 			json: false,
@@ -290,7 +290,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		expect(args.some((a) => a.startsWith('--agent-worktree'))).toBe(false);
 	});
 
-	it('covers every field on ICliGlobalOptions that the core parser accepts (forwarder table is exhaustive)', async () => {
+	it('[<50ms] covers every field on ICliGlobalOptions that the core parser accepts (forwarder table is exhaustive)', async () => {
 		const requiredKeys = [
 			'config',
 			'preset',
@@ -311,7 +311,7 @@ describe('buildServerArgs (SOLID: declarative flag forwarding)', async () => {
 		}
 	});
 
-	it('is extensible by data, not by editing the function body', async () => {
+	it('[<50ms] is extensible by data, not by editing the function body', async () => {
 		const initialCount = SERVER_ARG_MAPPER.length;
 		const customForwarder: IAutoForwardRule = {
 			key: 'remote',
