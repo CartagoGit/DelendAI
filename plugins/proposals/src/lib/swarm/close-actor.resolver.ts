@@ -17,10 +17,7 @@
  * unit entered before leases existed falls back to the agent its work ref
  * names. `unitOwnerOf` is the one place that is decided.
  */
-import {
-	compileWorkRefParser,
-	resolveWorkAgentId,
-} from '@delendai/core/public';
+import { resolveWorkAgentId } from '@delendai/core/public';
 
 import type {
 	ICloseActor,
@@ -28,7 +25,7 @@ import type {
 	IUnitOwner,
 } from '../contracts/interfaces/close-actor.interface';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
-import { unitOfRef } from '../services/review-claims.service';
+import { ownedParserOf, unitOfRef } from '../services/review-claims.service';
 
 const TASK_ID_PATTERN = /^([a-z]\d{3,})[/:-](.+)$/iu;
 
@@ -63,10 +60,7 @@ export const unitOwnerOf = (
 	}
 	const unit = unitOfRef(`refs/heads/${branch}`, shape);
 	if (unit === undefined) return undefined;
-	const identity = compileWorkRefParser(
-		shape.workRefTemplate,
-		shape.workRefPrefix,
-	)?.parse(unit);
+	const identity = ownedParserOf(shape)?.parse(unit);
 	if (identity === undefined || identity.agent === '') return undefined;
 	return {
 		agent: leaseOwner ?? identity.agent,

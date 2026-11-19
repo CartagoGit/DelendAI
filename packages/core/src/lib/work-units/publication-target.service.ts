@@ -15,6 +15,7 @@
  * work ref, with `all` as the slice, and is found on the remote whatever
  * topic it was given: a different `--topic` must not open a second one.
  */
+import { policyForRef } from '../development-policy/owned-work-ref-parser';
 import { readGit } from '../shared/git-read.helper';
 
 import { publicationUnitFor } from '../development-policy/publication-unit';
@@ -179,7 +180,9 @@ export const changedLines = (root: string, base: string, ref: string): number =>
 export const choosePublicationTarget = (
 	request: IPublicationTargetRequest,
 ): IPublicationTarget | { readonly refusal: string } => {
-	const { root, policy, remote, agent, proposal, generation } = request;
+	const { root, remote, agent, proposal, generation } = request;
+	// A unit under a former namespace publishes under that namespace (f00808).
+	const policy = policyForRef(request.policy, request.workRef);
 	const own = publicationRefFromWorkRef(policy, request.workRef);
 	if (own === undefined) {
 		return {

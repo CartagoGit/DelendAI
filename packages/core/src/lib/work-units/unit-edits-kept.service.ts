@@ -9,7 +9,7 @@
  * are a tree like any other; kept as a commit under the retired refs they
  * are as recoverable as before, and nothing is left behind here.
  */
-import { planRetirement } from './work-retire.service';
+import { planOwnedRetirement } from './work-retire.service';
 import { readGit } from './work-unit-shared.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -30,12 +30,7 @@ export const keepUncommittedEdits = (input: {
 	readonly worktree: string;
 }): string | undefined => {
 	const { root, policy, remote, ref, worktree } = input;
-	const plan = planRetirement({
-		branch: ref,
-		namespace: policy.branches.namespacePrefix,
-		workRefPrefix: policy.branches.workRefPrefix,
-		publicationRefPrefix: policy.branches.publicationRefPrefix,
-	});
+	const plan = planOwnedRetirement(policy.branches, ref);
 	if (plan === undefined) return undefined;
 	if (readGit(worktree, ['add', '-A']) === undefined) return undefined;
 	const tree = readGit(worktree, ['write-tree']);

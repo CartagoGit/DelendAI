@@ -20,7 +20,11 @@ import { listWorkRefs } from './work-swarm.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 import { workRefLoopsInvariant } from './work-ref-moves.service';
 import { huskReport } from '../ref-reconciler/unit-reconcile.service';
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 
 /**
  * The shared checkout, whichever worktree the caller is standing in.
@@ -91,6 +95,14 @@ export const runWorkflowDoctor = async (input: {
 		integration: policy.branches.integration,
 		workPrefix: bare(policy.branches.workRefPrefix),
 		publicationPrefix: bare(policy.branches.publicationRefPrefix),
+		formerPrefixes: ownedWorkRefPrefixes(policy.branches)
+			.slice(1)
+			.map((workPrefix, at) => ({
+				workPrefix: bare(workPrefix),
+				publicationPrefix: bare(
+					ownedPublicationRefPrefixes(policy.branches)[at + 1] ?? '',
+				),
+			})),
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 	});
 	// What a removed worktree's path was written into afterwards.

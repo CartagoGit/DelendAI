@@ -4,7 +4,10 @@ import {
 	observeAnchor,
 } from '../wip-engine/index';
 import { argumentsRefused } from './work-arguments.helper';
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import { checkedOutHereReason } from '../wip-engine/checkpoint';
 import { validateScopePaths } from '../../plugin';
 
@@ -89,8 +92,12 @@ export const checkpointed = async (
 	// Standing in a unit's own worktree is the answer to "where do I
 	// commit", not a shared checkout to checkpoint from: git commits there.
 	const here = readGit(root, ['symbolic-ref', '--quiet', 'HEAD']) ?? '';
-	const workPrefix = shortName(policy.branches.workRefPrefix);
-	if (workPrefix.length > 0 && here.startsWith(`refs/heads/${workPrefix}`)) {
+	const workPrefixes = ownedWorkRefPrefixes(policy.branches)
+		.map(shortName)
+		.filter((prefix) => prefix.length > 0);
+	if (
+		workPrefixes.some((prefix) => here.startsWith(`refs/heads/${prefix}`))
+	) {
 		return refused(
 			checkedOutHereReason(here),
 			"This is the unit's worktree: commit here with git.",

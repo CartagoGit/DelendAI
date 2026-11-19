@@ -77,7 +77,11 @@ import type {
 	ICleanupStep,
 } from './publish-candidate.interface';
 import { describeCleanup, runCleanupSteps } from './publish-cleanup';
-import { shortName as shortRef } from '@delendai/core/cli';
+import {
+	branchesForRef,
+	ownedPublicationRefPrefixes,
+	shortName as shortRef,
+} from '@delendai/core/cli';
 
 export type {
 	ICandidateContent,
@@ -168,8 +172,11 @@ export const worktreeRoot = (): string =>
 	join(repoRoot(), '.cache', 'delendai', '.worktrees');
 
 /** Whether a ref may be published to at all, per the resolved policy. */
-export const isPublicationRef = (ref: string, prefix: string): boolean =>
-	prefix !== '' && ref.startsWith(prefix);
+export const isPublicationRef = (
+	ref: string,
+	prefix: string | readonly string[],
+): boolean =>
+	[prefix].flat().some((each) => each !== '' && ref.startsWith(each));
 
 /**
  * The git mode to record for a path.
@@ -574,7 +581,8 @@ const main = (): number => {
 		);
 		return 2;
 	}
-	if (!isPublicationRef(ref, branches.publicationRefPrefix)) {
+	// Every owned namespace: a unit under a former one publishes under it.
+	if (!isPublicationRef(ref, ownedPublicationRefPrefixes(branches))) {
 		process.stderr.write(
 			report({
 				kind: 'refused',
@@ -921,7 +929,7 @@ const publishWorkBranch = (input: {
 	}
 	const plan = planWorkBranchPublication({
 		workBranch,
-		workRefPrefix: input.branches.workRefPrefix,
+		workRefPrefix: branchesForRef(input.branches, workBranch).workRefPrefix,
 		tipSha,
 		tipTree:
 			tipSha === undefined

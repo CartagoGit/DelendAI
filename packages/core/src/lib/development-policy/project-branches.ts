@@ -17,7 +17,10 @@
 import { parseJsonc } from '../config/jsonc-document';
 import { execGitFileSync, gitVerbatim } from '../shared/git-read.helper';
 import type { ICallerUnit } from '../contracts/interfaces/live-proposal-unit.interface';
-import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type {
+	IPolicyBranches,
+	IResolvedDevelopmentPolicy,
+} from '../contracts/interfaces/development-policy.interface';
 import { readWorkspacePolicy } from '../work-units/development-policy.service';
 import { ownedTemplates } from './owned-work-ref-parser';
 import { liveUnitsOfProposal } from '../work-units/proposal-branch.service';
@@ -115,6 +118,10 @@ export const projectBranches = async (
 	/** The work-ref template and publication prefix, to decode ref names. */
 	readonly workRefTemplate: string;
 	readonly publicationRefPrefix: string;
+	/** The namespaces delendai owns here, so a reader reads them all (f00808). */
+	readonly namespacePrefix: string;
+	readonly formerNamespacePrefixes: readonly string[];
+	readonly workRefVisibility: IPolicyBranches['workRefVisibility'];
 }> => {
 	const development = await declaredDevelopment(workspaceRoot);
 	const declaredIntegration = (
@@ -149,6 +156,9 @@ export const projectBranches = async (
 		workRefPrefix: prefix,
 		workRefTemplate: policy.branches.workRefTemplate,
 		publicationRefPrefix: policy.branches.publicationRefPrefix,
+		namespacePrefix: policy.branches.namespacePrefix,
+		formerNamespacePrefixes: policy.branches.formerNamespacePrefixes ?? [],
+		workRefVisibility: policy.branches.workRefVisibility,
 	};
 };
 

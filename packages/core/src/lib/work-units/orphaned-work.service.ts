@@ -43,6 +43,7 @@ import { gitCommonDirOf } from './unit-lease.service';
 import { ownActivityAt } from './unit-activity.helper';
 import { leaseWindowSeconds } from './unit-verdict.service';
 import { unitLifeReader } from './unit-liveness.service';
+import { workShapeOfPublication } from '../development-policy/owned-work-ref-parser';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 import { integrationBase, readGit } from './work-unit-shared.service';
 
@@ -151,13 +152,13 @@ export const workRefOfPublication = (
 	policy: IResolvedDevelopmentPolicy,
 	publication: string,
 ): string | undefined => {
-	const published = shortName(policy.branches.publicationRefPrefix);
-	const work = shortName(policy.branches.workRefPrefix);
 	const bare = shortName(publication);
-	if (published.length === 0 || work.length === 0) return undefined;
-	return bare.startsWith(published)
-		? `${work}${bare.slice(published.length)}`
-		: undefined;
+	// The publication's own namespace names its work ref's (f00808).
+	const owned = workShapeOfPublication(policy.branches, bare);
+	const work = shortName(owned?.shape.prefix ?? '');
+	if (owned === undefined || owned.publication.length === 0) return undefined;
+	if (work.length === 0) return undefined;
+	return `${work}${bare.slice(owned.publication.length)}`;
 };
 
 /** The lease that took the unit over, when somebody claimed it. */
@@ -255,8 +256,12 @@ export const publicationPresence = async (input: {
 				: judged),
 			agent:
 				lease?.owner.agent ??
-				identityOf(name, policy, policy.branches.publicationRefPrefix)
-					.agent,
+				identityOf(
+					name,
+					policy,
+					workShapeOfPublication(policy.branches, name)
+						?.publication ?? policy.branches.publicationRefPrefix,
+				).agent,
 		});
 	}
 	return presence;

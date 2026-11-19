@@ -28,6 +28,18 @@ describe('publicationsAmong', () => {
 		).toEqual(['delendai/pr/some-slice']);
 	});
 
+	it('proves a publication of a former namespace like a current one', () => {
+		expect(
+			publicationsAmong(
+				[
+					update('refs/heads/pr/some-slice'),
+					update('refs/heads/delendai/pr/older-slice'),
+				],
+				['pr/', 'delendai/pr/'],
+			),
+		).toEqual(['pr/some-slice', 'delendai/pr/older-slice']);
+	});
+
 	it('ignores a push that publishes nothing', () => {
 		// The gate runs on every push. A developer pushing a personal
 		// branch must not pay ninety seconds of typecheck for it.

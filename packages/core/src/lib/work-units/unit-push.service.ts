@@ -14,13 +14,19 @@
 import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IUnitPush } from '../contracts/interfaces/unit-push.interface';
+import { ownedWorkRefPrefixes } from '../integration/decisions/namespaces.helper';
 import { integrationRemote } from './work-unit-shared.service';
 import { execGitFileSync } from '../shared/git-read.helper';
 
-const workBranchPrefix = (policy: IResolvedDevelopmentPolicy): string =>
-	policy.branches.workRefPrefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '');
+/** Every owned namespace's work prefix: a former unit auto-pushes too. */
+const workBranchPrefixes = (
+	policy: IResolvedDevelopmentPolicy,
+): readonly string[] =>
+	ownedWorkRefPrefixes(policy.branches)
+		.map((prefix) =>
+			prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
+		)
+		.filter((prefix) => prefix.length > 0);
 
 /** A check's own verdict in a refused push's output: the best reason. */
 const VERDICT_LINE = /✖|✗|\bblocked\b|exited with code/iu;
@@ -61,12 +67,11 @@ export const pushUnitTip = (input: {
 	const { cwd, branch, policy } = input;
 	if (!policy.persistence.autoPushAfterCommit)
 		return { status: 'skipped', reason: 'autoPushAfterCommit is off' };
-	const prefix = workBranchPrefix(policy);
+	const prefixes = workBranchPrefixes(policy);
 	if (
 		input.inMainWorktree ||
 		branch === undefined ||
-		prefix.length === 0 ||
-		!branch.startsWith(prefix)
+		!prefixes.some((prefix) => branch.startsWith(prefix))
 	)
 		return {
 			status: 'skipped',

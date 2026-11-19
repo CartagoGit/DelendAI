@@ -16,7 +16,11 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.interface';
-import { namespacedRef } from '../work-units/namespaced-ref.helper';
+import {
+	namespacedRef,
+	ownedRootsOf,
+} from '../work-units/namespaced-ref.helper';
+import { ownedNamespaces } from '../integration/decisions/namespaces.helper';
 import { heldByForge } from '../ref-reconciler/stray-refs-sweep.service';
 import { strayRefs } from '../work-units/stray-refs.service';
 import { restoreAdvice } from '../work-units/work-retire.service';
@@ -64,10 +68,10 @@ export const retireStrayRef = (input: {
 	const stray = strayRefs({
 		refs: lines(readGit(root, ['for-each-ref', '--format=%(refname)'])),
 		remotes: lines(readGit(root, ['remote'])),
-		namespace: policy.branches.namespacePrefix,
+		namespace: ownedNamespaces(policy.branches),
 	});
-	const rescued = ref.startsWith(
-		`${namespacedRef(policy.branches.namespacePrefix, 'rescued')}/`,
+	const rescued = ownedRootsOf(policy.branches, 'rescued').some((root) =>
+		ref.startsWith(`${root}/`),
 	);
 	if (!stray.includes(ref) && !rescued) return undefined;
 	const commit = readGit(root, [

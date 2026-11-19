@@ -29,7 +29,7 @@ const lines = (out: string): readonly string[] =>
 /** The unit worktrees of this clone: their branch and where they are. */
 const unitWorktrees = (
 	root: string,
-	workPrefix: string,
+	workPrefixes: readonly string[],
 ): readonly { readonly ref: string; readonly path: string }[] =>
 	git(root, ['worktree', 'list', '--porcelain'])
 		.split('\n\n')
@@ -37,7 +37,9 @@ const unitWorktrees = (
 			const path = /^worktree (?<path>.+)$/mu.exec(block)?.groups?.path;
 			const ref = /^branch refs\/heads\/(?<ref>.+)$/mu.exec(block)?.groups
 				?.ref;
-			return path !== undefined && ref?.startsWith(workPrefix) === true
+			return path !== undefined &&
+				ref !== undefined &&
+				workPrefixes.some((prefix) => ref.startsWith(prefix))
 				? [{ ref, path }]
 				: [];
 		});
@@ -63,13 +65,28 @@ export const hiddenWorkInvariants = async (input: {
 	readonly integration: string;
 	readonly workPrefix: string;
 	readonly publicationPrefix: string;
+	/** The prefixes of each former namespace, whose units still count. */
+	readonly formerPrefixes?: readonly {
+		readonly workPrefix: string;
+		readonly publicationPrefix: string;
+	}[];
 	readonly leaseTtlMinutes: number;
 	readonly now?: number | undefined;
 }): Promise<readonly IInvariantResult[]> => {
 	const { root, remote } = input;
 	const now = input.now ?? Math.floor(Date.now() / 1000);
 	const window = leaseWindowSeconds(input.leaseTtlMinutes);
-	const units = unitWorktrees(root, input.workPrefix);
+	const pairs = [
+		{
+			workPrefix: input.workPrefix,
+			publicationPrefix: input.publicationPrefix,
+		},
+		...(input.formerPrefixes ?? []),
+	];
+	const units = unitWorktrees(
+		root,
+		pairs.map((pair) => pair.workPrefix),
+	);
 
 	const stashes = lines(git(root, ['stash', 'list']));
 
@@ -88,9 +105,14 @@ export const hiddenWorkInvariants = async (input: {
 			`${remote}/${input.integration}..refs/heads/${ref}`,
 		]);
 		if (ahead === '' || ahead === '0') return false;
-		const unit = ref.slice(input.workPrefix.length);
+		// The unit's own namespace names its publication (f00808).
+		const own =
+			[...pairs]
+				.sort((a, b) => b.workPrefix.length - a.workPrefix.length)
+				.find((pair) => ref.startsWith(pair.workPrefix)) ?? pairs[0];
+		const unit = ref.slice(own?.workPrefix.length ?? 0);
 		// On the forge under either of its names, at least as far as here.
-		return ![ref, `${input.publicationPrefix}${unit}`].some(
+		return ![ref, `${own?.publicationPrefix ?? ''}${unit}`].some(
 			(branch) =>
 				git(root, [
 					'rev-list',

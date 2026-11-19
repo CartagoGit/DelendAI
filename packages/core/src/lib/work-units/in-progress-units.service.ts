@@ -11,6 +11,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IInvariantResult } from '../contracts/interfaces/workflow-invariants.interface';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
+import { workShapeOfPublication } from '../development-policy/owned-work-ref-parser';
 import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 /** The proposals some branch of `branches` is a unit of, here or on the forge. */
@@ -18,13 +19,15 @@ export const proposalsHeldByUnits = (
 	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
 	branches: readonly string[],
 ): ReadonlySet<string> => {
-	const work = bare(policy.branches.workRefPrefix);
-	const publication = bare(policy.branches.publicationRefPrefix);
 	return new Set(
 		branches.flatMap((branch) => {
-			const asWork = branch.startsWith(publication)
-				? `${work}${branch.slice(publication.length)}`
-				: branch;
+			// A publication reads as the work it publishes, in its own
+			// namespace, current or former (f00808).
+			const owned = workShapeOfPublication(policy.branches, branch);
+			const asWork =
+				owned === undefined
+					? branch
+					: `${bare(owned.shape.prefix)}${branch.slice(owned.publication.length)}`;
 			const proposal = workUnitIdentityOf(policy, asWork)?.proposal;
 			return proposal === undefined ? [] : [proposal];
 		}),

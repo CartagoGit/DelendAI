@@ -18,7 +18,8 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IReapedStrayRef } from './stray-refs-sweep.interface';
 import { strayRefs } from '../work-units/stray-refs.service';
-import { namespacedRef } from '../work-units/namespaced-ref.helper';
+import { ownedRootsOf } from '../work-units/namespaced-ref.helper';
+import { ownedNamespaces } from '../integration/decisions/namespaces.helper';
 import {
 	integrationBase,
 	readGit,
@@ -164,9 +165,11 @@ const reapKeptRefs = (input: {
 		readGit(root, [
 			'for-each-ref',
 			'--format=%(refname)',
-			...KEPT_KINDS.map(
-				(kind) =>
-					`${namespacedRef(input.policy.branches.namespacePrefix, kind)}/`,
+			// Every owned namespace's kept refs (f00808).
+			...KEPT_KINDS.flatMap((kind) =>
+				ownedRootsOf(input.policy.branches, kind).map(
+					(root) => `${root}/`,
+				),
 			),
 		]),
 	);
@@ -203,7 +206,7 @@ export const reapStrayRefs = (input: {
 	const stray = strayRefs({
 		refs: lines(readGit(root, ['for-each-ref', '--format=%(refname)'])),
 		remotes: lines(readGit(root, ['remote'])),
-		namespace: policy.branches.namespacePrefix,
+		namespace: ownedNamespaces(policy.branches),
 	});
 	let cached: ReadonlySet<string> | undefined;
 	const trees = (): ReadonlySet<string> => {

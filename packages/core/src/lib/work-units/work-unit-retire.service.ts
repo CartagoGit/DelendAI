@@ -1,4 +1,7 @@
-import { unitOfName } from '../development-policy/owned-work-ref-parser';
+import {
+	branchesForRef,
+	unitOfName,
+} from '../development-policy/owned-work-ref-parser';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { argumentsRefused } from './work-arguments.helper';
 import type {
@@ -11,7 +14,7 @@ import { scalarArg } from './command-args.helper';
 import { releaseSlices } from './slice-reservation.service';
 import { retireStrayRef } from '../ref-reconciler/stray-ref-retire.service';
 import { unitVerdictOf } from './unit-standings.service';
-import { planRetirement, restoreAdvice } from './work-retire.service';
+import { planOwnedRetirement, restoreAdvice } from './work-retire.service';
 
 import {
 	agentFor,
@@ -23,7 +26,7 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
-import { namespacedRef } from './namespaced-ref.helper';
+import { ownedRootsOf } from './namespaced-ref.helper';
 
 /** How much of a commit names a retired tip kept beside another. */
 const SHORT_COMMIT_LENGTH = 12;
@@ -79,12 +82,7 @@ export const retired = async (
 	if (named === undefined || reason === undefined) {
 		return argumentsRefused('retire');
 	}
-	const plan = planRetirement({
-		branch: named,
-		namespace: policy.branches.namespacePrefix,
-		workRefPrefix: policy.branches.workRefPrefix,
-		publicationRefPrefix: policy.branches.publicationRefPrefix,
-	});
+	const plan = planOwnedRetirement(policy.branches, named);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
 	if (plan === undefined) {
 		// A ref that is nobody's is retired too: it is what the
@@ -316,7 +314,8 @@ export const retired = async (
 		releaseSlices({
 			root,
 			remote,
-			namespace: policy.branches.namespacePrefix,
+			// The reservation was written under the unit's own namespace.
+			namespace: branchesForRef(policy.branches, named).namespacePrefix,
 			proposal: implemented,
 			unit: plan.unit,
 		});
@@ -345,8 +344,17 @@ export const retiredListed = async (
 	const { policy } = opened;
 	const root = mainWorktreeOf(opened.root);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
-	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
-	const listed = readGit(root, ['ls-remote', '--', remote, `${prefix}*`]);
+	// Every owned namespace's retired work is listed (f00808).
+	const prefixes = ownedRootsOf(policy.branches, 'retired').map(
+		(root) => `${root}/`,
+	);
+	const prefix = prefixes[0] ?? '';
+	const listed = readGit(root, [
+		'ls-remote',
+		'--',
+		remote,
+		...prefixes.map((each) => `${each}*`),
+	]);
 	if (listed === undefined) {
 		return refused(
 			`Could not ask \`${remote}\` for the retired work.`,
@@ -358,7 +366,8 @@ export const retiredListed = async (
 		.filter((line) => line.length > 0)
 		.map((line) => {
 			const [commit = '', ref = ''] = line.split('\t');
-			return { unit: ref.slice(prefix.length), ref, commit };
+			const own = prefixes.find((each) => ref.startsWith(each)) ?? prefix;
+			return { unit: ref.slice(own.length), ref, commit };
 		})
 		.sort((left, right) => left.unit.localeCompare(right.unit));
 	const data = {

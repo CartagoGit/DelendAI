@@ -19,7 +19,10 @@ import { openPublicationPullRequest } from '@delendai/cli';
 import { declaredBranches } from '../lib/declared-branches';
 import { repoRoot } from '../lib/monorepo-paths';
 import { prHeadProblem } from '../lint/pr-head-shape.script';
-import { shortName as shortRef } from '@delendai/core/cli';
+import {
+	ownedPublicationRefPrefixes,
+	shortName as shortRef,
+} from '@delendai/core/cli';
 
 const run = (command: string, args: readonly string[]): string | undefined => {
 	try {
@@ -35,8 +38,11 @@ const run = (command: string, args: readonly string[]): string | undefined => {
 
 const main = (): number => {
 	const branches = declaredBranches(repoRoot());
-	const publication = shortRef(branches.publicationRefPrefix);
-	if (publication === '') {
+	// Every owned namespace's publications are opened (f00808).
+	const publications = ownedPublicationRefPrefixes(branches)
+		.map(shortRef)
+		.filter((prefix) => prefix !== '');
+	if (publications.length === 0) {
 		console.log(
 			'open-publication-prs: NOT_APPLICABLE — no publication namespace.',
 		);
@@ -47,7 +53,7 @@ const main = (): number => {
 			'ls-remote',
 			'--',
 			'origin',
-			`refs/heads/${publication}*`,
+			...publications.map((publication) => `refs/heads/${publication}*`),
 		]) ?? ''
 	)
 		.split('\n')
