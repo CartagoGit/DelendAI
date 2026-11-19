@@ -106,6 +106,27 @@ const RED: ILandCiRun[] = [
 	{ commit: 'g', conclusion: 'success' },
 ];
 
+describe('repairDevelopRed, known failures', () => {
+	it('[<50ms] writes an empty known-failing set for a green latest run', async () => {
+		const { ports } = scene({
+			runs: [{ commit: 'g', conclusion: 'success' }],
+		});
+		const recorded: [string, readonly string[]][] = [];
+		const out = await repairDevelopRed({
+			...ports,
+			develop: {
+				...ports.develop,
+				recordKnownFailing: (c, specs) => {
+					recorded.push([c, specs]);
+					return Promise.resolve();
+				},
+			},
+		});
+		expect(out.kind).toBe('nothing');
+		expect(recorded).toEqual([['g', []]]);
+	});
+});
+
 describe('repairDevelopRed', () => {
 	it('[<50ms] reverts the culprit of a red tip once, labelled as a repair', async () => {
 		const { ports, opened, labels } = scene({ runs: RED });

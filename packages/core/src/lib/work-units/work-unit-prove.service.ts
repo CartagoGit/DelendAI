@@ -6,9 +6,7 @@
  * that follows — `work publish`, or the hand-over a proposal transition
  * makes over a tool call — does not run it again.
  */
-import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
+import { readKnownFailing } from '../integration/land/known-failing-note.helper';
 import { argumentsRefused } from './work-arguments.helper';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
@@ -28,6 +26,7 @@ import { describeFailedProof, proveUnit } from './work-unit-proof.service';
 import {
 	agentFor,
 	integrationBase,
+	integrationRemote,
 	mainWorktreeOf,
 	openWork,
 	readGit,
@@ -38,12 +37,17 @@ import {
 const HAS_SPEC = /\.spec\.[cm]?[jt]sx?/u;
 const SPEC_PATH = /[\w./@-]+\.spec\.[cm]?[jt]sx?/gu;
 
-export const failingSpecsOf = (report: IUnitProofReport): readonly string[] =>
-	report.steps.flatMap((step) =>
-		'passed' in step && !step.passed
-			? [...(step.outputTail ?? '').matchAll(SPEC_PATH)].map((m) => m[0])
-			: [],
-	);
+export const failingSpecsOf = (report: IUnitProofReport): readonly string[] => [
+	...new Set(
+		report.steps.flatMap((step) =>
+			'passed' in step && !step.passed
+				? [...(step.outputTail ?? '').matchAll(SPEC_PATH)].map(
+						(m) => m[0],
+					)
+				: [],
+		),
+	),
+];
 
 /**
  * A failing spec in develop's known-failing set fails the proof only if the
@@ -75,29 +79,6 @@ export const subtractBaseFailures = (input: {
 			base.length > 0 &&
 			everyStepNamesASpec,
 	};
-};
-
-/** develop's known-failing specs for a commit, kept under the git directory; empty when none. */
-const readKnownFailing = async (
-	root: string,
-	commit: string,
-): Promise<ReadonlySet<string>> => {
-	const dir = readGit(root, ['rev-parse', '--git-common-dir']);
-	if (dir === undefined) return new Set();
-	try {
-		const raw = await readFile(
-			join(root, dir, 'delendai', 'known-failing', `${commit}.json`),
-			'utf8',
-		);
-		const parsed: unknown = JSON.parse(raw);
-		return new Set(
-			Array.isArray(parsed)
-				? parsed.filter((v): v is string => typeof v === 'string')
-				: [],
-		);
-	} catch {
-		return new Set();
-	}
 };
 
 export const proved = async (
@@ -149,9 +130,14 @@ export const proved = async (
 		integrationSha: base,
 		urgency: { args, proposal, policy },
 	});
-	const known = proof.passed
-		? new Set<string>()
-		: await readKnownFailing(root, base);
+	const known =
+		(proof.passed
+			? undefined
+			: readKnownFailing((a) => readGit(root, a), {
+					namespace: policy.branches.namespacePrefix,
+					base,
+					remote: integrationRemote(root, policy),
+				})) ?? new Set<string>();
 	const touched = new Set(
 		(readGit(root, ['diff', '--name-only', `${base}...${tip}`]) ?? '')
 			.split('\n')

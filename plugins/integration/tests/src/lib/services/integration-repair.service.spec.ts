@@ -16,6 +16,7 @@ const run = async (
 	development: Record<string, unknown>,
 	env: Record<string, string>,
 	stdout = '[]',
+	gitExec?: (cwd: string, args: readonly string[]) => string,
 ) => {
 	const out: string[] = [];
 	const code = await runIntegrationRepair({
@@ -30,6 +31,7 @@ const run = async (
 				integrationTip: () => Promise.resolve('r'),
 			}),
 			git: fakePartial<ILandGit>({}),
+			...(gitExec === undefined ? {} : { gitExec }),
 		},
 	});
 	return { code, out: out.join('\n') };
@@ -59,6 +61,25 @@ describe('runIntegrationRepair', () => {
 		);
 		expect(code).toBe(0);
 		expect(out).toContain('nothing to do');
+	});
+});
+
+describe('runIntegrationRepair known failures', () => {
+	it('[<20ms] writes an empty note for the green commit', async () => {
+		const calls: string[][] = [];
+		await run(
+			{ integration: { engine: 'land' } },
+			{ GITHUB_REPOSITORY: 'o/n' },
+			'[{"headSha":"r","conclusion":"success"}]',
+			(_cwd, args) => {
+				calls.push([...args]);
+				return '';
+			},
+		);
+		const add = calls.find((c) => c.includes('notes'));
+		expect(add).toContain('[]');
+		expect(add).toContain('r');
+		expect(add?.some((a) => a.endsWith('/known-failing'))).toBe(true);
 	});
 });
 
