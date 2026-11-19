@@ -230,7 +230,9 @@ export const buildCanonicalLaunch = (
 		command,
 		args: [
 			'--package',
-			CANONICAL_CLI_PACKAGE,
+			options.version === undefined
+				? CANONICAL_CLI_PACKAGE
+				: `${CANONICAL_CLI_PACKAGE}@${options.version}`,
 			CANONICAL_CLI_BIN,
 			...serverArgs,
 		],

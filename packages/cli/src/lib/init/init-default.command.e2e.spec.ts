@@ -22,6 +22,7 @@
  * through `--delendai-root` so the resolver's `flag` branch wins —
  * no need to stub the filesystem probe.
  */
+import { CLI_VERSION } from '../../contracts/constants/version.constant';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
@@ -103,7 +104,7 @@ describe('init:default (f00103)', () => {
 		await rm(tmp, { recursive: true, force: true });
 	});
 
-	it('exposes the operator defaults as the canonical init:default answers', async () => {
+	it('[<200ms] exposes the operator defaults as the canonical init:default answers', async () => {
 		const flags: IInitFlags = parseFlags([]);
 		const answers = await detectAndDecorateAnswers(
 			tmp,
@@ -121,7 +122,7 @@ describe('init:default (f00103)', () => {
 		expect(answers.force).toBe(false);
 	});
 
-	it('parses the same flag surface as init', () => {
+	it('[<200ms] parses the same flag surface as init', () => {
 		const flags = parseFlags([
 			'--dry-run',
 			`--delendai-root=${fakeHostEntry}`,
@@ -133,7 +134,7 @@ describe('init:default (f00103)', () => {
 		expect(flags.force).toBe(false);
 	});
 
-	it('writes --version or --branch into the entry, and refuses both', async () => {
+	it('[<3000ms] writes --version or --branch into the entry, and refuses both', async () => {
 		const pinned = await initDefaultCommand.run(
 			[`--delendai-root=${fakeHostEntry}`, '--version=0.3.0'],
 			noopCtx(tmp, minimalGlobals()),
@@ -149,7 +150,7 @@ describe('init:default (f00103)', () => {
 		expect(both.code).not.toBe(EXIT_CODE.OK);
 	});
 
-	it('prints its help and bootstraps nothing', async () => {
+	it('[<200ms] prints its help and bootstraps nothing', async () => {
 		const write = vi
 			.spyOn(process.stderr, 'write')
 			.mockImplementation(() => true);
@@ -165,7 +166,7 @@ describe('init:default (f00103)', () => {
 		expect(printed).toContain('solo preset');
 	});
 
-	it('runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
+	it('[<500ms] runs the full pipeline end-to-end against a tmpdir with managed host instructions', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
 			['--dry-run', `--delendai-root=${fakeHostEntry}`],
@@ -239,7 +240,7 @@ describe('init:default (f00103)', () => {
 		expect(enabled).toEqual([...soloMembers].sort());
 	});
 
-	it('writes the bundle to disk when --dry-run is absent', async () => {
+	it('[<3000ms] writes the bundle to disk when --dry-run is absent', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run(
 			[`--delendai-root=${fakeHostEntry}`],
@@ -281,7 +282,7 @@ describe('init:default (f00103)', () => {
 		expect(agentsContent).toContain('<!-- delendai:end -->');
 	});
 
-	it('does not project skills when a malformed project config was preserved', async () => {
+	it('[<3000ms] does not project skills when a malformed project config was preserved', async () => {
 		await writeFile(join(tmp, 'delendai.config.json'), '{broken', 'utf8');
 		const result = await initDefaultCommand.run(
 			[`--delendai-root=${fakeHostEntry}`],
@@ -293,7 +294,7 @@ describe('init:default (f00103)', () => {
 		).rejects.toThrow();
 	});
 
-	it('uses the published canonical launcher when --delendai-root is absent', async () => {
+	it('[<3000ms] pins the published canonical launcher to this release when --delendai-root is absent', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const result = await initDefaultCommand.run([], ctx);
 		expect(result.code).toBe(EXIT_CODE.OK);
@@ -307,7 +308,7 @@ describe('init:default (f00103)', () => {
 			command: 'bunx',
 			args: [
 				'--package',
-				'@delendai/cli',
+				`@delendai/cli@${CLI_VERSION}`,
 				'delendai',
 				'__serve',
 				'--workspace',
@@ -318,7 +319,7 @@ describe('init:default (f00103)', () => {
 		});
 	});
 
-	it('runInitWithAnswers passes through the force flag when --force is supplied by the caller', async () => {
+	it('[<500ms] runInitWithAnswers passes through the force flag when --force is supplied by the caller', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const flags = parseFlags([
 			'--dry-run',
@@ -335,7 +336,7 @@ describe('init:default (f00103)', () => {
 		expect(answers.force).toBe(true);
 	});
 
-	it('removes stale generated agent files when the namespace prefix changes', async () => {
+	it('[<3000ms] removes stale generated agent files when the namespace prefix changes', async () => {
 		const ctx = noopCtx(tmp, minimalGlobals());
 		const flags = parseFlags([`--delendai-root=${fakeHostEntry}`]);
 		await runInitWithAnswers(
@@ -377,7 +378,7 @@ describe('init:default (f00103)', () => {
 		).toBe(true);
 	});
 
-	it('removes an unsigned redirector only while it is what delendai writes today', async () => {
+	it('[<3000ms] removes an unsigned redirector only while it is what delendai writes today', async () => {
 		await mkdir(join(tmp, '.claude/agents'), { recursive: true });
 		const legacy = join(tmp, '.claude/agents/delendai-old-role.md');
 		await writeFile(
@@ -395,7 +396,7 @@ describe('init:default (f00103)', () => {
 		expect(existsSync(legacy)).toBe(true);
 	});
 
-	it('prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
+	it('[<500ms] prints an early env warning block when the env plugin is loaded and a required var is missing', async () => {
 		// The requirement comes from the managed catalog, not from importing
 		// the database plugin: this case used to pay every solo-pack
 		// plugin's module graph (v00137).

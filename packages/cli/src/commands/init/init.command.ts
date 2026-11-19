@@ -33,6 +33,7 @@ import type {
 } from '../../contracts/interfaces/env-warning.interface';
 import {
 	HostEntryNotFoundError,
+	readLocalCheckoutLaunch,
 	resolveHostEntryPath,
 } from '../../lib/init/host-entry-resolver.service';
 import { nodeDynamicImport, parseConfigFile } from '@delendai/core/public';
@@ -77,6 +78,8 @@ import {
 	resolvePluginSet,
 } from '../../lib/init/init-render.service';
 import { buildCanonicalLaunch } from '../../lib/server-args.service';
+import { CLI_VERSION } from '../../contracts/constants/version.constant';
+
 import { readConfigText } from '../../lib/config-file.service';
 import { buildCoreSkillProjection } from '../../lib/init/core-skill-projection.service';
 import {
@@ -586,7 +589,14 @@ export const runInitWithAnswers = async (
 	let launch: ICanonicalLaunch = buildCanonicalLaunch({
 		workspace: '${workspaceFolder}',
 		serverName: answers.serverName,
+		version: CLI_VERSION,
 	});
+	// A re-run keeps a local-checkout entry the project already chose.
+	const keptLocal = await readLocalCheckoutLaunch(
+		answers.workspaceRoot,
+		answers.serverName,
+	);
+	if (keptLocal !== undefined) launch = keptLocal;
 	if (flags.branch !== undefined && flags.version !== undefined) {
 		return {
 			code: EXIT_CODE.USAGE,
@@ -792,6 +802,7 @@ export const runInitWithAnswers = async (
 				buildCanonicalLaunch({
 					workspace: '.',
 					serverName: answers.serverName,
+					version: CLI_VERSION,
 				}),
 				answers.hostInstructions,
 				answers.serverName,
