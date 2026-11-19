@@ -36,21 +36,21 @@ import type {
 	IEndedUnit,
 	IKeptUnitReason,
 } from './finished-units-end.interface';
-import { carriesNothingBeyond } from './landed-work.service';
-import { namespacedRef } from './namespaced-ref.helper';
+import { carriesNothingBeyond } from '../work-units/landed-work.service';
+import { namespacedRef } from '../work-units/namespaced-ref.helper';
 import {
 	dropForgeCopy,
 	removeUnitCheckout,
 	worktreeOfRef,
-} from './unit-removal.service';
-import { readUnitStandings } from './unit-standings.service';
-import { inspectWorktree } from './unit-worktree-state.service';
+} from '../work-units/unit-removal.service';
+import { readUnitStandings } from '../work-units/unit-standings.service';
+import { inspectWorktree } from '../work-units/unit-worktree-state.service';
 import {
 	integrationBase,
 	integrationRemote,
 	mainWorktreeOf,
 	readGit,
-} from './work-unit-shared.service';
+} from '../work-units/work-unit-shared.service';
 
 export type {
 	IEndFinishedUnitsInput,

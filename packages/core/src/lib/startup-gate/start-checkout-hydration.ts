@@ -20,7 +20,7 @@ import {
 	startHydrationWatch,
 } from '../startup-reconciler/hydration-watch';
 
-import { endFinishedUnits } from '../work-units/finished-units-end.service';
+import { endFinishedUnits } from '../ref-reconciler/finished-units-end.service';
 
 import type { IHydrationWatch } from '../startup-reconciler/hydration-watch.interface';
 import type { IStartCheckoutHydrationInput } from './start-checkout-hydration.interface';

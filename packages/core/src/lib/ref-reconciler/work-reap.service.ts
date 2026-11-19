@@ -6,10 +6,10 @@ import type {
 } from '../contracts/interfaces/work-unit-context.interface';
 import { reapLandedRetired } from '../work-units/retired-landed.service';
 import { reapSpentReservations } from '../work-units/slice-reservation-reap.service';
-import { hydrateKeptUnits } from '../work-units/kept-unit-hydration.service';
+import { hydrateKeptUnits } from './kept-unit-hydration.service';
 import { releaseIdleDependencies } from '../work-units/idle-unit-dependencies.service';
 import { endDeliveredUnits } from './clone-forge-ports.service';
-import { endFinishedUnits } from '../work-units/finished-units-end.service';
+import { endFinishedUnits } from './finished-units-end.service';
 import { worktreeOfRef } from '../work-units/unit-removal.service';
 import {
 	hasLocalBranch,
