@@ -202,6 +202,14 @@ export interface ILandDeps {
 	readonly resolveDerived?:
 		| ((pr: ILandPullRequest) => Promise<boolean>)
 		| undefined;
+	/**
+	 * The known-failing spec ids of the integration branch while its latest
+	 * run is red; `undefined` while it is green. Absent where the red state
+	 * is not read: nothing is held back.
+	 */
+	readonly knownFailing?:
+		| (() => Promise<ReadonlySet<string> | undefined>)
+		| undefined;
 }
 
 /** Runs the forge CLI with these arguments (the forge seam's shape). */

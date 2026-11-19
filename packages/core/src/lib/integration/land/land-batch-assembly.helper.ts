@@ -9,12 +9,47 @@
 import type { ITrainCandidate } from '../decisions/culprit.interface';
 
 import { batchBody, refOf } from './land-batch-record.helper';
+import { LAND_LABEL_REPAIR } from './land.constant';
 import type {
 	IBatchAssemblyReport,
 	ILandBatchRecord,
 	ILandDeps,
 	ILandPullRequest,
 } from './land.interface';
+
+/**
+ * While the integration branch is red only repairs enter: a pull request
+ * labelled as one, or one whose failing specs are a strict subset of the
+ * known-failing set (it fixes some and adds none). Never one that adds a
+ * failure. Green (`known` undefined): everyone is admitted.
+ */
+export const admitWhileRed = async (
+	deps: ILandDeps,
+	members: readonly ILandPullRequest[],
+	report: IBatchAssemblyReport,
+): Promise<readonly ILandPullRequest[]> => {
+	const known = await deps.knownFailing?.();
+	if (known === undefined) return members;
+	const admitted: ILandPullRequest[] = [];
+	for (const pr of members) {
+		if (pr.labels.includes(LAND_LABEL_REPAIR)) {
+			admitted.push(pr);
+			continue;
+		}
+		const checks = await deps.forge.checks(pr.headSha);
+		const failing = new Set(checks.flatMap((c) => c.failingSpecs ?? []));
+		const shrinks =
+			failing.size < known.size &&
+			[...failing].every((s) => known.has(s));
+		if (shrinks) admitted.push(pr);
+		else
+			report.why(
+				pr.number,
+				'the integration branch is red: only repairs enter, and it does not shrink the known failures',
+			);
+	}
+	return admitted;
+};
 
 /** Build and open a batch over `tip` for `members`; nothing when it cannot be built. */
 export const openBatch = async (input: {
@@ -27,7 +62,9 @@ export const openBatch = async (input: {
 	const { deps, tip, members, because, report } = input;
 	const { forge, git, config } = deps;
 	// A cross-repository head is never built, pushed or batched.
-	const own = members.filter((pr) => pr.crossRepository !== true);
+	const own = (await admitWhileRed(deps, members, report)).filter(
+		(pr) => pr.crossRepository !== true,
+	);
 	for (const pr of members.filter((m) => m.crossRepository === true))
 		report.why(pr.number, 'a cross-repository head is never batched');
 	if (own.length === 0) return;

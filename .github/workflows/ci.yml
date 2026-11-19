@@ -403,12 +403,16 @@ jobs:
     # gate that quietly measured less would be worse than a slow one.
     # Which jobs this change can possibly affect.
     #
-    # `develop` is green by construction — nothing reaches it except
-    # through a pull request that passed — so a job whose inputs this
-    # change did not touch already has a verdict, and re-running it
-    # re-establishes something nobody doubted. That is most of what a
-    # pull request waits for, and all of what a pull request that only
-    # FIXES a previous failure waits for.
+    # `develop` is green by construction: not because nothing escapes
+    # (a change can pass its pull request and still break the merged
+    # result) but because an escape is detected and its culprit merge is
+    # reverted as a repair through land, while only repairs enter. So a
+    # job whose inputs this change did not touch already has a verdict,
+    # and re-running it re-establishes something nobody doubted. That is
+    # most of what a pull request waits for, and all of what a pull
+    # request that only FIXES a previous failure waits for. A failure
+    # develop already carries is its known-failing set, subtracted from
+    # a unit's proof unless the unit touched it.
     #
     # The default is to run: an undeclared job runs, an unreadable diff
     # runs everything, and `lint:job-scope` fails when a job in this

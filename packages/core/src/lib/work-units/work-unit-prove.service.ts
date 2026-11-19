@@ -6,8 +6,15 @@
  * that follows — `work publish`, or the hand-over a proposal transition
  * makes over a tool call — does not run it again.
  */
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 import { argumentsRefused } from './work-arguments.helper';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
+import type {
+	IBaseSubtraction,
+	IUnitProofReport,
+} from '../contracts/interfaces/unit-proof.interface';
 import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
@@ -26,6 +33,72 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
+
+/** The spec files a failed step names in its output tail. */
+const HAS_SPEC = /\.spec\.[cm]?[jt]sx?/u;
+const SPEC_PATH = /[\w./@-]+\.spec\.[cm]?[jt]sx?/gu;
+
+export const failingSpecsOf = (report: IUnitProofReport): readonly string[] =>
+	report.steps.flatMap((step) =>
+		'passed' in step && !step.passed
+			? [...(step.outputTail ?? '').matchAll(SPEC_PATH)].map((m) => m[0])
+			: [],
+	);
+
+/**
+ * A failing spec in develop's known-failing set fails the proof only if the
+ * unit touched its footprint (`touched`: its files and the specs that read
+ * them); otherwise it is reported as a base failure. A failed step that
+ * names no spec stays the unit's.
+ */
+export const subtractBaseFailures = (input: {
+	readonly report: IUnitProofReport;
+	readonly known: ReadonlySet<string>;
+	readonly touched: ReadonlySet<string>;
+}): IBaseSubtraction => {
+	const { report, known, touched } = input;
+	const failing = failingSpecsOf(report);
+	const base = failing.filter((s) => known.has(s) && !touched.has(s));
+	const own = failing.filter((s) => !base.includes(s));
+	const everyStepNamesASpec = report.steps.every(
+		(step) =>
+			!('passed' in step) ||
+			step.passed ||
+			HAS_SPEC.test(step.outputTail ?? ''),
+	);
+	return {
+		own,
+		base,
+		passed:
+			report.setupFailure === undefined &&
+			own.length === 0 &&
+			base.length > 0 &&
+			everyStepNamesASpec,
+	};
+};
+
+/** develop's known-failing specs for a commit, kept under the git directory; empty when none. */
+const readKnownFailing = async (
+	root: string,
+	commit: string,
+): Promise<ReadonlySet<string>> => {
+	const dir = readGit(root, ['rev-parse', '--git-common-dir']);
+	if (dir === undefined) return new Set();
+	try {
+		const raw = await readFile(
+			join(root, dir, 'delendai', 'known-failing', `${commit}.json`),
+			'utf8',
+		);
+		const parsed: unknown = JSON.parse(raw);
+		return new Set(
+			Array.isArray(parsed)
+				? parsed.filter((v): v is string => typeof v === 'string')
+				: [],
+		);
+	} catch {
+		return new Set();
+	}
+};
 
 export const proved = async (
 	args: readonly string[],
@@ -76,7 +149,16 @@ export const proved = async (
 		integrationSha: base,
 		urgency: { args, proposal, policy },
 	});
-	if (!proof.passed) {
+	const known = proof.passed
+		? new Set<string>()
+		: await readKnownFailing(root, base);
+	const touched = new Set(
+		(readGit(root, ['diff', '--name-only', `${base}...${tip}`]) ?? '')
+			.split('\n')
+			.filter((line) => line.length > 0),
+	);
+	const subtracted = subtractBaseFailures({ report: proof, known, touched });
+	if (!proof.passed && !subtracted.passed) {
 		return refused(
 			describeFailedProof(proof).replace(
 				'was NOT published',
@@ -91,6 +173,9 @@ export const proved = async (
 			workRef,
 			...(worktree === undefined ? {} : { worktree }),
 			proved: proof.declared,
+			...(subtracted.base.length === 0
+				? {}
+				: { baseFailures: subtracted.base }),
 			remembered: proof.remembered === true,
 			...(proof.declared
 				? {}
