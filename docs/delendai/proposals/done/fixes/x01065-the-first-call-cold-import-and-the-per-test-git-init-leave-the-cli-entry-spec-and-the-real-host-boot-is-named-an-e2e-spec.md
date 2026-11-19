@@ -2,14 +2,14 @@
 id: x01065
 title: "The first-call cold import and the per-test git init leave the CLI entry spec, and the real host boot is named an e2e spec"
 kind: fix
-status: review
+status: done
 type: proposal
 track: general
 date: 2026-11-13
-last-transition-id: 50311de5-6258-4918-8709-8b819c82eccc
-last-correlation-id: 50311de5-6258-4918-8709-8b819c82eccc
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T21:54:43.164Z
+last-transition-id: d6132b30-0773-4995-9d22-e02a282adbe0
+last-correlation-id: d6132b30-0773-4995-9d22-e02a282adbe0
+last-transition-from: review
+last-transition-at: 2026-11-19T23:20:15.603Z
 shipped-in:
   - "2f99e2c40c63c6a1bec3004a405f905db917556f"
 ---
