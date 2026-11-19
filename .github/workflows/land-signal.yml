@@ -8,7 +8,7 @@ name: land-signal
 on:
     pull_request:
         types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, converted_to_draft, closed]
-        branches: [develop]
+        branches: [delendai/rehearsal/r20261119-164349-g1/overlapping-integration]
 
 permissions:
     actions: write
