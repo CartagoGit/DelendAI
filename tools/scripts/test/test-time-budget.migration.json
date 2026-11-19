@@ -1612,7 +1612,6 @@
 		"plugins/proposals/tests/src/lib/e2e/close-slice-ci-evidence.e2e.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/continue-proposal.e2e.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/log-hint.e2e.spec.ts",
-		"plugins/proposals/tests/src/lib/e2e/proposal-lifecycle-in-unit.e2e.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/proposal-loop.e2e.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/proposal-transition.e2e.spec.ts",
 		"plugins/proposals/tests/src/lib/e2e/quality-close-slice.e2e.spec.ts",
