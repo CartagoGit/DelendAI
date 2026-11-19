@@ -1,0 +1,102 @@
+/**
+ * limits-store.ts — in-memory mirror of the circuit breaker's verdict (S7).
+ *
+ * The spend numbers are OWNED by `usage-tracking` (it writes
+ * `usage-summary.json#limitsStatus`). The runner must consult the breach state
+ * before every spend, but AGENTS.md rule 3 forbids a per-decision fs read on
+ * the hot path — so, exactly like {@link HealthStore}, we hydrate an in-memory
+ * snapshot best-effort at boot and refresh it on an unref'd timer. The
+ * `snapshot()` the spend guard reads is always synchronous and never touches
+ * the disk.
+ */
+import { readFile } from 'node:fs/promises';
+
+import {
+	emptySpendLimitsView,
+	type ISpendLimitsView,
+	type SpendBreachScope,
+} from './spend-guard';
+
+const asRecord = (value: unknown): Record<string, unknown> | null =>
+	value && typeof value === 'object'
+		? (value as Record<string, unknown>)
+		: null;
+
+const asFiniteOrNull = (value: unknown): number | null =>
+	typeof value === 'number' && Number.isFinite(value) ? value : null;
+
+const asFinite = (value: unknown): number =>
+	typeof value === 'number' && Number.isFinite(value) ? value : 0;
+
+const asBreach = (value: unknown): SpendBreachScope | null =>
+	value === 'session' || value === 'monthly' ? value : null;
+
+/** Project a raw `limitsStatus` object onto the guard's view (tolerant). */
+export const normalizeLimitsView = (raw: unknown): ISpendLimitsView => {
+	const rec = asRecord(raw);
+	if (!rec) {
+		return emptySpendLimitsView(
+			'the usage summary carries no limitsStatus block',
+		);
+	}
+	return {
+		sessionSpendUsd: asFinite(rec.sessionSpendUsd),
+		sessionLimitUsd: asFiniteOrNull(rec.sessionLimitUsd),
+		monthlySpendUsd: asFinite(rec.monthlySpendUsd),
+		monthlyLimitUsd: asFiniteOrNull(rec.monthlyLimitUsd),
+		breached: asBreach(rec.breached),
+		observed: 'known',
+	};
+};
+
+/**
+ * A refreshable, read-cheap mirror of `usage-summary.json#limitsStatus`.
+ *
+ * A summary that cannot be read, or cannot be parsed, leaves the view
+ * `unknown`, with the reason. It used to keep a "neutral" view instead,
+ * reading as "nothing breached", so a project with a monthly cap got no cap
+ * at all whenever the file that records spend could not be read. Whether
+ * `unknown` blocks is the guard's decision: it does under a configured cap,
+ * and does not when no cap is configured.
+ *
+ * `usage-tracking` writes the summary when it starts and on every rollup,
+ * atomically, so in a healthy project this is `unknown` only until the
+ * first load. After that, `unknown` means something is actually wrong.
+ */
+export class SpendLimitsStore {
+	private view: ISpendLimitsView = emptySpendLimitsView();
+
+	/** The current mirrored view (synchronous; the guard's hot-path read). */
+	snapshot(): ISpendLimitsView {
+		return this.view;
+	}
+
+	/** Replace the mirror directly (tests / host injection). */
+	set(view: ISpendLimitsView): void {
+		this.view = view;
+	}
+
+	/** Hydrate from the summary file; a failure makes the view `unknown`, with why. */
+	async loadFrom(summaryPath: string): Promise<void> {
+		try {
+			const raw = await readFile(summaryPath, 'utf8');
+			const doc = asRecord(JSON.parse(raw));
+			this.view = normalizeLimitsView(doc?.limitsStatus);
+		} catch (error) {
+			// Not the last-known view: spend may have grown since it was read,
+			// and a file that was readable and no longer is has not become
+			// evidence of a budget.
+			this.view = emptySpendLimitsView(
+				`could not read ${summaryPath} (${error instanceof Error ? error.message : String(error)})`,
+			);
+		}
+	}
+
+	/** Refresh from disk on an unref'd interval so it never pins the process. */
+	startRefreshTimer(summaryPath: string, intervalMs: number): void {
+		const timer = setInterval(() => {
+			void this.loadFrom(summaryPath);
+		}, intervalMs);
+		timer.unref?.();
+	}
+}

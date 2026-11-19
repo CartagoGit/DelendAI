@@ -1,0 +1,25 @@
+---
+import Home from '#COMPONENTS/Home.astro';
+import Base from '#LAYOUTS/Base.astro';
+import { languages, type Lang } from '#I18N/ui';
+
+/** All non-English locales get their own /<lang>/. The English copy
+ * lives in the root /index.astro (project-site URL stays clean). */
+export function getStaticPaths() {
+	return languages
+		.filter((l) => l.code !== 'en')
+		.map((l) => ({ params: { lang: l.code } }));
+}
+
+const { lang } = Astro.params;
+// Runtime guard: Astro's static-path generator only emits valid langs, but
+// a stale build cache or a manual URL could still hit this page with a bogus
+// param. Fall back to English instead of rendering lang="undefined".
+const langCode: Lang = (
+	lang && languages.some((l) => l.code === lang) ? lang : 'en'
+) as Lang;
+---
+
+<Base lang={langCode}>
+	<Home lang={langCode} />
+</Base>
