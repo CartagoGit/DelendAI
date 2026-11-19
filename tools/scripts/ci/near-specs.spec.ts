@@ -3,7 +3,12 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { isNearSource, nearSpecs, readerSpecs } from './near-specs';
+import {
+	consumerSpecs,
+	isNearSource,
+	nearSpecs,
+	readerSpecs,
+} from './near-specs';
 
 const SPECS = [
 	'packages/core/tests/src/lib/a/widget.service.spec.ts',
@@ -13,7 +18,7 @@ const SPECS = [
 ];
 
 describe('nearSpecs', () => {
-	it('takes a changed spec, the specs named after a source and its importers', () => {
+	it('[<50ms] takes a changed spec, the specs named after a source and its importers', () => {
 		const importers: Record<string, readonly string[]> = {
 			'widget.service': ['packages/core/tests/src/lib/b/other.spec.ts'],
 		};
@@ -34,7 +39,7 @@ describe('nearSpecs', () => {
 		]);
 	});
 
-	it('takes the e2e tier of a spec named after the source, so moving a spec there keeps its coverage', () => {
+	it('[<50ms] takes the e2e tier of a spec named after the source, so moving a spec there keeps its coverage', () => {
 		const specs = [
 			'packages/core/tests/src/lib/a/widget.service.e2e.spec.ts',
 			'packages/core/tests/src/lib/a/gadget.service.e2e.spec.ts',
@@ -48,7 +53,7 @@ describe('nearSpecs', () => {
 		).toEqual(['packages/core/tests/src/lib/a/widget.service.e2e.spec.ts']);
 	});
 
-	it('looks nothing up for prose, configuration, locale leaves or a deleted spec', () => {
+	it('[<50ms] looks nothing up for prose, configuration, locale leaves or a deleted spec', () => {
 		const asked: string[] = [];
 		expect(
 			nearSpecs(
@@ -68,7 +73,7 @@ describe('nearSpecs', () => {
 		expect(asked).toEqual([]);
 	});
 
-	it('reaches a file no spec names through the sources that import it', () => {
+	it('[<50ms] reaches a file no spec names through the sources that import it', () => {
 		expect(
 			nearSpecs(
 				['packages/cli/src/lib/list.generated.ts'],
@@ -82,7 +87,7 @@ describe('nearSpecs', () => {
 		).toEqual(['packages/cli/tests/list-reader.spec.ts']);
 	});
 
-	it('knows which paths are sources', () => {
+	it('[<50ms] knows which paths are sources', () => {
 		expect(isNearSource('plugins/x/src/a.ts')).toBe(true);
 		expect(isNearSource('docs/a.md')).toBe(false);
 		expect(isNearSource('apps/web/src/i18n/tools/index.ts')).toBe(false);
@@ -90,7 +95,7 @@ describe('nearSpecs', () => {
 });
 
 describe('readerSpecs', () => {
-	it('takes the specs on record reading a changed file, in every zone', () => {
+	it('[<50ms] takes the specs on record reading a changed file, in every zone', () => {
 		const map = {
 			zones: {
 				tools: {
@@ -115,7 +120,7 @@ describe('readerSpecs', () => {
 		expect(readerSpecs(['docs/BUDGETS.md'], undefined)).toEqual([]);
 	});
 
-	it('selects for a pure review batch only the specs that read its proposals, in no zone wholesale', () => {
+	it('[<50ms] selects for a pure review batch only the specs that read its proposals, in no zone wholesale', () => {
 		const reads = (
 			read: readonly string[],
 			listed: readonly string[] = [],
@@ -150,5 +155,52 @@ describe('readerSpecs', () => {
 			'packages/core/a.spec.ts',
 			'plugins/proposals/lint.spec.ts',
 		]);
+	});
+});
+
+describe('consumerSpecs', () => {
+	const sources: Record<string, string> = {
+		'plugins/p/src/tools/create_proposal.tool.ts':
+			'export const createProposal = 1;',
+		'plugins/p/src/tools/index.ts':
+			"export { createProposal } from './create_proposal.tool';",
+		'plugins/p/src/authoring.ts': "export * from './tools';",
+		'plugins/p/src/uses.spec.ts':
+			"import { createProposal } from './authoring';",
+		'plugins/p/src/deep.spec.ts': "import { uses } from './uses';",
+		'plugins/p/src/uses.ts':
+			"import { createProposal } from './authoring';",
+		'packages/cli/src/lib/work-deliver.service.ts': 'export const w = 1;',
+		'packages/cli/src/commands/work.command.ts':
+			"import { w } from '../lib/work-deliver.service';",
+		'packages/cli/src/lib/startup-budget.spec.ts': 'it',
+		'extensions/vscode/src/extension.ts': 'export const a = 1;',
+		'extensions/vscode/src/test/build-smoke.e2e.spec.ts': 'it',
+	};
+	const inputOf = (changed: string[]) => ({
+		files: Object.keys(sources),
+		changed,
+		read: (file: string) => sources[file] ?? '',
+		paths: {},
+	});
+
+	it('[<50ms] reaches a consumer behind a barrel, and no further', () => {
+		expect(
+			consumerSpecs(
+				inputOf(['plugins/p/src/tools/create_proposal.tool.ts']),
+			),
+		).toEqual(['plugins/p/src/uses.spec.ts']);
+	});
+
+	it('[<50ms] reaches the declared readers through the module graph and by folder', () => {
+		expect(
+			consumerSpecs(
+				inputOf(['packages/cli/src/lib/work-deliver.service.ts']),
+			),
+		).toEqual(['packages/cli/src/lib/startup-budget.spec.ts']);
+		expect(
+			consumerSpecs(inputOf(['extensions/vscode/src/extension.ts'])),
+		).toEqual(['extensions/vscode/src/test/build-smoke.e2e.spec.ts']);
+		expect(consumerSpecs(inputOf(['docs/a.md']))).toEqual([]);
 	});
 });
