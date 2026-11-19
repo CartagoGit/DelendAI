@@ -911,6 +911,14 @@
 			"plugin": "security"
 		},
 		{
+			"name": "delendai_self-learning_lessons",
+			"plugin": "self-learning"
+		},
+		{
+			"name": "delendai_self-learning_observations",
+			"plugin": "self-learning"
+		},
+		{
 			"name": "delendai_shell_status"
 		},
 		{
