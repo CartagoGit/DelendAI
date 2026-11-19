@@ -78,16 +78,21 @@ export const publicationOnRemote = async (input: {
 };
 
 /**
- * The refusal of a hand-over whose publication the remote does not hold:
- * the unit has no publication name, or the ref is absent (or lacks the
- * head) after the wait. The hand-over published apart from this command,
- * and nothing had checked that it did.
+ * What a hand-over leaves of the unit's publication: nothing to do when the
+ * remote holds it with the head; otherwise the delivery publishes it
+ * itself (`work publish`), because the hand-over publishes apart from this
+ * command, through a hook that may run another version of the code, and
+ * once published nothing had checked that it did. A refusal when the unit
+ * has no publication name, or when the remote still lacks it afterwards.
  */
-export const unpublishedRefusal = async (
+export const ensurePublished = async (
 	ports: IWorkDeliverPorts,
 	unit: Record<string, unknown>,
 	checkout: string | undefined,
-): Promise<ICliCommandResult | undefined> => {
+): Promise<{
+	readonly refusal?: ICliCommandResult;
+	readonly published?: ICliCommandResult;
+}> => {
 	const publication = (
 		typeof unit.publication === 'string' && unit.publication !== ''
 			? unit.publication
@@ -95,14 +100,23 @@ export const unpublishedRefusal = async (
 	)?.replace(/^refs\/heads\//u, '');
 	if (publication === undefined) {
 		return {
-			code: EXIT_CODE.VALIDATION,
-			error: "the unit has no publication name: its work ref is under none of the policy's work-ref prefixes, so nothing was published. Fix the name, then deliver again.",
+			refusal: {
+				code: EXIT_CODE.VALIDATION,
+				error: "the unit has no publication name: its work ref is under none of the policy's work-ref prefixes, so nothing was published. Fix the name, then deliver again.",
+			},
 		};
 	}
-	if (await ports.publicationReached(publication, checkout)) return undefined;
+	if (await ports.publicationReached(publication, checkout)) return {};
+	const published = await ports.publish();
+	if (published.code !== EXIT_CODE.OK) return { refusal: published };
+	if (await ports.publicationReached(publication, checkout)) {
+		return { published };
+	}
 	return {
-		code: EXIT_CODE.VALIDATION,
-		error: `the hand-over to review did not publish: the remote holds no \`${publication}\` with this unit's head. The unit is proved and in review; run \`delendai work publish\` from it, and find why the hand-over did not.`,
+		refusal: {
+			code: EXIT_CODE.VALIDATION,
+			error: `the unit was proved and handed to review, but the remote holds no \`${publication}\` with its head, even after \`work publish\`. Nothing is reported pushed.`,
+		},
 	};
 };
 

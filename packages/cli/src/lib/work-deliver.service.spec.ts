@@ -515,15 +515,50 @@ describe('pullRequestOf', () => {
 });
 
 describe('deliverUnit, the hand-over must have published', () => {
-	it('[<20ms] refuses to say pushed when the remote holds no publication', async () => {
+	it('[<20ms] publishes itself when the remote holds no publication, then reports it', async () => {
+		const { calls, value } = ports({});
+		let held = false;
+		const result = await deliverUnit({
+			...value,
+			publicationReached: async () => held,
+			publish: async () => {
+				calls.push('publish');
+				held = true;
+				return { code: EXIT_CODE.OK, data: { published: true } };
+			},
+		});
+		expect(result.code).toBe(EXIT_CODE.OK);
+		expect(calls.at(-1)).toBe('publish');
+	});
+
+	it('[<20ms] refuses to say pushed when the remote still lacks it after publishing', async () => {
 		const { value } = ports({});
 		const result = await deliverUnit({
 			...value,
 			publicationReached: async () => false,
 		});
 		expect(result.code).toBe(EXIT_CODE.VALIDATION);
-		expect(result.error).toContain('did not publish');
+		expect(result.error).toContain('holds no');
 		expect(result.error).toContain('pr/unit');
+	});
+
+	it('[<20ms] answers the refusal of the publication itself', async () => {
+		const { value } = ports({});
+		const result = await deliverUnit({
+			...value,
+			publicationReached: async () => false,
+			publish: async () => ({
+				code: EXIT_CODE.VALIDATION,
+				error: 'refused: nothing to publish',
+			}),
+		});
+		expect(result.error).toBe('refused: nothing to publish');
+	});
+
+	it('[<20ms] does not publish again when the remote already holds it', async () => {
+		const { calls, value } = ports({});
+		await deliverUnit(value);
+		expect(calls).not.toContain('publish');
 	});
 
 	it('[<20ms] refuses a unit that has no publication name', async () => {
@@ -537,11 +572,5 @@ describe('deliverUnit, the hand-over must have published', () => {
 		});
 		expect(result.code).toBe(EXIT_CODE.VALIDATION);
 		expect(result.error).toContain('no publication name');
-	});
-
-	it('[<20ms] reads the remote for the name it reports', async () => {
-		const { reached, value } = ports({});
-		await deliverUnit(value);
-		expect(reached).toEqual(['pr/unit']);
 	});
 });
