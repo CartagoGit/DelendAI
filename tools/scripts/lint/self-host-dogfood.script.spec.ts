@@ -4,6 +4,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { buildCanonicalLaunch } from '../../../packages/cli/src/lib/server-args.service';
 import {
 	detectSelfHostDogfoodDrift,
 	formatSelfHostDogfoodReport,
@@ -12,15 +13,7 @@ import {
 
 const canonicalEntry = (workspace: string) => ({
 	type: 'stdio',
-	command: 'bunx',
-	args: [
-		'--package',
-		'@delendai/cli',
-		'delendai',
-		'__serve',
-		'--workspace',
-		workspace,
-	],
+	...buildCanonicalLaunch({ workspace }),
 });
 
 const localDogfoodEntry = (workspace: string) => ({
@@ -56,7 +49,7 @@ const makeRoot = async (
 };
 
 describe('self-host-dogfood', () => {
-	it('accepts the published bunx launch and ignores sibling servers', async () => {
+	it('[<200ms] accepts the published bunx launch and ignores sibling servers', async () => {
 		const root = await makeRoot();
 		try {
 			expect(await detectSelfHostDogfoodDrift(root)).toEqual([]);
@@ -65,7 +58,7 @@ describe('self-host-dogfood', () => {
 		}
 	});
 
-	it('accepts the repo-local host-source dogfood launch', async () => {
+	it('[<200ms] accepts the repo-local host-source dogfood launch', async () => {
 		const root = await makeRoot(
 			localDogfoodEntry('.'),
 			localDogfoodEntry('${workspaceFolder}'),
@@ -77,7 +70,7 @@ describe('self-host-dogfood', () => {
 		}
 	});
 
-	it('reports launch drift when neither canonical shape matches', async () => {
+	it('[<200ms] reports launch drift when neither canonical shape matches', async () => {
 		const root = await makeRoot(
 			{ ...canonicalEntry('.'), command: 'node' },
 			{
@@ -96,7 +89,7 @@ describe('self-host-dogfood', () => {
 		}
 	});
 
-	it('reports missing or invalid client files without throwing', async () => {
+	it('[<200ms] reports missing or invalid client files without throwing', async () => {
 		const root = await makeRoot();
 		await writeFile(join(root, '.mcp.json'), '{');
 		await rm(join(root, '.vscode/mcp.json'));
@@ -115,7 +108,7 @@ describe('self-host-dogfood', () => {
 });
 
 describe('self-host-dogfood — the server key is branded (user directive, 2026-09-09)', () => {
-	it('accepts `DelendAI` and the adopter `DelendAI:<project>` shape', () => {
+	it('[<200ms] accepts `DelendAI` and the adopter `DelendAI:<project>` shape', () => {
 		expect(findDelendaiServerKey({ DelendAI: {} })).toBe('DelendAI');
 		expect(findDelendaiServerKey({ 'DelendAI:my-app': {} })).toBe(
 			'DelendAI:my-app',
@@ -125,7 +118,7 @@ describe('self-host-dogfood — the server key is branded (user directive, 2026-
 		expect(findDelendaiServerKey({ delendai: {} })).toBe('delendai');
 	});
 
-	it('does not match an unrelated server', () => {
+	it('[<200ms] does not match an unrelated server', () => {
 		expect(
 			findDelendaiServerKey({ filesystem: {}, github: {} }),
 		).toBeUndefined();
@@ -134,7 +127,7 @@ describe('self-host-dogfood — the server key is branded (user directive, 2026-
 		expect(findDelendaiServerKey({ 'delendai-old': {} })).toBeUndefined();
 	});
 
-	it('tolerates a missing collection', () => {
+	it('[<200ms] tolerates a missing collection', () => {
 		expect(findDelendaiServerKey(undefined)).toBeUndefined();
 	});
 });

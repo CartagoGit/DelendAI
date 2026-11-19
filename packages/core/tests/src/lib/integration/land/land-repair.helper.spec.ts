@@ -145,4 +145,38 @@ describe('repairDevelopRed', () => {
 		expect(pushed).toHaveLength(0);
 		expect(opened).toHaveLength(0);
 	});
+
+	it('[<50ms] reverts the earliest merge since the last success when two red runs follow it and no footprint reaches the failure', async () => {
+		const { ports, opened } = scene({
+			runs: [
+				{ commit: '9c7bf7c44', conclusion: 'failure' },
+				{ commit: '45738a870', conclusion: 'failure' },
+				{ commit: 'cancelled', conclusion: 'cancelled' },
+				{ commit: 'f2bcc09e6', conclusion: 'success' },
+			],
+			tip: '9c7bf7c44',
+		});
+		const asked: string[] = [];
+		const out = await repairDevelopRed({
+			...ports,
+			develop: {
+				...ports.develop,
+				mergesBetween: (green: string, red: string) => {
+					asked.push(`${green}..${red}`);
+					return Promise.resolve([
+						{ number: 3127, sha: '45738a870' },
+						{ number: 3142, sha: '9c7bf7c44' },
+					]);
+				},
+				footprintOf: () =>
+					Promise.resolve({
+						files: new Set(['apps/web/x.ts']),
+						zones: new Set(['web']),
+					}),
+			},
+		});
+		expect(out.kind).toBe('opened');
+		expect(opened).toEqual(['p/repair/revert-3127']);
+		expect(asked[0]).toBe('f2bcc09e6..9c7bf7c44');
+	});
 });

@@ -4,10 +4,17 @@
  * Exercises every resolution branch against a fake `IPathProbe`
  * so the test is deterministic and doesn't touch the disk.
  */
-import { describe, expect, it } from 'vitest';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { buildCanonicalLaunch } from '../server-args.service';
 
 import {
 	HostEntryNotFoundError,
+	readLocalCheckoutLaunch,
 	resolveHostEntryPath,
 	type IPathProbe,
 } from './host-entry-resolver.service';
@@ -17,7 +24,7 @@ const probeWith = (existing: ReadonlySet<string>): IPathProbe => ({
 });
 
 describe('resolveHostEntryPath (f00088 S2)', () => {
-	it('honours the explicit override when set and the file exists', () => {
+	it('[<50ms] honours the explicit override when set and the file exists', () => {
 		const probe = probeWith(new Set(['/opt/delendai/host.ts']));
 		const resolved = resolveHostEntryPath('/workspace', {
 			explicitRoot: '/opt/delendai/host.ts',
@@ -27,7 +34,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		expect(resolved.source).toBe('flag');
 	});
 
-	it('falls through to node_modules/@delendai/core/tools/scripts/host', () => {
+	it('[<50ms] falls through to node_modules/@delendai/core/tools/scripts/host', () => {
 		const probe = probeWith(
 			new Set([
 				'/workspace/node_modules/@delendai/core/tools/scripts/host/host-server.script.ts',
@@ -40,7 +47,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		);
 	});
 
-	it('falls back to npm dist when the script-style entry is missing', () => {
+	it('[<50ms] falls back to npm dist when the script-style entry is missing', () => {
 		const probe = probeWith(
 			new Set([
 				'/workspace/node_modules/@delendai/core/dist/host/host-server.js',
@@ -50,7 +57,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		expect(resolved.source).toBe('npm_dist');
 	});
 
-	it('falls back to ../delendai/ sibling checkout', () => {
+	it('[<50ms] falls back to ../delendai/ sibling checkout', () => {
 		const probe = probeWith(
 			new Set(['/delendai/tools/scripts/host/host-server.script.ts']),
 		);
@@ -61,7 +68,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		);
 	});
 
-	it('falls back to ../delendai-core/ alternate sibling name', () => {
+	it('[<50ms] falls back to ../delendai-core/ alternate sibling name', () => {
 		const probe = probeWith(
 			new Set([
 				'/delendai-core/tools/scripts/host/host-server.script.ts',
@@ -74,7 +81,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		);
 	});
 
-	it("falls back to ../propios/delendai/ (operator's nested layout, f00103)", () => {
+	it("[<50ms] falls back to ../propios/delendai/ (operator's nested layout, f00103)", () => {
 		const probe = probeWith(
 			new Set([
 				'/propios/delendai/tools/scripts/host/host-server.script.ts',
@@ -87,7 +94,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		);
 	});
 
-	it('recovers via sibling_walk when the checkout lives at an irregular path (f00103)', () => {
+	it('[<50ms] recovers via sibling_walk when the checkout lives at an irregular path (f00103)', () => {
 		// The walk is the last-resort branch. It only fires when none
 		// of the explicit candidates match. Workspace lives at
 		// `/parent/workspace` and the delendai checkout lives at
@@ -115,7 +122,7 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		expect(resolved.path).toBe(entry);
 	});
 
-	it('skips the sibling_walk when readDirNames is not implemented by the probe', () => {
+	it('[<50ms] skips the sibling_walk when readDirNames is not implemented by the probe', () => {
 		// A probe that does not expose `readDirNames` (defensive:
 		// some host integrations inject a minimal probe) must not
 		// crash the resolver — the walk simply yields no match and
@@ -128,14 +135,14 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 		).toThrowError(HostEntryNotFoundError);
 	});
 
-	it('throws HostEntryNotFoundError listing every attempt when none match', () => {
+	it('[<50ms] throws HostEntryNotFoundError listing every attempt when none match', () => {
 		const probe = probeWith(new Set());
 		expect(() =>
 			resolveHostEntryPath('/workspace', { probe }),
 		).toThrowError(HostEntryNotFoundError);
 	});
 
-	it('includes the explicit override in the error attempts when it does not exist', () => {
+	it('[<50ms] includes the explicit override in the error attempts when it does not exist', () => {
 		const probe = probeWith(new Set());
 		try {
 			resolveHostEntryPath('/workspace', {
@@ -150,5 +157,49 @@ describe('resolveHostEntryPath (f00088 S2)', () => {
 			expect(e.attempted.length).toBeGreaterThan(4);
 			expect(e.message).toMatch(/bun add @delendai\/core/);
 		}
+	});
+});
+
+let ws: string;
+beforeEach(() => {
+	ws = mkdtempSync(join(tmpdir(), 'existing-launch-'));
+	mkdirSync(join(ws, '.vscode'));
+});
+afterEach(() => rmSync(ws, { recursive: true, force: true }));
+
+const write = (servers: unknown): void =>
+	writeFileSync(join(ws, '.vscode/mcp.json'), JSON.stringify({ servers }));
+
+describe('release pin', () => {
+	it('[<50ms] pins the published package at an exact version by default', () => {
+		const launch = buildCanonicalLaunch({
+			workspace: '/w',
+			version: '1.2.3',
+		});
+		expect(launch.command).toBe('bunx');
+		expect(launch.args.slice(0, 3)).toEqual([
+			'--package',
+			'@delendai/cli@1.2.3',
+			'delendai',
+		]);
+	});
+});
+
+describe('readLocalCheckoutLaunch', () => {
+	it('[<50ms] returns nothing when no entry exists', async () => {
+		expect(await readLocalCheckoutLaunch(ws)).toBeUndefined();
+	});
+
+	it('[<50ms] keeps a local-checkout entry the project chose', async () => {
+		const chosen = { command: 'bun', args: ['./host.ts', '--x'] };
+		write({ DelendAI: chosen });
+		expect(await readLocalCheckoutLaunch(ws)).toEqual(chosen);
+	});
+
+	it('[<50ms] ignores a pinned bunx entry and invalid JSON', async () => {
+		write({ DelendAI: { command: 'bunx', args: ['a'] } });
+		expect(await readLocalCheckoutLaunch(ws)).toBeUndefined();
+		writeFileSync(join(ws, '.vscode/mcp.json'), '{nope');
+		expect(await readLocalCheckoutLaunch(ws)).toBeUndefined();
 	});
 });
