@@ -212,5 +212,6 @@
 	"docs/delendai/proposals/done/refactors/r00010-separate-accumulated-results-logs-memory-usage-tracking-from-derivable-cache-under-cache-mcp-vertex-results.md": 1,
 	"docs/delendai/proposals/done/refactors/r00022-tokens-dashboard-separar-adaptive-y-native-surfaces-row-contains-surfacemode-y-source.md": 1,
 	"docs/delendai/proposals/done/refactors/r00027-inventario-clasificacion-stable-experimental-internal-de-core-public.md": 2,
+	"docs/delendai/proposals/done/fixes/x00303-persistencia-configurada-real-en-auto-work-y-close-slice-con-push-verificable.md": 1,
 	"docs/delendai/proposals/done/fixes/x00302-persistencia-configurada-real-en-auto-work-y-close-slice-con-push-verificable.md": 1
 }

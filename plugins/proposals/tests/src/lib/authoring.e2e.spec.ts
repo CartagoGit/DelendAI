@@ -515,7 +515,7 @@ describe('proposal authoring (create → board → close)', async () => {
 		expect(doc).toContain('[REDACTED]');
 	});
 
-	it('[<785ms] runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
+	it('[<1554ms] runs a peer-review loop: submit → request_changes (by another) → resubmit → approve → done (M35)', async () => {
 		const create = completing(
 			await capture(buildCreateProposalRegistration(opts)),
 		);
