@@ -2247,7 +2247,6 @@
 		"tools/scripts/lint/roi-model-free.spec.ts",
 		"tools/scripts/lint/routing-coherence.spec.ts",
 		"tools/scripts/lint/run-together.script.spec.ts",
-		"tools/scripts/lint/self-host-dogfood.script.spec.ts",
 		"tools/scripts/lint/shared-ui-ratchet.script.spec.ts",
 		"tools/scripts/lint/silent-work-refs.spec.ts",
 		"tools/scripts/lint/single-frontmatter.script.spec.ts",
