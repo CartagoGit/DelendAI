@@ -36,7 +36,7 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
 - acceptance:
   - "bunx vitest run tools/scripts/ci/test-budget-calibration.spec.ts proves the estimate is the p95 of the develop runs' load-normalized times, not the max, and that a run measured under a doubled load factor yields the same estimate"
   - "bunx vitest run tools/scripts/ci/test-budget-calibration.spec.ts proves a test with no estimate gets a provisional one from its first green run and that no author edit of tools/scripts/test/test-time-estimates.json is needed"
-  - "bun run test:budgets:calibrate --from-develop=5 prints the estimates it would write and writes them only on develop (the scheduled workflow), never on a PR"
+  - "`bun run test:budgets:calibrate --from-develop=5` prints the estimates it would write and writes them only on develop (the scheduled workflow), never on a PR"
 
 ### S2 — Three levels on the load-normalized time in the runner
 - **Status**: pending
@@ -68,8 +68,8 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
 - **Decisions**: none
 - acceptance:
   - "bunx vitest run tools/scripts/test/time-budget-runner-is-shared.spec.ts proves a one-line edit to a spec formerly listed in the migration file leaves its untouched tests without a budget demand"
-  - "git ls-files tools/scripts/test/test-time-budget.migration.json prints nothing"
-  - "bun run test:budgets:check exits 0 on a change that edits one line of a formerly listed spec"
+  - "`git ls-files tools/scripts/test/test-time-budget.migration.json` prints nothing"
+  - "`bun run test:budgets:check` exits 0 on a change that edits one line of a formerly listed spec"
 
 ### S5 — Self-learning groups recurring budget warnings and proposes the root-cause fix
 - **Status**: pending
@@ -85,7 +85,7 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
 
 - bunx vitest run tools/scripts/ci/test-budget-calibration.spec.ts proves the estimate is the p95 of the develop runs' load-normalized times, not the max, and that a run measured under a doubled load factor yields the same estimate
 - bunx vitest run tools/scripts/ci/test-budget-calibration.spec.ts proves a test with no estimate gets a provisional one from its first green run and that no author edit of tools/scripts/test/test-time-estimates.json is needed
-- bun run test:budgets:calibrate --from-develop=5 prints the estimates it would write and writes them only on develop (the scheduled workflow), never on a PR
+- `bun run test:budgets:calibrate --from-develop=5` prints the estimates it would write and writes them only on develop (the scheduled workflow), never on a PR
 - bunx vitest run packages/test-kit/tests/src/lib/time-budget.helper.spec.ts proves load-normalized time within the estimate is ok, up to +50% is warning and over +50% is error
 - bunx vitest run packages/test-kit/tests/src/lib/time-budget-tier.helper.spec.ts proves a unit-tier test over 200 ms only warns 'move to e2e or use fakes' and never fails
 - bunx vitest run packages/test-kit/tests/src/lib/time-budget-runner.helper.spec.ts proves a test with no estimate never fails its first run and the runner records the warning with the shard load factor
@@ -93,7 +93,7 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
 - bunx vitest run tools/scripts/ci/test-budget-check.spec.ts proves warnings and unit-tier advice are listed in the report and never set a non-zero exit
 - bunx vitest run tools/scripts/ci/declared-test-budget.spec.ts proves a changed or new test's first run never blocks
 - bunx vitest run tools/scripts/test/time-budget-runner-is-shared.spec.ts proves a one-line edit to a spec formerly listed in the migration file leaves its untouched tests without a budget demand
-- git ls-files tools/scripts/test/test-time-budget.migration.json prints nothing
-- bun run test:budgets:check exits 0 on a change that edits one line of a formerly listed spec
+- `git ls-files tools/scripts/test/test-time-budget.migration.json` prints nothing
+- `bun run test:budgets:check` exits 0 on a change that edits one line of a formerly listed spec
 - bunx vitest run plugins/self-learning/tests/src/lib/store/observation-store.spec.ts proves a budget warning is stored as an observation with the test id, the normalized time and the estimate
 - bunx vitest run plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts proves warnings recurring on specs that spawn git or use timers become one lesson proposing a fake instead of real git or timers
