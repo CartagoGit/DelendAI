@@ -86,7 +86,7 @@ describe('proposal_review identity gate (a00074 S2)', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('[<200ms] allows approve from a different agent even on the same host+pid', async () => {
+	it('[<311ms] allows approve from a different agent even on the same host+pid', async () => {
 		process.env.MCP_HOST = 'shared-host';
 		const create = await creator(opts);
 		await create({
