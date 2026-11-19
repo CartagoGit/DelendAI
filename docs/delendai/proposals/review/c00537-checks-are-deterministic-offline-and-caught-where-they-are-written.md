@@ -6,10 +6,10 @@ status: review
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 3ea69427-ad2d-452e-a2ae-ae50fd570e88
-last-correlation-id: 3ea69427-ad2d-452e-a2ae-ae50fd570e88
+last-transition-id: 359f4bdb-8d6b-4f00-bea1-a609ff02a1e2
+last-correlation-id: 359f4bdb-8d6b-4f00-bea1-a609ff02a1e2
 last-transition-from: in-progress
-last-transition-at: 2026-11-18T11:06:42.428Z
+last-transition-at: 2026-11-19T02:39:33.727Z
 ---
 
 # c00537 — Checks are deterministic, offline and caught where they are written
