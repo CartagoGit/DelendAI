@@ -148,7 +148,6 @@
 	"tools/scripts/lint/generated-determinism.script.spec.ts": 1,
 	"tools/scripts/lint/no-control-bytes.script.spec.ts": 1,
 	"tools/scripts/lint/no-empty-commits.script.spec.ts": 1,
-	"tools/scripts/lint/proposal-files-exist.script.spec.ts": 1,
 	"tools/scripts/lint/proposal-slice-completeness.script.spec.ts": 2,
 	"tools/scripts/lint/type-naming.script.spec.ts": 1,
 	"tools/scripts/reclaim/reclaim-orphans.script.spec.ts": 1,
