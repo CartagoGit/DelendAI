@@ -154,6 +154,7 @@ export {
 	pushDerived,
 } from './lib/integration/land/land-bring-forward.helper';
 export { repairDevelopRed } from './lib/integration/land/land-repair.helper';
+export { knownFailingNoteOf } from './lib/integration/land/known-failing-note.helper';
 export type {
 	ILandCiRun,
 	ILandRepairPorts,
