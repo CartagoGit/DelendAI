@@ -1,9 +1,14 @@
 name: Pages
 
 # Builds and deploys the documentation site to GitHub Pages on every push to
-# main. The site (apps/web) is generated from the LIVE tool registry in --strict
-# mode, so an undocumented tool fails the build and the web can never silently
-# drift behind the code.
+# develop and to main. The site (apps/web) is generated from the LIVE tool
+# registry in --strict mode, so an undocumented tool fails the build and the
+# web can never silently drift behind the code.
+#
+# `develop` is where the code and the registry live, so it is the branch that
+# publishes the site; `main` still publishes so a release keeps its own site
+# build. `workflow_dispatch` allows republishing by hand from the Actions tab
+# (x01103).
 #
 # One-time setup (the owner's step, stated in the PR): repo Settings → Pages →
 # Source = "GitHub Actions". After each deploy the `verify` job requires the
@@ -17,7 +22,8 @@ name: Pages
 
 on:
     push:
-        branches: [main]
+        branches: [develop, main]
+    workflow_dispatch:
 
 permissions:
     contents: read
