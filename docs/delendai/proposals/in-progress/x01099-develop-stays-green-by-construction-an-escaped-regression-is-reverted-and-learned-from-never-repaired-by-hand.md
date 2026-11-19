@@ -100,6 +100,16 @@ develop's own CI ran the full suite and went red. Nothing reacted. ci.yml:406 st
   - "derive-lessons.spec.ts: a reverted culprit records a `selection-gap` lesson (changed file → failing spec not selected), routed to S1's reader declarations or graph as a generic fix."
   - "kpi-aggregation.spec.ts: KPIs split land-ran / merged / develop-green / release-certified, and count escaped regressions per week, with a trend toward zero."
 
+### S7 — needs-update only on a real conflict; a stale clean PR is tested as a merged candidate
+- **Status**: pending
+- **DependsOn**: [S3]
+- **Files**: `packages/core/src/lib/integration/land/land.helper.ts`, `tools/scripts/forge/land.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "land.spec.ts, over the fake forge and git, covers three cases: a stale PR overlapping by zone with a clean merge is batched, not labelled; a non-derived conflict is labelled with the conflicting files named; a derived conflict is resolved by the derived jobs."
+  - "The overlap-by-zone rule no longer produces needs-update: `git grep -n \"changed what it touches since its checks [r]an\"` returns nothing."
+
 ## acceptance
 
 - near-specs.spec.ts: a change to plugins/proposals/src/lib/tools/create_proposal.tool.ts (or its successor) selects specs that reach it only through the authoring barrel, using the module graph of affected-specs.service.ts (one graph, no second resolver).
@@ -117,3 +127,5 @@ develop's own CI ran the full suite and went red. Nothing reacted. ci.yml:406 st
 - A baseline that a lint computes from the working tree is computed from tracked files only, so local and CI agree (proposal-files-exist counted ignored local files).
 - derive-lessons.spec.ts: a reverted culprit records a `selection-gap` lesson (changed file → failing spec not selected), routed to S1's reader declarations or graph as a generic fix.
 - KPIs split land-ran / merged / develop-green / release-certified, and count escaped regressions per week, with a trend toward zero.
+- land.spec.ts: a stale PR overlapping by zone with a clean merge is batched, not labelled; a non-derived conflict is labelled with the files named; a derived conflict is resolved by the derived jobs.
+- `git grep -n "changed what it touches since its checks [r]an"` returns nothing.
