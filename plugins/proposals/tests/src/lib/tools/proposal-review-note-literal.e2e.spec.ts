@@ -19,6 +19,7 @@ import {
 	buildReviewRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { completing } from '../_fixtures/complete-proposal-input';
 
 type Handler = (args: unknown) => Promise<{ content: { text: string }[] }>;
 
@@ -40,7 +41,7 @@ const okOf = async (result: Promise<{ content: { text: string }[] }>) =>
 		.ok;
 
 describe('a review note is text, not a replacement pattern', () => {
-	it("keeps a note quoting `$'` whole, and the document unchanged around it", async () => {
+	it("[<5000ms] keeps a note quoting `$'` whole, and the document unchanged around it", async () => {
 		const root = mkdtempSync(join(tmpdir(), 'review-note-literal-'));
 		const opts: IAuthoringToolOptions = {
 			namespacePrefix: 'proposals',
@@ -54,7 +55,9 @@ describe('a review note is text, not a replacement pattern', () => {
 			),
 			counterPathAbs: join(root, '.cache/proposal-id-counters.json'),
 		};
-		const create = await capture(buildCreateProposalRegistration(opts));
+		const create = completing(
+			await capture(buildCreateProposalRegistration(opts)),
+		);
 		await create({
 			id: 'f00082',
 			title: 'Quote me',

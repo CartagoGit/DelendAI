@@ -228,6 +228,8 @@ export const createResolver =
 /** The files `changed` can affect, from the tracked files and their text. */
 export const affectedFiles = (
 	input: IAffectedSpecsInput,
+	/** Importer steps to follow from a changed file; absent, every step. */
+	hops = Number.POSITIVE_INFINITY,
 ): readonly string[] => {
 	const files = input.files.filter((file) => /\.tsx?$/u.test(file));
 	const known = new Set(files);
@@ -299,13 +301,17 @@ export const affectedFiles = (
 		seeds: readonly string[],
 	): Set<string> => {
 		const seen = new Set(seeds);
-		const queue = [...seeds];
-		for (let next = queue.pop(); next !== undefined; next = queue.pop())
-			for (const user of edges.get(next) ?? [])
-				if (!seen.has(user)) {
-					seen.add(user);
-					queue.push(user);
-				}
+		let frontier = [...seeds];
+		for (let step = 0; step < hops && frontier.length > 0; step++) {
+			const next: string[] = [];
+			for (const file of frontier)
+				for (const user of edges.get(file) ?? [])
+					if (!seen.has(user)) {
+						seen.add(user);
+						next.push(user);
+					}
+			frontier = next;
+		}
 		return seen;
 	};
 	const changed = input.changed.filter((file) => known.has(file));

@@ -2157,8 +2157,6 @@
 				"docs/delendai/proposals/ready/audits/.gitkeep",
 				"docs/delendai/proposals/ready/breakings/.gitkeep",
 				"docs/delendai/proposals/ready/chores/.gitkeep",
-				"docs/delendai/proposals/ready/chores/c00534-half-built-packages-are-finished-or-removed-and-duplicate-engines-are-merged.md",
-				"docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md",
 				"docs/delendai/proposals/ready/docs/.gitkeep",
 				"docs/delendai/proposals/ready/docs/d00417-docs-skills-and-the-roadmap-describe-the-tree-as-it-is.md",
 				"docs/delendai/proposals/ready/feats/.gitkeep",
@@ -2166,31 +2164,21 @@
 				"docs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
 				"docs/delendai/proposals/ready/feats/f00786-a-hop-on-another-vendor-carries-the-delegated-task-not-a-free-prompt-under-the-target-model-s-own-budget.md",
 				"docs/delendai/proposals/ready/feats/f00788-a-joint-audit-is-a-set-of-files-with-checked-evidence-not-one-growing-document.md",
-				"docs/delendai/proposals/ready/feats/f00789-the-audit-protocol-assigns-seats-slices-and-phases-the-product-can-verify.md",
 				"docs/delendai/proposals/ready/feats/f00790-batuta-conducts-real-cross-host-work-within-quota-it-can-see.md",
 				"docs/delendai/proposals/ready/feats/f00792-a-foreign-project-gets-an-init-sized-to-its-stack-and-an-availability-record-for-every-plugin-it-loads.md",
 				"docs/delendai/proposals/ready/feats/f00793-batuta-reaches-the-models-a-host-serves-through-its-byok-by-reading-their-names-in-every-profile-and-asking-the-host-to-run-them.md",
 				"docs/delendai/proposals/ready/feats/f00794-delendai-config-json-jsonc-real-y-schema-documentado.md",
-				"docs/delendai/proposals/ready/feats/f00797-one-command-proves-hands-over-and-publishes-a-unit.md",
 				"docs/delendai/proposals/ready/fixes/.gitkeep",
 				"docs/delendai/proposals/ready/fixes/x00939-a-tool-s-declared-outputschema-is-checked-against-every-result-its-handler-returns.md",
 				"docs/delendai/proposals/ready/fixes/x00952-plugin-writes-and-installs-stay-inside-the-directory-they-were-given.md",
 				"docs/delendai/proposals/ready/fixes/x00963-commit-policy-stages-trails-and-settles-exactly-what-it-says.md",
 				"docs/delendai/proposals/ready/fixes/x00964-context-references-and-catalogues-are-keyed-by-what-they-contain.md",
-				"docs/delendai/proposals/ready/fixes/x00965-memory-issues-search-and-roadmap-keep-one-record-per-thing-and-never-merge-two.md",
-				"docs/delendai/proposals/ready/fixes/x00966-webviews-escape-through-one-helper-and-run-under-a-csp-without-unsafe-inline.md",
-				"docs/delendai/proposals/ready/fixes/x00974-security-perf-and-operations-tools-do-what-their-description-says.md",
-				"docs/delendai/proposals/ready/fixes/x00977-every-token-figure-states-its-baseline-and-measures-what-the-model-receives.md",
-				"docs/delendai/proposals/ready/fixes/x00978-the-vs-code-extension-works-per-folder-and-keeps-edits-choices-and-polling-consistent.md",
 				"docs/delendai/proposals/ready/fixes/x00979-every-web-locale-and-route-is-generated-from-one-source-and-gated-strictly.md",
-				"docs/delendai/proposals/ready/fixes/x00980-the-documentation-site-is-published-canonical-and-complete-after-a-clean-build.md",
 				"docs/delendai/proposals/ready/fixes/x00981-the-web-status-pages-show-live-data-or-say-they-are-a-showcase.md",
-				"docs/delendai/proposals/ready/fixes/x00988-batuta-can-delegate-on-a-fresh-machine-consent-roster-and-costs-are-told-apart.md",
 				"docs/delendai/proposals/ready/fixes/x00990-an-agent-s-unit-holds-it-to-its-proposal-s-slice-and-names-a-model.md",
 				"docs/delendai/proposals/ready/fixes/x00994-specs-pass-without-per-file-isolation.md",
 				"docs/delendai/proposals/ready/infras/.gitkeep",
 				"docs/delendai/proposals/ready/perfs/.gitkeep",
-				"docs/delendai/proposals/ready/perfs/v00138-ci-transforms-each-module-once-and-keeps-its-caches-between-runs.md",
 				"docs/delendai/proposals/ready/perfs/v00139-the-proposals-specs-reset-their-module-state-so-the-project-runs-without-per-file-isolation.md",
 				"docs/delendai/proposals/ready/perfs/v00143-a-pull-request-runs-only-the-specs-its-change-reaches-and-the-same-plan-proves-it-before-the-push.md",
 				"docs/delendai/proposals/ready/plans/.gitkeep",
@@ -4307,8 +4295,6 @@
 						"docs/delendai/proposals/ready/audits/.gitkeep",
 						"docs/delendai/proposals/ready/breakings/.gitkeep",
 						"docs/delendai/proposals/ready/chores/.gitkeep",
-						"docs/delendai/proposals/ready/chores/c00534-half-built-packages-are-finished-or-removed-and-duplicate-engines-are-merged.md",
-						"docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md",
 						"docs/delendai/proposals/ready/docs/.gitkeep",
 						"docs/delendai/proposals/ready/docs/d00417-docs-skills-and-the-roadmap-describe-the-tree-as-it-is.md",
 						"docs/delendai/proposals/ready/feats/.gitkeep",
@@ -4316,31 +4302,21 @@
 						"docs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
 						"docs/delendai/proposals/ready/feats/f00786-a-hop-on-another-vendor-carries-the-delegated-task-not-a-free-prompt-under-the-target-model-s-own-budget.md",
 						"docs/delendai/proposals/ready/feats/f00788-a-joint-audit-is-a-set-of-files-with-checked-evidence-not-one-growing-document.md",
-						"docs/delendai/proposals/ready/feats/f00789-the-audit-protocol-assigns-seats-slices-and-phases-the-product-can-verify.md",
 						"docs/delendai/proposals/ready/feats/f00790-batuta-conducts-real-cross-host-work-within-quota-it-can-see.md",
 						"docs/delendai/proposals/ready/feats/f00792-a-foreign-project-gets-an-init-sized-to-its-stack-and-an-availability-record-for-every-plugin-it-loads.md",
 						"docs/delendai/proposals/ready/feats/f00793-batuta-reaches-the-models-a-host-serves-through-its-byok-by-reading-their-names-in-every-profile-and-asking-the-host-to-run-them.md",
 						"docs/delendai/proposals/ready/feats/f00794-delendai-config-json-jsonc-real-y-schema-documentado.md",
-						"docs/delendai/proposals/ready/feats/f00797-one-command-proves-hands-over-and-publishes-a-unit.md",
 						"docs/delendai/proposals/ready/fixes/.gitkeep",
 						"docs/delendai/proposals/ready/fixes/x00939-a-tool-s-declared-outputschema-is-checked-against-every-result-its-handler-returns.md",
 						"docs/delendai/proposals/ready/fixes/x00952-plugin-writes-and-installs-stay-inside-the-directory-they-were-given.md",
 						"docs/delendai/proposals/ready/fixes/x00963-commit-policy-stages-trails-and-settles-exactly-what-it-says.md",
 						"docs/delendai/proposals/ready/fixes/x00964-context-references-and-catalogues-are-keyed-by-what-they-contain.md",
-						"docs/delendai/proposals/ready/fixes/x00965-memory-issues-search-and-roadmap-keep-one-record-per-thing-and-never-merge-two.md",
-						"docs/delendai/proposals/ready/fixes/x00966-webviews-escape-through-one-helper-and-run-under-a-csp-without-unsafe-inline.md",
-						"docs/delendai/proposals/ready/fixes/x00974-security-perf-and-operations-tools-do-what-their-description-says.md",
-						"docs/delendai/proposals/ready/fixes/x00977-every-token-figure-states-its-baseline-and-measures-what-the-model-receives.md",
-						"docs/delendai/proposals/ready/fixes/x00978-the-vs-code-extension-works-per-folder-and-keeps-edits-choices-and-polling-consistent.md",
 						"docs/delendai/proposals/ready/fixes/x00979-every-web-locale-and-route-is-generated-from-one-source-and-gated-strictly.md",
-						"docs/delendai/proposals/ready/fixes/x00980-the-documentation-site-is-published-canonical-and-complete-after-a-clean-build.md",
 						"docs/delendai/proposals/ready/fixes/x00981-the-web-status-pages-show-live-data-or-say-they-are-a-showcase.md",
-						"docs/delendai/proposals/ready/fixes/x00988-batuta-can-delegate-on-a-fresh-machine-consent-roster-and-costs-are-told-apart.md",
 						"docs/delendai/proposals/ready/fixes/x00990-an-agent-s-unit-holds-it-to-its-proposal-s-slice-and-names-a-model.md",
 						"docs/delendai/proposals/ready/fixes/x00994-specs-pass-without-per-file-isolation.md",
 						"docs/delendai/proposals/ready/infras/.gitkeep",
 						"docs/delendai/proposals/ready/perfs/.gitkeep",
-						"docs/delendai/proposals/ready/perfs/v00138-ci-transforms-each-module-once-and-keeps-its-caches-between-runs.md",
 						"docs/delendai/proposals/ready/perfs/v00139-the-proposals-specs-reset-their-module-state-so-the-project-runs-without-per-file-isolation.md",
 						"docs/delendai/proposals/ready/perfs/v00143-a-pull-request-runs-only-the-specs-its-change-reaches-and-the-same-plan-proves-it-before-the-push.md",
 						"docs/delendai/proposals/ready/plans/.gitkeep",
@@ -10754,35 +10730,23 @@
 				"docs/delendai/proposals/legacy/closed/resumes/n00007-resume-kind-handoff-summaries.md",
 				"docs/delendai/proposals/legacy/closed/tests/t00001-improve-test-coverage-for-core-engines.md",
 				"docs/delendai/proposals/paused/f00551-delendai-batuta-orquestacion-multicuenta-mediante-el-plugin-y-mcp-existentes.md",
-				"docs/delendai/proposals/ready/chores/c00534-half-built-packages-are-finished-or-removed-and-duplicate-engines-are-merged.md",
-				"docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md",
 				"docs/delendai/proposals/ready/docs/d00417-docs-skills-and-the-roadmap-describe-the-tree-as-it-is.md",
 				"docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md",
 				"docs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
 				"docs/delendai/proposals/ready/feats/f00786-a-hop-on-another-vendor-carries-the-delegated-task-not-a-free-prompt-under-the-target-model-s-own-budget.md",
 				"docs/delendai/proposals/ready/feats/f00788-a-joint-audit-is-a-set-of-files-with-checked-evidence-not-one-growing-document.md",
-				"docs/delendai/proposals/ready/feats/f00789-the-audit-protocol-assigns-seats-slices-and-phases-the-product-can-verify.md",
 				"docs/delendai/proposals/ready/feats/f00790-batuta-conducts-real-cross-host-work-within-quota-it-can-see.md",
 				"docs/delendai/proposals/ready/feats/f00792-a-foreign-project-gets-an-init-sized-to-its-stack-and-an-availability-record-for-every-plugin-it-loads.md",
 				"docs/delendai/proposals/ready/feats/f00793-batuta-reaches-the-models-a-host-serves-through-its-byok-by-reading-their-names-in-every-profile-and-asking-the-host-to-run-them.md",
 				"docs/delendai/proposals/ready/feats/f00794-delendai-config-json-jsonc-real-y-schema-documentado.md",
-				"docs/delendai/proposals/ready/feats/f00797-one-command-proves-hands-over-and-publishes-a-unit.md",
 				"docs/delendai/proposals/ready/fixes/x00939-a-tool-s-declared-outputschema-is-checked-against-every-result-its-handler-returns.md",
 				"docs/delendai/proposals/ready/fixes/x00952-plugin-writes-and-installs-stay-inside-the-directory-they-were-given.md",
 				"docs/delendai/proposals/ready/fixes/x00963-commit-policy-stages-trails-and-settles-exactly-what-it-says.md",
 				"docs/delendai/proposals/ready/fixes/x00964-context-references-and-catalogues-are-keyed-by-what-they-contain.md",
-				"docs/delendai/proposals/ready/fixes/x00965-memory-issues-search-and-roadmap-keep-one-record-per-thing-and-never-merge-two.md",
-				"docs/delendai/proposals/ready/fixes/x00966-webviews-escape-through-one-helper-and-run-under-a-csp-without-unsafe-inline.md",
-				"docs/delendai/proposals/ready/fixes/x00974-security-perf-and-operations-tools-do-what-their-description-says.md",
-				"docs/delendai/proposals/ready/fixes/x00977-every-token-figure-states-its-baseline-and-measures-what-the-model-receives.md",
-				"docs/delendai/proposals/ready/fixes/x00978-the-vs-code-extension-works-per-folder-and-keeps-edits-choices-and-polling-consistent.md",
 				"docs/delendai/proposals/ready/fixes/x00979-every-web-locale-and-route-is-generated-from-one-source-and-gated-strictly.md",
-				"docs/delendai/proposals/ready/fixes/x00980-the-documentation-site-is-published-canonical-and-complete-after-a-clean-build.md",
 				"docs/delendai/proposals/ready/fixes/x00981-the-web-status-pages-show-live-data-or-say-they-are-a-showcase.md",
-				"docs/delendai/proposals/ready/fixes/x00988-batuta-can-delegate-on-a-fresh-machine-consent-roster-and-costs-are-told-apart.md",
 				"docs/delendai/proposals/ready/fixes/x00990-an-agent-s-unit-holds-it-to-its-proposal-s-slice-and-names-a-model.md",
 				"docs/delendai/proposals/ready/fixes/x00994-specs-pass-without-per-file-isolation.md",
-				"docs/delendai/proposals/ready/perfs/v00138-ci-transforms-each-module-once-and-keeps-its-caches-between-runs.md",
 				"docs/delendai/proposals/ready/perfs/v00139-the-proposals-specs-reset-their-module-state-so-the-project-runs-without-per-file-isolation.md",
 				"docs/delendai/proposals/ready/perfs/v00143-a-pull-request-runs-only-the-specs-its-change-reaches-and-the-same-plan-proves-it-before-the-push.md",
 				"docs/delendai/proposals/ready/plans/q00011-plan-cerrar-los-contratos-de-runtime-que-el-sistema-promete-y-no-cumple-ciclo-de-vida-eager-lazy-propiedad-del-teardown-enforcement-de-efectos-puertas-ciegas-de-ci-y-el-66-del-coste-de-tokens-que-vive-en-los-output-schemas.md",
@@ -11052,7 +11016,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/authoring-stale-index.spec.ts": {
+				"plugins/proposals/tests/src/lib/authoring-stale-index.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11071,7 +11035,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/authoring.spec.ts": {
+				"plugins/proposals/tests/src/lib/authoring.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11422,7 +11386,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/plugin-register-wiring.spec.ts": {
+				"plugins/proposals/tests/src/lib/plugin-register-wiring.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11440,7 +11404,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/proposal-create.concurrency.spec.ts": {
+				"plugins/proposals/tests/src/lib/proposal-create.concurrency.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -12770,35 +12734,23 @@
 						"docs/delendai/proposals/legacy/closed/resumes/n00007-resume-kind-handoff-summaries.md",
 						"docs/delendai/proposals/legacy/closed/tests/t00001-improve-test-coverage-for-core-engines.md",
 						"docs/delendai/proposals/paused/f00551-delendai-batuta-orquestacion-multicuenta-mediante-el-plugin-y-mcp-existentes.md",
-						"docs/delendai/proposals/ready/chores/c00534-half-built-packages-are-finished-or-removed-and-duplicate-engines-are-merged.md",
-						"docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md",
 						"docs/delendai/proposals/ready/docs/d00417-docs-skills-and-the-roadmap-describe-the-tree-as-it-is.md",
 						"docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md",
 						"docs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
 						"docs/delendai/proposals/ready/feats/f00786-a-hop-on-another-vendor-carries-the-delegated-task-not-a-free-prompt-under-the-target-model-s-own-budget.md",
 						"docs/delendai/proposals/ready/feats/f00788-a-joint-audit-is-a-set-of-files-with-checked-evidence-not-one-growing-document.md",
-						"docs/delendai/proposals/ready/feats/f00789-the-audit-protocol-assigns-seats-slices-and-phases-the-product-can-verify.md",
 						"docs/delendai/proposals/ready/feats/f00790-batuta-conducts-real-cross-host-work-within-quota-it-can-see.md",
 						"docs/delendai/proposals/ready/feats/f00792-a-foreign-project-gets-an-init-sized-to-its-stack-and-an-availability-record-for-every-plugin-it-loads.md",
 						"docs/delendai/proposals/ready/feats/f00793-batuta-reaches-the-models-a-host-serves-through-its-byok-by-reading-their-names-in-every-profile-and-asking-the-host-to-run-them.md",
 						"docs/delendai/proposals/ready/feats/f00794-delendai-config-json-jsonc-real-y-schema-documentado.md",
-						"docs/delendai/proposals/ready/feats/f00797-one-command-proves-hands-over-and-publishes-a-unit.md",
 						"docs/delendai/proposals/ready/fixes/x00939-a-tool-s-declared-outputschema-is-checked-against-every-result-its-handler-returns.md",
 						"docs/delendai/proposals/ready/fixes/x00952-plugin-writes-and-installs-stay-inside-the-directory-they-were-given.md",
 						"docs/delendai/proposals/ready/fixes/x00963-commit-policy-stages-trails-and-settles-exactly-what-it-says.md",
 						"docs/delendai/proposals/ready/fixes/x00964-context-references-and-catalogues-are-keyed-by-what-they-contain.md",
-						"docs/delendai/proposals/ready/fixes/x00965-memory-issues-search-and-roadmap-keep-one-record-per-thing-and-never-merge-two.md",
-						"docs/delendai/proposals/ready/fixes/x00966-webviews-escape-through-one-helper-and-run-under-a-csp-without-unsafe-inline.md",
-						"docs/delendai/proposals/ready/fixes/x00974-security-perf-and-operations-tools-do-what-their-description-says.md",
-						"docs/delendai/proposals/ready/fixes/x00977-every-token-figure-states-its-baseline-and-measures-what-the-model-receives.md",
-						"docs/delendai/proposals/ready/fixes/x00978-the-vs-code-extension-works-per-folder-and-keeps-edits-choices-and-polling-consistent.md",
 						"docs/delendai/proposals/ready/fixes/x00979-every-web-locale-and-route-is-generated-from-one-source-and-gated-strictly.md",
-						"docs/delendai/proposals/ready/fixes/x00980-the-documentation-site-is-published-canonical-and-complete-after-a-clean-build.md",
 						"docs/delendai/proposals/ready/fixes/x00981-the-web-status-pages-show-live-data-or-say-they-are-a-showcase.md",
-						"docs/delendai/proposals/ready/fixes/x00988-batuta-can-delegate-on-a-fresh-machine-consent-roster-and-costs-are-told-apart.md",
 						"docs/delendai/proposals/ready/fixes/x00990-an-agent-s-unit-holds-it-to-its-proposal-s-slice-and-names-a-model.md",
 						"docs/delendai/proposals/ready/fixes/x00994-specs-pass-without-per-file-isolation.md",
-						"docs/delendai/proposals/ready/perfs/v00138-ci-transforms-each-module-once-and-keeps-its-caches-between-runs.md",
 						"docs/delendai/proposals/ready/perfs/v00139-the-proposals-specs-reset-their-module-state-so-the-project-runs-without-per-file-isolation.md",
 						"docs/delendai/proposals/ready/perfs/v00143-a-pull-request-runs-only-the-specs-its-change-reaches-and-the-same-plan-proves-it-before-the-push.md",
 						"docs/delendai/proposals/ready/plans/q00011-plan-cerrar-los-contratos-de-runtime-que-el-sistema-promete-y-no-cumple-ciclo-de-vida-eager-lazy-propiedad-del-teardown-enforcement-de-efectos-puertas-ciegas-de-ci-y-el-66-del-coste-de-tokens-que-vive-en-los-output-schemas.md",
@@ -14191,35 +14143,23 @@
 						"docs/delendai/proposals/legacy/closed/resumes/n00007-resume-kind-handoff-summaries.md",
 						"docs/delendai/proposals/legacy/closed/tests/t00001-improve-test-coverage-for-core-engines.md",
 						"docs/delendai/proposals/paused/f00551-delendai-batuta-orquestacion-multicuenta-mediante-el-plugin-y-mcp-existentes.md",
-						"docs/delendai/proposals/ready/chores/c00534-half-built-packages-are-finished-or-removed-and-duplicate-engines-are-merged.md",
-						"docs/delendai/proposals/ready/chores/c00535-actions-are-pinned-by-sha-packages-by-exact-version-and-provenance-reaches-npm.md",
 						"docs/delendai/proposals/ready/docs/d00417-docs-skills-and-the-roadmap-describe-the-tree-as-it-is.md",
 						"docs/delendai/proposals/ready/feats/f00772-batuta-plans-and-conducts-a-joint-audit-within-the-quota-the-user-has.md",
 						"docs/delendai/proposals/ready/feats/f00783-batuta-learns-any-ai-client-catalogues-in-layers-clients-declared-or-detected-from-path-ides-and-installs-a-usage-page-per-client-and-a-tool-that-onboards-a-new-one.md",
 						"docs/delendai/proposals/ready/feats/f00786-a-hop-on-another-vendor-carries-the-delegated-task-not-a-free-prompt-under-the-target-model-s-own-budget.md",
 						"docs/delendai/proposals/ready/feats/f00788-a-joint-audit-is-a-set-of-files-with-checked-evidence-not-one-growing-document.md",
-						"docs/delendai/proposals/ready/feats/f00789-the-audit-protocol-assigns-seats-slices-and-phases-the-product-can-verify.md",
 						"docs/delendai/proposals/ready/feats/f00790-batuta-conducts-real-cross-host-work-within-quota-it-can-see.md",
 						"docs/delendai/proposals/ready/feats/f00792-a-foreign-project-gets-an-init-sized-to-its-stack-and-an-availability-record-for-every-plugin-it-loads.md",
 						"docs/delendai/proposals/ready/feats/f00793-batuta-reaches-the-models-a-host-serves-through-its-byok-by-reading-their-names-in-every-profile-and-asking-the-host-to-run-them.md",
 						"docs/delendai/proposals/ready/feats/f00794-delendai-config-json-jsonc-real-y-schema-documentado.md",
-						"docs/delendai/proposals/ready/feats/f00797-one-command-proves-hands-over-and-publishes-a-unit.md",
 						"docs/delendai/proposals/ready/fixes/x00939-a-tool-s-declared-outputschema-is-checked-against-every-result-its-handler-returns.md",
 						"docs/delendai/proposals/ready/fixes/x00952-plugin-writes-and-installs-stay-inside-the-directory-they-were-given.md",
 						"docs/delendai/proposals/ready/fixes/x00963-commit-policy-stages-trails-and-settles-exactly-what-it-says.md",
 						"docs/delendai/proposals/ready/fixes/x00964-context-references-and-catalogues-are-keyed-by-what-they-contain.md",
-						"docs/delendai/proposals/ready/fixes/x00965-memory-issues-search-and-roadmap-keep-one-record-per-thing-and-never-merge-two.md",
-						"docs/delendai/proposals/ready/fixes/x00966-webviews-escape-through-one-helper-and-run-under-a-csp-without-unsafe-inline.md",
-						"docs/delendai/proposals/ready/fixes/x00974-security-perf-and-operations-tools-do-what-their-description-says.md",
-						"docs/delendai/proposals/ready/fixes/x00977-every-token-figure-states-its-baseline-and-measures-what-the-model-receives.md",
-						"docs/delendai/proposals/ready/fixes/x00978-the-vs-code-extension-works-per-folder-and-keeps-edits-choices-and-polling-consistent.md",
 						"docs/delendai/proposals/ready/fixes/x00979-every-web-locale-and-route-is-generated-from-one-source-and-gated-strictly.md",
-						"docs/delendai/proposals/ready/fixes/x00980-the-documentation-site-is-published-canonical-and-complete-after-a-clean-build.md",
 						"docs/delendai/proposals/ready/fixes/x00981-the-web-status-pages-show-live-data-or-say-they-are-a-showcase.md",
-						"docs/delendai/proposals/ready/fixes/x00988-batuta-can-delegate-on-a-fresh-machine-consent-roster-and-costs-are-told-apart.md",
 						"docs/delendai/proposals/ready/fixes/x00990-an-agent-s-unit-holds-it-to-its-proposal-s-slice-and-names-a-model.md",
 						"docs/delendai/proposals/ready/fixes/x00994-specs-pass-without-per-file-isolation.md",
-						"docs/delendai/proposals/ready/perfs/v00138-ci-transforms-each-module-once-and-keeps-its-caches-between-runs.md",
 						"docs/delendai/proposals/ready/perfs/v00139-the-proposals-specs-reset-their-module-state-so-the-project-runs-without-per-file-isolation.md",
 						"docs/delendai/proposals/ready/perfs/v00143-a-pull-request-runs-only-the-specs-its-change-reaches-and-the-same-plan-proves-it-before-the-push.md",
 						"docs/delendai/proposals/ready/plans/q00011-plan-cerrar-los-contratos-de-runtime-que-el-sistema-promete-y-no-cumple-ciclo-de-vida-eager-lazy-propiedad-del-teardown-enforcement-de-efectos-puertas-ciegas-de-ci-y-el-66-del-coste-de-tokens-que-vive-en-los-output-schemas.md",
@@ -14351,7 +14291,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-mutex.spec.ts": {
+				"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-mutex.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14387,7 +14327,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/review.tool.spec.ts": {
+				"plugins/proposals/tests/src/lib/review.tool.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14763,7 +14703,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14859,7 +14799,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -16567,7 +16507,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -16663,7 +16603,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],

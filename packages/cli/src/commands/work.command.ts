@@ -172,6 +172,18 @@ export const deliverPortsOf = (
 					checkout: checkout ?? ctx.cwd,
 				}),
 			),
+		precheck: () =>
+			runWorkUnit(['prove', ...unitFlags, '--only=precheck'], ctx),
+		// Loaded when asked for: only a delivery needs it (startup budget).
+		coveragePrecheck: async () => {
+			const { coveragePrecheckFlag } = await import(
+				'../lib/work-deliver-coverage-precheck.service'
+			);
+			return runWorkUnit(
+				['prove', ...unitFlags, coveragePrecheckFlag()],
+				ctx,
+			);
+		},
 		prove: () => runWorkUnit(['prove', ...unitFlags], ctx),
 		transition: async (to, checkout) => {
 			// The transition to review publishes the unit, apart from this

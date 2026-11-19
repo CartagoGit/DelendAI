@@ -13,7 +13,7 @@ const d = { dispose() {} };
 class EventEmitter { constructor(){ this.event = () => d; } fire(){} dispose(){} }
 class TreeItem { constructor(l, s){ this.label = l; this.collapsibleState = s; } }
 class ThemeIcon { constructor(id){ this.id = id; } }
-module.exports = {
+const api = {
   version: '1.90.0', EventEmitter, TreeItem, ThemeIcon,
   TreeItemCollapsibleState: { None: 0, Collapsed: 1, Expanded: 2 },
   ViewColumn: { One: 1 }, StatusBarAlignment: { Left: 1, Right: 2 },
@@ -22,8 +22,8 @@ module.exports = {
     createOutputChannel: () => ({ append(){}, appendLine(){}, dispose(){}, show(){} }),
     createStatusBarItem: () => ({ show(){}, hide(){}, dispose(){} }),
     registerTreeDataProvider: (id, p) => { views[id] = p; return d; },
-    registerWebviewViewProvider: () => d,
-    showErrorMessage: async () => undefined, showInformationMessage: async () => undefined,
+    registerWebviewViewProvider: (id, p) => { views[id] = p; return d; },
+    showErrorMessage: async (m) => { console.error(m); }, showInformationMessage: async () => undefined,
     createWebviewPanel: () => ({ webview: { html: '' }, onDidDispose: () => d }),
   },
   workspace: {
@@ -35,15 +35,36 @@ module.exports = {
   },
   env: {}, Uri: { file: (p) => ({ fsPath: p }) },
 };
+// Spelled out so node's ESM interop sees each name as a named export.
+exports.commands = api.commands; exports.window = api.window; exports.workspace = api.workspace; exports.env = api.env; exports.Uri = api.Uri;
+exports.EventEmitter = api.EventEmitter; exports.TreeItem = api.TreeItem; exports.ThemeIcon = api.ThemeIcon; exports.TreeItemCollapsibleState = api.TreeItemCollapsibleState;
+exports.ViewColumn = api.ViewColumn; exports.StatusBarAlignment = api.StatusBarAlignment; exports.version = api.version;
 `;
 
 /** Activates the built bundle, then reads the Tools view the way the editor would. */
 const ACTIVATE_AND_READ = `const ext = await import('./extension.js');
 const ctx = { subscriptions: [], globalState: { get: () => undefined, update: async () => {} } };
 await ext.activate(ctx);
-const view = globalThis.__views['delendai.tools'];
-const kids = (await view.getChildren()) ?? [];
-console.log(JSON.stringify({ labels: kids.map((kid) => String(kid.label)) }));
+const provider = globalThis.__views['delendai.dashboard'];
+let html = '';
+let onHtml = () => {};
+const toolsSection = () => {
+  const start = html.indexOf('id="panel-tools"');
+  return start < 0 ? '' : html.slice(start, html.indexOf('</section>', start));
+};
+const countRows = () => toolsSection().split('<tr data-tool=').length - 1;
+// The dashboard fills its Tools section from the server: resolve once it shows rows.
+const populated = new Promise((resolve) => { onHtml = () => { if (countRows() > 0) resolve(); }; });
+const webview = {
+  options: {}, cspSource: 'vscode-resource:',
+  get html() { return html; }, set html(v) { html = v; onHtml(); },
+  onDidReceiveMessage: () => ({ dispose() {} }),
+  postMessage: async () => true,
+  asWebviewUri: (u) => u,
+};
+await provider.resolveWebviewView({ viewType: 'delendai.dashboard', webview, visible: true, show() {}, onDidDispose: () => ({ dispose() {} }) });
+await populated;
+console.log(JSON.stringify({ rows: countRows(), connecting: toolsSection().toLowerCase().includes('connecting') }));
 await ext.deactivate();
 process.exit(0);
 `;
@@ -107,12 +128,10 @@ describe('VS Code extension against a real server', () => {
 		});
 
 		expect(run.status, run.stderr).toBe(0);
-		const { labels } = JSON.parse(
+		const { rows, connecting } = JSON.parse(
 			run.stdout.trim().split('\n').pop() ?? '{}',
-		) as {
-			labels: string[];
-		};
-		expect(labels.length).toBeGreaterThan(0);
-		expect(labels.join(' ')).not.toMatch(/connecting/iu);
+		) as { rows: number; connecting: boolean };
+		expect(rows, run.stderr).toBeGreaterThan(0);
+		expect(connecting).toBe(false);
 	});
 });

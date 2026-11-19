@@ -23,6 +23,7 @@
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import {
 	appendFileSync,
+	existsSync,
 	mkdirSync,
 	readFileSync,
 	renameSync,
@@ -610,6 +611,28 @@ export const fastSteps = (
 	];
 };
 
+/** The label of the biome step on the changed files: the gate `precheck` runs for biome. */
+export const BIOME_CHANGED_LABEL = 'biome format changed files';
+
+/** Files biome formats. */
+const BIOME_FILE = /\.(?:tsx?|jsx?|json|jsonc|css|scss)$/u;
+
+/**
+ * The format check of the files the change touched, in place of the
+ * repository-wide ratchet (`lint-biome`, minutes over thousands of files):
+ * a file the change did not touch cannot fail it.
+ */
+const biomeStep = (
+	changed: readonly string[],
+): readonly (readonly [string, readonly string[]])[] => {
+	const files = changed.filter(
+		(path) => BIOME_FILE.test(path) && existsSync(path),
+	);
+	return files.length === 0
+		? []
+		: [[BIOME_CHANGED_LABEL, ['bunx', 'biome', 'format', ...files]]];
+};
+
 /**
  * What fails in seconds runs first and ends the proof: a budget overshot by 27
  * bytes was reported after eleven minutes of checks that could not change it.
@@ -622,6 +645,7 @@ export const earlySteps = (
 const earlyStepsOfCode = (
 	changed: readonly string[],
 ): readonly (readonly [string, readonly string[]])[] => [
+	...biomeStep(changed),
 	[
 		'tool budgets',
 		['bun', 'tools/scripts/test/run-actual-preset-budget.script.ts'],
@@ -657,11 +681,78 @@ export const gateNamesOf = (
 			'typecheck',
 			...STATIC_CHECK_FAMILIES,
 			...(fast
-				? fastSteps(changed, ['*'], base).map(([label]) => label)
+				? [
+						...fastSteps(changed, ['*'], base).map(
+							([label]) => label,
+						),
+						...coveragePrecheckSteps(changed, ['*'], base).map(
+							([label]) => label,
+						),
+					]
 				: ['tests']),
 		].map(gateOf),
 	),
 ];
+
+/** The alias `work deliver` runs before the compute slot: the cheap static gates. */
+export const PRECHECK_ALIAS = 'precheck';
+
+/**
+ * The cheap static gates the proof would run for this change, scoped to it:
+ * the forge's static check families that read files one by one, taken from
+ * the plan's own gate names, never from a list of their own. Biome is judged
+ * on the changed files, not by the repository-wide ratchet. The typecheck,
+ * the tests and the check that rebuilds `build/` are the proof's to run.
+ */
+export const precheckGatesOf = (
+	changed: readonly string[],
+	base: string,
+): readonly string[] =>
+	gateNamesOf(changed, false, base).filter(
+		(gate) =>
+			gate === gateOf(BIOME_CHANGED_LABEL) ||
+			((STATIC_CHECK_FAMILIES as readonly string[]).includes(gate) &&
+				gate !== 'lint-biome' &&
+				!RUN_ALONE.has(gate) &&
+				staticJobRuns(changed, gate)),
+	);
+
+/** The gate `work deliver` runs after the static pre-check: the proof's coverage steps alone. */
+export const COVERAGE_PRECHECK_GATE = 'coverage-precheck';
+
+/**
+ * The coverage pre-check: the proof's own changed-file coverage steps, taken
+ * from `fastSteps` with the specs the proof selects (mirror and nearest, the
+ * same function) and coverage on the changed files, relabelled so it runs
+ * apart from the proof. One source: never stricter or looser than the proof.
+ */
+export const coveragePrecheckSteps = (
+	changed: readonly string[],
+	specs: readonly string[],
+	base: string,
+): readonly (readonly [string, readonly string[]])[] =>
+	fastSteps(changed, specs, base)
+		.filter(([label]) => gateOf(label) === 'changed-file-coverage')
+		.map(
+			([label, command]) =>
+				[
+					label.replace('changed-file coverage', 'coverage precheck'),
+					command,
+				] as const,
+		);
+
+/** `--only=precheck` stands for the gates `precheckGatesOf` names. */
+export const expandPrecheck = (
+	only: ReadonlySet<string> | undefined,
+	gates: () => readonly string[],
+): ReadonlySet<string> | undefined =>
+	only?.has(PRECHECK_ALIAS) === true
+		? new Set(
+				[...only]
+					.filter((name) => name !== PRECHECK_ALIAS)
+					.concat(gates()),
+			)
+		: only;
 
 /** The names in `only` that are no gate of this proof. Pure. */
 export const unknownGatesOf = (
@@ -715,9 +806,11 @@ const main = async (): Promise<number> => {
 		{ encoding: 'utf8' },
 	).trim();
 	const started = Date.now();
-	const only = onlyGatesOf(process.argv);
 	const fast = process.argv.includes('--fast');
 	const root = process.cwd();
+	const only = expandPrecheck(onlyGatesOf(process.argv), () =>
+		precheckGatesOf(changedSince(root, base), base),
+	);
 	const changed = fast ? changedSince(root, base) : [];
 	if (only !== undefined) {
 		const valid = gateNamesOf(changed, fast, base);
@@ -772,6 +865,19 @@ const main = async (): Promise<number> => {
 			);
 			return 1;
 		}
+		let coveredOk = true;
+		if (only?.has(COVERAGE_PRECHECK_GATE) === true) {
+			// Never in a proof (`only` is set): `work deliver` asks for it.
+			process.env.VITEST_COVERAGE_FILES = selected.join('\n');
+			coveredOk = coveragePrecheckSteps(
+				selected,
+				nearSpecsSince(root, selectionBase),
+				selectionBase,
+			).reduce(
+				(allOk, [label, command]) => step(label, command) && allOk,
+				true,
+			);
+		}
 		const ok = await runChecks(base, only, selectionBase);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
@@ -793,7 +899,7 @@ const main = async (): Promise<number> => {
 					true,
 				),
 		);
-		return conclude(ok && heavyOk, 'fast');
+		return conclude(ok && heavyOk && coveredOk, 'fast');
 	}
 	const jobs = JSON.parse(
 		execFileSync(

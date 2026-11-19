@@ -33,6 +33,7 @@ import {
 	buildCreateProposalRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { completing } from '../_fixtures/complete-proposal-input';
 
 // The publication namespace is configuration: derive it from the same
 // policy the tool is built with instead of pinning the old default.
@@ -119,7 +120,7 @@ const handlerFor = async (
 		}),
 	);
 	expect(handler).toBeDefined();
-	return handler as (args: unknown) => Promise<unknown>;
+	return completing(handler as (args: unknown) => Promise<unknown>);
 };
 
 /** What `create_proposal` reports about the file it just wrote. */
@@ -151,7 +152,7 @@ const created = async (
 };
 
 describe('create_proposal publishes what it writes', () => {
-	it('gets the new proposal onto its publication ref, unasked', async () => {
+	it('[<5000ms] gets the new proposal onto its publication ref, unasked', async () => {
 		const options = optionsFor(true);
 		const root = options.workspaceRoot;
 
@@ -174,7 +175,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(published).not.toBe('');
 	});
 
-	it('leaves a proposal written in a unit to that unit, instead of a second ref', async () => {
+	it('[<5000ms] leaves a proposal written in a unit to that unit, instead of a second ref', async () => {
 		const options = optionsFor(true);
 		const root = options.workspaceRoot;
 		const unit = join(root, '.wt-unit');
@@ -211,7 +212,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
 
-	it('does not push a second ref when the server itself runs in the unit', async () => {
+	it('[<5000ms] does not push a second ref when the server itself runs in the unit', async () => {
 		// The CLI starts its server with the unit worktree as the root, so no
 		// `checkout` is passed. Treating that as "not a unit" pushed the
 		// file through the pre-push gate (a minute) and past the caller's
@@ -233,7 +234,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
 
-	it('publishes only its own file, on top of the integration branch', async () => {
+	it('[<5000ms] publishes only its own file, on top of the integration branch', async () => {
 		const options = optionsFor(true);
 		const root = options.workspaceRoot;
 		const base = git(root, 'rev-parse', 'develop');
@@ -253,7 +254,7 @@ describe('create_proposal publishes what it writes', () => {
 		).toBe(`docs/delendai/proposals/${result.file}`);
 	});
 
-	it('leaves HEAD, the branch and the shared index exactly as they were', async () => {
+	it('[<5000ms] leaves HEAD, the branch and the shared index exactly as they were', async () => {
 		const options = optionsFor(true);
 		const root = options.workspaceRoot;
 		const head = git(root, 'rev-parse', 'HEAD');
@@ -267,7 +268,7 @@ describe('create_proposal publishes what it writes', () => {
 		expect(git(root, 'for-each-ref', 'refs/delendai/')).toBe('');
 	});
 
-	it('still writes the document when no git runner exists, and says why', async () => {
+	it('[<2000ms] still writes the document when no git runner exists, and says why', async () => {
 		const result = await created(
 			await handlerFor(optionsFor()),
 			'No runner available',
@@ -281,7 +282,7 @@ describe('create_proposal publishes what it writes', () => {
 });
 
 describe('create_proposal on a project that lands without a pull request', () => {
-	it('publishes no ref of its own and names the two commands that land the proposal', async () => {
+	it('[<5000ms] publishes no ref of its own and names the two commands that land the proposal', async () => {
 		const options = optionsFor(true, {
 			profile: 'shared-checkout-merge',
 			branches: { integration: 'develop', namespacePrefix: 'acme' },
@@ -314,7 +315,7 @@ describe('create_proposal on a project that lands without a pull request', () =>
 		expect(result.nextAction).not.toMatch(/opens? a pull request/iu);
 	});
 
-	it('leaves a directly-integrating project to commit the file itself', async () => {
+	it('[<5000ms] leaves a directly-integrating project to commit the file itself', async () => {
 		const result = await created(
 			await handlerFor(optionsFor(true, { profile: 'shared-direct' })),
 			'Committed directly',
@@ -330,7 +331,7 @@ describe('create_proposal on a project that lands without a pull request', () =>
 });
 
 describe('create_proposal in a create unit that already made a proposal', () => {
-	it('refuses a second proposal and names the first', async () => {
+	it('[<500ms] refuses a second proposal and names the first', async () => {
 		const options = optionsFor(true);
 		git(
 			options.workspaceRoot,
@@ -345,7 +346,6 @@ describe('create_proposal in a create unit that already made a proposal', () => 
 			kind: 'feat',
 			title: 'A second proposal',
 			goal: 'Should not be written.',
-			slices: [],
 		})) as { readonly isError?: boolean };
 
 		expect(result.isError).toBe(true);

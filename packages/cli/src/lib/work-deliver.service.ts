@@ -256,6 +256,14 @@ export const deliverUnit = async (
 	if (unmet !== undefined && remaining === undefined) {
 		return { code: EXIT_CODE.VALIDATION, error: unmet };
 	}
+	// What the proof's static gates would refuse is refused before it takes
+	// the compute slot: seconds, scoped to the changed files.
+	// Loaded here, not at startup: only a delivery needs it (startup budget).
+	const { precheckDelivery } = await import(
+		'./work-deliver-precheck.service'
+	);
+	const refused = await precheckDelivery(ports);
+	if (refused !== undefined) return refused;
 	const proved = await ports.prove();
 	if (proved.code !== 0) return proved;
 	// `--only` runs gates of the proof and proves nothing: not a delivery.
