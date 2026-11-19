@@ -8,12 +8,14 @@
 import {
 	createGithubLandForge,
 	integrationProtocolRefusal,
+	knownFailingNoteOf,
 	landConfigFromPolicy,
 	repairDevelopRed,
 } from '@delendai/core/cli';
 import type { ILandCiRun } from '@delendai/core/cli';
 
 import {
+	BATCH_COMMIT_IDENTITY,
 	LAND_REMOTE,
 	LAND_REPAIR_SEGMENT,
 } from '../contracts/constants/integration-pass.constant';
@@ -24,6 +26,7 @@ import { landProjectPorts } from './land-project-ports.helper';
 import { createRevertGit } from './land-revert-git.service';
 import { runProjectCommand } from './integration-pass.service';
 import { runGit } from './land-train-assembly.helper';
+import { pushAsIdentity } from './land-identity-push.helper';
 
 /** Completed CI runs read: enough to reach the last green one. */
 const CI_RUNS_READ = 20;
@@ -133,10 +136,41 @@ export const runIntegrationRepair = async (
 			},
 			footprintOf: (merge) =>
 				Promise.resolve(land.landedSince(`${merge.sha}^1`, merge.sha)),
-			// The set is kept where the next pass reads it: in the repair's body.
+			// The set travels as a git note of the commit: a proof reads it offline.
 			recordKnownFailing: (commit, specs) => {
+				const note = knownFailingNoteOf({
+					namespace: policy.branches.namespacePrefix,
+					commit,
+					failingSpecs: specs,
+				});
+				try {
+					exec(root, [
+						'fetch',
+						'-q',
+						LAND_REMOTE,
+						`+${note.ref}:${note.ref}`,
+					]);
+				} catch {
+					// No notes ref yet: this is the first one.
+				}
+				exec(root, [
+					...BATCH_COMMIT_IDENTITY,
+					'notes',
+					`--ref=${note.ref}`,
+					'add',
+					'-f',
+					'-m',
+					note.content.trimEnd(),
+					note.commit,
+				]);
+				const failure = pushAsIdentity({
+					cwd: root,
+					remote: LAND_REMOTE,
+					refspec: `${note.ref}:${note.ref}`,
+					token,
+				});
 				log(
-					`land-repair: ${commit.slice(0, 12)} fails ${String(specs.length)} spec(s)/check(s)`,
+					`land-repair: ${commit.slice(0, 12)} fails ${String(specs.length)} spec(s)/check(s)${failure === undefined ? '' : `; the note was not pushed (${failure})`}`,
 				);
 				return Promise.resolve();
 			},
