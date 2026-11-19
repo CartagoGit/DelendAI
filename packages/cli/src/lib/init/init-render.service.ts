@@ -40,7 +40,6 @@ import {
 } from '@delendai/core/cli';
 
 import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
-import { CLI_VERSION } from '../../contracts/constants/version.constant';
 import { buildCanonicalLaunch } from '../server-args.service';
 import type { IInitAnswers } from './init-answers.types';
 import { loadAgentDescriptors } from './init-catalog.constant';
@@ -505,7 +504,6 @@ export const renderInitBundle = async (
 		buildCanonicalLaunch({
 			workspace: '${workspaceFolder}',
 			serverName: answers.serverName,
-			version: CLI_VERSION,
 		});
 	const files: IRenderedFile[] = [
 		renderDelendaiConfig(answers, resolvedPlugins, options.development),
@@ -515,7 +513,6 @@ export const renderInitBundle = async (
 			buildCanonicalLaunch({
 				workspace: '.',
 				serverName: answers.serverName,
-				version: CLI_VERSION,
 			}),
 			answers.serverName,
 		),

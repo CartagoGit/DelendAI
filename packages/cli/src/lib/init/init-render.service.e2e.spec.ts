@@ -30,7 +30,6 @@ import { initCommand } from '../../commands/init/init.command';
  */
 const parseGeneratedConfig = <T>(raw: string | undefined): T =>
 	parseJsonc(raw ?? '{}').value as T;
-import { CLI_VERSION } from '../../contracts/constants/version.constant';
 import { buildCanonicalLaunch } from '../server-args.service';
 import { InitAnswers } from './init-answers.schema';
 import type { IInitAnswers } from './init-answers.types';
@@ -85,14 +84,12 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			buildCanonicalLaunch({
 				workspace: '${workspaceFolder}',
 				serverName: 'DelendAI',
-				version: CLI_VERSION,
 			}),
 		);
 		expect(generic.mcpServers.DelendAI).toMatchObject(
 			buildCanonicalLaunch({
 				workspace: '.',
 				serverName: 'DelendAI',
-				version: CLI_VERSION,
 			}),
 		);
 	});

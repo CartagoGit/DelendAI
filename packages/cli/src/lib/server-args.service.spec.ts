@@ -28,6 +28,7 @@ import {
 	CANONICAL_CLI_BIN,
 	CANONICAL_CLI_PACKAGE,
 } from '../contracts/constants/canonical-launch.constant';
+import { CLI_VERSION } from '../contracts/constants/version.constant';
 import {
 	buildCanonicalLaunch,
 	buildServerArgs,
@@ -48,7 +49,7 @@ describe('buildCanonicalLaunch', () => {
 			command: 'bunx',
 			args: [
 				'--package',
-				CANONICAL_CLI_PACKAGE,
+				`${CANONICAL_CLI_PACKAGE}@${CLI_VERSION}`,
 				CANONICAL_CLI_BIN,
 				'__serve',
 				'--workspace',
