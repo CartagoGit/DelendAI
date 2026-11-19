@@ -39,7 +39,6 @@
 		"apps/web/tests/data/plugin-install.spec.ts",
 		"apps/web/tests/data/plugin-origins.spec.ts",
 		"apps/web/tests/lib/brand-logos.spec.ts",
-		"apps/web/tests/lib/setup-wizard.spec.ts",
 		"apps/web/tests/plugin-profile.spec.ts",
 		"apps/web/tests/ui/code-copy-controller.spec.ts",
 		"apps/web/tests/ui/nav-responsive.spec.ts",

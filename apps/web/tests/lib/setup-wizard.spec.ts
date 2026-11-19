@@ -1,3 +1,4 @@
+import { buildCanonicalLaunch } from '@delendai/cli';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -29,18 +30,18 @@ const strings: ISetupWizardStrings = {
 
 describe('setup-wizard', () => {
 	describe('buildSetupWizard', () => {
-		it('emits exactly the 7 canonical steps in guide order', () => {
+		it('[<50ms] emits exactly the 7 canonical steps in guide order', () => {
 			const steps = buildSetupWizard(strings);
 			expect(steps).toHaveLength(7);
 			expect(steps.map((s) => s.id)).toEqual([...SETUP_STEP_IDS]);
 		});
 
-		it('numbers steps 1..7', () => {
+		it('[<50ms] numbers steps 1..7', () => {
 			const steps = buildSetupWizard(strings);
 			expect(steps.map((s) => s.index)).toEqual([1, 2, 3, 4, 5, 6, 7]);
 		});
 
-		it('maps each i18n title/body onto its step', () => {
+		it('[<50ms] maps each i18n title/body onto its step', () => {
 			const steps = buildSetupWizard(strings);
 			const byId = Object.fromEntries(steps.map((s) => [s.id, s]));
 			expect(byId['detect-repo']?.title).toBe('detect-title');
@@ -48,13 +49,13 @@ describe('setup-wizard', () => {
 			expect(byId['mark-configured']?.title).toBe('mark-title');
 		});
 
-		it('marks only the final step optional', () => {
+		it('[<50ms] marks only the final step optional', () => {
 			const steps = buildSetupWizard(strings);
 			const optional = steps.filter((s) => s.optional).map((s) => s.id);
 			expect(optional).toEqual(['mark-configured']);
 		});
 
-		it('gives every step a non-empty copyable command + lang', () => {
+		it('[<50ms] gives every step a non-empty copyable command + lang', () => {
 			for (const step of buildSetupWizard(strings)) {
 				expect(step.command.length).toBeGreaterThan(0);
 				expect(['bash', 'json']).toContain(step.commandLang);
@@ -63,35 +64,32 @@ describe('setup-wizard', () => {
 	});
 
 	describe('emitted commands agree with the catalog / canonical guide', () => {
-		it('launch command uses --preset=full (not a hand-typed plugin list)', () => {
+		it('[<50ms] launch command uses --preset=full (not a hand-typed plugin list)', () => {
+			const launch = buildCanonicalLaunch({
+				workspace: '.',
+				preset: 'full',
+			});
 			expect(launchCommand()).toBe(
-				'bunx --package @delendai/cli delendai __serve --workspace . --preset full',
+				[launch.command, ...launch.args].join(' '),
 			);
 		});
 
-		it('mcp.json snippet uses the same preset arg', () => {
+		it('[<50ms] mcp.json snippet uses the same preset arg', () => {
 			const snippet = mcpJsonSnippet();
 			const parsed = JSON.parse(snippet);
-			expect(parsed.servers.delendai.args).toEqual([
-				'--package',
-				'@delendai/cli',
-				'delendai',
-				'__serve',
-				'--workspace',
-				'.',
-				'--preset',
-				'full',
-			]);
+			expect(parsed.servers.delendai.args).toEqual(
+				buildCanonicalLaunch({ workspace: '.', preset: 'full' }).args,
+			);
 		});
 
-		it('config block writes only plugins.issues.options.repo', () => {
+		it('[<50ms] config block writes only plugins.issues.options.repo', () => {
 			const parsed = JSON.parse(exampleConfigJson('acme/widgets'));
 			expect(parsed).toEqual({
 				plugins: { issues: { options: { repo: 'acme/widgets' } } },
 			});
 		});
 
-		it('config block defaults the repo to a placeholder slug', () => {
+		it('[<50ms] config block defaults the repo to a placeholder slug', () => {
 			const parsed = JSON.parse(exampleConfigJson());
 			expect(parsed.plugins.issues.options.repo).toBe('owner/name');
 		});
