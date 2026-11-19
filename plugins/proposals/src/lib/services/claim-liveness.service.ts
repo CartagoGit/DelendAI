@@ -9,11 +9,11 @@
  * session, heartbeat; the last commit when no lease is visible here):
  * live, idle, abandoned or delivered. A claim now reads that verdict.
  *
- * It holds while its unit is live, or while its publication is open (what
- * it did can still land, and another reviewer must not duplicate it). A
- * unit gone quiet past its lease window holds nothing; its work is kept,
- * only the claim stops blocking. A ref core has no verdict for holds, the
- * cautious reading.
+ * A claim is a lease that only stops two agents editing at once, so only a
+ * LIVE lease holds: a heartbeat inside the idle window. A unit gone quiet
+ * past it, parked, published and handed over, or delivered holds nothing;
+ * its work is kept, only the claim stops blocking. A ref core has no
+ * verdict for has no lease either, so it holds nothing.
  */
 import type { IUnitStandingEntry } from '@delendai/core/cli';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
@@ -34,10 +34,7 @@ export const holdsFrom =
 				path.endsWith(`/${each.ref}`) ||
 				each.ref.endsWith(`/${path}`),
 		);
-		if (entry === undefined) return true;
-		if (entry.publicationRef !== null) return true;
-		// A unit its owner parked keeps its claims while it waits.
-		return entry.standing === 'live' || entry.standing === 'waiting';
+		return entry?.standing === 'live';
 	};
 
 /** The predicate a claim reader asks, for the workspace at `root`. */

@@ -55,8 +55,9 @@ export const recordUnitEntered = async (
 
 /**
  * Say that the session holding a unit ran out of quota: the unit is
- * orphaned now, not after its silence runs past the recovery window. Any
- * later heartbeat of the owner makes it live again. A unit with no lease
+ * orphaned now, not after its silence runs past the recovery window. Its
+ * lease stops holding the slice at once; any later heartbeat of the owner
+ * makes it live, and holding, again. A unit with no lease
  * is left as it is: there is no session to speak for.
  */
 export const recordOwnerOutOfQuota = async (input: {

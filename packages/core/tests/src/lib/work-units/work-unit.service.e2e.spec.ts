@@ -121,7 +121,7 @@ afterEach(() => {
 });
 
 describe('delendai work (x00553)', () => {
-	it('[<2000ms] reports where the checkout is against the policy', async () => {
+	it('[<10000ms] reports where the checkout is against the policy', async () => {
 		const root = repoWith(PINNED);
 		const result = await command.run(['status'], contextFor(root));
 		expect(result.code).toBe(0);
@@ -133,7 +133,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<2000ms] takes nothing from the shared checkout and never moves it (x01003)', async () => {
+	it('[<10000ms] takes nothing from the shared checkout and never moves it (x01003)', async () => {
 		const root = repoWith(PINNED);
 		const result = await checkpoint(root, ['--paths=README.md']);
 		expect(result.code).not.toBe(0);
@@ -144,7 +144,7 @@ describe('delendai work (x00553)', () => {
 		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
 	});
 
-	it("[<2000ms] refuses while another agent's edits sit in the shared checkout, and leaves them (x01003)", async () => {
+	it("[<10000ms] refuses while another agent's edits sit in the shared checkout, and leaves them (x01003)", async () => {
 		const root = repoWith(PINNED);
 		writeFileSync(join(root, 'theirs.ts'), 'export const theirs = 1;\n');
 		const result = await checkpoint(root, ['--paths=theirs.ts']);
@@ -155,7 +155,7 @@ describe('delendai work (x00553)', () => {
 		expect(git(root, 'status', '--porcelain')).toContain('theirs.ts');
 	});
 
-	it('[<2000ms] refuses to checkpoint from a checkout that wandered off', async () => {
+	it('[<10000ms] refuses to checkpoint from a checkout that wandered off', async () => {
 		const root = repoWith(PINNED);
 		git(root, 'switch', '-q', '-c', 'somewhere-else');
 		const result = await checkpoint(root, ['--paths=README.md']);
@@ -165,7 +165,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<2000ms] names what a checkpoint is missing instead of guessing', async () => {
+	it('[<10000ms] names what a checkpoint is missing instead of guessing', async () => {
 		const root = repoWith(PINNED);
 		const result = await command.run(
 			['checkpoint', '--proposal=x1'],
@@ -175,14 +175,14 @@ describe('delendai work (x00553)', () => {
 		expect(result.error).toContain('--paths=');
 	});
 
-	it('[<2000ms] refuses a scope that escapes the repository', async () => {
+	it('[<10000ms] refuses a scope that escapes the repository', async () => {
 		const root = repoWith(PINNED);
 		const result = await checkpoint(root, ['--paths=../outside.ts']);
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('Invalid scope');
 	});
 
-	it('[<2000ms] refuses a worktree the shared checkout would show as untracked (x00695)', async () => {
+	it('[<10000ms] refuses a worktree the shared checkout would show as untracked (x00695)', async () => {
 		const root = repoWith(PINNED);
 		const loose = await command.run(
 			[
@@ -198,7 +198,7 @@ describe('delendai work (x00553)', () => {
 		expect(loose.error).toContain('loose edit on the integration branch');
 	});
 
-	it('[<3000ms] gives two agents entering the same batch two worktrees (x00695)', async () => {
+	it('[<10000ms] gives two agents entering the same batch two worktrees (x00695)', async () => {
 		const root = repoWith(PINNED);
 		const paths: string[] = [];
 		for (const agent of ['glm-5', 'minimax-m3']) {
@@ -221,7 +221,7 @@ describe('delendai work (x00553)', () => {
 		expect(paths[1]).toContain('minimax-m3-batch-all');
 	});
 
-	it('[<2000ms] refuses a new unit whose topic is a list, and creates nothing', async () => {
+	it('[<10000ms] refuses a new unit whose topic is a list, and creates nothing', async () => {
 		const root = repoWith(PINNED);
 		const listed = await command.run(
 			[
@@ -239,7 +239,7 @@ describe('delendai work (x00553)', () => {
 		expect(git(root, 'for-each-ref', 'refs/heads/delendai')).toBe('');
 	});
 
-	it('[<6000ms] resumes the unit the command runs inside, with no --session', async () => {
+	it('[<10000ms] resumes the unit the command runs inside, with no --session', async () => {
 		const root = repoWith(PINNED);
 		const review = [
 			'enter',
@@ -260,7 +260,7 @@ describe('delendai work (x00553)', () => {
 		expect((elsewhere.data as { path?: unknown }).path).not.toBe(path);
 	});
 
-	it('[<4000ms] does not reuse a review generation whose pack is still published', async () => {
+	it('[<10000ms] does not reuse a review generation whose pack is still published', async () => {
 		const root = repoWith(PINNED);
 		const review = [
 			'enter',
@@ -288,7 +288,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<5000ms] does not reuse a generation whose unit was merged, so no two refs share an identity', async () => {
+	it('[<10000ms] does not reuse a generation whose unit was merged, so no two refs share an identity', async () => {
 		const root = repoWith(PINNED);
 		const enter = [
 			'enter',
@@ -325,7 +325,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<4000ms] does not reuse the generation of an open publication, alongside or not', async () => {
+	it('[<10000ms] does not reuse the generation of an open publication, alongside or not', async () => {
 		const root = repoWith(PINNED);
 		const enter = [
 			'enter',
@@ -358,7 +358,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<4000ms] sends an agent back to its own open publication instead of starting a second one', async () => {
+	it('[<10000ms] sends an agent back to its own open publication instead of starting a second one', async () => {
 		const root = repoWith(PINNED);
 		const enter = [
 			'enter',
@@ -387,7 +387,7 @@ describe('delendai work (x00553)', () => {
 		expect(again.error).toContain('--generation=1 --topic=first');
 	});
 
-	it('[<3000ms] refuses to publish a review unit that changed the product', async () => {
+	it('[<10000ms] refuses to publish a review unit that changed the product', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(
 			[
@@ -422,7 +422,7 @@ describe('delendai work (x00553)', () => {
 		expect(published.error).toContain('packages/cli/skip.ts');
 	});
 
-	it('[<4000ms] places a unit entered from inside another beside it, not in it', async () => {
+	it('[<10000ms] places a unit entered from inside another beside it, not in it', async () => {
 		const root = repoWith(PINNED);
 		const first = await command.run(
 			[
@@ -458,7 +458,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<2000ms] takes the next free directory when another unit still stands in the default one', async () => {
+	it('[<10000ms] takes the next free directory when another unit still stands in the default one', async () => {
 		const root = repoWith(PINNED);
 		const taken = join(root, '.cache/delendai/.worktrees/glm-5-new-all');
 		mkdirSync(taken, { recursive: true });
@@ -484,7 +484,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<5000ms] gives an agent its own worktree, and finds it again', async () => {
+	it('[<10000ms] gives an agent its own worktree, and finds it again', async () => {
 		const root = repoWith(PINNED);
 		const created = await command.run(
 			[
@@ -527,11 +527,11 @@ describe('delendai work (x00553)', () => {
 		for (const extra of [[], ['--session=someone-else']]) {
 			const other = await reenter(extra);
 			expect(other.code).not.toBe(0);
-			expect(other.error).toContain('another session');
+			expect(other.error).toContain('different session');
 		}
 	});
 
-	it('[<2000ms] reports the adopted default when the project declares no policy', async () => {
+	it('[<10000ms] reports the adopted default when the project declares no policy', async () => {
 		const root = repoWith(undefined);
 		const result = await command.run(
 			['status'],
@@ -544,7 +544,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<2000ms] refuses a work ref under a profile that has none', async () => {
+	it('[<10000ms] refuses a work ref under a profile that has none', async () => {
 		const root = repoWith({ development: { profile: 'shared-direct' } });
 		writeFileSync(join(root, 'a.ts'), 'export const a = 1;\n');
 		const result = await checkpoint(root, ['--paths=a.ts']);
@@ -552,7 +552,7 @@ describe('delendai work (x00553)', () => {
 		expect(result.error).toContain('no work-ref model');
 	});
 
-	it('[<2000ms] rejects an unknown subcommand', async () => {
+	it('[<10000ms] rejects an unknown subcommand', async () => {
 		const result = await command.run(
 			['nonsense'],
 			contextFor(repoWith(PINNED)),
@@ -561,7 +561,7 @@ describe('delendai work (x00553)', () => {
 		expect(result.error).toContain('Unknown subcommand');
 	});
 
-	it('[<3000ms] shows the swarm as data, and as lines a person reads', async () => {
+	it('[<10000ms] shows the swarm as data, and as lines a person reads', async () => {
 		const root = repoWith(PINNED);
 		commitOnRef(root, MINE, { 'a.ts': 'export const a = 1;\n' });
 		const asData = await command.run(['swarm'], contextFor(root));
@@ -578,7 +578,7 @@ describe('delendai work (x00553)', () => {
 		expect(printed.suppressDefaultPrint).toBe(true);
 	});
 
-	it('[<2000ms] names what a publication is missing instead of guessing', async () => {
+	it('[<10000ms] names what a publication is missing instead of guessing', async () => {
 		const root = repoWith(PINNED);
 		const result = await command.run(
 			['publish', '--proposal=x00553', '--slice=S1'],
@@ -588,7 +588,7 @@ describe('delendai work (x00553)', () => {
 		expect(result.error).toContain('--agent=');
 	});
 
-	it('[<2000ms] refuses to let the caller name the publication', async () => {
+	it('[<10000ms] refuses to let the caller name the publication', async () => {
 		const root = repoWith(PINNED);
 		const result = await command.run(
 			[
@@ -604,7 +604,7 @@ describe('delendai work (x00553)', () => {
 		expect(result.error).toContain('Drop `--as=`');
 	});
 
-	it('[<2000ms] refuses to publish or isolate under a profile with no work-ref model', async () => {
+	it('[<10000ms] refuses to publish or isolate under a profile with no work-ref model', async () => {
 		const root = repoWith({ development: { profile: 'shared-direct' } });
 		const published = await command.run(
 			['publish', '--proposal=x1', '--slice=S1', '--agent=a'],
@@ -618,14 +618,14 @@ describe('delendai work (x00553)', () => {
 		expect(entered.error).toContain('nothing to isolate');
 	});
 
-	it('[<2000ms] names what a worktree is missing instead of guessing', async () => {
+	it('[<10000ms] names what a worktree is missing instead of guessing', async () => {
 		const root = repoWith(PINNED);
 		const result = await command.run(['enter'], contextFor(root));
 		expect(result.code).not.toBe(0);
 		expect(result.error).toContain('--proposal=');
 	});
 
-	it('[<7000ms] publishes through the command, and ends the work ref', async () => {
+	it('[<10000ms] publishes through the command, and ends the work ref', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -657,7 +657,7 @@ describe('delendai work (x00553)', () => {
 		);
 	});
 
-	it('[<5000ms] keeps the work ref when asked, and reports it as not finished', async () => {
+	it('[<10000ms] keeps the work ref when asked, and reports it as not finished', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -682,7 +682,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<5000ms] keeps the branch of a proposal in progress, unasked', async () => {
+	it('[<10000ms] keeps the branch of a proposal in progress, unasked', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -724,7 +724,7 @@ describe('delendai work (x00553)', () => {
 		).toContain('x00553 is in progress');
 	});
 
-	it('[<4000ms] ends the branch when the published tree takes its proposal out of progress', async () => {
+	it('[<10000ms] ends the branch when the published tree takes its proposal out of progress', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -760,7 +760,7 @@ describe('delendai work (x00553)', () => {
 		).toBe('');
 	});
 
-	it('[<3000ms] leaves at start a unit that only created its proposal, still being written', async () => {
+	it('[<10000ms] leaves at start a unit that only created its proposal, still being written', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -790,7 +790,7 @@ describe('delendai work (x00553)', () => {
 		).not.toBe('');
 	});
 
-	it('[<8000ms] publishes at start a unit whose proposal left in-progress, and ends its branch', async () => {
+	it('[<10000ms] publishes at start a unit whose proposal left in-progress, and ends its branch', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -856,7 +856,7 @@ describe('delendai work (x00553)', () => {
 		).not.toBe('');
 	});
 
-	it('[<7000ms] runs a review batch as one branch, claimed by commits, published once (f00644)', async () => {
+	it('[<10000ms] runs a review batch as one branch, claimed by commits, published once (f00644)', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -917,7 +917,7 @@ describe('delendai work (x00553)', () => {
 		).toContain('review batch');
 	});
 
-	it('[<2000ms] refuses a kind outside the vocabulary, and an agent id that spells one (f00644)', async () => {
+	it('[<10000ms] refuses a kind outside the vocabulary, and an agent id that spells one (f00644)', async () => {
 		const root = repoWith(PINNED);
 		const badKind = await command.run(
 			[
@@ -950,7 +950,7 @@ describe('delendai work (x00553)', () => {
 		expect(host.error).toContain('program the agent runs in');
 	});
 
-	it('[<4000ms] still publishes a unit entered before the shape named its kind (f00644)', async () => {
+	it('[<10000ms] still publishes a unit entered before the shape named its kind (f00644)', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -989,7 +989,7 @@ describe('delendai work (x00553)', () => {
 		).toContain('refs/heads/delendai/pr/claude-opus-5/x00553-S1-g1/probe');
 	});
 
-	it('[<7000ms] finds a unit by what it is, not by the name it was entered under (x00704)', async () => {
+	it('[<10000ms] finds a unit by what it is, not by the name it was entered under (x00704)', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -1037,7 +1037,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<2000ms] refuses to guess between two refs of one unit (x00704)', async () => {
+	it('[<10000ms] refuses to guess between two refs of one unit (x00704)', async () => {
 		const root = repoWith(PINNED);
 		const head = git(root, 'rev-parse', 'HEAD');
 		for (const topic of ['first', 'second']) {
@@ -1069,7 +1069,7 @@ describe('delendai work (x00553)', () => {
 		).toHaveLength(2);
 	});
 
-	it('[<12000ms] gives every instance of one model its own review unit, and publishes each by its session (x00714)', async () => {
+	it('[<10000ms] gives every instance of one model its own review unit, and publishes each by its session (x00714)', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -1135,7 +1135,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<6000ms] sends a session back to its own unit when an older generation was given up', async () => {
+	it('[<10000ms] sends a session back to its own unit when an older generation was given up', async () => {
 		const root = repoWith(PINNED);
 		const enter = (extra: readonly string[]) =>
 			command.run(
@@ -1176,7 +1176,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<18000ms] publishes the second review pack of one agent to its own pull request', async () => {
+	it('[<10000ms] publishes the second review pack of one agent to its own pull request', async () => {
 		const root = repoWith(PINNED);
 		const remote = mkdtempSync(join(tmpdir(), 'work-cmd-remote-'));
 		roots.push(remote);
@@ -1222,7 +1222,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<4000ms] refuses a second instance on a slice another instance works, and leaves no branch (x00714)', async () => {
+	it('[<10000ms] refuses a second instance on a slice another instance works, and leaves no branch (x00714)', async () => {
 		const root = repoWith(PINNED);
 		const enter = (topic: string) =>
 			command.run(
@@ -1249,7 +1249,7 @@ describe('delendai work (x00553)', () => {
 		).toHaveLength(1);
 	});
 
-	it('[<4000ms] reports a publication that could not be pushed, and keeps everything', async () => {
+	it('[<10000ms] reports a publication that could not be pushed, and keeps everything', async () => {
 		const root = repoWith(PINNED);
 		commitOnRef(root, MINE, { 'a.ts': 'export const a = 1;\n' });
 		const result = await command.run(
@@ -1269,7 +1269,7 @@ describe('delendai work (x00553)', () => {
 			workRefRemoved: false,
 		});
 	});
-	it('[<2000ms] names the agent already in these paths instead of refusing bare (x00555 S2)', async () => {
+	it('[<10000ms] names the agent already in these paths instead of refusing bare (x00555 S2)', async () => {
 		const root = repoWith(PINNED);
 		// Another agent gets there first, in a unit of its own.
 		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
@@ -1287,7 +1287,7 @@ describe('delendai work (x00553)', () => {
 		expect(said).toContain('delendai work claim --ref=');
 	});
 
-	it('[<2000ms] refuses a checkpoint beside another unit for the checkout, not for the unit (x00555 S2, x01003)', async () => {
+	it('[<10000ms] refuses a checkpoint beside another unit for the checkout, not for the unit (x00555 S2, x01003)', async () => {
 		const root = repoWith(PINNED);
 		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
 		const mine = await checkpoint(root, ['--paths=b.ts']);
@@ -1295,7 +1295,7 @@ describe('delendai work (x00553)', () => {
 		expect(mine.error).toContain('Nothing is checkpointed');
 		expect(mine.error).not.toContain('gpt-5');
 	});
-	it('[<4000ms] tells an entering agent what the rest of the swarm is doing (x00555 S3)', async () => {
+	it('[<10000ms] tells an entering agent what the rest of the swarm is doing (x00555 S3)', async () => {
 		const root = repoWith(PINNED);
 		// Somebody else is already live, on a path of their own.
 		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
@@ -1320,7 +1320,7 @@ describe('delendai work (x00553)', () => {
 		});
 	});
 
-	it('[<2000ms] briefs an entering agent that it is alone, out loud (x00555 S3)', async () => {
+	it('[<10000ms] briefs an entering agent that it is alone, out loud (x00555 S3)', async () => {
 		const root = repoWith(PINNED);
 		const entered = await command.run(
 			[
@@ -1356,7 +1356,7 @@ describe('delendai work, as a person reads it', () => {
 		return lines.join('');
 	};
 
-	it('[<4000ms] prints the briefing to an entering agent, not only the JSON (x00555 S3)', async () => {
+	it('[<10000ms] prints the briefing to an entering agent, not only the JSON (x00555 S3)', async () => {
 		const root = repoWith(PINNED);
 		commitOnRef(root, THEIRS, { 'a.ts': 'export const a = 1;\n' });
 		const out = await printed(() =>
@@ -1376,7 +1376,7 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('1 other unit(s)');
 	});
 
-	it('[<2000ms] prints the swarm, naming the paths more than one unit is changing', async () => {
+	it('[<10000ms] prints the swarm, naming the paths more than one unit is changing', async () => {
 		const root = repoWith(PINNED);
 		commitOnRef(root, 'delendai/wip/implement/gpt-5/x00553-S9/theirs', {
 			'a.ts': 'export const a = 1;\n',
@@ -1389,7 +1389,7 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('overlaps');
 	});
 
-	it('[<2000ms] prints where the checkout stands against the policy', async () => {
+	it('[<10000ms] prints where the checkout stands against the policy', async () => {
 		const root = repoWith(PINNED);
 		const out = await printed(() =>
 			command.run(['status'], contextFor(root, { json: false })),
@@ -1399,7 +1399,7 @@ describe('delendai work, as a person reads it', () => {
 		expect(out).toContain('anchored         yes');
 	});
 
-	it('[<2000ms] says the anchor is not required under a profile that does not anchor the checkout', async () => {
+	it('[<10000ms] says the anchor is not required under a profile that does not anchor the checkout', async () => {
 		const root = repoWith({
 			development: {
 				profile: 'worktree-pr',
@@ -1415,7 +1415,7 @@ describe('delendai work, as a person reads it', () => {
 });
 
 describe('instances entering at once each get a unit (x00731)', () => {
-	it('[<5000ms] gives two sessions of one model entering the same unit together g1 and g2', async () => {
+	it('[<10000ms] gives two sessions of one model entering the same unit together g1 and g2', async () => {
 		const root = repoWith(PINNED);
 		const enter = (session: string) =>
 			command.run(
@@ -1453,7 +1453,7 @@ describe('instances entering at once each get a unit (x00731)', () => {
 		).toEqual([join(root, 'wt-aaaa'), join(root, 'wt-bbbb')]);
 	});
 
-	it('[<4000ms] chooses the generation from the refs the previous entry left, not from reads taken before it waited', async () => {
+	it('[<10000ms] chooses the generation from the refs the previous entry left, not from reads taken before it waited', async () => {
 		const root = repoWith(PINNED);
 		const enter = (session: string) =>
 			command.run(

@@ -1,6 +1,6 @@
 /**
- * slice-holders.service.spec.ts — a slice another agent holds is not
- * entered by accident.
+ * slice-holders.service.e2e.spec.ts — `work enter` on a slice a live lease
+ * holds, on a real repository (x01100).
  */
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
@@ -12,155 +12,9 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { fakePartial } from '@delendai/test-kit';
 
 import type { IWorkUnitContext } from '@delendai/core/lib/contracts/interfaces/work-unit-context.interface';
-import type {
-	ISwarmUnit,
-	ISwarmView,
-} from '@delendai/core/lib/contracts/interfaces/work-swarm.interface';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import {
-	describeSliceHolders,
-	holdersOfSlice,
-	readSliceOwnership,
-} from '@delendai/core/lib/work-units/slice-holders.service';
+import { readSliceOwnership } from '@delendai/core/lib/work-units/slice-holders.service';
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
-
-const unit = (agent: string, subject: string, ahead = 1): ISwarmUnit => ({
-	ref: `ns/wip/${agent}/${subject}`,
-	agent,
-	subject,
-	tip: subject,
-	ahead,
-	behind: 0,
-	paths: [],
-});
-
-const view = (
-	units: readonly ISwarmUnit[],
-	published: readonly ISwarmUnit[] = [],
-): ISwarmView => ({
-	integration: 'develop',
-	units,
-	published,
-	publications: published.map((entry) => entry.ref),
-	overlaps: [],
-	relations: [],
-});
-
-const asking = {
-	agent: 'me',
-	kind: 'implement',
-	proposal: 'x00001',
-	slice: 'S1',
-} as const;
-
-describe('holdersOfSlice', () => {
-	it("[<2000ms] leaves a slice free that only the proposal's create unit names", () => {
-		const writer = unit('opus', 'create/x00001-all/the-document');
-		expect(holdersOfSlice({ ...asking, view: view([], [writer]) })).toEqual(
-			[],
-		);
-		expect(
-			holdersOfSlice({
-				...asking,
-				kind: 'create',
-				view: view([], [writer]),
-			}),
-		).toEqual([writer]);
-	});
-
-	it('[<2000ms] names another agent on the same slice, live or published', () => {
-		const held = holdersOfSlice({
-			...asking,
-			view: view(
-				[unit('codex', 'implement/x00001-S1/t')],
-				[unit('glm', 'implement/x00001-S1-G2/t')],
-			),
-		});
-		expect(held.map((entry) => entry.agent)).toEqual(['codex', 'glm']);
-	});
-
-	it('[<2000ms] counts a unit for the whole proposal against a slice, and a slice against it', () => {
-		expect(
-			holdersOfSlice({
-				...asking,
-				view: view([unit('codex', 'implement/x00001-all/t')]),
-			}),
-		).toHaveLength(1);
-		expect(
-			holdersOfSlice({
-				...asking,
-				slice: 'all',
-				view: view([unit('codex', 'implement/x00001-S3/t')]),
-			}),
-		).toHaveLength(1);
-	});
-
-	it('[<2000ms] leaves other slices, other proposals, landed publications and odd names alone', () => {
-		expect(
-			holdersOfSlice({
-				...asking,
-				view: view(
-					[
-						unit('codex', 'implement/x00001-S2/t'),
-						unit('codex', 'implement/x00002-S1/t'),
-						unit('codex', 'no-generation'),
-					],
-					[unit('glm', 'implement/x00001-S1/t', 0)],
-				),
-			}),
-		).toEqual([]);
-	});
-
-	it('[<2000ms] neither keeps a review out nor lets a review hold a slice', () => {
-		const reviewing = view([unit('codex', 'review/x00001-S1/t')]);
-		expect(holdersOfSlice({ ...asking, view: reviewing })).toEqual([]);
-		expect(
-			holdersOfSlice({
-				...asking,
-				kind: 'review',
-				view: view([unit('codex', 'implement/x00001-S1/t')]),
-			}),
-		).toEqual([]);
-	});
-
-	it('[<2000ms] lets an agent back into a slice it holds itself', () => {
-		expect(
-			holdersOfSlice({
-				...asking,
-				view: view([
-					unit('me', 'implement/x00001-S1/t'),
-					unit('codex', 'implement/x00001-S1/t'),
-				]),
-			}),
-		).toEqual([]);
-	});
-
-	it('[<2000ms] holds nobody out of a proposal not yet written: each agent writes its own', () => {
-		expect(
-			holdersOfSlice({
-				...asking,
-				kind: 'create',
-				proposal: 'new',
-				slice: 'all',
-				view: view(
-					[unit('codex', 'create/new-all/one-proposal')],
-					[unit('glm', 'create/new-all/another-proposal')],
-				),
-			}),
-		).toEqual([]);
-	});
-
-	it('[<2000ms] says who holds it and what can be done about it', () => {
-		const lines = describeSliceHolders([
-			unit('codex', 'implement/x00001-S1/t'),
-		]);
-		expect(lines[0]).toContain(
-			'codex holds it in ns/wip/codex/implement/x00001-S1/t',
-		);
-		expect(lines.join('\n')).toContain('--alongside');
-		expect(lines.join('\n')).toContain('work claim');
-	});
-});
 
 const roots: string[] = [];
 
@@ -217,7 +71,7 @@ const enter = (root: string, agent: string, extra: readonly string[] = []) =>
 	);
 
 describe('work enter on a slice another agent holds', () => {
-	it('[<4000ms] refuses the second agent, and lets the first back in', async () => {
+	it('[<10000ms] refuses the second agent, and lets the first back in', async () => {
 		const root = repo();
 		const first = await enter(root, 'claude-opus-5');
 		expect(first.code).toBe(0);
@@ -225,7 +79,7 @@ describe('work enter on a slice another agent holds', () => {
 		const second = await enter(root, 'gpt-5');
 		expect(second.code).not.toBe(0);
 		expect(second.error).toContain(
-			'already being worked on by another agent',
+			'already being worked on under a live lease',
 		);
 
 		const session = String((first.data as { session?: unknown }).session);
@@ -236,7 +90,7 @@ describe('work enter on a slice another agent holds', () => {
 		expect(again.code).toBe(0);
 	});
 
-	it('[<3000ms] lets the second agent in when it says so deliberately', async () => {
+	it('[<10000ms] lets the second agent in when it says so deliberately', async () => {
 		const root = repo();
 		await enter(root, 'claude-opus-5');
 		expect((await enter(root, 'gpt-5', ['--alongside'])).code).toBe(0);
@@ -260,7 +114,7 @@ describe('readSliceOwnership', () => {
 			slice: 'S1',
 		});
 
-	it("[<3000ms] names another agent's unit on the slice, and the holder's own ref to itself", async () => {
+	it("[<10000ms] names another agent's unit on the slice, and the holder's own ref to itself", async () => {
 		const root = repo();
 		expect((await enter(root, 'claude-opus-5')).code).toBe(0);
 

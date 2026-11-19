@@ -31,11 +31,11 @@ const standingAfter = (silentFor: number, delivered = false): string =>
 	}).standing;
 
 describe('judgeUnit', () => {
-	it('is live inside the lease window', () => {
+	it('[<100ms] is live inside the lease window', () => {
 		expect(standingAfter(WINDOW - 1)).toBe('live');
 	});
 
-	it('is idle past the window, with its owner still known', () => {
+	it('[<100ms] is idle past the window, with its owner still known', () => {
 		const verdict = judgeUnit({
 			lease: lease(WINDOW + 1),
 			delivered: false,
@@ -46,12 +46,12 @@ describe('judgeUnit', () => {
 		expect(verdict.owner).toEqual({ agent: 'a', session: 's1' });
 	});
 
-	it('is abandoned once its owner has been silent for eight windows', () => {
+	it('[<100ms] is abandoned once its owner has been silent for eight windows', () => {
 		expect(standingAfter(WINDOW * 8)).toBe('idle');
 		expect(standingAfter(WINDOW * 8 + 1)).toBe('abandoned');
 	});
 
-	it('waits, neither idle nor abandoned, once its owner parked it', () => {
+	it('[<100ms] waits, neither idle nor abandoned, once its owner parked it', () => {
 		const parked = (silentFor: number) =>
 			judgeUnit({
 				lease: lease(silentFor),
@@ -67,15 +67,15 @@ describe('judgeUnit', () => {
 		);
 	});
 
-	it('is delivered when proved so and its owner has gone quiet', () => {
+	it('[<100ms] is delivered when proved so and its owner has gone quiet', () => {
 		expect(standingAfter(WINDOW + 1, true)).toBe('delivered');
 	});
 
-	it('stays live when delivered but its owner is still working', () => {
+	it('[<100ms] stays live when delivered but its owner is still working', () => {
 		expect(standingAfter(10, true)).toBe('live');
 	});
 
-	it('dates a unit that predates leases from its last commit', () => {
+	it('[<100ms] dates a unit that predates leases from its last commit', () => {
 		const verdict = judgeUnit({
 			tipAt: NOW - WINDOW * 9,
 			delivered: false,
@@ -86,59 +86,52 @@ describe('judgeUnit', () => {
 		expect(verdict.owner).toBeNull();
 	});
 
-	it('does not call a unit abandoned without any evidence', () => {
+	it('[<100ms] does not call a unit abandoned without any evidence', () => {
 		expect(
 			judgeUnit({ delivered: false, now: NOW, windowSeconds: WINDOW })
 				.standing,
 		).toBe('idle');
 	});
 
-	it('takes a default window when the policy says never expire', () => {
+	it('[<100ms] takes a default window when the policy says never expire', () => {
 		expect(leaseWindowSeconds(0)).toBe(30 * 60);
 		expect(leaseWindowSeconds(45)).toBe(45 * 60);
 	});
 
 	describe("a published unit kept for its proposal's next slices", () => {
-		const kept = (silentFor: number, claimedByOther = false): string =>
+		const kept = (silentFor: number): string =>
 			judgeUnit({
 				lease: lease(silentFor),
 				delivered: true,
 				keptForContinuation: true,
-				claimedByOther,
 				now: NOW,
 				windowSeconds: WINDOW,
 			}).standing;
 
-		it('waits for its owner, as idle, through eight windows of silence', () => {
+		it('[<100ms] waits for its owner, as idle, through eight windows of silence', () => {
 			expect(kept(WINDOW + 1)).toBe('idle');
 			expect(kept(WINDOW * 8)).toBe('idle');
 		});
 
-		it('becomes reapable once nobody continued it', () => {
+		it('[<100ms] becomes reapable once nobody continued it', () => {
 			expect(kept(WINDOW * 8 + 1)).toBe('delivered');
 		});
 
-		it('becomes reapable as soon as another agent takes the proposal', () => {
-			expect(kept(WINDOW + 1, true)).toBe('delivered');
-		});
-
-		it('stays live while its owner is still working on it', () => {
+		it('[<100ms] stays live while its owner is still working on it', () => {
 			expect(kept(10)).toBe('live');
 		});
 	});
 
-	it('waits for the hand-off of a landed unit whose proposal is in progress, however long', () => {
-		const verdict = (claimedByOther: boolean) =>
+	it('[<100ms] waits for the hand-off of a landed unit whose proposal is in progress, however long', () => {
+		const verdict = () =>
 			judgeUnit({
 				lease: lease(WINDOW * 50),
 				delivered: true,
 				proposalInProgress: true,
-				claimedByOther,
 				now: NOW,
 				windowSeconds: WINDOW,
 			});
-		expect(verdict(false).standing).toBe('idle');
-		expect(verdict(false).reason).toContain('hand it off');
-		expect(verdict(true).standing).toBe('delivered');
+		expect(verdict().standing).toBe('idle');
+		expect(verdict().reason).toContain('hand it off');
 	});
 });

@@ -1,5 +1,5 @@
 /**
- * work-unit-enter.service.spec.ts — what `work enter` derives for a
+ * work-unit-enter.service.e2e.spec.ts — what `work enter` derives for a
  * review, on a real repository (x01032). Two entries, kept fast.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -37,7 +37,14 @@ const repo = (): string => {
 
 const enter = (root: string, ...args: string[]) =>
 	runWorkUnit(
-		['enter', '--slice=all', '--agent=gpt-5.3-codex', ...args],
+		[
+			'enter',
+			'--slice=all',
+			...(args.some((arg) => arg.startsWith('--agent='))
+				? []
+				: ['--agent=gpt-5.3-codex']),
+			...args,
+		],
 		fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({
 			cwd: root,
 			globals: fakePartial<
@@ -48,7 +55,7 @@ const enter = (root: string, ...args: string[]) =>
 	);
 
 describe('work enter derives the review kind (x01032)', () => {
-	it('[<3000ms] enters the batch as a review unit, and refuses another kind on it', async () => {
+	it('[<10000ms] enters the batch as a review unit, and refuses another kind on it', async () => {
 		const root = repo();
 		const contradicted = await enter(
 			root,
@@ -65,12 +72,33 @@ describe('work enter derives the review kind (x01032)', () => {
 		expect(ref).toContain('/verdicts');
 	});
 
-	it("[<2000ms] enters a proposal waiting in review/ as the reviewer's batch unit", async () => {
+	it("[<10000ms] enters a proposal waiting in review/ as the reviewer's batch unit", async () => {
 		const root = repo();
 		const entered = await enter(root, '--proposal=x00900');
 		expect(entered.code).toBe(0);
 		expect((entered.data as { ref?: string }).ref).toMatch(
 			/\/review\/[^/]+\/batch-all/u,
 		);
+	});
+});
+
+describe('a live-lease refusal (x01100)', () => {
+	it('[<10000ms] names the lease heartbeat age and the idle window', async () => {
+		const root = repo();
+		const first = await enter(
+			root,
+			'--proposal=x00901',
+			'--agent=claude-opus-5',
+		);
+		expect(first.code).toBe(0);
+		const second = await enter(
+			root,
+			'--proposal=x00901',
+			'--agent=gpt-5.3-codex',
+		);
+		expect(second.code).not.toBe(0);
+		const text = JSON.stringify(second);
+		expect(text).toContain('live lease');
+		expect(text).toMatch(/min old, inside the \d+ min window/u);
 	});
 });

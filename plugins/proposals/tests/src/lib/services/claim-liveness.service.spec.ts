@@ -1,7 +1,7 @@
 /**
- * claim-liveness.service.spec.ts — a claim holds while its holder lives,
- * or while what it did is published; a quiet or delivered unit holds
- * nothing, and a unit without a verdict holds (the cautious reading).
+ * claim-liveness.service.spec.ts — a claim is a lease: only a live one
+ * holds. A quiet, parked, published or delivered unit holds nothing, and
+ * neither does a unit without a verdict.
  */
 import { describe, expect, it } from 'vitest';
 
@@ -39,26 +39,26 @@ describe('whether a unit holds its claims', () => {
 		),
 	]);
 
-	it('is yes while its holder is live, local or as the remote copy', () => {
+	it('[<100ms] is yes while its holder is live, local or as the remote copy', () => {
 		expect(holds(`refs/heads/${unit('live-agent')}`)).toBe(true);
 		expect(holds(`refs/remotes/origin/${unit('live-agent')}`)).toBe(true);
 	});
 
-	it('is yes while its owner has parked it, waiting on someone', () => {
-		expect(holds(`refs/heads/${unit('parked-agent')}`)).toBe(true);
+	it('[<100ms] is no for a unit its owner parked: the lease is not live', () => {
+		expect(holds(`refs/heads/${unit('parked-agent')}`)).toBe(false);
 	});
 
-	it('is yes while its publication is open, however quiet its holder', () => {
-		expect(holds(`refs/heads/${unit('published-agent')}`)).toBe(true);
+	it('[<100ms] is no for a published unit whose lease is quiet: it was handed over', () => {
+		expect(holds(`refs/heads/${unit('published-agent')}`)).toBe(false);
 	});
 
-	it('is no once its holder has gone quiet, has gone, or has landed', () => {
+	it('[<100ms] is no once its holder has gone quiet, has gone, or has landed', () => {
 		expect(holds(`refs/heads/${unit('quiet-agent')}`)).toBe(false);
 		expect(holds(`refs/remotes/origin/${unit('gone-agent')}`)).toBe(false);
 		expect(holds(`refs/heads/${unit('landed-agent')}`)).toBe(false);
 	});
 
-	it('is yes for a unit nothing has judged', () => {
-		expect(holds(`refs/heads/${unit('unknown-agent')}`)).toBe(true);
+	it('[<100ms] is no for a unit nothing has judged', () => {
+		expect(holds(`refs/heads/${unit('unknown-agent')}`)).toBe(false);
 	});
 });

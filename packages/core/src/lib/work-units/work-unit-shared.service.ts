@@ -312,7 +312,7 @@ export const sessionFor = (args: readonly string[]): string | undefined => {
 /**
  * `args`, with the session of the unit the command runs inside when none
  * is given. Agents lose the `--session` `work enter` printed; each call
- * without it read as another session, and `work enter` handed out a new
+ * without it read as a different session, and `work enter` handed out a new
  * generation every time. One `minimax-3` instance left seven units behind
  * on 2026-09-28, their verdicts never published. Standing in your own
  * unit's worktree is proof enough that it is yours.
@@ -334,7 +334,7 @@ export const withSessionOfCwd = (
 	return [...args, `--session=${stamped}`];
 };
 
-/** A refusal when another session of this agent holds `path`. */
+/** A refusal when a different session of this agent holds `path`. */
 export const heldByAnother = (
 	path: string,
 	session: string | undefined,
@@ -342,7 +342,7 @@ export const heldByAnother = (
 	const held = worktreeSession(path);
 	if (held === undefined || held === session) return undefined;
 	return refused(
-		`${path} is held by another session: the unit is someone else's work, even under the same agent id.`,
+		`${path} is held by a live lease of a different session: the unit has one editor at a time, even under the same agent id.`,
 		'If this is your unit, pass the --session you were given when you entered it (or set DELENDAI_SESSION_ID). Otherwise enter your own unit: a different --topic, or --generation=<next>.',
 	);
 };
