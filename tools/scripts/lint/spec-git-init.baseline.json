@@ -50,7 +50,7 @@
 	"packages/core/tests/src/lib/work-units/commit-maker-notes.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/declared-slice.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/development-policy.service.spec.ts": 1,
-	"packages/core/tests/src/lib/work-units/finished-units-end.service.spec.ts": 1,
+	"packages/core/tests/src/lib/ref-reconciler/finished-units-end.service.e2e.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/forge-work-refs.service.spec.ts": 1,
 	"packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts": 2,
 	"packages/core/tests/src/lib/work-units/integration-base.spec.ts": 1,

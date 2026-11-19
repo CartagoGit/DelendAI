@@ -1,5 +1,5 @@
 /**
- * kept-unit-hydration.service.spec.ts — a unit entered again with nothing
+ * kept-unit-hydration.service.e2e.spec.ts — a unit entered again with nothing
  * of its own starts from where the integration branch is now.
  */
 import { execFileSync } from 'node:child_process';
@@ -61,7 +61,7 @@ describe('work enter on a unit kept from before', () => {
 		return git('rev-parse', 'HEAD');
 	};
 
-	it('brings an empty unit forward, and says so; leaves one with changes or a commit of its own where it is', async () => {
+	it('[<2000ms] brings an empty unit forward, and says so; leaves one with changes or a commit of its own where it is', async () => {
 		// One unit walks all three states: enter is the costly step, so it
 		// is entered the fewest times that still shows each.
 		const { root, git } = repository();
@@ -96,7 +96,7 @@ describe('work enter on a unit kept from before', () => {
 		expect(inUnit('rev-parse', 'HEAD')).toBe(head);
 	});
 
-	it('is brought forward by the maintenance too, without being entered', async () => {
+	it('[<2000ms] is brought forward by the maintenance too, without being entered', async () => {
 		// A unit kept for its proposal's next slice fell behind with every
 		// merge, and the doctor called it broken for it.
 		const { root, git } = repository();

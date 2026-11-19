@@ -9,7 +9,7 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { withBriefing } from './work-unit-enter-briefing.service';
-import { reenteredUnit } from './kept-unit-hydration.service';
+import { reenteredUnit } from '../ref-reconciler/kept-unit-hydration.service';
 import { readSwarm } from './work-swarm.service';
 import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';

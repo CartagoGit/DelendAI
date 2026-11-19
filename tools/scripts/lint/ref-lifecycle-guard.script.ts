@@ -16,8 +16,8 @@
  * A finished pull request's ref is deleted rather than reported: its
  * content is provably in the integration branch. A ref with NO pull
  * request is reported and never touched, because it may be the only
- * copy of work somebody is holding. `--reap` performs the deletions
- * that carry evidence; without it the guard only reports.
+ * copy of work somebody is holding. The guard only reports: the
+ * reconciler performs every deletion that carries evidence.
  *
  * WHY this guard asks a second question of the forge: publishing a ref
  * and opening its pull request are two calls, and this guard running on
@@ -64,8 +64,6 @@ import {
 	keepInProgressWorkRefs,
 	onceRead,
 } from './in-progress-work-refs.helper';
-
-const REAP = process.argv.includes('--reap');
 
 /** Where a proposal in progress sits, read on the forge at a ref's tip. */
 const PROPOSALS_IN_PROGRESS = 'docs/delendai/proposals/in-progress';
@@ -719,31 +717,14 @@ const main = (): void => {
 		);
 	}
 
-	const deleted = new Set<string>();
 	const resolved = new Set<string>(kept.map((verdict) => verdict.name));
 	for (const verdict of reapable) {
 		const evidence =
 			verdict.pullRequest === undefined
 				? verdict.reason
 				: `#${verdict.pullRequest} ${verdict.reason}`;
-		if (!REAP) {
-			console.log(
-				`ref-lifecycle: ${verdict.name} is reapable (${evidence}) — run with --reap to delete it.`,
-			);
-			continue;
-		}
-		const outcome = deleteForgeBranch(verdict.name);
-		if (outcome === 'failed') {
-			console.log(
-				`ref-lifecycle: could not delete ${verdict.name} (${evidence}); the next run tries again.`,
-			);
-			continue;
-		}
-		deleted.add(verdict.name);
 		console.log(
-			outcome === 'gone'
-				? `ref-lifecycle: ${verdict.name} was already gone (${evidence}).`
-				: `ref-lifecycle: deleted ${verdict.name} (${evidence}).`,
+			`ref-lifecycle: ${verdict.name} is reapable (${evidence}); the reconciler deletes it.`,
 		);
 	}
 
@@ -759,33 +740,17 @@ const main = (): void => {
 		const sha = shaOf.get(verdict.name);
 		if (retiredRef === undefined || sha === undefined) continue;
 		const evidence = `#${String(verdict.pullRequest)} closed without merging`;
-		if (!REAP) {
-			console.log(
-				`ref-lifecycle: ${verdict.name} is retirable (${evidence}) — run with --reap to keep its tip at ${retiredRef} and delete it.`,
-			);
-			continue;
-		}
-		if (retireOnForge(verdict.name, sha, retiredRef)) {
-			resolved.add(verdict.name);
-			console.log(
-				`ref-lifecycle: retired ${verdict.name} to ${retiredRef} (${evidence}).`,
-			);
-		} else {
-			console.log(
-				`ref-lifecycle: ${verdict.name} left: ${retiredRef} already holds another tip.`,
-			);
-		}
+		console.log(
+			`ref-lifecycle: ${verdict.name} is retirable (${evidence}); the reconciler keeps its tip at ${retiredRef} and deletes it.`,
+		);
 	}
 
 	// A work ref silent past what a unit is given, and never published,
 	// has nobody left to publish it: its tip is kept and it goes.
 	const silent = silentWorkRefs({
 		refs: observed
-			.filter(
-				(branch) =>
-					workPrefixes.some((prefix) =>
-						branch.name.startsWith(prefix),
-					) && !deleted.has(branch.name),
+			.filter((branch) =>
+				workPrefixes.some((prefix) => branch.name.startsWith(prefix)),
 			)
 			.map((branch) => {
 				const own = branchesForRef(branches, branch.name);
@@ -836,25 +801,11 @@ const main = (): void => {
 		const sha = shaOf.get(ref.name);
 		if (plan === undefined || sha === undefined) continue;
 		const evidence = `silent ${String(ref.hours)} h, never published`;
-		if (!REAP) {
-			console.log(
-				`ref-lifecycle: ${ref.name} is retirable (${evidence}) — run with --reap to keep its tip at ${plan.retiredRef} and delete it.`,
-			);
-			continue;
-		}
-		const retired = retireOnForge(ref.name, sha, plan.retiredRef);
-		if (retired) resolved.add(ref.name);
 		console.log(
-			retired
-				? `ref-lifecycle: retired ${ref.name} to ${plan.retiredRef} (${evidence}).`
-				: `ref-lifecycle: ${ref.name} left: ${plan.retiredRef} already holds another tip.`,
+			`ref-lifecycle: ${ref.name} is retirable (${evidence}); the reconciler keeps its tip at ${plan.retiredRef} and deletes it.`,
 		);
 	}
 
-	// A ref this pass just reaped is resolved, not outstanding: reporting it
-	// as needing attention — and exiting 1 — right after deleting it told
-	// the operator the opposite of what happened.
-	for (const name of deleted) resolved.add(name);
 	const verdictOf = reapVerdict(
 		result.needsAttention,
 		resolved,
@@ -868,7 +819,7 @@ const main = (): void => {
 	const outstanding = verdictOf.outstanding;
 	if (outstanding.length === 0) {
 		console.log(
-			`ref-lifecycle: ${result.verdicts.length - deleted.size} ref(s); every one of them belongs to somebody ✓`,
+			`ref-lifecycle: ${result.verdicts.length} ref(s); every one of them belongs to somebody ✓`,
 		);
 		return;
 	}
@@ -881,7 +832,7 @@ const main = (): void => {
 	const blocking = verdictOf.failing;
 	if (blocking.length === 0) {
 		// Every ref left is a copy of work already published: nothing can
-		// be lost, and the queue's own `--reap` pass deletes it. Failing
+		// be lost, and the reconciler deletes it. Failing
 		// here failed every pull request and the integration branch's
 		// certification over a ref none of them owned.
 		for (const verdict of outstanding) {
@@ -902,7 +853,7 @@ const main = (): void => {
 	);
 	console.error(
 		reapableLeft
-			? '\nRun with --reap to delete the refs reported as reapable above: their content is already published, so nothing is lost.'
+			? '\nThe refs reported as reapable above are published already: the reconciler deletes them, and nothing is lost.'
 			: `\nNothing was deleted: a ref with no finished pull request may be the only copy of work somebody is holding. Open a pull request for it from \`${branches.publicationRefPrefix}…\`, or delete it deliberately once you have checked it carries nothing.`,
 	);
 	process.exit(1);

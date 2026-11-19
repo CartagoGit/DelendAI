@@ -283,11 +283,11 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5d — The branch flow, part 4: hydration, finished-unit ending and the guard's --reap go
 - **Status**: pending
 - **DependsOn**: [S5n]
-- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `lefthook.yml`
+- **Files**: `packages/core/src/lib/ref-reconciler/kept-unit-hydration.service.ts`, `packages/core/src/lib/ref-reconciler/finished-units-end.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `lefthook.yml`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "`git grep -n 'endFinishedUnits\\|hydrateKeptUnits\\|reenteredUnit' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler; work-unit-enter creates refs only through the reconciler."
+  - "endFinishedUnits, hydrateKeptUnits and reenteredUnit are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function endFinishedUnits\|function hydrateKeptUnits\|function reenteredUnit' -- packages` finds one definition each)."
   - "ref-lifecycle-guard.script.spec.ts: the guard only reports; it has no --reap path."
 
 ### S5e — The branch flow, part 5: a proposal whose every slice is approved closes in one reconciler step

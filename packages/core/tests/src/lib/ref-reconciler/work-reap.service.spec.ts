@@ -33,7 +33,7 @@ vi.mock('@delendai/core/lib/work-units/work-unit-shared.service', () => ({
 vi.mock('@delendai/core/lib/ref-reconciler/clone-forge-ports.service', () => ({
 	endDeliveredUnits: m.endDeliveredUnits,
 }));
-vi.mock('@delendai/core/lib/work-units/finished-units-end.service', () => ({
+vi.mock('@delendai/core/lib/ref-reconciler/finished-units-end.service', () => ({
 	endFinishedUnits: m.endFinishedUnits,
 }));
 vi.mock('@delendai/core/lib/work-units/unit-standings.service', () => ({
@@ -43,9 +43,12 @@ vi.mock('@delendai/core/lib/work-units/unit-standings.service', () => ({
 vi.mock('@delendai/core/lib/work-units/unit-removal.service', () => ({
 	worktreeOfRef: (_root: string, ref: string) => `/w/${ref}`,
 }));
-vi.mock('@delendai/core/lib/work-units/kept-unit-hydration.service', () => ({
-	hydrateKeptUnits: m.hydrateKeptUnits,
-}));
+vi.mock(
+	'@delendai/core/lib/ref-reconciler/kept-unit-hydration.service',
+	() => ({
+		hydrateKeptUnits: m.hydrateKeptUnits,
+	}),
+);
 vi.mock('@delendai/core/lib/work-units/idle-unit-dependencies.service', () => ({
 	releaseIdleDependencies: m.releaseIdleDependencies,
 }));
