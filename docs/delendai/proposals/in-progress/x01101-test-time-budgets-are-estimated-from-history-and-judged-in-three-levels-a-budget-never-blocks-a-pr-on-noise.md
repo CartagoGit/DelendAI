@@ -2,10 +2,14 @@
 id: x01101
 title: "Test time budgets are estimated from history and judged in three levels; a budget never blocks a PR on noise"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-19
+last-transition-id: a18f5b6b-a4ec-4718-a5d2-42ee515d2a7f
+last-correlation-id: a18f5b6b-a4ec-4718-a5d2-42ee515d2a7f
+last-transition-from: ready
+last-transition-at: 2026-11-19T15:27:10.007Z
 ---
 
 # x01101 — Test time budgets are estimated from history and judged in three levels; a budget never blocks a PR on noise
