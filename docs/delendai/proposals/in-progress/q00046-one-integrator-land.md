@@ -243,7 +243,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5k — The branch flow, part 3b: delivered units are ended by the reconciler through a clone-side adapter, and unit-reaper goes
 - **Status**: pending
 - **DependsOn**: [S5c]
-- **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-reaped.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-edits-kept.service.e2e.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-reaped.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-edits-kept.service.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
@@ -253,7 +253,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5l — The branch flow, part 3c: worktree husks are ended by the reconciler, and worktree-husks goes
 - **Status**: pending
 - **DependsOn**: [S5k]
-- **Files**: `packages/core/src/lib/ref-reconciler/husk-directories.service.ts`, `packages/core/src/lib/contracts/interfaces/husk-directories.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/ref-reconciler/husk-directories.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/husk-directories.service.ts`, `packages/core/src/lib/contracts/interfaces/husk-directories.interface.ts`, `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/ref-reconciler/husk-directories.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
@@ -263,7 +263,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending
 - **DependsOn**: [S5l]
-- **Files**: `packages/core/src/lib/ref-reconciler/stray-refs-sweep.service.ts`, `packages/core/src/lib/ref-reconciler/stray-refs-sweep.interface.ts`, `packages/core/src/lib/ref-reconciler/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-ref-retire.service.e2e.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/stray-refs-sweep.service.ts`, `packages/core/src/lib/ref-reconciler/stray-refs-sweep.interface.ts`, `packages/core/src/lib/ref-reconciler/stray-ref-retire.service.ts`, `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-ref-retire.service.e2e.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
