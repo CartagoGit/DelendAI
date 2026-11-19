@@ -11,6 +11,8 @@ export const LAND_BATCH_BRANCH = 'batch-';
 export const LAND_RECORD_PREFIX = 'land-record: ';
 /** The folder, under the project's namespace, batch branches live in. */
 export const LAND_QUEUE_SEGMENT = 'queue';
+/** The folder, under the batch prefix, a repair's branch lives in: the forge admits that prefix. */
+export const LAND_REPAIR_SEGMENT = 'repair';
 /** Most pull requests one batch carries unless the project says otherwise. */
 export const LAND_BATCH_CAPACITY = 8;
 /** Items per page of a forge listing: the most GitHub serves. */

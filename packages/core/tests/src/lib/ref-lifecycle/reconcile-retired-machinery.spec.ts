@@ -60,4 +60,13 @@ describe('retired machinery and batches', () => {
 			expect(result.needsAttention).toEqual([]);
 		}
 	});
+
+	it('[<5ms] treats a repair branch like a batch: kept while open, reaped once settled', () => {
+		const name = 'ns/queue/repair/revert-3170';
+		expect(verdictOf({ name }, 'open').verdicts[0]?.role).toBe(
+			'batch-open',
+		);
+		const spent = verdictOf({ name }, 'merged');
+		expect(spent.reapable.map((v) => v.name)).toEqual([name]);
+	});
 });
