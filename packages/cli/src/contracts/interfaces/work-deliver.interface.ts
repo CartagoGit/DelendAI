@@ -4,6 +4,12 @@ import type { ICliCommandResult } from './cli-command.interface';
 export interface IWorkDeliverPorts {
 	/** The slice this unit was entered for; `all` for a whole proposal. */
 	readonly slice: string;
+	/** Records a failed delivery in the project's self-learning store; never throws. */
+	readonly recordFailure?: (failure: {
+		readonly source: 'gate' | 'deliverRefusal';
+		readonly subject: string;
+		readonly unit: string;
+	}) => Promise<void>;
 	/** Publish the unit alone, without handing the proposal to review. */
 	readonly publish: () => Promise<ICliCommandResult>;
 	/** The URL of the open pull request for a published branch, one forge read; undefined when none or the read failed. */

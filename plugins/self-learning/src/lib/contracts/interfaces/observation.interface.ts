@@ -152,3 +152,11 @@ export interface IFailureCollectors {
 		},
 	): Promise<void>;
 }
+
+/** Where a failure came from: the collector that records it. */
+export type IFailureSource =
+	| 'gate'
+	| 'hook'
+	| 'ciJob'
+	| 'landVerdict'
+	| 'deliverRefusal';

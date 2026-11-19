@@ -18,6 +18,7 @@ import { deriveToolFailure } from '@delendai/core/runtime';
 import type {
 	IFailureCollectors,
 	IFailureReport,
+	IFailureSource,
 	IFailureStage,
 	IObservation,
 	IObservationSink,
@@ -105,3 +106,11 @@ export const createFailureCollectors = (
 		},
 	};
 };
+
+/** Record one failure through `sink`; the single entry every caller uses. */
+export const recordFailure = (
+	sink: IObservationSink,
+	source: IFailureSource,
+	report: IFailureReport,
+	now: () => number = Date.now,
+): Promise<void> => createFailureCollectors(sink, now)[source](report);

@@ -50,3 +50,14 @@ export type {
 	ILessonKind,
 } from '../lib/contracts/interfaces/lesson.interface';
 export type { IObservationsToolOptions } from '../lib/tools/observations.tool';
+
+export { recordProjectFailure } from '../lib/collectors/project-failure-sink.service';
+export {
+	createFailureCollectors,
+	recordFailure,
+} from '../lib/collectors/failure-collectors.service';
+export type {
+	IFailureReport,
+	IFailureSource,
+	IObservationSink,
+} from '../lib/contracts/interfaces/observation.interface';
