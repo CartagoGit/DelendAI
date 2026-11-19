@@ -12,17 +12,17 @@ const names = (paths: readonly string[]): string =>
 		.join('\n');
 
 describe('checksFor', () => {
-	it('asks nothing of a commit with no code', () => {
+	it('[<20ms] asks nothing of a commit with no code', () => {
 		expect(checksFor(['docs/a.md'])).toEqual([]);
 	});
 
-	it('runs the lints on any code', () => {
+	it('[<20ms] runs the lints on any code', () => {
 		const asked = names(['packages/a/src/b.ts']);
 		expect(asked).toContain('lint:test-unsafe-casts');
 		expect(asked).not.toContain('budget');
 	});
 
-	it('adds the budget and the site when a tool can have changed', () => {
+	it('[<20ms] adds the budget and the site when a tool can have changed', () => {
 		const asked = names(['plugins/a/src/lib/tools/b.tool.ts']);
 		expect(asked).toContain('run-actual-preset-budget');
 		expect(asked).toContain('gen-capabilities');
@@ -30,7 +30,7 @@ describe('checksFor', () => {
 });
 
 describe('sharedWith', () => {
-	it('names each other unit that changes a staged file, and not this one', () => {
+	it('[<20ms] names each other unit that changes a staged file, and not this one', () => {
 		const units = [
 			{
 				ref: 'delendai/wip/a/implement/x1-S1-g1/t',
@@ -61,7 +61,7 @@ describe('sharedWith', () => {
 });
 
 describe('recordHookFailures', () => {
-	it('records one observation per failed check and survives a failing sink', async () => {
+	it('[<20ms] records one observation per failed check and survives a failing sink', async () => {
 		const seen: unknown[] = [];
 		await recordHookFailures(
 			[
