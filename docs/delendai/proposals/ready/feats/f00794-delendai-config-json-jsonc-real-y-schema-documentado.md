@@ -64,7 +64,7 @@ Que `delendai.config.json` acepte comentarios de verdad en TODO el runtime (hoy 
 ### S4 — El editor trata delendai.config.json como jsonc
 - **Status**: pending
 - **DependsOn**: [S3]
-- **Files**: `packages/cli/src/lib/init/init-vscode-settings.ts`, `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/lib/init/init-default.command.spec.ts`, `.vscode/settings.json`
+- **Files**: `packages/cli/src/lib/init/init-vscode-settings.ts`, `packages/cli/src/lib/init/init-writers.factory.ts`, `packages/cli/src/lib/init/init-default.command.e2e.spec.ts`, `.vscode/settings.json`
 - **Gate**: lint
 - acceptance:
   - "Tras `init`, el `.vscode/settings.json` del proyecto asocia `delendai.config.json` al lenguaje `jsonc`, de modo que los comentarios no se marcan como error."

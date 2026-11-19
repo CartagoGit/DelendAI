@@ -6,6 +6,8 @@ export interface ICanonicalLaunchOptions {
 	readonly preset?: string | undefined;
 	readonly plugins?: readonly string[] | undefined;
 	readonly mode?: ICanonicalLaunchMode | undefined;
+	/** Exact released version the entry pins (`@delendai/cli@<version>`). */
+	readonly version?: string | undefined;
 }
 
 export interface ICanonicalLaunch {
