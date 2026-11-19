@@ -18,3 +18,17 @@ export const reconcileStep = (
 				`  run: ${command}`,
 				'',
 			];
+
+/** The promote job's repair step: a red run's culprit merge reverted; leading blank line, none without a command. */
+export const repairStep = (
+	command: string | undefined,
+	env: readonly string[],
+): readonly string[] =>
+	command === undefined
+		? []
+		: [
+				'',
+				'- name: Revert the culprit merge of a red run as a repair',
+				...env,
+				`  run: ${command}`,
+			];

@@ -14,9 +14,9 @@
  * holds commits, or uncommitted changes, is its agent's to bring forward.
  */
 import type { IUnitDependencies } from '../contracts/interfaces/unit-dependencies.interface';
-import { enteredDependencies } from './unit-dependencies.service';
-import type { IHydratedUnit } from './unit-lease.interface';
-import { readGit } from './work-unit-shared.service';
+import { enteredDependencies } from '../work-units/unit-dependencies.service';
+import type { IHydratedUnit } from '../work-units/unit-lease.interface';
+import { readGit } from '../work-units/work-unit-shared.service';
 import { readWorktreeStatus } from '../shared/worktree-status.helper';
 
 /**

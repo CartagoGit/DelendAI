@@ -258,7 +258,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 - **Decisions**: none
 - acceptance:
   - "clone-forge.service.spec.ts adds the husk cases: a husk directory is ended and a stray file inside one is kept, as the husk spec asserted before it was deleted."
-  - "reapHusks and keepStrayFiles are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function reapHusks'` finds one definition)."
+  - "worktree-husks.service.ts, its interface and its spec are deleted, workflow-doctor.service.ts and work-unit-reap.service.ts import from the reconciler, and `git grep -n 'reapHusks\|keepStrayFiles\|huskDirectories\|husksInvariant' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
 
 ### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending
@@ -283,7 +283,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5d — The branch flow, part 4: hydration, finished-unit ending and the guard's --reap go
 - **Status**: pending
 - **DependsOn**: [S5n]
-- **Files**: `packages/core/src/lib/work-units/kept-unit-hydration.service.ts`, `packages/core/src/lib/work-units/finished-units-end.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `lefthook.yml`
+- **Files**: `packages/core/src/lib/ref-reconciler/kept-unit-hydration.service.ts`, `packages/core/src/lib/ref-reconciler/finished-units-end.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/startup-gate/start-checkout-hydration.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`, `lefthook.yml`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:

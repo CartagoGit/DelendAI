@@ -9,10 +9,15 @@ import { dirname, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { endFinishedUnits } from '@delendai/core/lib/work-units/finished-units-end.service';
+import { endFinishedUnits } from '@delendai/core/lib/ref-reconciler/finished-units-end.service';
 import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
 
-import { cleanUnitRepos, git, unitPolicy, unitRepo } from './unit-repo.helper';
+import {
+	cleanUnitRepos,
+	git,
+	unitPolicy,
+	unitRepo,
+} from '../work-units/unit-repo.helper';
 
 afterEach(cleanUnitRepos);
 
@@ -58,7 +63,7 @@ const landOnForge = (root: string, ref: string): void => {
 };
 
 describe('endFinishedUnits', () => {
-	it('ends a finished review unit: worktree, branch and forge copy go, the tip is kept', async () => {
+	it('[<2000ms] ends a finished review unit: worktree, branch and forge copy go, the tip is kept', async () => {
 		const { repo, forge } = withForge();
 		const ref = reviewRef('auditor');
 		const worktree = await quietUnit(repo, ref, 'verdict.md');
@@ -97,7 +102,7 @@ describe('endFinishedUnits', () => {
 		);
 	});
 
-	it('reports without deleting when not applied', async () => {
+	it('[<2000ms] reports without deleting when not applied', async () => {
 		const { repo } = withForge();
 		const ref = reviewRef('verifier');
 		await quietUnit(repo, ref, 'verdict.md');
@@ -111,7 +116,7 @@ describe('endFinishedUnits', () => {
 		expect(git(repo.root, 'branch', '--list', ref)).toContain(ref);
 	});
 
-	it('keeps a unit holding work the integration branch lacks', async () => {
+	it('[<2000ms] keeps a unit holding work the integration branch lacks', async () => {
 		const { repo, forge } = withForge();
 		const ref = reviewRef('reviewer');
 		const worktree = await quietUnit(repo, ref, 'verdict.md');
@@ -133,7 +138,7 @@ describe('endFinishedUnits', () => {
 		);
 	});
 
-	it('keeps a landed unit whose worktree holds an edit of its own', async () => {
+	it('[<2000ms] keeps a landed unit whose worktree holds an edit of its own', async () => {
 		const { repo, forge } = withForge();
 		const ref = reviewRef('dirty');
 		const worktree = await quietUnit(repo, ref, 'verdict.md');
@@ -156,7 +161,7 @@ describe('endFinishedUnits', () => {
 		expect(git(forge, 'branch', '--list', ref)).toContain(ref);
 	});
 
-	it('ends a rewritten unit whose publication a merge names and whose content landed', async () => {
+	it('[<2000ms] ends a rewritten unit whose publication a merge names and whose content landed', async () => {
 		const { repo, forge } = withForge();
 		const ref = reviewRef('amended');
 		const worktree = await quietUnit(repo, ref, 'verdict.md');
@@ -193,7 +198,7 @@ describe('endFinishedUnits', () => {
 		expect(git(forge, 'branch', '--list', 'delendai/*')).toBe('');
 	});
 
-	it('leaves a unit that never moved while its owner may still start', async () => {
+	it('[<2000ms] leaves a unit that never moved while its owner may still start', async () => {
 		const { repo } = withForge();
 		const ref = reviewRef('entered');
 		const worktree = repo.enter(ref);
@@ -213,7 +218,7 @@ describe('endFinishedUnits', () => {
 		expect(existsSync(worktree)).toBe(true);
 	});
 
-	it('deletes nothing while the forge cannot keep the retired tip', async () => {
+	it('[<2000ms] deletes nothing while the forge cannot keep the retired tip', async () => {
 		const { repo, forge } = withForge();
 		const ref = reviewRef('offline');
 		const worktree = await quietUnit(repo, ref, 'verdict.md');
