@@ -12,7 +12,7 @@ import type {
 } from '@delendai/proposals/lib/contracts/interfaces/close-slice-gate.interface';
 
 /** What a started runner does: finish at once, stay running, or vanish. */
-export type FakeOutcome =
+export type IFakeOutcome =
 	| {
 			readonly kind: 'finish';
 			readonly code: number;
@@ -26,7 +26,7 @@ export type FakeOutcome =
  * script writes (`steps.txt`, `output.log`, `done`); the clock moves only
  * when the gate sleeps or the test advances it.
  */
-export const fakeRunner = (initial: FakeOutcome) => {
+export const fakeRunner = (initial: IFakeOutcome) => {
 	let outcome = initial;
 	let time = 0;
 	let nextPid = 1_000;
@@ -58,7 +58,7 @@ export const fakeRunner = (initial: FakeOutcome) => {
 		started,
 		killed,
 		/** What runners started from now on do. */
-		setOutcome: (next: FakeOutcome): void => {
+		setOutcome: (next: IFakeOutcome): void => {
 			outcome = next;
 		},
 		/** The gate steps run so far. */
