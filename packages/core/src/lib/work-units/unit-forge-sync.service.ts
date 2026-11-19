@@ -25,7 +25,8 @@ import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
+import { compileOwnedWorkRefParser } from '../development-policy/owned-work-ref-parser';
+import { ownedWorkRefPrefixes } from '../integration/decisions/namespaces.helper';
 import { carriesNothingBeyond } from './landed-work.service';
 import { proposalInProgress } from './publication-target.service';
 import { keepUnitWork } from './unit-uncommitted-work.service';
@@ -227,13 +228,15 @@ const publishUnitsOutOfProgress = async (
 ): Promise<readonly IUnitForgeSync[]> => {
 	const base = integrationBase(root, policy);
 	if (base === undefined) return [];
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	// Units of a former namespace publish under their own name too.
+	const parser = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	});
 	const done: IUnitForgeSync[] = [];
-	for (const [ref] of listWorkRefs(root, policy)) {
+	const owned = ownedWorkRefPrefixes(policy.branches).flatMap((prefix) => [
+		...listWorkRefs(root, policy, prefix),
+	]);
+	for (const [ref] of owned) {
 		const unit = parser?.parse(`refs/heads/${ref}`);
 		if (
 			unit === undefined ||

@@ -29,6 +29,7 @@ const ports = (
 	precheckCode: IExitCode = EXIT_CODE.OK,
 ) => {
 	const calls: string[] = [];
+	const reached: string[] = [];
 	const value: IWorkDeliverPorts = {
 		slice,
 		preflight: async (checkout) => {
@@ -41,6 +42,10 @@ const ports = (
 			return { code: EXIT_CODE.OK, data: 'pr/slice' };
 		},
 		readOpenPullRequest: readPullRequest,
+		publicationReached: async (publication) => {
+			reached.push(publication);
+			return true;
+		},
 		locate: async () => ({
 			code: EXIT_CODE.OK,
 			data: { worktree: '/unit', publication: 'pr/unit' },
@@ -67,7 +72,7 @@ const ports = (
 			return answers[to] ?? { ok: true };
 		},
 	};
-	return { calls, value };
+	return { calls, reached, value };
 };
 
 const illegal = (from: string, to: string) => ({
@@ -506,5 +511,37 @@ describe('pullRequestOf', () => {
 			expect(request.message).toContain('nothing is left to do');
 			expect(request.message).not.toContain('work publish');
 		}
+	});
+});
+
+describe('deliverUnit, the hand-over must have published', () => {
+	it('[<20ms] refuses to say pushed when the remote holds no publication', async () => {
+		const { value } = ports({});
+		const result = await deliverUnit({
+			...value,
+			publicationReached: async () => false,
+		});
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('did not publish');
+		expect(result.error).toContain('pr/unit');
+	});
+
+	it('[<20ms] refuses a unit that has no publication name', async () => {
+		const { value } = ports({});
+		const result = await deliverUnit({
+			...value,
+			locate: async () => ({
+				code: EXIT_CODE.OK,
+				data: { worktree: '/unit' },
+			}),
+		});
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('no publication name');
+	});
+
+	it('[<20ms] reads the remote for the name it reports', async () => {
+		const { reached, value } = ports({});
+		await deliverUnit(value);
+		expect(reached).toEqual(['pr/unit']);
 	});
 });

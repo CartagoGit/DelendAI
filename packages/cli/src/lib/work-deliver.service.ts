@@ -13,6 +13,7 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
 import { isRecord } from './helpers/cli-command.helper';
+import { unpublishedRefusal } from './work-deliver-remote.service';
 
 const textOf = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -356,20 +357,23 @@ const runDelivery = async (
 				}
 			: published;
 	}
-	return handed === undefined
-		? {
-				code: EXIT_CODE.OK,
-				data: {
-					delivered: 'review',
-					publication: unit.publication,
-					pullRequest: await pullRequestWithLookup(
-						ports,
-						undefined,
-						unit.publication,
-						ports.slice,
-					),
-					proved: proved.data,
-				},
-			}
-		: { code: EXIT_CODE.VALIDATION, error: handed };
+	if (handed !== undefined)
+		return { code: EXIT_CODE.VALIDATION, error: handed };
+	// Said "pushed" only for a publication the remote holds with this head.
+	const unpublished = await unpublishedRefusal(ports, unit, checkout);
+	if (unpublished !== undefined) return unpublished;
+	return {
+		code: EXIT_CODE.OK,
+		data: {
+			delivered: 'review',
+			publication: unit.publication,
+			pullRequest: await pullRequestWithLookup(
+				ports,
+				undefined,
+				unit.publication,
+				ports.slice,
+			),
+			proved: proved.data,
+		},
+	};
 };
