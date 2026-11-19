@@ -238,6 +238,30 @@ const pullRequestWithLookup = async (
 export const deliverUnit = async (
 	ports: IWorkDeliverPorts,
 ): Promise<ICliCommandResult> => {
+	const track = { gate: false };
+	const result = await runDelivery(ports, track);
+	if (result.code !== 0 && ports.recordFailure !== undefined) {
+		try {
+			await ports.recordFailure({
+				// A failed proof is a gate; every other refusal is the delivery's.
+				source: track.gate ? 'gate' : 'deliverRefusal',
+				subject:
+					typeof result.error === 'string'
+						? result.error.slice(0, 200)
+						: 'work deliver',
+				unit: ports.slice,
+			});
+		} catch {
+			// Learning never changes what the delivery answers.
+		}
+	}
+	return result;
+};
+
+const runDelivery = async (
+	ports: IWorkDeliverPorts,
+	track: { gate: boolean },
+): Promise<ICliCommandResult> => {
 	const located = await ports.locate();
 	if (located.code !== 0) return located;
 	const unit = isRecord(located.data) ? located.data : {};
@@ -263,9 +287,15 @@ export const deliverUnit = async (
 		'./work-deliver-precheck.service'
 	);
 	const refused = await precheckDelivery(ports);
-	if (refused !== undefined) return refused;
+	if (refused !== undefined) {
+		track.gate = true;
+		return refused;
+	}
 	const proved = await ports.prove();
-	if (proved.code !== 0) return proved;
+	if (proved.code !== 0) {
+		track.gate = true;
+		return proved;
+	}
 	// `--only` runs gates of the proof and proves nothing: not a delivery.
 	if (isRecord(proved.data) && proved.data.partial === true) {
 		return {

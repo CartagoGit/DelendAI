@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { checksFor, sharedWith } from './commit-time-checks.script';
+import {
+	checksFor,
+	recordHookFailures,
+	sharedWith,
+} from './commit-time-checks.script';
 
 const names = (paths: readonly string[]): string =>
 	checksFor(paths)
@@ -53,5 +57,24 @@ describe('sharedWith', () => {
 		).toEqual([
 			"[delendai] b's delendai/wip/b/implement/x2-S1-g1/t also changes: src/a.ts",
 		]);
+	});
+});
+
+describe('recordHookFailures', () => {
+	it('records one observation per failed check and survives a failing sink', async () => {
+		const seen: unknown[] = [];
+		await recordHookFailures(
+			[
+				['bun', 'run', 'a'],
+				['bun', 'run', 'b'],
+			],
+			['out', undefined],
+			['src/x.ts'],
+			async (report) => {
+				seen.push(report);
+				throw new Error('disk full');
+			},
+		);
+		expect(seen).toEqual([{ subject: 'bun run a', files: ['src/x.ts'] }]);
 	});
 });
