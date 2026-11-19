@@ -12,7 +12,6 @@
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
-import { precheckDelivery } from './work-deliver-precheck.service';
 import { isRecord } from './helpers/cli-command.helper';
 
 const textOf = (value: unknown): string | undefined =>
@@ -259,6 +258,10 @@ export const deliverUnit = async (
 	}
 	// What the proof's static gates would refuse is refused before it takes
 	// the compute slot: seconds, scoped to the changed files.
+	// Loaded here, not at startup: only a delivery needs it (startup budget).
+	const { precheckDelivery } = await import(
+		'./work-deliver-precheck.service'
+	);
 	const refused = await precheckDelivery(ports);
 	if (refused !== undefined) return refused;
 	const proved = await ports.prove();
