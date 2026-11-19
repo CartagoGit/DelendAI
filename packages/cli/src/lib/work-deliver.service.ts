@@ -13,7 +13,6 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
 import { isRecord } from './helpers/cli-command.helper';
-import { unpublishedRefusal } from './work-deliver-remote.service';
 
 const textOf = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -360,6 +359,10 @@ const runDelivery = async (
 	if (handed !== undefined)
 		return { code: EXIT_CODE.VALIDATION, error: handed };
 	// Said "pushed" only for a publication the remote holds with this head.
+	// Loaded here, not at startup: only a delivery needs it (startup budget).
+	const { unpublishedRefusal } = await import(
+		'./work-deliver-remote.service'
+	);
 	const unpublished = await unpublishedRefusal(ports, unit, checkout);
 	if (unpublished !== undefined) return unpublished;
 	return {

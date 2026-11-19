@@ -34,7 +34,6 @@ import {
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
 import { runGitCommand } from '@delendai/core/runtime';
-import { publicationReachedFrom } from '../lib/work-deliver-remote.service';
 import {
 	answerCommittingWrites,
 	toolCommitSubject,
@@ -172,8 +171,17 @@ export const deliverPortsOf = (
 		readOpenPullRequest: async (branch) =>
 			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
-		publicationReached: (publication, checkout) =>
-			publicationReachedFrom(checkout ?? ctx.cwd, ctx.cwd, publication),
+		publicationReached: async (publication, checkout) => {
+			// Loaded when asked for: only a delivery needs it (startup budget).
+			const { publicationReachedFrom } = await import(
+				'../lib/work-deliver-remote.service'
+			);
+			return publicationReachedFrom(
+				checkout ?? ctx.cwd,
+				ctx.cwd,
+				publication,
+			);
+		},
 		preflight: (checkout) =>
 			answerOf(
 				request(ctx, TRANSITION_TOOL, {
