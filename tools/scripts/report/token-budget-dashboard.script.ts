@@ -363,7 +363,7 @@ const measureFixtureSurfaces = async (
 		await seedAutoWorkReadyProposal(workspace, base.client);
 		// `auto_work` is a dispatcher, and its answer depends on what it
 		// managed to do: a claimed slice comes back as a PLAN (~2.4 kB),
-		// an unclaimed one as a short pointer (~0.4 kB). Both mention the
+		// an unclaimed one as a short pointer (0.4-1.1 kB). Both mention the
 		// seeded proposal, so naming it is not enough to tell them apart,
 		// and the row is called "auto_work work plan" — the plan is the
 		// thing the 2,400 B budget was set against.
@@ -374,7 +374,7 @@ const measureFixtureSurfaces = async (
 		// — recording the short answer under this row is how the same
 		// dashboard came back different from run to run and failed
 		// `drift` on pull requests that changed none of it.
-		const PLAN_FLOOR_BYTES = 1_000;
+		const PLAN_FLOOR_BYTES = 1_800;
 		const PLAN_ATTEMPTS = 6;
 		// Between attempts, because what usually stands in the way is a
 		// lock somebody else holds: this script runs inside `gen:all`,
