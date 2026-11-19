@@ -49,6 +49,7 @@ const REPO_VALUES: Parameters<typeof landWorkflowInputOf>[0] = {
 		'bun tools/scripts/forge/reconcile-refs.script.ts --apply --trigger=land-merge',
 	promotionCommand:
 		'bun tools/scripts/forge/open-promotion.script.ts --apply',
+	repairCommand: 'bun tools/scripts/forge/land-repair.script.ts',
 	forwardSyncCommand: 'bun run forge:forward-sync -- --apply',
 	setupSteps: SETUP_STEPS,
 	upkeep: [
