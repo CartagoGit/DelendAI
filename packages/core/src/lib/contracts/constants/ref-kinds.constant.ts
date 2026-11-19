@@ -24,6 +24,7 @@ export const REF_KINDS: readonly IRefKind[] = [
 	{ kind: 'rescued', segment: 'rescued' },
 	{ kind: 'stranded', segment: 'stranded' },
 	{ kind: 'journal', segment: 'journal' },
+	{ kind: 'known-failing', segment: 'known-failing' },
 ];
 
 /** An empty unit with a clean worktree is retired after this long, unless the project's policy says otherwise. */

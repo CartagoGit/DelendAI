@@ -8,7 +8,10 @@ const m = vi.hoisted(() => ({
 	>,
 	opened: {
 		engine: {},
-		policy: { identity: undefined, branches: { integration: 'develop' } },
+		policy: {
+			identity: undefined,
+			branches: { integration: 'develop', namespacePrefix: 'dl' },
+		},
 		root: '/r',
 	} as Record<string, unknown>,
 	only: false,
@@ -19,9 +22,11 @@ const m = vi.hoisted(() => ({
 vi.mock('@delendai/core/lib/work-units/work-unit-shared.service', () => ({
 	agentFor: () => 'agent',
 	integrationBase: () => m.base,
+	integrationRemote: () => 'origin',
 	mainWorktreeOf: (cwd: string) => cwd,
 	openWork: () => Promise.resolve(m.opened),
-	readGit: (_r: string, a: readonly string[]) => m.git.get(a[0] ?? ''),
+	readGit: (_r: string, a: readonly string[]) =>
+		a[0] === 'notes' ? m.known : m.git.get(a[0] ?? ''),
 	refused: (reason: string, remedy: string) => ({
 		code: 1,
 		error: `${reason}\n${remedy}`,
@@ -44,13 +49,6 @@ vi.mock('@delendai/core/lib/work-units/unit-removal.service', () => ({
 vi.mock('@delendai/core/lib/work-units/work-publish.service', () => ({
 	publicationRefFromWorkRef: () => 'pub',
 }));
-vi.mock('node:fs/promises', () => ({
-	readFile: () =>
-		m.known === undefined
-			? Promise.reject(new Error('none'))
-			: Promise.resolve(m.known),
-}));
-
 import {
 	proved,
 	subtractBaseFailures,
@@ -125,6 +123,7 @@ describe('proved', () => {
 	beforeEach(() => {
 		m.git = new Map([
 			['rev-parse', 'TIP'],
+			['rev-list', 'BASE'],
 			['diff', 'b/new.ts\n'],
 		]);
 		m.proof = { passed: true, declared: true, steps: [] };
@@ -132,13 +131,13 @@ describe('proved', () => {
 			engine: {},
 			policy: {
 				identity: undefined,
-				branches: { integration: 'develop' },
+				branches: { integration: 'develop', namespacePrefix: 'dl' },
 			},
 			root: '/r',
 		};
 		m.only = false;
 		m.base = 'BASE';
-		m.known = '["a/old.spec.ts", 3]';
+		m.known = '["a/old.spec.ts", 3]\n';
 	});
 
 	it('[<50ms] hands one gate over', async () => {
