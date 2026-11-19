@@ -33,12 +33,13 @@ const scripted =
 		return line.startsWith('rev-parse') ? 'sha-new' : '';
 	};
 
-const build = (dirty = false) =>
+let regenerates = true;
+const build = (dirty = false, token = 'tok') =>
 	createRevertGit({
 		root: '/clone',
 		remote: 'origin',
-		token: 'tok',
-		regenerate: () => true,
+		token,
+		regenerate: () => regenerates,
 		exec: scripted(dirty),
 	}).revertMerge({
 		ref: 'p/repair/revert-7',
@@ -49,6 +50,7 @@ const build = (dirty = false) =>
 beforeEach(() => {
 	calls.length = 0;
 	conflict = false;
+	regenerates = true;
 });
 
 describe('createRevertGit', () => {
@@ -69,5 +71,13 @@ describe('createRevertGit', () => {
 		conflict = true;
 		expect(build()).toEqual({ kind: 'conflict' });
 		expect(calls.some((c) => c.startsWith('push'))).toBe(false);
+	});
+
+	it('[<50ms] reports a failed regeneration and a refused push, pushing nothing without a token', () => {
+		regenerates = false;
+		expect(build().kind).toBe('failed');
+		regenerates = true;
+		const refused = build(false, '');
+		expect(refused.kind).toBe('failed');
 	});
 });
