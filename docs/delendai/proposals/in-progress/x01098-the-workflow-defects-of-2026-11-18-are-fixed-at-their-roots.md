@@ -99,6 +99,15 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 - acceptance:
   - "`bunx vitest run tools/scripts/forge/land-cutover.e2e.spec.ts` reads the derived-from-proposals list from the single exported constant in proposal-readiness.script.ts"
 
+### S9 — Two specs that failed only under load are deterministic
+- **Status**: pending
+- **Files**: `plugins/quality/tests/src/lib/run-all.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Gate**: lint
+- **Decisions**: No retry and no larger timeout. The concurrency spec holds every started scope on a deferred promise the test releases, so the peak is reached by construction. The proposals-db unit case reads a small fixture proposals tree instead of the whole repository.
+- acceptance:
+  - "`bunx vitest run plugins/quality/tests/src/lib/run-all.spec.ts` passes and the file has no real timer (no setTimeout)"
+  - "`bunx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts` passes with the unit case reading a fixture tree, not the repository's docs/delendai/proposals"
+
 ## acceptance
 
 - `bunx vitest run tools/scripts/forge/land-workflow.spec.ts` proves a failure already present on the base certifying result names no batch member as culprit
