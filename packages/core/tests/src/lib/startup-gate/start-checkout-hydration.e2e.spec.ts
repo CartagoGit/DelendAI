@@ -177,4 +177,27 @@ describe('startCheckoutHydration', () => {
 		expect(local.git('branch', '--list', unit).trim()).toBe('');
 		expect(local.git('ls-remote', 'origin', unit).trim()).toBe('');
 	});
+
+	it('[<1500ms] says nothing of the end pass when no unit is finished', async () => {
+		origin = createStartupOrigin();
+		const local = origin.clone('shared');
+		const clock = fakeInterval();
+		const passes = passCounter();
+		const ended: string[] = [];
+		const watch = startCheckoutHydration({
+			run: runnerFor(local.dir),
+			policy: testPolicy(),
+			intervalMs: INTERVAL_MS,
+			root: local.dir,
+			standDown: passes.standDown,
+			onHydrated: () => undefined,
+			onUnitsEnded: (message) => ended.push(message),
+		});
+		try {
+			await runUntilStarted(clock, passes, 3);
+		} finally {
+			watch.stop();
+		}
+		expect(ended).toEqual([]);
+	});
 });
