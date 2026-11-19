@@ -157,6 +157,16 @@ export const deliverPortsOf = (
 	const { id, reason, agent, urgent, unitFlags } = run;
 	return {
 		slice: scalarArg(unitFlags, 'slice') ?? 'all',
+		// Loaded when a delivery fails: only a failure needs it (startup budget).
+		recordFailure: async (failure) => {
+			const { recordProjectFailure } = await import(
+				'@delendai/self-learning/public'
+			);
+			await recordProjectFailure(ctx.cwd, failure.source, {
+				subject: failure.subject,
+				unit: failure.unit,
+			});
+		},
 		publish: () => runWorkUnit(['publish', ...unitFlags], ctx),
 		readOpenPullRequest: async (branch) =>
 			readOpenPullRequestUrl(ctx.cwd, branch),
