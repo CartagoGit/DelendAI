@@ -5,10 +5,6 @@
  * owns the decisions (`repairDevelopRed`); this only wires the ports. It
  * acts at most once per red run and otherwise does nothing.
  */
-// effect-boundary-authorized: records the known-failing set of a red commit under the project's cache
-import { mkdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-
 import {
 	createGithubLandForge,
 	integrationProtocolRefusal,
@@ -32,7 +28,6 @@ import { runGit } from './land-train-assembly.helper';
 /** Completed CI runs read: enough to reach the last green one. */
 const CI_RUNS_READ = 20;
 const PULL_SUBJECT = /#(\d+)/u;
-const KNOWN_FAILING_DIR = ['.cache', 'delendai', 'known-failing'];
 
 /** Runs one repair pass; the exit code the process should end with. */
 export const runIntegrationRepair = async (
@@ -138,13 +133,12 @@ export const runIntegrationRepair = async (
 			},
 			footprintOf: (merge) =>
 				Promise.resolve(land.landedSince(`${merge.sha}^1`, merge.sha)),
-			recordKnownFailing: async (commit, specs) => {
-				const dir = join(root, ...KNOWN_FAILING_DIR);
-				await mkdir(dir, { recursive: true });
-				await writeFile(
-					join(dir, `${commit}.json`),
-					JSON.stringify(specs),
+			// The set is kept where the next pass reads it: in the repair's body.
+			recordKnownFailing: (commit, specs) => {
+				log(
+					`land-repair: ${commit.slice(0, 12)} fails ${String(specs.length)} spec(s)/check(s)`,
 				);
+				return Promise.resolve();
 			},
 		},
 	});
