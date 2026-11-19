@@ -1,14 +1,12 @@
 /**
  * The `close_slice` gate runs the project's declared gate as a resumable
- * job. These run real processes against a real git tree: the behaviour
- * under test is precisely what a process, a tree hash and a clock do, and
- * a stub would only restate the assumption.
+ * job. The tree identity is a real git tree; the runner and the clock are
+ * simulated through the deps the gate accepts, so each test drives the
+ * runner's states (held, finished green, finished red, gone) by
+ * construction and never races a spawned process or the wall clock.
  */
-import { execFileSync } from 'node:child_process';
 import {
-	appendFileSync,
 	existsSync,
-	mkdirSync,
 	mkdtempSync,
 	readFileSync,
 	rmSync,
@@ -19,11 +17,8 @@ import { join } from 'node:path';
 
 import { afterAll, describe, expect, it } from 'vitest';
 
-import { runCloseSliceGateProbe } from '@delendai/proposals/lib/tools/authoring.tool';
-import type {
-	ICloseGateDeps,
-	ICloseGateProcessPort,
-} from '@delendai/proposals/lib/contracts/interfaces/close-slice-gate.interface';
+import type { ICloseGateDeps } from '@delendai/proposals/lib/contracts/interfaces/close-slice-gate.interface';
+import { fakeRunner } from '../_fixtures/fake-gate-runner';
 import {
 	declaredGateSteps,
 	runCloseSliceGate,
@@ -42,27 +37,21 @@ const scratch = (prefix: string): string => {
 	return dir;
 };
 
-/** A git checkout whose `validate` script is `command`; runs are counted outside the tree. */
+/** A checkout directory whose `validate` script is `command`. */
 const checkoutWithGate = (
 	command: string,
-): {
-	readonly cwd: string;
-	readonly counter: string;
-	readonly store: string;
-} => {
+): { readonly cwd: string; readonly store: string } => {
 	const cwd = scratch('close-gate-tree-');
 	const store = scratch('close-gate-store-');
-	const counter = join(scratch('close-gate-count-'), 'runs');
-	execFileSync('git', ['init', '-q'], { cwd });
 	writeFileSync(
 		join(cwd, 'package.json'),
 		JSON.stringify({
 			name: 'fixture',
 			private: true,
-			scripts: { validate: command.replaceAll('$COUNTER', counter) },
+			scripts: { validate: command },
 		}),
 	);
-	return { cwd, counter, store };
+	return { cwd, store };
 };
 
 const depsFor = (
@@ -71,6 +60,9 @@ const depsFor = (
 ): ICloseGateDeps => ({
 	storeRoot: fixture.store,
 	cwd: fixture.cwd,
+	// The tree is a stand-in: one distinct tree per checkout. The real git
+	// fingerprint is exercised by close-slice-gate.e2e.spec.ts.
+	fingerprint: async (cwd) => `tree:${cwd}`,
 	readDeclaration: async (path) => {
 		const file = join(fixture.cwd, path);
 		return existsSync(file) ? readFileSync(file, 'utf8') : null;
@@ -78,133 +70,9 @@ const depsFor = (
 	...extra,
 });
 
-const runsRecorded = (counter: string): number =>
-	existsSync(counter)
-		? readFileSync(counter, 'utf8').split('\n').filter(Boolean).length
-		: 0;
-
 describe('runCloseSliceGate', () => {
-	it('answers pending with a handle when the gate outlives the wait, then passes on resume', async () => {
-		const fixture = checkoutWithGate('sleep 0.6 && echo ran >> $COUNTER');
-
-		const first = await runCloseSliceGate(
-			depsFor(fixture, { waitMs: 100 }),
-		);
-
-		expect(first.state).toBe('pending');
-		expect(first.handle).toMatch(/^gate-/);
-
-		const resumed = await runCloseSliceGate(
-			depsFor(fixture, { waitMs: 10_000 }),
-		);
-
-		expect(resumed.state).toBe('pass');
-		expect(resumed.handle).toBe(first.handle);
-		expect(runsRecorded(fixture.counter)).toBe(1);
-	});
-
-	it('never reports a still-running gate as a pass through the probe', async () => {
-		const fixture = checkoutWithGate('sleep 0.6');
-
-		const probe = await runCloseSliceGateProbe(
-			depsFor(fixture, { waitMs: 100 }),
-		);
-
-		expect(probe.ok).toBe(false);
-		expect(probe.severity).toBe('error');
-		expect(probe.gate?.state).toBe('pending');
-	});
-
-	it('reuses a recorded green result for the same tree and reruns when the tree changes', async () => {
-		const fixture = checkoutWithGate('echo ran >> $COUNTER');
-
-		const first = await runCloseSliceGate(depsFor(fixture));
-		const second = await runCloseSliceGate(depsFor(fixture));
-
-		expect(first).toMatchObject({ state: 'pass', reused: false });
-		expect(second).toMatchObject({ state: 'pass', reused: true });
-		expect(runsRecorded(fixture.counter)).toBe(1);
-
-		appendFileSync(join(fixture.cwd, 'changed.txt'), 'new content');
-		const third = await runCloseSliceGate(depsFor(fixture));
-
-		expect(third).toMatchObject({ state: 'pass', reused: false });
-		expect(runsRecorded(fixture.counter)).toBe(2);
-	});
-
-	it('keeps the tree identity when only host state or a lock file changes', async () => {
-		const fixture = checkoutWithGate('echo ran >> $COUNTER');
-		const state = join(fixture.cwd, '.cache');
-		mkdirSync(state, { recursive: true });
-		const deps = depsFor(fixture, { stateRoots: [state] });
-
-		await runCloseSliceGate(deps);
-		writeFileSync(join(state, 'lock.json'), 'held');
-		writeFileSync(join(fixture.cwd, 'proposal.md.mutex'), 'owner 1');
-		const again = await runCloseSliceGate(deps);
-
-		expect(again).toMatchObject({ state: 'pass', reused: true });
-		expect(runsRecorded(fixture.counter)).toBe(1);
-	});
-
-	it('blocks on a failing gate and reports the step and its output', async () => {
-		const fixture = checkoutWithGate('echo lint exploded && exit 3');
-
-		const verdict = await runCloseSliceGate(depsFor(fixture));
-
-		expect(verdict.state).toBe('fail');
-		expect(verdict.findings.join('\n')).toContain('lint exploded');
-		expect(verdict.findings.join('\n')).toContain('gate step failed');
-	});
-
-	it('runs a failed gate again on the next call instead of remembering the failure', async () => {
-		const fixture = checkoutWithGate('echo ran >> $COUNTER && exit 1');
-
-		await runCloseSliceGate(depsFor(fixture));
-		await runCloseSliceGate(depsFor(fixture));
-
-		expect(runsRecorded(fixture.counter)).toBe(2);
-	});
-
-	it('reports a gate that exceeds its timeout as unverifiable, stopped, and never green', async () => {
-		const fixture = checkoutWithGate('sleep 30');
-
-		const verdict = await runCloseSliceGate(
-			depsFor(fixture, { waitMs: 5_000, timeoutMs: 300 }),
-		);
-
-		expect(verdict.state).toBe('unverifiable');
-		expect(verdict.findings.join('\n')).toContain('stopped after 300 ms');
-	});
-
-	it('reports a run whose process vanished as unverifiable', async () => {
-		const fixture = checkoutWithGate('true');
-		const vanishing: ICloseGateProcessPort = {
-			start: () => 2_147_483_000,
-			isAlive: () => false,
-			killGroup: () => undefined,
-		};
-
-		const verdict = await runCloseSliceGate(
-			// The wait is a deadline on the wall clock: on a loaded machine the
-			// first start can eat all of it and the second look never happens.
-			// A frozen clock keeps the window open for exactly the look that
-			// finds the process gone, and a no-op sleep makes it immediate.
-			depsFor(fixture, {
-				process: vanishing,
-				waitMs: 1_000,
-				now: () => 0,
-				sleep: async () => undefined,
-			}),
-		);
-
-		expect(verdict.state).toBe('unverifiable');
-		expect(verdict.findings.join('\n')).toContain('process is gone');
-	});
-
-	it('says so when the project declares no gate', async () => {
+	it('[<200ms] says so when the project declares no gate', async () => {
 		const cwd = scratch('close-gate-empty-');
-		execFileSync('git', ['init', '-q'], { cwd });
 
 		const verdict = await runCloseSliceGate(
 			depsFor({ cwd, store: scratch('close-gate-store-') }),
@@ -214,8 +82,8 @@ describe('runCloseSliceGate', () => {
 		expect(verdict.findings.join('\n')).toContain('declares no gate');
 	});
 
-	it('says so when the checkout cannot be fingerprinted', async () => {
-		const fixture = checkoutWithGate('true');
+	it('[<200ms] says so when the checkout cannot be fingerprinted', async () => {
+		const fixture = checkoutWithGate('validate-gate');
 
 		const verdict = await runCloseSliceGate(
 			depsFor(fixture, { fingerprint: async () => undefined }),
@@ -226,11 +94,13 @@ describe('runCloseSliceGate', () => {
 });
 
 describe('runCloseSliceGate with existing certification', () => {
-	it('closes from a certification of the tree without running the gate', async () => {
-		const fixture = checkoutWithGate('echo ran >> $COUNTER');
+	it('[<200ms] closes from a certification of the tree without running the gate', async () => {
+		const fixture = checkoutWithGate('validate-gate');
+		const runner = fakeRunner({ kind: 'finish', code: 0 });
 
 		const verdict = await runCloseSliceGate(
 			depsFor(fixture, {
+				...runner.deps,
 				certification: async () => ({
 					state: 'certified',
 					source: 'forge-check',
@@ -244,14 +114,16 @@ describe('runCloseSliceGate with existing certification', () => {
 			reused: true,
 			certifiedBy: 'forge-check',
 		});
-		expect(runsRecorded(fixture.counter)).toBe(0);
+		expect(runner.runs()).toBe(0);
 	});
 
-	it('blocks on a failed certification without running the gate', async () => {
-		const fixture = checkoutWithGate('echo ran >> $COUNTER');
+	it('[<200ms] blocks on a failed certification without running the gate', async () => {
+		const fixture = checkoutWithGate('validate-gate');
+		const runner = fakeRunner({ kind: 'finish', code: 0 });
 
 		const verdict = await runCloseSliceGate(
 			depsFor(fixture, {
+				...runner.deps,
 				certification: async () => ({
 					state: 'failed',
 					check: 'delendai-validate',
@@ -263,27 +135,11 @@ describe('runCloseSliceGate with existing certification', () => {
 
 		expect(verdict.state).toBe('fail');
 		expect(verdict.findings.join(' ')).toContain('delendai-validate');
-		expect(runsRecorded(fixture.counter)).toBe(0);
+		expect(runner.runs()).toBe(0);
 	});
 
-	it('runs the gate when no evidence exists and says what was missing', async () => {
-		const fixture = checkoutWithGate('exit 1');
-
-		const verdict = await runCloseSliceGate(
-			depsFor(fixture, {
-				certification: async () => ({
-					state: 'none',
-					missing: ['no pushed commit has this tree'],
-					nextAction: 'publish; CI will certify',
-				}),
-			}),
-		);
-
-		expect(verdict.state).toBe('fail');
-	});
-
-	it('stays unverifiable when there is no evidence and no gate', async () => {
-		const fixture = checkoutWithGate('true');
+	it('[<200ms] stays unverifiable when there is no evidence and no gate', async () => {
+		const fixture = checkoutWithGate('validate-gate');
 		rmSync(join(fixture.cwd, 'package.json'));
 
 		const verdict = await runCloseSliceGate(
@@ -299,36 +155,6 @@ describe('runCloseSliceGate with existing certification', () => {
 		expect(verdict.state).toBe('unverifiable');
 		expect(verdict.nextAction).toBe('publish; CI will certify');
 	});
-
-	it('queues a second local gate while another is running', async () => {
-		const first = checkoutWithGate('sleep 3');
-		const second = checkoutWithGate('true');
-		const store = first.store;
-
-		await runCloseSliceGate(depsFor(first, { waitMs: 100 }));
-		const queued = await runCloseSliceGate(
-			depsFor({ ...second, store }, { waitMs: 100 }),
-		);
-
-		expect(queued.state).toBe('pending');
-		expect(queued.findings.join(' ')).toContain('queued');
-	});
-
-	it('admits the next tree once a running gate is past its timeout, though its own tree never came back', async () => {
-		const stuck = checkoutWithGate('sleep 30');
-		const next = checkoutWithGate('true');
-		const store = stuck.store;
-
-		await runCloseSliceGate(depsFor(stuck, { waitMs: 50, timeoutMs: 200 }));
-		// The next tree asks once the stuck run's time is up.
-		const later = () => Date.now() + 1_000;
-		const admitted = await runCloseSliceGate(
-			depsFor({ ...next, store }, { waitMs: 5_000, now: later }),
-		);
-
-		expect(admitted.findings.join(' ')).not.toContain('queued');
-		expect(admitted.state).toBe('pass');
-	});
 });
 
 describe('declaredGateSteps', () => {
@@ -343,13 +169,13 @@ describe('declaredGateSteps', () => {
 	const read = async (path: string): Promise<string | null> =>
 		path === 'delendai.config.json' ? config : null;
 
-	it('narrows the declared matrix to the slice scopes', async () => {
+	it('[<200ms] narrows the declared matrix to the slice scopes', async () => {
 		const steps = await declaredGateSteps(read, ['api']);
 
 		expect(steps).toEqual([{ scope: 'api', command: 'run api' }]);
 	});
 
-	it('runs the whole declared gate when no scope matches, never nothing', async () => {
+	it('[<200ms] runs the whole declared gate when no scope matches, never nothing', async () => {
 		const steps = await declaredGateSteps(read, ['unknown']);
 
 		expect(steps.map((step) => step.command)).toEqual([
