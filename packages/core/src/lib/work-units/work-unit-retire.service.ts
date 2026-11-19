@@ -8,7 +8,7 @@ import type { IRetirementOutcome } from '../contracts/interfaces/work-retire.int
 import { readWorktreeStatus } from '../shared/worktree-status.helper';
 import { scalarArg } from './command-args.helper';
 import { releaseSlices } from './slice-reservation.service';
-import { retireStrayRef } from './stray-ref-retire.service';
+import { retireStrayRef } from '../ref-reconciler/stray-ref-retire.service';
 import { unitVerdictOf } from './unit-standings.service';
 import { planRetirement, restoreAdvice } from './work-retire.service';
 

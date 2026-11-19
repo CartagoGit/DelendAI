@@ -1,5 +1,5 @@
 /**
- * retired-machinery-reap.service.spec.ts — the train branches and scratch
+ * retired-machinery-sweep.service.spec.ts — the train branches and scratch
  * worktrees the retired queue left go once they hold nothing of their own;
  * one that may hold the only copy of a commit stays.
  */
@@ -9,9 +9,14 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { reapRetiredMachinery } from '@delendai/core/lib/work-units/retired-machinery-reap.service';
+import { reapRetiredMachinery } from '@delendai/core/lib/ref-reconciler/retired-machinery-sweep.service';
 
-import { cleanUnitRepos, git, unitPolicy, unitRepo } from './unit-repo.helper';
+import {
+	cleanUnitRepos,
+	git,
+	unitPolicy,
+	unitRepo,
+} from '../work-units/unit-repo.helper';
 
 afterEach(cleanUnitRepos);
 

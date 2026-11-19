@@ -8,6 +8,11 @@
  * failed. The proof script (`prove`) owns its gates and their names; this
  * hands it `--only` and reports what it printed.
  *
+ * A gate only the forge can run (it needs timings CI measured, such as
+ * `test:budgets:check`) is no gate of this proof: it is listed CI-only, with
+ * its reason, in `proof-covers-ci-gates.script.ts`, which fails when a
+ * required CI gate is neither a proof step nor listed there.
+ *
  * NEVER PROOF: nothing is remembered and nothing is handed over. A partial
  * run leaves the unit unproved, so `work deliver` and `work publish` still
  * run the whole proof. The compute slot is the script's to take, and it

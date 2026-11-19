@@ -243,7 +243,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5k — The branch flow, part 3b: delivered units are ended by the reconciler through a clone-side adapter, and unit-reaper goes
 - **Status**: pending
 - **DependsOn**: [S5c]
-- **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-reaped.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-edits-kept.service.e2e.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/src/cli.ts`, `packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-reaped.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-landed.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/clone-forge-edits-kept.service.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
@@ -253,7 +253,7 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5l — The branch flow, part 3c: worktree husks are ended by the reconciler, and worktree-husks goes
 - **Status**: pending
 - **DependsOn**: [S5k]
-- **Files**: `packages/core/src/lib/ref-reconciler/husk-directories.service.ts`, `packages/core/src/lib/contracts/interfaces/husk-directories.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/ref-reconciler/husk-directories.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/husk-directories.service.ts`, `packages/core/src/lib/contracts/interfaces/husk-directories.interface.ts`, `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/src/lib/work-units/workflow-doctor.service.ts`, `packages/core/tests/src/lib/ref-reconciler/husk-directories.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/src/lib/ref-reconciler/clone-forge.service.ts`, `new:packages/core/tests/src/lib/ref-reconciler/clone-forge.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
@@ -263,22 +263,22 @@ land runs with the workflow token, and GitHub builds nothing that token pushes: 
 ### S5m — The branch flow, part 3d: stray and rescued refs are retired by the reconciler, and stray-refs-reap goes
 - **Status**: pending
 - **DependsOn**: [S5l]
-- **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/src/lib/work-units/stray-ref-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/stray-refs-sweep.service.ts`, `packages/core/src/lib/ref-reconciler/stray-refs-sweep.interface.ts`, `packages/core/src/lib/ref-reconciler/stray-ref-retire.service.ts`, `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep-kept.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-ref-retire.service.e2e.spec.ts`, `packages/core/src/lib/ref-reconciler/desired-state.helper.ts`, `packages/core/tests/src/lib/ref-reconciler/reconciler.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "reconciler.service.spec.ts adds the stray-ref cases: a stranded or rescued ref goes only when the forge or the integration branch holds what it carries, otherwise it is kept and reported."
-  - "stray-refs-reap.service.ts, its interface and its two specs are deleted, stray-ref-retire.service.ts reads held-by-forge from the reconciler, and `git grep -n 'reapStrayRefs\|heldByForge\|holdsOnlyEmptyCommits\|patchesLanded' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
+  - "stray-refs-sweep.service.e2e.spec.ts and stray-refs-sweep-kept.service.e2e.spec.ts keep the stray-ref cases under packages/core/tests/src/lib/ref-reconciler: a stranded or rescued ref goes only when the forge or the integration branch holds what it carries, otherwise it is kept and reported."
+  - "reapStrayRefs, retireStrayRef and heldByForge are defined only under packages/core/src/lib/ref-reconciler; callers import them from there (`git grep -n 'function reapStrayRefs\|function heldByForge'` finds one definition each)."
 
 ### S5n — The branch flow, part 3e: retired machinery is reaped by the reconciler, and retired-machinery-reap and work-unit-reap go
 - **Status**: pending
 - **DependsOn**: [S5m]
-- **Files**: `packages/core/src/lib/work-units/retired-machinery-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/retired-machinery-reap.interface.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/work-units/retired-machinery-reap.service.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-reap.service.e2e.spec.ts`
+- **Files**: `packages/core/src/lib/ref-reconciler/retired-machinery-sweep.service.ts`, `packages/core/src/lib/contracts/interfaces/retired-machinery-sweep.interface.ts`, `packages/core/src/lib/ref-reconciler/work-reap.service.ts`, `packages/core/src/lib/work-units/work-unit.service.ts`, `packages/core/src/cli.ts`, `packages/core/tests/src/lib/ref-reconciler/retired-machinery-sweep.service.e2e.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/work-reap.service.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "work-unit-reap.service.e2e.spec.ts runs `work reap` through the reconciler and passes; the lefthook post-merge hook still reaches it."
-  - "retired-machinery-reap.service.ts, work-unit-reap.service.ts, the interface and the retired-machinery spec are deleted along with the cli.ts export of reapDeliveredUnits, and `git grep -n 'reapDeliveredUnits\|reapHusks\|reapRetiredMachinery' -- packages tools` finds nothing outside packages/core/src/lib/ref-reconciler."
+  - "work-reap.service.e2e.spec.ts runs `work reap` from packages/core/src/lib/ref-reconciler and passes; the lefthook post-merge hook still reaches it."
+  - "reaped and reapRetiredMachinery are defined only under packages/core/src/lib/ref-reconciler, work-unit.service.ts imports reaped from there, and `git grep -n 'function reapRetiredMachinery\|const reaped ' -- packages` finds one definition each."
 
 ### S5d — The branch flow, part 4: hydration, finished-unit ending and the guard's --reap go
 - **Status**: pending

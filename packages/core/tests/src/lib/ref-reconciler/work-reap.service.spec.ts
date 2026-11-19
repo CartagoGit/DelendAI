@@ -1,5 +1,5 @@
 /**
- * work-unit-reap.service.spec.ts — `work reap` runs every upkeep step
+ * work-reap.service.spec.ts — `work reap` runs every upkeep step
  * once, ends the delivered units through the reconciler and hands each
  * step the same `--apply` flag, over mocked steps.
  */
@@ -62,15 +62,18 @@ vi.mock('@delendai/core/lib/work-units/retired-landed.service', () => ({
 vi.mock('@delendai/core/lib/work-units/slice-reservation-reap.service', () => ({
 	reapSpentReservations: m.reapSpentReservations,
 }));
-vi.mock('@delendai/core/lib/work-units/stray-refs-reap.service', () => ({
+vi.mock('@delendai/core/lib/ref-reconciler/stray-refs-sweep.service', () => ({
 	reapStrayRefs: m.reapStrayRefs,
 }));
-vi.mock('@delendai/core/lib/work-units/retired-machinery-reap.service', () => ({
-	reapRetiredMachinery: m.reapRetiredMachinery,
-}));
+vi.mock(
+	'@delendai/core/lib/ref-reconciler/retired-machinery-sweep.service',
+	() => ({
+		reapRetiredMachinery: m.reapRetiredMachinery,
+	}),
+);
 
 const { reaped } = await import(
-	'@delendai/core/lib/work-units/work-unit-reap.service'
+	'@delendai/core/lib/ref-reconciler/work-reap.service'
 );
 
 const policy = resolveDevelopmentPolicy({
