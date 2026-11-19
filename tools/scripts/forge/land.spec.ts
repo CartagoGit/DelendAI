@@ -191,7 +191,8 @@ describe('land', () => {
 		expect(report.actions.join('\n')).toContain(
 			'the tree would differ from the tested one',
 		);
-		expect(open()).toHaveLength(0);
+		// The stale, clean member is tested again as a merged candidate.
+		expect(open()).toHaveLength(1);
 	});
 
 	it('[<9ms] labels the culprit of a red batch and batches the rest once', async () => {
@@ -304,6 +305,30 @@ describe('land', () => {
 		expect(git.treeOf(await forge.integrationTip())).toBe(
 			git.treeOf(batch?.headSha ?? ''),
 		);
+	});
+
+	it('[<9ms] batches a stale pull request that overlaps by zone but merges cleanly, and labels nobody', async () => {
+		const { world, pass, open, lone } = setup({});
+		const n = world.addPull({ 'a/x.ts': '1' });
+		world.ci();
+		world.push({ 'a/other.ts': '0' });
+		const report = await pass();
+		expect(lone(n).labels).not.toContain(LAND_LABEL_NEEDS_UPDATE);
+		expect(report.reasons.get(n)).toMatch(/^rides batch #/u);
+		expect(open()).toHaveLength(1);
+	});
+
+	it('[<9ms] names the conflicting files when it asks for an update', async () => {
+		const { world, pass, lone } = setup({ 'a/y.ts': '0' });
+		const n = world.addPull({ 'a/y.ts': '9' });
+		world.ci();
+		world.push({ 'a/y.ts': '5' });
+		const report = await pass();
+		expect(lone(n).labels).toContain(LAND_LABEL_NEEDS_UPDATE);
+		expect(report.reasons.get(n)).toBe(
+			'needs update: it conflicts with the integration branch in a/y.ts',
+		);
+		expect(lone(n).comments[0]).toContain('a/y.ts');
 	});
 
 	it('[<9ms] recovers on the next pass from a pass that died midway', async () => {

@@ -108,6 +108,16 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
   - "`bunx vitest run plugins/quality/tests/src/lib/run-all.spec.ts` passes and the file has no real timer (no setTimeout)"
   - "`bunx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts` passes with the unit case reading a fixture tree, not the repository's docs/delendai/proposals"
 
+### S10 — close-slice-gate spec is deterministic
+- **Status**: pending
+- **DependsOn**: [S9]
+- **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `new: plugins/proposals/tests/src/lib/_fixtures/fake-gate-runner.ts`, `new: plugins/proposals/tests/src/lib/tools/close-slice-gate.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Gate**: lint
+- **Decisions**: No retry and no larger timeout. The unit spec injects a fake process port and a fake clock through the deps the gate already accepts, so each test drives the runner's states (held, finished green, finished red, gone) by construction instead of racing a spawned process and the wall clock under load.
+- acceptance:
+  - "`bunx vitest run plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts` passes and the file starts no real process, runs no git and reads no real clock (the real-tree cases are in close-slice-gate.e2e.spec.ts)"
+  - "`bunx vitest run plugins/proposals --maxWorkers=4` passes the close-slice-gate spec 5 times in a row"
+
 ## acceptance
 
 - `bunx vitest run tools/scripts/forge/land-workflow.spec.ts` proves a failure already present on the base certifying result names no batch member as culprit

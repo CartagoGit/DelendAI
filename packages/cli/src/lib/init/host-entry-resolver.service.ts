@@ -7,7 +7,7 @@
  * `buildCanonicalLaunch` from `server-args.service.ts`; this resolver must
  * never be used to construct the default published-package launch shape.
  * Replaces the previous hardcoded
- * `/home/cartago/_proyectos/propios/delendai/tools/scripts/...`
+ * a hardcoded absolute checkout path
  * that shipped in every generated `.vscode/mcp.json`.
  *
  * Resolution order (first hit wins):
@@ -32,8 +32,10 @@
  * surface a clear "did you forget `bun install`?" hint.
  */
 import { existsSync, readdirSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 
+import type { ICanonicalLaunch } from '../../contracts/interfaces/canonical-launch.interface';
 import type {
 	IPathProbe,
 	IResolvedHostEntry,
@@ -222,3 +224,36 @@ export class HostEntryNotFoundError extends Error {
 		this.attempted = attempted;
 	}
 }
+
+/**
+ * f00824 S5: a project that opted into a local checkout (`--delendai-root`)
+ * keeps it on every later `init`; the default entry is the released package
+ * pinned to an exact version.
+ */
+export const readLocalCheckoutLaunch = async (
+	workspace: string,
+	serverName = 'DelendAI',
+): Promise<ICanonicalLaunch | undefined> => {
+	let text: string;
+	try {
+		text = await readFile(join(workspace, '.vscode/mcp.json'), 'utf8');
+	} catch {
+		return undefined;
+	}
+	try {
+		const parsed = JSON.parse(text) as {
+			servers?: Record<string, { command?: unknown; args?: unknown }>;
+		};
+		const entry = parsed.servers?.[serverName];
+		if (
+			entry?.command === 'bun' &&
+			Array.isArray(entry.args) &&
+			entry.args.every((arg) => typeof arg === 'string')
+		) {
+			return { command: 'bun', args: entry.args as string[] };
+		}
+	} catch {
+		return undefined;
+	}
+	return undefined;
+};
