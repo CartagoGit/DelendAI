@@ -1511,7 +1511,10 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		"maturity": "experimental",
 		"visibility": "public",
 		"presets": [
-			"everything"
+			"team-pr",
+			"swarm",
+			"everything",
+			"dogfood"
 		],
 		"capabilities": [
 			"self-learning"

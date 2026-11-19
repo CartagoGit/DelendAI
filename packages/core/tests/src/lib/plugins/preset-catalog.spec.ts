@@ -3,16 +3,20 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import {
+	isPresetKind,
 	normalizePresetInput,
+	presetAliasOf,
 	PRESET_CATALOG,
 	PRESET_KIND,
 	resolvePresetMembers,
+	resolveProgressiveDisclosure,
 	resolveStackPackMembers,
 } from '@delendai/core/lib/plugins/preset-catalog';
 import {
 	PACK_IDS,
 	STACK_PACKS,
 } from '@delendai/core/lib/plugins/pack-defaults-overlay';
+import { enabledPlugins } from '@delendai/core/lib/plugins/preset-migration';
 import apiPlugin from '../../../../../../plugins/api/src/index';
 
 const repoRootFromSpec = (): string => {
@@ -52,7 +56,7 @@ const publishedConfigPlugins = async (): Promise<readonly string[]> => {
 };
 
 describe('PRESET_CATALOG', async () => {
-	it('lists the packs by purpose, each with a role and a purpose', async () => {
+	it('[<200ms] lists the packs by purpose, each with a role and a purpose', async () => {
 		expect(PRESET_CATALOG.map((def) => def.id)).toEqual(PRESET_KIND);
 		expect([...PRESET_KIND]).toEqual([
 			'minimal',
@@ -70,7 +74,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('stores the full membership of every pack, none by chain', async () => {
+	it('[<200ms] stores the full membership of every pack, none by chain', async () => {
 		for (const def of PRESET_CATALOG) {
 			expect(def.independent, def.id).toBe(true);
 			expect(resolvePresetMembers(def.id)).toEqual(
@@ -79,7 +83,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('defines minimal and solo as the proposal lists them', async () => {
+	it('[<200ms] defines minimal and solo as the proposal lists them', async () => {
 		expect(resolvePresetMembers('minimal')).toEqual(['git', 'search']);
 		expect([...resolvePresetMembers('solo')].sort()).toEqual(
 			[
@@ -97,7 +101,32 @@ describe('PRESET_CATALOG', async () => {
 		);
 	});
 
-	it('keeps team-pr a superset of solo and swarm the multi-agent pack', async () => {
+	it('[<50ms] has team-pr, swarm and dogfood learn by default, minimal and solo not', () => {
+		for (const id of ['team-pr', 'swarm', 'dogfood']) {
+			expect(resolvePresetMembers(id), id).toContain('self-learning');
+		}
+		expect(resolvePresetMembers('dogfood')).toContain('project-kpis');
+		for (const id of ['minimal', 'solo']) {
+			expect(resolvePresetMembers(id), id).not.toContain('self-learning');
+		}
+	});
+
+	it('[<50ms] drops self-learning only when the policy disables the plugin', () => {
+		const plugins = Object.fromEntries(
+			resolvePresetMembers('team-pr').map((plugin) => [plugin, {}]),
+		);
+		expect(enabledPlugins(plugins)).toContain('self-learning');
+		expect(
+			enabledPlugins({ ...plugins, 'self-learning': { enabled: false } }),
+		).not.toContain('self-learning');
+	});
+
+	it('[<50ms] resolves self-learning for this repository through the dogfood pack', async () => {
+		expect(await publishedConfigPlugins()).toContain('self-learning');
+		expect(resolvePresetMembers('dogfood')).toContain('self-learning');
+	});
+
+	it('[<200ms] keeps team-pr a superset of solo and swarm the multi-agent pack', async () => {
 		const solo = resolvePresetMembers('solo');
 		const teamPr = resolvePresetMembers('team-pr');
 		for (const plugin of solo) expect(teamPr).toContain(plugin);
@@ -110,7 +139,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('ships no provider-spending or credential plugin outside everything and dogfood', async () => {
+	it('[<200ms] ships no provider-spending or credential plugin outside everything and dogfood', async () => {
 		const restricted = [
 			'api',
 			'issues',
@@ -140,7 +169,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('everything carries every published plugin, the unreachable four included', async () => {
+	it('[<200ms] everything carries every published plugin, the unreachable four included', async () => {
 		const { readdir, readFile } = await import('node:fs/promises');
 		const root = repoRootFromSpec();
 		const published: string[] = [];
@@ -166,7 +195,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('marks the host-only members of everything as hostOnly and forbids them in minimal, solo, swarm', async () => {
+	it('[<200ms] marks the host-only members of everything as hostOnly and forbids them in minimal, solo, swarm', async () => {
 		const everything = PRESET_CATALOG.find((d) => d.id === 'everything');
 		expect(everything?.members.some((m) => m.hostOnly === true)).toBe(true);
 		for (const id of ['minimal', 'solo', 'swarm']) {
@@ -178,7 +207,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('resolves dogfood to ONLY the plugin keys from the live root config', async () => {
+	it('[<200ms] resolves dogfood to ONLY the plugin keys from the live root config', async () => {
 		const resolved = resolvePresetMembers('dogfood');
 		const published = await publishedConfigPlugins();
 		expect([...resolved].sort()).toEqual([...published].sort());
@@ -186,7 +215,7 @@ describe('PRESET_CATALOG', async () => {
 		expect(dogfood?.role).toBe('delendai-dogfood');
 	});
 
-	it('declares the stack packs as overlays on a purpose pack', async () => {
+	it('[<200ms] declares the stack packs as overlays on a purpose pack', async () => {
 		for (const stack of PACK_IDS) {
 			const { basePack, plugins } = STACK_PACKS[stack];
 			expect(PRESET_KIND).toContain(basePack);
@@ -205,7 +234,7 @@ describe('PRESET_CATALOG', async () => {
 		expect(resolveStackPackMembers('cli-tool')).toContain('perf');
 	});
 
-	it('every catalog plugin id corresponds to a real package on disk', async () => {
+	it('[<200ms] every catalog plugin id corresponds to a real package on disk', async () => {
 		const { stat } = await import('node:fs/promises');
 		const { join } = await import('node:path');
 		const repoRoot = repoRootFromSpec();
@@ -231,7 +260,7 @@ describe('PRESET_CATALOG', async () => {
 		}
 	});
 
-	it('keeps the api plugin catalog aligned with the backend-api stack overlay membership', async () => {
+	it('[<200ms] keeps the api plugin catalog aligned with the backend-api stack overlay membership', async () => {
 		const registration = await apiPlugin.register({
 			namespacePrefix: 'api',
 			options: {},
@@ -275,7 +304,7 @@ describe('PRESET_CATALOG', async () => {
 		expect(knowledge?.body).toContain(expectedLine);
 	});
 
-	it('derives a summary from actual membership', async () => {
+	it('[<200ms] derives a summary from actual membership', async () => {
 		const solo = PRESET_CATALOG.find(
 			(definition) => definition.id === 'solo',
 		);
@@ -284,12 +313,12 @@ describe('PRESET_CATALOG', async () => {
 });
 
 describe('resolvePresetMembers', async () => {
-	it('returns [] for unknown preset names', async () => {
+	it('[<200ms] returns [] for unknown preset names', async () => {
 		expect(resolvePresetMembers('unknown')).toEqual([]);
 		expect(resolvePresetMembers(undefined)).toEqual([]);
 	});
 
-	it('declares measured budget metadata for every preset', async () => {
+	it('[<200ms] declares measured budget metadata for every preset', async () => {
 		for (const definition of PRESET_CATALOG) {
 			expect(definition.budget.toolCount.source).toBe('measured-runtime');
 			expect(definition.budget.toolCount.value).toBeGreaterThan(0);
@@ -317,7 +346,7 @@ describe('resolvePresetMembers', async () => {
 		}
 	});
 
-	it('deduplicates plugins', async () => {
+	it('[<200ms] deduplicates plugins', async () => {
 		for (const id of PRESET_KIND) {
 			const resolved = resolvePresetMembers(id);
 			expect(new Set(resolved).size).toBe(resolved.length);
@@ -332,7 +361,7 @@ describe('retired preset ids', () => {
 		['full', 'everything'],
 		['vertex', 'dogfood'],
 	] as const)(
-		'%s resolves to %s and names it in the notice',
+		'[<200ms] %s resolves to %s and names it in the notice',
 		(retired, replacement) => {
 			const notices: string[] = [];
 			const original = process.stderr.write.bind(process.stderr);
@@ -353,7 +382,7 @@ describe('retired preset ids', () => {
 	);
 
 	it.each(['web-app', 'backend-api', 'cli-tool'] as const)(
-		'%s resolves to its purpose pack plus the stack overlay',
+		'[<200ms] %s resolves to its purpose pack plus the stack overlay',
 		(stack) => {
 			const original = process.stderr.write.bind(process.stderr);
 			const notices: string[] = [];
@@ -374,7 +403,7 @@ describe('retired preset ids', () => {
 });
 
 describe('preset alias (b00239 rename)', () => {
-	it('accepts the legacy `vertex` preset id and resolves to the same plugin set as `dogfood`', async () => {
+	it('[<200ms] accepts the legacy `vertex` preset id and resolves to the same plugin set as `dogfood`', async () => {
 		// b00239 rename: `vertex` was renamed to `dogfood`. Old configs
 		// and scripts that still pass `--preset=vertex` MUST continue
 		// to resolve to the same plugin set via the PRESET_ALIASES
@@ -386,7 +415,7 @@ describe('preset alias (b00239 rename)', () => {
 		expect(legacy.length).toBeGreaterThan(0);
 	});
 
-	it('emits a stderr deprecation warning when the `vertex` alias is used', async () => {
+	it('[<200ms] emits a stderr deprecation warning when the `vertex` alias is used', async () => {
 		// Operators / CI pipelines should see the rename in their logs
 		// so a follow-up audit can find every legacy caller. The
 		// warning is on stderr (not stdout) so it never corrupts a
@@ -414,7 +443,7 @@ describe('preset alias (b00239 rename)', () => {
 		}
 	});
 
-	it('does NOT emit a deprecation warning for the canonical `dogfood` preset id', async () => {
+	it('[<200ms] does NOT emit a deprecation warning for the canonical `dogfood` preset id', async () => {
 		const stderrChunks: string[] = [];
 		const originalWrite = process.stderr.write.bind(process.stderr);
 		process.stderr.write = ((
@@ -436,7 +465,7 @@ describe('preset alias (b00239 rename)', () => {
 		}
 	});
 
-	it('returns the same plugin set via the alias for `vertex` as the live root config exposes', async () => {
+	it('[<200ms] returns the same plugin set via the alias for `vertex` as the live root config exposes', async () => {
 		// Mirror of the canonical `dogfood` test above, but routed
 		// through the deprecated alias. Proves the alias is wired
 		// correctly — the legacy caller still sees the exact
@@ -447,7 +476,7 @@ describe('preset alias (b00239 rename)', () => {
 		);
 	});
 
-	it('returns the same plugin set as canonical `dogfood` for the legacy `vertex` alias regardless of catalog state', async () => {
+	it('[<200ms] returns the same plugin set as canonical `dogfood` for the legacy `vertex` alias regardless of catalog state', async () => {
 		// Defensive: pins the alias → canonical → catalog dispatch order.
 		// If a future refactor drops the `dogfood` seed, both
 		// `resolvePresetMembers('vertex')` and
@@ -459,7 +488,7 @@ describe('preset alias (b00239 rename)', () => {
 	});
 });
 describe('normalizePresetInput — single-frontier contract (x00504 / reviewer)', () => {
-	it('maps the legacy `vertex` alias to canonical `dogfood`', () => {
+	it('[<200ms] maps the legacy `vertex` alias to canonical `dogfood`', () => {
 		// Single call-site for the alias translation; everything
 		// downstream — schemas, type guards, dispatch tables —
 		// can rely on the result being a member of PRESET_KIND
@@ -467,28 +496,28 @@ describe('normalizePresetInput — single-frontier contract (x00504 / reviewer)'
 		expect(normalizePresetInput('vertex')).toBe('dogfood');
 	});
 
-	it('passes a canonical `dogfood` through unchanged', () => {
+	it('[<200ms] passes a canonical `dogfood` through unchanged', () => {
 		expect(normalizePresetInput('dogfood')).toBe('dogfood');
 	});
 
-	it('passes any other canonical preset id through unchanged', () => {
+	it('[<200ms] passes any other canonical preset id through unchanged', () => {
 		for (const kind of PRESET_KIND) {
 			expect(normalizePresetInput(kind)).toBe(kind);
 		}
 	});
 
-	it('returns undefined for an unknown preset id', () => {
+	it('[<200ms] returns undefined for an unknown preset id', () => {
 		expect(normalizePresetInput('a-preset-that-does-not-exist')).toBe(
 			undefined,
 		);
 	});
 
-	it('returns undefined for null and undefined inputs', () => {
+	it('[<200ms] returns undefined for null and undefined inputs', () => {
 		expect(normalizePresetInput(null)).toBe(undefined);
 		expect(normalizePresetInput(undefined)).toBe(undefined);
 	});
 
-	it('emits the deprecation warning exactly when an alias is normalised', async () => {
+	it('[<200ms] emits the deprecation warning exactly when an alias is normalised', async () => {
 		const stderrChunks: string[] = [];
 		const originalWrite = process.stderr.write.bind(process.stderr);
 		process.stderr.write = ((
@@ -510,5 +539,24 @@ describe('normalizePresetInput — single-frontier contract (x00504 / reviewer)'
 		} finally {
 			process.stderr.write = originalWrite;
 		}
+	});
+});
+
+describe('preset guards', () => {
+	it('[<20ms] recognises a pack id and nothing else', () => {
+		expect(isPresetKind('swarm')).toBe(true);
+		expect(isPresetKind('vertex')).toBe(false);
+		expect(isPresetKind(undefined)).toBe(false);
+	});
+
+	it('[<20ms] answers a retired id with the pack that replaces it', () => {
+		expect(presetAliasOf('vertex').replacement).toBe('dogfood');
+	});
+
+	it('[<20ms] lets an explicit setting beat the pack default for progressive disclosure', () => {
+		expect(resolveProgressiveDisclosure(undefined, 'swarm')).toBe(true);
+		expect(resolveProgressiveDisclosure(false, 'swarm')).toBe(false);
+		expect(resolveProgressiveDisclosure(undefined, 'minimal')).toBe(false);
+		expect(resolveProgressiveDisclosure(undefined, undefined)).toBe(false);
 	});
 });

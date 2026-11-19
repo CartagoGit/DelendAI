@@ -187,6 +187,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'web-fetch', hostOnly: true },
 			{ plugin: 'status-marker' },
 			{ plugin: 'error-reporting' },
+			{ plugin: 'self-learning' },
 		],
 		independent: true,
 	},
@@ -216,6 +217,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'conventions' },
 			{ plugin: 'test-convention' },
 			{ plugin: 'usage-tracking' },
+			{ plugin: 'self-learning' },
 		],
 		independent: true,
 	},
@@ -372,6 +374,7 @@ const PRESET_SEEDS: readonly IPresetSeed[] = [
 			{ plugin: 'rules' },
 			{ plugin: 'search' },
 			{ plugin: 'security' },
+			{ plugin: 'self-learning' },
 			{ plugin: 'status-marker' },
 			{ plugin: 'tech-debt' },
 			{ plugin: 'test-convention' },
@@ -395,23 +398,7 @@ const resolvePresetMembersFrom = (
 	if (index < 0) return [];
 	const target = definitions[index];
 	if (target === undefined) return [];
-	if (target.independent === true) {
-		return target.members.map((m) => m.plugin);
-	}
-	const seen = new Set<string>();
-	const ordered: string[] = [];
-	for (let i = 0; i <= index; i += 1) {
-		const def = definitions[i];
-		if (def === undefined) continue;
-		if (def.independent === true && def !== target) continue;
-		for (const member of def.members) {
-			if (!seen.has(member.plugin)) {
-				seen.add(member.plugin);
-				ordered.push(member.plugin);
-			}
-		}
-	}
-	return ordered;
+	return target.members.map((m) => m.plugin);
 };
 
 export const PRESET_CATALOG: readonly IPresetDefinition[] = PRESET_SEEDS.map(

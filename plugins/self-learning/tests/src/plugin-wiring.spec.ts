@@ -12,7 +12,14 @@
  *   - it defaults both paths under the host's cache dir, so a project
  *     that opts in gets a store without configuring one.
  */
-import { mkdtempSync, realpathSync, rmSync, symlinkSync } from 'node:fs';
+import {
+	mkdirSync,
+	mkdtempSync,
+	realpathSync,
+	rmSync,
+	symlinkSync,
+	writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -22,7 +29,7 @@ import type {
 	IMcpPluginContext,
 	IMcpPluginRegistrations,
 } from '@delendai/core/contracts';
-import { fakePartial } from '@delendai/test-kit';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
 
 import plugin from '../../src/index';
 
@@ -52,12 +59,12 @@ const registrationsOf = async (
 	(await plugin.register(ctx)) as IMcpPluginRegistrations;
 
 describe('the self-learning plugin entry', () => {
-	it('is opt-in and describes itself without claiming to measure anything new', () => {
+	it('[<200ms] is opt-in and describes itself without claiming to measure anything new', () => {
 		expect(plugin.name).toBe('self-learning');
 		expect(plugin.optionsSchema).toBeDefined();
 	});
 
-	it('publishes the store and the reader of it', async () => {
+	it('[<200ms] publishes the store and the reader of it', async () => {
 		const registrations = await registrationsOf(contextWith());
 
 		expect(
@@ -65,7 +72,7 @@ describe('the self-learning plugin entry', () => {
 		).toEqual(['lessons', 'observations']);
 	});
 
-	it('refuses a storePath that leaves the workspace', async () => {
+	it('[<200ms] refuses a storePath that leaves the workspace', async () => {
 		await expect(
 			registrationsOf(
 				contextWith({ storePath: '../elsewhere/store.jsonl' }),
@@ -73,7 +80,7 @@ describe('the self-learning plugin entry', () => {
 		).rejects.toThrow(/invalid storePath/);
 	});
 
-	it('refuses a testJournalPath that leaves the workspace', async () => {
+	it('[<200ms] refuses a testJournalPath that leaves the workspace', async () => {
 		await expect(
 			registrationsOf(
 				contextWith({ testJournalPath: '../../etc/test-runs.jsonl' }),
@@ -81,7 +88,7 @@ describe('the self-learning plugin entry', () => {
 		).rejects.toThrow(/invalid testJournalPath/);
 	});
 
-	it('refuses both paths when a symlink carries them out of the workspace', async () => {
+	it('[<200ms] refuses both paths when a symlink carries them out of the workspace', async () => {
 		const root = realpathSync(mkdtempSync(join(tmpdir(), 'learn-ws-')));
 		const outside = realpathSync(mkdtempSync(join(tmpdir(), 'learn-out-')));
 		symlinkSync(outside, join(root, 'link'), 'dir');
@@ -108,7 +115,7 @@ describe('the self-learning plugin entry', () => {
 		}
 	});
 
-	it('accepts a workspace-relative override for both paths', async () => {
+	it('[<200ms] accepts a workspace-relative override for both paths', async () => {
 		const registrations = await registrationsOf(
 			contextWith({
 				storePath: '.cache/delendai/custom/observations.jsonl',
@@ -118,5 +125,45 @@ describe('the self-learning plugin entry', () => {
 		);
 
 		expect(registrations.tools).toHaveLength(2);
+	});
+
+	it('[<150ms] reads the journal through the host reader, and an absent one as nothing learned yet', async () => {
+		const root = realpathSync(mkdtempSync(join(tmpdir(), 'learn-read-')));
+		const at = (): IMcpPluginContext => ({
+			...contextWith(),
+			workspace: fakePartial<IMcpPluginContext['workspace'], 'root'>({
+				root,
+			}),
+		});
+		const callObservations = async (): Promise<void> => {
+			const registrations = await registrationsOf(at());
+			const tool = (registrations.tools ?? []).find(
+				(candidate) => candidate.id === 'observations',
+			);
+			let handler:
+				| ((args: { collect: boolean }) => Promise<unknown>)
+				| undefined;
+			await tool?.register(
+				createFakeToolServer({
+					onRegisterTool: (call) => {
+						handler = call.handler as typeof handler;
+					},
+				}),
+			);
+			await handler?.({ collect: true });
+		};
+		try {
+			await callObservations();
+			mkdirSync(join(root, '.cache/delendai/results/logs'), {
+				recursive: true,
+			});
+			writeFileSync(
+				join(root, '.cache/delendai/results/logs/test-runs.jsonl'),
+				'',
+			);
+			await callObservations();
+		} finally {
+			rmSync(root, { recursive: true, force: true });
+		}
 	});
 });

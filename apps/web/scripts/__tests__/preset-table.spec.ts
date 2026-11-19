@@ -8,7 +8,7 @@ import {
 
 describe('preset-table', () => {
 	describe('buildPresetMatrix', () => {
-		it('emits one row per preset in catalog order', () => {
+		it('[<200ms] emits one row per preset in catalog order', () => {
 			const matrix = buildPresetMatrix();
 			expect(matrix.rows.map((r) => r.preset.id)).toEqual([
 				'minimal',
@@ -22,7 +22,7 @@ describe('preset-table', () => {
 			]);
 		});
 
-		it('column ids are deduplicated and in catalog order', () => {
+		it('[<200ms] column ids are deduplicated and in catalog order', () => {
 			const matrix = buildPresetMatrix();
 			const ids = matrix.columnIds;
 			expect(new Set(ids).size).toBe(ids.length);
@@ -38,7 +38,7 @@ describe('preset-table', () => {
 			);
 		});
 
-		it('row effective membership is the pack own list', () => {
+		it('[<200ms] row effective membership is the pack own list', () => {
 			const matrix = buildPresetMatrix();
 			const row = (id: string) =>
 				matrix.rows.find((r) => r.preset.id === id);
@@ -47,7 +47,7 @@ describe('preset-table', () => {
 			expect(row('swarm')?.effective).not.toContain('audit');
 			expect(row('everything')?.effective).toContain('issues');
 			const dogfood = row('dogfood');
-			expect(dogfood?.effective.length).toBe(38);
+			expect(dogfood?.effective.length).toBe(39);
 			expect(dogfood?.effective).toContain('proposals');
 			expect(dogfood?.effective).not.toContain('refactor');
 		});
@@ -56,12 +56,12 @@ describe('preset-table', () => {
 	describe('cellStateFor', () => {
 		const matrix = buildPresetMatrix();
 
-		it('returns "present" for a plugin in the preset effective set', () => {
+		it('[<200ms] returns "present" for a plugin in the preset effective set', () => {
 			expect(cellStateFor(matrix, 'minimal', 'git')).toBe('present');
 			expect(cellStateFor(matrix, 'swarm', 'proposals')).toBe('present');
 		});
 
-		it('returns "hostOnly" for a host-only plugin inside everything', () => {
+		it('[<200ms] returns "hostOnly" for a host-only plugin inside everything', () => {
 			expect(cellStateFor(matrix, 'solo', 'audit')).toBe('absent');
 			expect(cellStateFor(matrix, 'everything', 'issues')).toBe(
 				'hostOnly',
@@ -72,7 +72,7 @@ describe('preset-table', () => {
 			expect(cellStateFor(matrix, 'foo', 'git')).toBe('absent');
 		});
 
-		it('returns "absent" for an unknown plugin id', () => {
+		it('[<200ms] returns "absent" for an unknown plugin id', () => {
 			expect(cellStateFor(matrix, 'everything', 'doesnotexist')).toBe(
 				'absent',
 			);
@@ -80,7 +80,7 @@ describe('preset-table', () => {
 	});
 
 	describe('totalUniquePlugins', () => {
-		it('equals the column count', () => {
+		it('[<200ms] equals the column count', () => {
 			const matrix = buildPresetMatrix();
 			expect(totalUniquePlugins(matrix)).toBe(matrix.columnIds.length);
 		});

@@ -195,7 +195,7 @@ Generated from live registry entries, workspace packages, and migrated plugin ma
 | `rules` | none | solo, team-pr, everything, dogfood |
 | `search` | none | minimal, solo, team-pr, swarm, audit, docs-web, everything, dogfood |
 | `security` | none | team-pr, audit, everything, dogfood |
-| `self-learning` | none | everything |
+| `self-learning` | none | team-pr, swarm, everything, dogfood |
 | `skills-pack` | none | everything |
 | `status-marker` | none | team-pr, swarm, everything, dogfood |
 | `style-convention` | none | everything |
