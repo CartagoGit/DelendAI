@@ -33,7 +33,9 @@ import { realpathContained } from '@delendai/core/public';
 import { withFileMutex, writeFileAtomic } from '@delendai/core/runtime';
 
 import {
+	FAILURE_STAGES,
 	OBSERVATION_KINDS,
+	type IFailureFacts,
 	type IObservation,
 	type IObservationQuery,
 	type IObservationStoreOptions,
@@ -48,6 +50,35 @@ const DEFAULT_MAX_OBSERVATIONS = 5_000;
 const MAX_DETAIL_LENGTH = 240;
 
 const KIND_SET: ReadonlySet<string> = new Set(OBSERVATION_KINDS);
+
+const STAGE_SET: ReadonlySet<string> = new Set(FAILURE_STAGES);
+const MAX_FAILURE_FILES = 20;
+
+const parseFailure = (value: unknown): IFailureFacts | undefined => {
+	if (typeof value !== 'object' || value === null) return undefined;
+	const raw = value as Record<string, unknown>;
+	if (typeof raw.class !== 'string' || raw.class.length === 0)
+		return undefined;
+	if (typeof raw.stage !== 'string' || !STAGE_SET.has(raw.stage))
+		return undefined;
+	const minutes = raw.minutesLost;
+	return {
+		class: raw.class,
+		stage: raw.stage as IFailureFacts['stage'],
+		files: Array.isArray(raw.files)
+			? raw.files
+					.filter((f): f is string => typeof f === 'string')
+					.slice(0, MAX_FAILURE_FILES)
+			: [],
+		unit: typeof raw.unit === 'string' ? raw.unit : '',
+		minutesLost:
+			typeof minutes === 'number' &&
+			Number.isFinite(minutes) &&
+			minutes > 0
+				? minutes
+				: 0,
+	};
+};
 
 const isKind = (value: unknown): value is IObservationKind =>
 	typeof value === 'string' && KIND_SET.has(value);
@@ -80,6 +111,7 @@ export const parseObservation = (line: string): IObservation | null => {
 	if (outcome !== 'ok' && outcome !== 'fail' && outcome !== 'unknown')
 		return null;
 	const detail = record.detail;
+	const failure = parseFailure(record.failure);
 	return {
 		kind: record.kind,
 		subject: record.subject,
@@ -89,6 +121,7 @@ export const parseObservation = (line: string): IObservation | null => {
 		...(typeof detail === 'string' && detail.length > 0
 			? { detail: detail.slice(0, MAX_DETAIL_LENGTH) }
 			: {}),
+		...(failure !== undefined ? { failure } : {}),
 	};
 };
 
@@ -116,6 +149,9 @@ const serialise = (observation: IObservation): string =>
 		source: observation.source,
 		...(observation.detail !== undefined
 			? { detail: observation.detail.slice(0, MAX_DETAIL_LENGTH) }
+			: {}),
+		...(observation.failure !== undefined
+			? { failure: observation.failure }
 			: {}),
 	});
 
