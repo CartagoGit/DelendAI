@@ -1,5 +1,5 @@
 /**
- * retired-machinery-reap.service.ts — what the old queue left in a clone
+ * retired-machinery-sweep.service.ts — what the old queue left in a clone
  * goes, once it holds nothing of its own.
  *
  * The queue built trains on local branches (`<ns>/train/…`) and scratch
@@ -12,7 +12,7 @@
  */
 import { basename } from 'node:path';
 
-import type { IReapedMachinery } from '../contracts/interfaces/retired-machinery-reap.interface';
+import type { IReapedMachinery } from '../contracts/interfaces/retired-machinery-sweep.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import {
 	ownedPublicationRefPrefixes,
@@ -20,7 +20,10 @@ import {
 	retiredMachineryPrefixes,
 	shortName,
 } from '../integration/decisions/namespaces.helper';
-import { integrationBase, readGit } from './work-unit-shared.service';
+import {
+	integrationBase,
+	readGit,
+} from '../work-units/work-unit-shared.service';
 
 /** The scratch worktrees the retired queue created, by directory name. */
 const RETIRED_SCRATCH = ['delendai-train-', 'candidate-refresh-'] as const;
