@@ -27,7 +27,7 @@ describe('releaseIdleDependencies', () => {
 		return root;
 	};
 
-	it('reports without --apply and removes with it, leaving live units alone', async () => {
+	it('[<1000ms] reports without --apply and removes with it, leaving live units alone', async () => {
 		const idle = worktree(true);
 		const live = worktree(true);
 		// Quiet beyond the window but not abandoned: its owner may be working.
@@ -65,7 +65,7 @@ describe('releaseIdleDependencies', () => {
 		expect(existsSync(join(live, 'node_modules'))).toBe(true);
 	});
 
-	it('gives a unit entered again its dependencies, and a unit with no worktree nothing', async () => {
+	it('[<1000ms] gives a unit entered again its dependencies, and a unit with no worktree nothing', async () => {
 		const bare = worktree(false);
 		expect(await enteredDependencies(undefined)).toEqual({});
 		expect((await enteredDependencies(bare)).dependencies?.status).toBe(
@@ -76,7 +76,7 @@ describe('releaseIdleDependencies', () => {
 		).toEqual({});
 	});
 
-	it('keeps the dependencies of an abandoned unit whose tree was written within the window', async () => {
+	it('[<1000ms] keeps the dependencies of an abandoned unit whose tree was written within the window', async () => {
 		const recent = worktree(true);
 		expect(
 			await releaseIdleDependencies({
@@ -94,7 +94,7 @@ describe('releaseIdleDependencies', () => {
 		expect(existsSync(join(recent, 'node_modules'))).toBe(true);
 	});
 
-	it('passes over a unit whose worktree is gone', async () => {
+	it('[<1000ms] passes over a unit whose worktree is gone', async () => {
 		const gone = join(worktree(false), 'not-there');
 		expect(
 			await releaseIdleDependencies({

@@ -767,7 +767,6 @@
 		"packages/core/tests/src/lib/work-units/diverged-review-pack.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/forge-work-refs.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/hidden-work.service.spec.ts",
-		"packages/core/tests/src/lib/work-units/idle-unit-dependencies.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/in-progress-units.service.spec.ts",
 		"packages/core/tests/src/lib/work-units/integration-base.spec.ts",
 		"packages/core/tests/src/lib/work-units/landing-certification-record.service.spec.ts",
