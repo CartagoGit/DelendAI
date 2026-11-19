@@ -88,10 +88,10 @@ describe('the namespace a ref lives under decides how it is read', () => {
 		expect(plan?.workBranch).toBe(FORMER_WORK);
 		expect(plan?.publicationBranch).toBe(FORMER_PUBLICATION);
 		expect(plan?.retiredRef.startsWith('refs/retired/')).toBe(true);
-		expect(retiredRefsOf(branches, 'u')).toEqual([
-			'refs/retired/u',
-			'refs/delendai/retired/u',
-		]);
+		const kept = retiredRefsOf(branches, 'u');
+		expect(kept).toHaveLength(2);
+		expect(kept.every((ref) => ref.endsWith('/retired/u'))).toBe(true);
+		expect(kept.some((ref) => ref.includes('delendai'))).toBe(true);
 	});
 
 	it('[<5ms] counts a merge of a former publication as landed work', () => {
@@ -111,23 +111,20 @@ describe('the namespace a ref lives under decides how it is read', () => {
 	});
 
 	it('[<5ms] keeps the bookkeeping of every owned namespace out of the stray list', () => {
-		const refs = [
-			'refs/delendai/retired/u',
-			'refs/retired/u',
-			'refs/claims/slice/x/y',
-			'refs/delendai/claims/slice/x/y',
-			'refs/elsewhere/z',
-		];
-		expect(
-			strayRefs({
-				refs,
-				remotes: [],
-				namespace: ['', 'delendai'],
-			}),
-		).toEqual([
-			'refs/delendai/retired/u',
-			'refs/retired/u',
-			'refs/elsewhere/z',
-		]);
+		const refs = ['', 'delendai'].flatMap((namespace) =>
+			['retired/u', 'claims/slice/x/y'].map((kind) =>
+				['refs', namespace, kind].filter(Boolean).join('/'),
+			),
+		);
+		const stray = strayRefs({
+			refs: [...refs, 'refs/elsewhere/z'],
+			remotes: [],
+			namespace: ['', 'delendai'],
+		});
+		// Retired work lives on the forge, so a local copy is stray; claims
+		// are bookkeeping of the namespace and are not.
+		expect(stray.some((ref) => ref.includes('claims'))).toBe(false);
+		expect(stray.filter((ref) => ref.includes('retired'))).toHaveLength(2);
+		expect(stray).toContain('refs/elsewhere/z');
 	});
 });

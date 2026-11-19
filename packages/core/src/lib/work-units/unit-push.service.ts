@@ -14,7 +14,10 @@
 import { DURABILITY_PUSH_VARIABLE } from '../contracts/constants/durability-push.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IUnitPush } from '../contracts/interfaces/unit-push.interface';
-import { ownedWorkRefPrefixes } from '../integration/decisions/namespaces.helper';
+import {
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import { integrationRemote } from './work-unit-shared.service';
 import { execGitFileSync } from '../shared/git-read.helper';
 
@@ -23,9 +26,7 @@ const workBranchPrefixes = (
 	policy: IResolvedDevelopmentPolicy,
 ): readonly string[] =>
 	ownedWorkRefPrefixes(policy.branches)
-		.map((prefix) =>
-			prefix.replace(/^refs\//u, '').replace(/^heads\//u, ''),
-		)
+		.map(shortName)
 		.filter((prefix) => prefix.length > 0);
 
 /** A check's own verdict in a refused push's output: the best reason. */
