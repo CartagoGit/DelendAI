@@ -17,3 +17,15 @@ export const DEFAULT_MINIMUM_SUPPORT = 3;
  * rather than waiting for somebody to notice it is wrong.
  */
 export const DEFAULT_RECENCY_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
+
+/**
+ * The failure sources whose observations lessons are derived from
+ * (q00049 S1): a lesson names the earliest stage able to catch its class.
+ */
+export const FAILURE_LESSON_KINDS = [
+	'gate',
+	'hook',
+	'ciJob',
+	'landVerdict',
+	'deliverRefusal',
+] as const;
