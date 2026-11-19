@@ -10,7 +10,7 @@
  * new head clear. The author is told once per head and reason.
  */
 import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
-import type { ILandForge, ILandPullRequest } from './land.interface';
+import type { ILandForge, ILandGit, ILandPullRequest } from './land.interface';
 
 /** The labels the integrator owns: only these are ever removed. */
 const OWNED_LABELS = [LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE] as const;
@@ -18,6 +18,21 @@ const OWNED_LABELS = [LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE] as const;
 /** What the author is told when its pull request conflicts in authored code. */
 export const needsUpdateComment = (why: string): string =>
 	`land: this pull request cannot land as it is (${why}). Update it on your side and push; land picks it up on the next pass.`;
+
+/** Why a head conflicts with the tip, naming the files both sides changed. */
+export const conflictReason = (
+	git: ILandGit,
+	pr: ILandPullRequest,
+	tip: string,
+): string => {
+	const own = git.footprint(pr).files;
+	const files = [...git.landedSince(pr.testedBase, tip).files]
+		.filter((file) => own.has(file))
+		.sort();
+	return `it conflicts with the integration branch${
+		files.length > 0 ? ` in ${files.join(', ')}` : ''
+	}`;
+};
 
 const markerOf = (label: string, headSha: string): string =>
 	`<!-- land:${label}@${headSha} -->`;

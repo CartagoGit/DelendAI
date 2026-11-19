@@ -25,7 +25,11 @@ import type { IChangeFootprint } from '../decisions/overlap.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
 
 import { openBatch as assembleBatch } from './land-batch-assembly.helper';
-import { headNotBuilt, settleUnbuilt } from './land-bring-forward.helper';
+import {
+	headNotBuilt,
+	settleUnbuilt,
+	staleCleanReason,
+} from './land-bring-forward.helper';
 import {
 	BatchMemory,
 	readBatchRecord,
@@ -33,7 +37,11 @@ import {
 } from './land-batch-record.helper';
 import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
 import { mergeCertifiedBatch } from './land-batch-merge.helper';
-import { needsUpdateComment, reconcileLabels } from './land-labels.helper';
+import {
+	conflictReason,
+	needsUpdateComment,
+	reconcileLabels,
+} from './land-labels.helper';
 import { repairReadiness, settleRepairsFirst } from './land-revert.helper';
 import { closeRedBatch, markRedBatch } from './land-verdict.helper';
 import type {
@@ -238,11 +246,9 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		}
 		const conflict = git.conflictOf(pr, tip);
 		if (conflict === 'authored') {
-			why(
-				pr.number,
-				'needs update: it conflicts with the integration branch',
-			);
-			needsUpdate(pr, 'it conflicts with the integration branch');
+			const reason = conflictReason(git, pr, tip);
+			why(pr.number, `needs update: ${reason}`);
+			needsUpdate(pr, reason);
 			continue;
 		}
 		candidates.push({ pr, own: git.footprint(pr), conflict });
@@ -314,13 +320,14 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 				gained !== undefined &&
 				overlapBetween(own, gained) !== undefined
 			) {
-				// Never through the forge: an update made with the workflow
-				// token is a head nothing builds, and the pull request would
-				// wait for checks that never come.
-				const reason =
-					'the integration branch changed what it touches since its checks ran';
-				why(pr.number, `needs update: ${reason}`);
-				return needsUpdate(pr, reason);
+				// A clean merge (conflicts were settled above): the run over
+				// tip plus this pull request is the verdict, nobody is asked.
+				if (deps.config.batches)
+					return openBatch([pr], 'stale base, clean merge');
+				// Pushes the forge never builds make no batch: bring the head
+				// forward so the forge builds the merged candidate.
+				why(pr.number, await staleCleanReason({ deps, pr, tip }));
+				return;
 			}
 			const merged = await forge.merge(pr.number, pr.headSha);
 			if (merged === 'merged') landed(pr.number);
