@@ -23,6 +23,7 @@ export {
 	urgentLogPath,
 } from '../lib/shared/compute-slot-lane.service';
 export { withFileMutex } from '../lib/shared/with-file-mutex';
+export { deriveToolFailure } from '../lib/observability/tool-failure-class.helper';
 // One record of how each model did, read by every ranking and learner.
 export { modelOutcomeStoreAt } from '../lib/shared/model-outcome-store.service';
 export {
