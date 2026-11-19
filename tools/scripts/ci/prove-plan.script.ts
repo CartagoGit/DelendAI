@@ -681,7 +681,14 @@ export const gateNamesOf = (
 			'typecheck',
 			...STATIC_CHECK_FAMILIES,
 			...(fast
-				? fastSteps(changed, ['*'], base).map(([label]) => label)
+				? [
+						...fastSteps(changed, ['*'], base).map(
+							([label]) => label,
+						),
+						...coveragePrecheckSteps(changed, ['*'], base).map(
+							([label]) => label,
+						),
+					]
 				: ['tests']),
 		].map(gateOf),
 	),
@@ -709,6 +716,30 @@ export const precheckGatesOf = (
 				!RUN_ALONE.has(gate) &&
 				staticJobRuns(changed, gate)),
 	);
+
+/** The gate `work deliver` runs after the static pre-check: the proof's coverage steps alone. */
+export const COVERAGE_PRECHECK_GATE = 'coverage-precheck';
+
+/**
+ * The coverage pre-check: the proof's own changed-file coverage steps, taken
+ * from `fastSteps` with the specs the proof selects (mirror and nearest, the
+ * same function) and coverage on the changed files, relabelled so it runs
+ * apart from the proof. One source: never stricter or looser than the proof.
+ */
+export const coveragePrecheckSteps = (
+	changed: readonly string[],
+	specs: readonly string[],
+	base: string,
+): readonly (readonly [string, readonly string[]])[] =>
+	fastSteps(changed, specs, base)
+		.filter(([label]) => gateOf(label) === 'changed-file-coverage')
+		.map(
+			([label, command]) =>
+				[
+					label.replace('changed-file coverage', 'coverage precheck'),
+					command,
+				] as const,
+		);
 
 /** `--only=precheck` stands for the gates `precheckGatesOf` names. */
 export const expandPrecheck = (
@@ -834,6 +865,19 @@ const main = async (): Promise<number> => {
 			);
 			return 1;
 		}
+		let coveredOk = true;
+		if (only?.has(COVERAGE_PRECHECK_GATE) === true) {
+			// Never in a proof (`only` is set): `work deliver` asks for it.
+			process.env.VITEST_COVERAGE_FILES = selected.join('\n');
+			coveredOk = coveragePrecheckSteps(
+				selected,
+				nearSpecsSince(root, selectionBase),
+				selectionBase,
+			).reduce(
+				(allOk, [label, command]) => step(label, command) && allOk,
+				true,
+			);
+		}
 		const ok = await runChecks(base, only, selectionBase);
 		// Coverage instruments only what the change touched, as the forge
 		// does on a pull request (vitest.config.ts).
@@ -855,7 +899,7 @@ const main = async (): Promise<number> => {
 					true,
 				),
 		);
-		return conclude(ok && heavyOk, 'fast');
+		return conclude(ok && heavyOk && coveredOk, 'fast');
 	}
 	const jobs = JSON.parse(
 		execFileSync(

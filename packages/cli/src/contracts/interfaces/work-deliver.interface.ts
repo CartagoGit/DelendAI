@@ -16,6 +16,11 @@ export interface IWorkDeliverPorts {
 	 * compute slot is taken (`work prove --only=precheck`).
 	 */
 	readonly precheck: () => Promise<ICliCommandResult>;
+	/**
+	 * Coverage of the changed modules by their mirror specs alone, after the
+	 * static pre-check and before the slot (`work prove --only=coverage-precheck`).
+	 */
+	readonly coveragePrecheck: () => Promise<ICliCommandResult>;
 	readonly prove: () => Promise<ICliCommandResult>;
 	/** Ask the tool whether the hand-over would be accepted; nothing is moved. */
 	readonly preflight: (checkout: string | undefined) => Promise<unknown>;
