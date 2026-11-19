@@ -1816,7 +1816,6 @@
 		"plugins/proposals/tests/src/lib/tools/close-plan.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/close-proposal.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/close-slice-certification.spec.ts",
-		"plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/close-slice-validation.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/compact-status-units.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/compact-status.spec.ts",
