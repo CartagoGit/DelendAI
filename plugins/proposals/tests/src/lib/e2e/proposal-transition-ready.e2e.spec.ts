@@ -8,6 +8,7 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { completeProposalInput } from '../_fixtures/complete-proposal-input';
 import { proposalFolderFor } from '@delendai/proposals/lib/contracts/proposal-folder-policy';
 
 import {
@@ -165,7 +166,7 @@ describe('e2e: the move to ready', async () => {
 		const create = (args: Record<string, unknown>) =>
 			harness.callTool<{ ok: boolean; id?: string }>(
 				'delendai_proposals_create_proposal',
-				args,
+				completeProposalInput(args),
 			);
 		const base = {
 			title: 'readiness shapes',

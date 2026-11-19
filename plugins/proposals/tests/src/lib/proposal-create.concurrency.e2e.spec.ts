@@ -9,6 +9,7 @@ import {
 	buildCreateProposalRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { completing } from './_fixtures/complete-proposal-input';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -50,8 +51,10 @@ describe('create_proposal concurrency', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('allocates distinct ids under concurrent create_proposal calls', async () => {
-		const create = await capture(buildCreateProposalRegistration(opts));
+	it('[<10000ms] allocates distinct ids under concurrent create_proposal calls', async () => {
+		const create = completing(
+			await capture(buildCreateProposalRegistration(opts)),
+		);
 		const created = await Promise.all(
 			Array.from({ length: 5 }, (_, index) =>
 				create({

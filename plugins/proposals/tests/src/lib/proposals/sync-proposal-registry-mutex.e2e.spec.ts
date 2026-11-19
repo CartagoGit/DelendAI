@@ -10,6 +10,7 @@ import {
 	buildCreateProposalRegistration,
 	type IAuthoringToolOptions,
 } from '@delendai/proposals/lib/tools/authoring.tool';
+import { completing } from '../_fixtures/complete-proposal-input';
 
 const capture = async (
 	reg: IToolRegistration,
@@ -55,8 +56,10 @@ describe('proposal serialization withFileMutex', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('serializes concurrent close_slice operations', async () => {
-		const create = await capture(buildCreateProposalRegistration(opts));
+	it('[<10000ms] serializes concurrent close_slice operations', async () => {
+		const create = completing(
+			await capture(buildCreateProposalRegistration(opts)),
+		);
 		const created = parse(
 			await create({
 				id: 'f00001',
