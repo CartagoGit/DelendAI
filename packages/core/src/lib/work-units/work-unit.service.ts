@@ -29,7 +29,7 @@ import {
 import { readWorkspacePolicy } from './development-policy.service';
 import { recordUnitEntered, touchUnitOfCheckout } from './unit-lease.service';
 import { pruneUnitLeases } from './unit-standings.service';
-import { reaped } from './work-unit-reap.service';
+import { reaped } from '../ref-reconciler/work-reap.service';
 import { rescued } from './shared-checkout-rescue.service';
 import { looseSharedCheckoutRefusal } from './shared-checkout-clean.service';
 import { integrationProtocolRefusal } from '../integration/protocol/integration-protocol.helper';

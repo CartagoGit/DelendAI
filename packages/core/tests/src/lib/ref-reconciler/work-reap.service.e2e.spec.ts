@@ -1,5 +1,5 @@
 /**
- * work-unit-reap.service.e2e.spec.ts — `work reap` reports the stray
+ * work-reap.service.e2e.spec.ts — `work reap` reports the stray
  * files of the units' folder and the old test temp directories beside
  * every other leftover, over a throwaway clone and an injected temp root.
  */
@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { runWorkUnit } from '@delendai/core/lib/work-units/work-unit.service';
 
-import { cleanUnitRepos, unitRepo } from './unit-repo.helper';
+import { cleanUnitRepos, unitRepo } from '../work-units/unit-repo.helper';
 
 const dirs: string[] = [];
 afterEach(() => {
