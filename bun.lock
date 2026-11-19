@@ -153,6 +153,7 @@
         "@delendai/refactor": "workspace:*",
         "@delendai/rules": "workspace:*",
         "@delendai/search": "workspace:*",
+        "@delendai/self-learning": "workspace:*",
         "@delendai/skills-pack": "workspace:*",
         "@delendai/sqlite": "workspace:*",
         "@delendai/state": "workspace:*",
