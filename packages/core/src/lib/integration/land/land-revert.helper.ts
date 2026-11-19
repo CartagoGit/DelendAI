@@ -13,7 +13,11 @@
 import { groupByOverlap } from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
 
-import { LAND_LABEL_NEEDS_UPDATE, LAND_LABEL_REPAIR } from './land.constant';
+import {
+	LAND_LABEL_NEEDS_UPDATE,
+	LAND_LABEL_REPAIR,
+	LAND_REPAIR_SEGMENT,
+} from './land.constant';
 import type {
 	IDevelopMerge,
 	ILandCheck,
@@ -28,6 +32,10 @@ import type {
 } from './land-revert.interface';
 
 const RECORD_PREFIX = 'land-repair: ';
+
+/** Where repairs' branches live: under the batch prefix, which the forge ruleset admits (a `<ns>/repair/` prefix is refused). */
+export const landRepairPrefix = (batchPrefix: string): string =>
+	`${batchPrefix}${LAND_REPAIR_SEGMENT}/`;
 
 export const repairBranch = (prefix: string, culprit: number): string =>
 	`${prefix}revert-${String(culprit)}`;
