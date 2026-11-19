@@ -74,6 +74,21 @@ export const repairsFirst = <T extends { readonly pr: ILandPullRequest }>(
 
 const FAILED = new Set(['failure', 'timed_out']);
 
+/** What a failed check is known by: the specs it names, else its own name. */
+export const failureIds = (check: ILandCheck): readonly string[] =>
+	check.failingSpecs !== undefined && check.failingSpecs.length > 0
+		? check.failingSpecs
+		: [check.name];
+
+/** The ids a red run's failed checks are known by. */
+export const failedIds = (checks: readonly ILandCheck[]): string[] => [
+	...new Set(
+		checks
+			.filter((check) => FAILED.has(check.conclusion ?? ''))
+			.flatMap(failureIds),
+	),
+];
+
 /**
  * Whether a repair's own run may merge: its checks are all in, none of the
  * culprit's failing specs still fails, and no failure is new.
@@ -85,9 +100,7 @@ export const judgeRepair = (
 	if (checks.some((check) => check.conclusion === null))
 		return { kind: 'wait' };
 	const failed = checks.filter((check) => FAILED.has(check.conclusion ?? ''));
-	const stillFailing = new Set(
-		failed.flatMap((check) => check.failingSpecs ?? []),
-	);
+	const stillFailing = new Set(failed.flatMap(failureIds));
 	const left = record.failing.filter((spec) => stillFailing.has(spec));
 	if (left.length > 0)
 		return {
@@ -101,8 +114,6 @@ export const judgeRepair = (
 			kind: 'reject',
 			why: `the revert adds failures: ${added.join(', ')}`,
 		};
-	if (failed.length > 0 && stillFailing.size === 0)
-		return { kind: 'reject', why: 'a check fails and names no spec' };
 	return { kind: 'merge' };
 };
 
