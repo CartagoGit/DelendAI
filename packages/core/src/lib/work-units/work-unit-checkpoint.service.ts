@@ -14,6 +14,7 @@ import type {
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
 import { collisionsWith, describeCollisions } from './scope-collision.service';
+import { readUnitStandings } from './unit-standings.service';
 import { readSwarm } from './work-swarm.service';
 import { scalarArg } from './command-args.helper';
 import { touchUnit } from './unit-lease.service';
@@ -77,6 +78,7 @@ export const checkpointed = async (
 		agent,
 		scope: scope.valid,
 		units: readSwarm({ root, policy }).units,
+		standings: await readUnitStandings({ root, policy }),
 	});
 	if (collisions.length > 0) {
 		return refused(

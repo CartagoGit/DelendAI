@@ -20,6 +20,8 @@
  * over with `work claim`, which renames it and leaves a record.
  */
 import type { IScopeCollision } from '../contracts/interfaces/scope-collision.interface';
+import type { IUnitStandingEntry } from './unit-lease.interface';
+import { isUnitHolding } from './unit-standings.service';
 import type { ISwarmUnit } from '../contracts/interfaces/work-swarm.interface';
 
 export type { IScopeCollision } from '../contracts/interfaces/scope-collision.interface';
@@ -47,9 +49,17 @@ const touches = (left: string, right: string): boolean =>
 export const collisionsWith = (input: {
 	readonly scope: readonly string[];
 	readonly units: readonly ISwarmUnit[];
+	/** The verdicts on every unit: only a live lease collides. */
+	readonly standings: readonly IUnitStandingEntry[];
 	readonly agent: string;
 }): readonly IScopeCollision[] =>
 	input.units
+		.filter((unit) =>
+			isUnitHolding(
+				input.standings,
+				unit.ref.replace(/^refs\/heads\//u, ''),
+			),
+		)
 		// Your own earlier checkpoint is not a collision — it is the same
 		// work, and refusing it would make a second slice impossible.
 		.filter((unit) => unit.agent !== input.agent)

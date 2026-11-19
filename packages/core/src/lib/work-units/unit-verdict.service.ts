@@ -34,10 +34,7 @@ export const judgeUnit = (evidence: IUnitEvidence): IUnitVerdict => {
 	const stillShowingLife =
 		silentSeconds !== null && silentSeconds <= evidence.windowSeconds;
 	if (evidence.delivered && !stillShowingLife) {
-		if (
-			evidence.proposalInProgress === true &&
-			evidence.claimedByOther !== true
-		) {
+		if (evidence.proposalInProgress === true) {
 			return {
 				standing: 'idle',
 				owner,
@@ -49,7 +46,6 @@ export const judgeUnit = (evidence: IUnitEvidence): IUnitVerdict => {
 			evidence.windowSeconds * ABANDONED_AFTER_LEASE_WINDOWS;
 		if (
 			evidence.keptForContinuation === true &&
-			evidence.claimedByOther !== true &&
 			silentSeconds !== null &&
 			silentSeconds <= reapAfter
 		) {
@@ -57,7 +53,7 @@ export const judgeUnit = (evidence: IUnitEvidence): IUnitVerdict => {
 				standing: 'idle',
 				owner,
 				silentSeconds,
-				reason: `published and kept for the next slices of its proposal; it is reaped after ${minutes(reapAfter)} of silence, or once another agent takes the proposal`,
+				reason: `published and kept for the next slices of its proposal; it is reaped after ${minutes(reapAfter)} of silence`,
 			};
 		}
 		return {
