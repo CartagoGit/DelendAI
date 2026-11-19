@@ -87,7 +87,10 @@ describe('renderInitBundle (f00084 S2-S5)', () => {
 			}),
 		);
 		expect(generic.mcpServers.DelendAI).toMatchObject(
-			buildCanonicalLaunch({ workspace: '.', serverName: 'DelendAI' }),
+			buildCanonicalLaunch({
+				workspace: '.',
+				serverName: 'DelendAI',
+			}),
 		);
 	});
 
@@ -303,7 +306,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	);
 
 	it(
-		'[<500ms] warns and skips when a CLI override targets a plugin outside the resolved set',
+		'[<945ms] warns and skips when a CLI override targets a plugin outside the resolved set',
 		async () => {
 			const result = await initCommand.run(
 				[`--delendai-root=${HOST_ENTRY_PATH}`],
