@@ -28,7 +28,12 @@
  * are never seen. Everything is plain git, so a GitLab project or one
  * with no forge CLI ends its units the same way.
  */
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedNamespaces,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import { mergeSubjectsReader } from '../startup-reconciler/merge-subjects.service';
 import { mergedPublicationPredicate } from '../startup-reconciler/phases/merged-publications.helper';
 import type {
@@ -195,9 +200,23 @@ export const endFinishedUnits = async (
 	const { policy, apply } = input;
 	const root = mainWorktreeOf(input.root);
 	const base = integrationBase(root, policy);
-	const work = shortName(policy.branches.workRefPrefix);
-	const publication = shortName(policy.branches.publicationRefPrefix);
-	if (base === undefined || work.length === 0) return [];
+	// Every owned namespace: a unit entered under a former one is ended
+	// by the same rules, and its tip is kept under its own namespace.
+	const workPrefixes = ownedWorkRefPrefixes(policy.branches);
+	const publicationPrefixes = ownedPublicationRefPrefixes(policy.branches);
+	const spaces = ownedNamespaces(policy.branches).flatMap((namespace, at) => {
+		const work = shortName(workPrefixes[at] ?? '');
+		return work.length === 0
+			? []
+			: [
+					{
+						namespace,
+						work,
+						publication: shortName(publicationPrefixes[at] ?? ''),
+					},
+				];
+	});
+	if (base === undefined || spaces.length === 0) return [];
 	const remote = integrationRemote(root, policy);
 	const forge =
 		readGit(root, ['remote', 'get-url', remote]) === undefined
@@ -236,12 +255,19 @@ export const endFinishedUnits = async (
 			.split('\n')
 			.filter((sha) => sha.length > 0),
 	);
-	const units = new Set([
-		...unitsUnder(root, remote, work),
-		...unitsUnder(root, remote, publication),
-	]);
+	const found = spaces.flatMap((space) =>
+		[
+			...new Set([
+				...unitsUnder(root, remote, space.work),
+				...unitsUnder(root, remote, space.publication),
+			]),
+		].map((unit) => ({ space, unit })),
+	);
 	const results: IEndedUnit[] = [];
-	for (const unit of [...units].sort()) {
+	for (const { space, unit } of found.sort((a, b) =>
+		`${a.space.work}${a.unit}`.localeCompare(`${b.space.work}${b.unit}`),
+	)) {
+		const { work, publication } = space;
 		const workBranch = `${work}${unit}`;
 		const copies = [
 			...copiesOf(root, remote, workBranch),
@@ -304,13 +330,7 @@ export const endFinishedUnits = async (
 		}
 		const retiredRefs: string[] = [];
 		for (const sha of new Set(copies.map((copy) => copy.sha))) {
-			const ref = keepTip(
-				root,
-				forge,
-				policy.branches.namespacePrefix,
-				unit,
-				sha,
-			);
+			const ref = keepTip(root, forge, space.namespace, unit, sha);
 			if (ref !== undefined && !retiredRefs.includes(ref))
 				retiredRefs.push(ref);
 		}
