@@ -17,6 +17,7 @@ import type {
 	ISwarmUnit,
 	ISwarmView,
 } from '../contracts/interfaces/work-swarm.interface';
+import type { IUnitStandingEntry } from './unit-lease.interface';
 import { UNALLOCATED_PROPOSAL } from './unit-proposal.constant';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { isUnitHolding, readUnitStandings } from './unit-standings.service';
@@ -94,12 +95,16 @@ const unitsOnSlice = (input: {
 
 export const holdersOfSlice = (input: {
 	readonly view: ISwarmView;
+	/** The verdicts on every unit: only a live lease holds. */
+	readonly standings: readonly IUnitStandingEntry[];
 	readonly agent: string;
 	readonly kind: string;
 	readonly proposal: string;
 	readonly slice: string;
 }): readonly ISwarmUnit[] => {
-	const onSlice = unitsOnSlice(input);
+	const onSlice = unitsOnSlice(input).filter((unit) =>
+		isUnitHolding(input.standings, unit.ref.replace(/^refs\/heads\//u, '')),
+	);
 	if (onSlice.some((unit) => unit.agent === input.agent)) return [];
 	return onSlice;
 };
@@ -139,14 +144,23 @@ export const readSliceOwnership = async (input: {
 	return { others, own };
 };
 
-/** What to tell an agent whose slice is already somebody else's. */
+/**
+ * What to tell an agent whose slice is already somebody else's: each
+ * holder, and, given the standings, the lease that makes it one (whose
+ * heartbeat, how old, inside which idle window).
+ */
 export const describeSliceHolders = (
 	holders: readonly ISwarmUnit[],
+	standings: readonly IUnitStandingEntry[] = [],
 ): readonly string[] => [
-	...holders.map(
-		(unit) =>
+	...holders.flatMap((unit) => {
+		const ref = unit.ref.replace(/^refs\/heads\//u, '');
+		const lease = standings.find((entry) => entry.ref === ref)?.reason;
+		return [
 			`  ${unit.agent} holds it in ${unit.ref} (+${String(unit.ahead)} commit(s))`,
-	),
+			...(lease === undefined ? [] : [`    its lease: ${lease}`]),
+		];
+	}),
 	'',
 	'Answers, and only these:',
 	'  wait        — let them land it; their ref disappears when it merges.',

@@ -2,10 +2,14 @@
 id: x01100
 title: "A claim is a lease that only stops two agents editing the same thing at once, and nobody owns work once it is handed over or published"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: workflow
 date: 2026-11-19
+last-transition-id: 4726e350-85e1-4eed-a646-dcfc5b8be8cf
+last-correlation-id: 4726e350-85e1-4eed-a646-dcfc5b8be8cf
+last-transition-from: ready
+last-transition-at: 2026-11-19T11:30:56.787Z
 ---
 
 # x01100 — A claim is a lease that only stops two agents editing the same thing at once, and nobody owns work once it is handed over or published

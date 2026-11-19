@@ -262,6 +262,6 @@ export const sliceHeldOnForge = (input: {
 	}
 	return refused(
 		`${input.proposal} ${reservation.slice} is reserved on the forge by ${reservation.agent}: two units on one slice do the same work twice and collide when they land.`,
-		`Its unit is \`${reservation.unit}\`. Wait for it to land, take a slice nobody holds, or pass --alongside for a deliberate second attempt.`,
+		`Its unit is \`${reservation.unit}\`; the reservation lapses once its lease is quiet past the idle window. Wait for it to land, take a slice nobody holds, or pass --alongside for a deliberate second attempt.`,
 	);
 };

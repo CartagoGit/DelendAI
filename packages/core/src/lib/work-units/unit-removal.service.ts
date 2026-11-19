@@ -52,7 +52,7 @@ export const removeUnitCheckout = async (
 		readonly policy: IResolvedDevelopmentPolicy;
 		/**
 		 * The tip the unit was judged spent at. The branch is deleted only
-		 * while it is still there: one another session committed on since
+		 * while it is still there: one a different session committed on since
 		 * is not the unit that was judged.
 		 */
 		readonly tip: string;

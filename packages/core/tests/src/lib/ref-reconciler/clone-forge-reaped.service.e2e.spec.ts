@@ -254,7 +254,7 @@ describe('a unit kept for continuation', () => {
 		).toContain(unit.publication);
 	});
 
-	it('[<2000ms] is reaped at once when another agent holds the proposal', async () => {
+	it('[<2000ms] is still waited for when another agent holds the proposal: a claim is a lease, not ownership', async () => {
 		const unit = await publishedUnit('overtaken', 40);
 		git(
 			unit.repo.root,
@@ -262,7 +262,7 @@ describe('a unit kept for continuation', () => {
 			`refs/heads/${unitRef('successor', 'x1-S2-g1')}`,
 			'develop',
 		);
-		expect(await standingOf(unit)).toBe('delivered');
+		expect(await standingOf(unit)).toBe('idle');
 	});
 });
 

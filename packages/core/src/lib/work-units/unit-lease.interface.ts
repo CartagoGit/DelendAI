@@ -12,7 +12,7 @@ export const UNIT_STANDINGS = [
 	/** Its work is provably in the integration branch or a publication. */
 	'delivered',
 	/**
-	 * Its owner said it waits on someone else (a `Delendai-Parked` trailer):
+	 * Its owner said it waits on another party (a `Delendai-Parked` trailer):
 	 * quiet on purpose, so neither listed for adoption nor reaped.
 	 */
 	'waiting',
@@ -80,8 +80,6 @@ export interface IUnitEvidence {
 	 * hand-off to review has not happened, so the unit is not litter yet.
 	 */
 	readonly proposalInProgress?: boolean | undefined;
-	/** Another agent already works on the same proposal. */
-	readonly claimedByOther?: boolean | undefined;
 	/** What the unit waits on, as its owner's `Delendai-Parked` trailer says. */
 	readonly parked?: string | undefined;
 }
