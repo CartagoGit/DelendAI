@@ -7,7 +7,9 @@ import {
 	openRepair,
 	readRepairRecord,
 	repairBody,
+	repairReadiness,
 	repairsFirst,
+	settleRepairsFirst,
 } from '@delendai/core/lib/integration/land/land-revert.helper';
 import type {
 	ILandCheck,
@@ -160,6 +162,67 @@ describe('repair records and order', () => {
 		const record = { culprit: 3, failing: ['x'], known: [] };
 		expect(readRepairRecord(repairBody(record))).toEqual(record);
 		expect(readRepairRecord('nothing')).toBeUndefined();
+	});
+
+	it('[<50ms] reads no record from a malformed or incomplete line', () => {
+		expect(readRepairRecord('land-repair: {not json')).toBeUndefined();
+		expect(readRepairRecord('land-repair: {"culprit":1}')).toBeUndefined();
+	});
+
+	it('[<50ms] reports a failed revert as needing a person', async () => {
+		const { forge, opened } = fakeForge(pr(7));
+		const out = await openRepair(
+			input(forge, { kind: 'failed', reason: 'boom' }),
+		);
+		expect(out).toEqual({ kind: 'needs-person', reason: 'boom' });
+		expect(opened).toHaveLength(0);
+	});
+
+	it('[<50ms] holds a repair that is not ready or does not repair, and lets a green one through', () => {
+		const record = { culprit: 7, failing: ['a'], known: [] };
+		const repair = pr(9, {
+			labels: ['delendai:repair'],
+			body: repairBody(record),
+		});
+		const notReady = () => 'red';
+		expect(repairReadiness(repair, [check(null)], notReady)).toContain(
+			'waiting',
+		);
+		expect(
+			repairReadiness(repair, [check('failure', ['a'])], notReady),
+		).toContain('does not repair');
+		expect(
+			repairReadiness(repair, [check('success')], notReady),
+		).toBeUndefined();
+		expect(
+			repairReadiness(
+				{ ...repair, draft: true },
+				[check('success')],
+				notReady,
+			),
+		).toBe('draft');
+		expect(repairReadiness(pr(1), [check('success')], notReady)).toBe(
+			'red',
+		);
+	});
+
+	it('[<50ms] settles the groups holding a repair before the others', async () => {
+		const order: number[] = [];
+		const own = { files: new Set<string>(), zones: new Set<string>() };
+		await settleRepairsFirst(
+			[
+				{ pr: pr(1), own: { ...own, files: new Set(['x']) } },
+				{
+					pr: pr(9, { labels: ['delendai:repair'] }),
+					own: { ...own, files: new Set(['y']) },
+				},
+			],
+			async (group) => {
+				await Promise.resolve();
+				order.push(...group.map((c) => c.pr.number));
+			},
+		);
+		expect(order).toEqual([9, 1]);
 	});
 
 	it('[<50ms] admits a repair ahead of lower-numbered candidates', () => {

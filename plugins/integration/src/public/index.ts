@@ -81,3 +81,4 @@ export {
 export { REHEARSAL_KNOWN_RED } from '../lib/contracts/constants/rehearsal-known-red.constant';
 export type * from '../lib/contracts/interfaces/integration-resume.interface';
 export * from '../lib/contracts/constants/integration-activation.constant';
+export { runIntegrationRepair } from '../lib/services/integration-repair.service';

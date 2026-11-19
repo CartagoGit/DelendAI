@@ -212,6 +212,11 @@ jobs:
                   GH_TOKEN: ${{ steps.identity.outputs.token }}
               run: bun tools/scripts/forge/open-promotion.script.ts --apply
 
+            - name: Revert the culprit merge of a red run as a repair
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+              run: bun tools/scripts/forge/land-repair.script.ts
+
     # The release branch moved: carry it back into the integration branch.
     forward-sync:
         name: forward-sync
