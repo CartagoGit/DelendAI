@@ -1,5 +1,9 @@
 /** Contract shapes of the repair of a red integration branch (see land-revert.helper). */
-import type { IDevelopMerge } from './land.interface';
+import type {
+	IDevelopMerge,
+	IDevelopRedPorts,
+	ILandForge,
+} from './land.interface';
 
 /** What a revert built in a throwaway index came to. */
 export type ILandRevertBuild =
@@ -37,3 +41,28 @@ export type ILandRepairVerdict =
 	| { readonly kind: 'wait' }
 	| { readonly kind: 'merge' }
 	| { readonly kind: 'reject'; readonly why: string };
+
+/** A completed run of the integration branch's CI. */
+export interface ILandCiRun {
+	readonly commit: string;
+	readonly conclusion: string;
+}
+
+/** What the repair pass reads: the forge, the git port and the CI's own history. */
+export interface ILandRepairPorts {
+	readonly forge: ILandForge;
+	readonly git: ILandRevertGit;
+	/** Completed CI runs of the integration branch, newest first. */
+	recentRuns(): Promise<readonly ILandCiRun[]>;
+	/** The section a failed check reports, as the project names it. */
+	readonly sectionOfCheck: (name: string) => string | undefined;
+	readonly develop: IDevelopRedPorts;
+	/** Where the repairs' branches live: `<ns>/repair/`. */
+	readonly repairPrefix: string;
+	readonly note: (line: string) => void;
+}
+
+/** What the repair pass came to. */
+export type ILandRepairResult =
+	| ILandRepairOutcome
+	| { readonly kind: 'nothing'; readonly why: string };

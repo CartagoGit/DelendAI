@@ -17,7 +17,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { PRE_X01091_TEST_TEMP_PREFIXES } from '@delendai/core/lib/contracts/constants/test-temp-prefixes.constant';
 import { reapTestTempLeftovers } from '@delendai/core/lib/work-units/test-temp-leftovers.service';
-import { keepStrayFiles } from '@delendai/core/lib/ref-reconciler/husk-directories.service';
+import { reconcileStrayFiles } from '@delendai/core/lib/ref-reconciler/unit-reconcile.service';
 
 const roots: string[] = [];
 afterEach(() => {
@@ -89,7 +89,7 @@ describe('reapTestTempLeftovers', () => {
 	});
 });
 
-describe('keepStrayFiles', () => {
+describe('reconcileStrayFiles', () => {
 	const units = () => {
 		const { root } = folder();
 		const dir = join(root, '.cache', 'delendai', '.worktrees');
@@ -101,7 +101,7 @@ describe('keepStrayFiles', () => {
 
 	it('[<100ms] moves a file that is no worktree under the cache root, deleting nothing', async () => {
 		const { root, dir, unitsDirectory } = units();
-		const moved = await keepStrayFiles({
+		const moved = await reconcileStrayFiles({
 			root,
 			apply: true,
 			now: 1,
@@ -126,7 +126,7 @@ describe('keepStrayFiles', () => {
 
 	it('[<100ms] only names the file without --apply', async () => {
 		const { root, dir, unitsDirectory } = units();
-		const [plan] = await keepStrayFiles({
+		const [plan] = await reconcileStrayFiles({
 			root,
 			apply: false,
 			now: 1,
@@ -138,9 +138,14 @@ describe('keepStrayFiles', () => {
 
 	it('[<100ms] never overwrites a file already kept under that name', async () => {
 		const { root, dir, unitsDirectory } = units();
-		await keepStrayFiles({ root, apply: true, now: 1, unitsDirectory });
+		await reconcileStrayFiles({
+			root,
+			apply: true,
+			now: 1,
+			unitsDirectory,
+		});
 		writeFileSync(join(dir, 'q48.md'), 'again');
-		const [again] = await keepStrayFiles({
+		const [again] = await reconcileStrayFiles({
 			root,
 			apply: true,
 			now: 2,
@@ -153,7 +158,7 @@ describe('keepStrayFiles', () => {
 	it('[<100ms] has nothing to keep when the units folder does not exist', async () => {
 		const { root } = folder();
 		expect(
-			await keepStrayFiles({
+			await reconcileStrayFiles({
 				root,
 				apply: true,
 				now: 1,
