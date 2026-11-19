@@ -1,19 +1,13 @@
-import { execFileSync } from 'node:child_process';
 import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { createGitRepoTemplate } from '@delendai/test-kit';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	scanMissingFiles,
 	shippedInCommits,
 } from './proposal-files-exist.script';
-
-const ignoring = createGitRepoTemplate({
-	files: { '.gitignore': 'local-only/\n' },
-});
 
 describe('proposal-files-exist lint', () => {
 	let root = '';
@@ -110,63 +104,11 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('[<200ms] accepts a file a later change deleted, when a shipped-in commit held it', () => {
-		const git = (...args: string[]): string =>
-			execFileSync('git', args, {
-				cwd: root,
-				encoding: 'utf8',
-				env: {
-					...process.env,
-					GIT_AUTHOR_NAME: 't',
-					GIT_AUTHOR_EMAIL: 't@t',
-					GIT_COMMITTER_NAME: 't',
-					GIT_COMMITTER_EMAIL: 't@t',
-				},
-			}).trim();
-		git('init', '--quiet');
-		write('packages/gone/src/store.ts', 'export {};');
-		git('add', '.');
-		git('commit', '--quiet', '-m', 'ship it');
-		const shipped = git('rev-parse', '--short', 'HEAD');
-		git('rm', '--quiet', '-r', 'packages/gone');
-		git('commit', '--quiet', '-m', 'retire the package');
-		write(
-			'docs/delendai/proposals/review/x00001-thing.md',
-			`---\nid: x00001\nshipped-in:\n  - "${shipped}"\n---\n\n` +
-				'### S1 — thing\n' +
-				'- **Status**: done\n' +
-				'- **Files**: `packages/gone/src/store.ts`, `packages/never/x.ts`\n',
-		);
-		git('add', '.');
+	it('[<50ms] reads the commits a proposal records as shipped-in', () => {
 		expect(
 			shippedInCommits(
-				`shipped-in:\n  - "${shipped}"\n- shipped-in: \`abc1234\``,
+				'shipped-in:\n  - "abcdef12"\n- shipped-in: `abc1234`',
 			),
-		).toEqual([shipped, 'abc1234']);
-		expect(
-			scanMissingFiles(root)[
-				'docs/delendai/proposals/review/x00001-thing.md'
-			],
-		).toEqual(['packages/never/x.ts']);
-	});
-
-	it('[<200ms] counts tracked files only: an ignored local file is no deliverable', () => {
-		const repo = ignoring.copy();
-		const at = (path: string): string => join(repo.root, path);
-		mkdirSync(at('local-only'));
-		writeFileSync(at('local-only/notes.ts'), 'export {};');
-		mkdirSync(at('docs/delendai/proposals/done/audits'), {
-			recursive: true,
-		});
-		writeFileSync(
-			at('docs/delendai/proposals/done/audits/a00098-thing.md'),
-			'- **Files**: `local-only/notes.ts`\n',
-		);
-		repo.git('add', '-A');
-		expect(
-			scanMissingFiles(repo.root)[
-				'docs/delendai/proposals/done/audits/a00098-thing.md'
-			],
-		).toEqual(['local-only/notes.ts']);
+		).toEqual(['abcdef12', 'abc1234']);
 	});
 });

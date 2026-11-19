@@ -209,6 +209,11 @@ const existedWhenShipped = (
 	path: string,
 ): boolean =>
 	commits.some((commit) => {
+		// Only a commit the checked-out history holds: an object a local
+		// clone keeps without any ref (a rewritten or never-pushed commit)
+		// does not exist in CI, so counting it made a local `--update`
+		// differ from the forge's count.
+		if (!inHistory(root, commit)) return false;
 		try {
 			execFileSync('git', ['cat-file', '-e', `${commit}:${path}`], {
 				cwd: root,
@@ -219,6 +224,43 @@ const existedWhenShipped = (
 			return false;
 		}
 	});
+
+const historyChecks = new Map<string, boolean>();
+
+/**
+ * Whether `commit` is in the history a checkout of the forge holds: an
+ * ancestor of HEAD, or on a remote branch (CI fetches every one).
+ */
+const inHistory = (root: string, commit: string): boolean => {
+	const key = `${root}\0${commit}`;
+	const known = historyChecks.get(key);
+	if (known !== undefined) return known;
+	const git = (args: readonly string[]): string | undefined => {
+		try {
+			return execFileSync('git', [...args], {
+				cwd: root,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'ignore'],
+			});
+		} catch {
+			return undefined;
+		}
+	};
+	const held =
+		git(['merge-base', '--is-ancestor', commit, 'HEAD']) !== undefined ||
+		(
+			git([
+				'for-each-ref',
+				'--count=1',
+				'--contains',
+				commit,
+				'refs/remotes',
+				'refs/tags',
+			]) ?? ''
+		).trim().length > 0;
+	historyChecks.set(key, held);
+	return held;
+};
 
 /**
  * The files git tracks under `root`, or undefined when `root` is no git

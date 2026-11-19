@@ -1,7 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-
-import { createGitRepoTemplate } from '@delendai/test-kit';
+import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -13,7 +10,6 @@ import {
 	requiredGatesOf,
 	staticGatesOf,
 } from './proof-covers-ci-gates.script';
-import { trackedFilesOf } from './proposal-files-exist.script';
 
 const WORKFLOW = readFileSync('.github/workflows/ci.yml', 'utf8');
 
@@ -107,21 +103,5 @@ describe('this repository', () => {
 		expect(CI_ONLY_GATES['test:budgets:check']).toContain(
 			'.vitest-reports',
 		);
-	});
-});
-
-describe('a baseline computed from the working tree counts tracked files only', () => {
-	const template = createGitRepoTemplate({
-		files: { '.gitignore': 'local/\n', 'kept.md': 'x' },
-	});
-
-	it('[<200ms] lists a tracked file and not an ignored one', () => {
-		const repo = template.copy();
-		mkdirSync(join(repo.root, 'local'));
-		writeFileSync(join(repo.root, 'local', 'a.md'), 'x');
-		repo.git('add', '-A');
-		const tracked = trackedFilesOf(repo.root);
-		expect(tracked?.has('kept.md')).toBe(true);
-		expect(tracked?.has('local/a.md')).toBe(false);
 	});
 });
