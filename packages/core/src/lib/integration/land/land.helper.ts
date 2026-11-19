@@ -20,11 +20,7 @@
  *   code labels the pull request for its author.
  */
 import { trainMembers } from '../decisions/culprit.helper';
-import {
-	groupByOverlap,
-	overlapBetween,
-	staleAgainstTip,
-} from '../decisions/overlap.helper';
+import { overlapBetween, staleAgainstTip } from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
 
@@ -38,6 +34,7 @@ import {
 import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
 import { mergeCertifiedBatch } from './land-batch-merge.helper';
 import { needsUpdateComment, reconcileLabels } from './land-labels.helper';
+import { repairReadiness, settleRepairsFirst } from './land-revert.helper';
 import { closeRedBatch, markRedBatch } from './land-verdict.helper';
 import type {
 	ILandBatchRecord,
@@ -223,7 +220,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 			continue;
 		}
 		const checks = await forge.checks(pr.headSha);
-		const waits = notReady(pr, checks);
+		const waits = repairReadiness(pr, checks, notReady);
 		if (waits !== undefined) {
 			// A head the forge never builds never turns green by waiting: the
 			// integrator brings it forward once, else its author is asked. Its
@@ -250,7 +247,6 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		}
 		candidates.push({ pr, own: git.footprint(pr), conflict });
 	}
-	candidates.sort((a, b) => a.pr.number - b.pr.number);
 
 	const openBatch = (
 		members: readonly ILandPullRequest[],
@@ -373,7 +369,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		await openBatch(members, 'overlapping ready pull requests');
 	};
 
-	await Promise.all(groupByOverlap(candidates).map(settleGroup));
+	await settleRepairsFirst(candidates, settleGroup);
 	// Judged first, applied once: the difference between what each pull
 	// request wants and what the forge shows, and one reason line for each.
 	for (const pr of openNow) {
