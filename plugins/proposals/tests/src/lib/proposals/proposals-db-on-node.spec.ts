@@ -86,11 +86,11 @@ const freshDatabasePath = (): string => {
 };
 
 describe('the proposals database on Node', () => {
-	it('runs on Node here, where bun:sqlite does not exist', () => {
+	it('[<200ms] runs on Node here, where bun:sqlite does not exist', () => {
 		expect(process.versions.bun).toBeUndefined();
 	});
 
-	it('applies every migration to a fresh database', () => {
+	it('[<1000ms] applies every migration to a fresh database', () => {
 		const driver = new ProposalsSqliteDriver({ path: freshDatabasePath() });
 		try {
 			expect(driver.schemaVersion).toBe(PROPOSALS_SQLITE_SCHEMA_VERSION);
@@ -99,7 +99,7 @@ describe('the proposals database on Node', () => {
 		}
 	});
 
-	it('reconciles a fixture proposals tree and exports the registry the scan writes', async () => {
+	it('[<1000ms] reconciles a fixture proposals tree and exports the registry the scan writes', async () => {
 		const databasePath = freshDatabasePath();
 		const root = fixtureRoot();
 		const result = reconcileIncremental({

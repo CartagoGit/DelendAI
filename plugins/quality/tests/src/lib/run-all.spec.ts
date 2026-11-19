@@ -16,7 +16,7 @@ const reader = (files: Record<string, string>): IFileReader => ({
 });
 
 describe('runAllScopes', async () => {
-	it('aggregates 3 passing scopes into one ok:true report', async () => {
+	it('[<200ms] aggregates 3 passing scopes into one ok:true report', async () => {
 		const run: ICommandRunner = async () => ({
 			code: 0,
 			output: 'ok',
@@ -38,7 +38,7 @@ describe('runAllScopes', async () => {
 		expect(report.results.every((r) => r.errors.length === 0)).toBe(true);
 	});
 
-	it('marks summary.ok false and surfaces errors when one scope fails', async () => {
+	it('[<200ms] marks summary.ok false and surfaces errors when one scope fails', async () => {
 		const run: ICommandRunner = async (command) =>
 			command.includes('fail')
 				? { code: 1, output: 'boom output', timedOut: false }
@@ -59,7 +59,7 @@ describe('runAllScopes', async () => {
 		expect(report.summary.firstFailure).toContain('fail-test');
 	});
 
-	it('bounds parallel scopes to the configured resource budget', async () => {
+	it('[<200ms] bounds parallel scopes to the configured resource budget', async () => {
 		// Every started scope is held on a deferred promise the test releases,
 		// so the peak is reached by construction, never by timing.
 		let active = 0;
@@ -100,14 +100,14 @@ describe('runAllScopes', async () => {
 		expect(peak).toBe(2);
 		releases.shift()?.();
 		await reached(3);
-		releases.splice(0).forEach((release) => release());
+		for (const release of releases.splice(0)) release();
 		const report = await pending;
 		expect(peak).toBe(2);
 		expect(started).toBe(3);
 		expect(report.summary.duration).toBeGreaterThanOrEqual(0);
 	});
 
-	it('an empty scope map reports a vacuous ok:true with zero scopes', async () => {
+	it('[<200ms] an empty scope map reports a vacuous ok:true with zero scopes', async () => {
 		const run: ICommandRunner = async () => ({
 			code: 0,
 			output: '',
@@ -120,7 +120,7 @@ describe('runAllScopes', async () => {
 		expect(report.results).toEqual([]);
 	});
 
-	it('terminates for a self-referential/cyclic-looking scope name without hanging', async () => {
+	it('[<200ms] terminates for a self-referential/cyclic-looking scope name without hanging', async () => {
 		// IScopeMap has no inter-scope dependency edges — each scope is just a
 		// list of shell commands — so a scope that mentions another scope's
 		// name in its own command string cannot create a real cycle. This
@@ -145,7 +145,7 @@ describe('runAllScopes', async () => {
 });
 
 describe('quality_run_all tool registration', async () => {
-	it('rejects an unknown/empty scope configuration', async () => {
+	it('[<200ms] rejects an unknown/empty scope configuration', async () => {
 		const registration = buildRunAllToolRegistration({
 			namespacePrefix: 'quality',
 			reader: reader({}),
@@ -170,7 +170,7 @@ describe('quality_run_all tool registration', async () => {
 		expect(result.isError).toBe(true);
 	});
 
-	it('aggregates configured option scopes end to end', async () => {
+	it('[<200ms] aggregates configured option scopes end to end', async () => {
 		const registration = buildRunAllToolRegistration({
 			namespacePrefix: 'quality',
 			reader: reader({}),
@@ -204,7 +204,7 @@ describe('quality_run_all tool registration', async () => {
 	// incident logging into run_quality and never got the same wrapper —
 	// its toolError path emitted no incident even though a logsSink was
 	// already being passed into the same options object.
-	it('emits an incident on the logsSink when no scopes are configured', async () => {
+	it('[<200ms] emits an incident on the logsSink when no scopes are configured', async () => {
 		const recorded: ISinkEvent[] = [];
 		const fakeSink: ILogsSink = {
 			id: 'fake',
