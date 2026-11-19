@@ -4,28 +4,28 @@ import type {
 	IWorkUnitContext,
 	IWorkUnitResult,
 } from '../contracts/interfaces/work-unit-context.interface';
-import { reapLandedRetired } from './retired-landed.service';
-import { reapSpentReservations } from './slice-reservation-reap.service';
-import { hydrateKeptUnits } from './kept-unit-hydration.service';
-import { releaseIdleDependencies } from './idle-unit-dependencies.service';
-import { endDeliveredUnits } from '../ref-reconciler/clone-forge-ports.service';
-import { endFinishedUnits } from './finished-units-end.service';
-import { worktreeOfRef } from './unit-removal.service';
-import { hasLocalBranch, readUnitStandings } from './unit-standings.service';
-import { leaseWindowSeconds } from './unit-verdict.service';
+import { reapLandedRetired } from '../work-units/retired-landed.service';
+import { reapSpentReservations } from '../work-units/slice-reservation-reap.service';
+import { hydrateKeptUnits } from '../work-units/kept-unit-hydration.service';
+import { releaseIdleDependencies } from '../work-units/idle-unit-dependencies.service';
+import { endDeliveredUnits } from './clone-forge-ports.service';
+import { endFinishedUnits } from '../work-units/finished-units-end.service';
+import { worktreeOfRef } from '../work-units/unit-removal.service';
+import {
+	hasLocalBranch,
+	readUnitStandings,
+} from '../work-units/unit-standings.service';
+import { leaseWindowSeconds } from '../work-units/unit-verdict.service';
 import {
 	integrationBase,
 	integrationRemote,
 	mainWorktreeOf,
 	openWork,
-} from './work-unit-shared.service';
-import {
-	keepStrayFiles,
-	reapHusks,
-} from '../ref-reconciler/husk-directories.service';
-import { reapTestTempLeftovers } from './test-temp-leftovers.service';
-import { reapStrayRefs } from '../ref-reconciler/stray-refs-sweep.service';
-import { reapRetiredMachinery } from './retired-machinery-reap.service';
+} from '../work-units/work-unit-shared.service';
+import { keepStrayFiles, reapHusks } from './husk-directories.service';
+import { reapTestTempLeftovers } from '../work-units/test-temp-leftovers.service';
+import { reapStrayRefs } from './stray-refs-sweep.service';
+import { reapRetiredMachinery } from './retired-machinery-sweep.service';
 
 /**
  * `work reap [--apply]` — remove the worktree and local branch of every
