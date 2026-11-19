@@ -221,7 +221,7 @@ describe('initCommand extraOptions (f00084 S8)', () => {
 	// The CLI requires the explicit `--delendai-root` to point at a file
 	// that exists on disk. Resolve the host entry script relative to this
 	// spec file so the test is portable across checkouts (it used to
-	// hardcode the author's `/home/cartago/_proyectos/propios/...` path,
+	// hardcode one developer's absolute home path,
 	// which broke in any other developer's environment).
 	const HOST_ENTRY_PATH = join(
 		dirname(fileURLToPath(import.meta.url)),
