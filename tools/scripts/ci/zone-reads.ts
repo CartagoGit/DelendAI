@@ -227,3 +227,41 @@ export const parseZoneReadMap = (
 		return undefined;
 	}
 };
+
+/**
+ * The specs that read or build sources from disk, and what each reads: a
+ * source file is a module the spec's entry imports (followed by the module
+ * graph, never a second resolver), a path ending in `/` is a folder it
+ * reads whole. The recorder sees the test workers' root reads, not these.
+ */
+export const SPEC_READERS: Readonly<Record<string, readonly string[]>> = {
+	'packages/cli/src/lib/startup-budget.spec.ts': [
+		'packages/cli/src/commands/work.command.ts',
+		'packages/cli/src/commands/guard.command.ts',
+		'packages/cli/src/commands/groups/proposals.ts',
+		'packages/cli/src/index.ts',
+	],
+	'extensions/vscode/src/test/build-smoke.e2e.spec.ts': [
+		'extensions/vscode/src/',
+	],
+};
+
+/**
+ * The declared reader specs a change reaches: one a changed file sits under,
+ * or whose entry module is in `reached`, the files the change affects.
+ */
+export const declaredReadersOf = (
+	changed: readonly string[],
+	reached: ReadonlySet<string>,
+	readers: Readonly<Record<string, readonly string[]>> = SPEC_READERS,
+): readonly string[] =>
+	Object.entries(readers)
+		.filter(([, reads]) =>
+			reads.some((entry) =>
+				entry.endsWith('/')
+					? changed.some((file) => file.startsWith(entry))
+					: reached.has(entry),
+			),
+		)
+		.map(([spec]) => spec)
+		.sort();
