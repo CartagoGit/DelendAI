@@ -213,18 +213,6 @@ describe('writeDelendaiConfig (f00084 S2)', () => {
 	});
 });
 
-describe('writeCoreSkillProjection', () => {
-	let workspace: string;
-
-	beforeEach(async () => {
-		workspace = await mkdtemp(join(tmpdir(), 'delendai-skill-writer-'));
-	});
-
-	afterEach(async () => {
-		await rm(workspace, { recursive: true, force: true });
-	});
-});
-
 describe('computeHostInstructionsWrite (f00084 S4)', () => {
 	const BEGIN = '<!-- delendai:begin -->';
 	const END = '<!-- delendai:end -->';
