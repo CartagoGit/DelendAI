@@ -8,6 +8,8 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import { deliverUnit } from './work-deliver.service';
 import { precheckDelivery } from './work-deliver-precheck.service';
 
+const PASSES = async () => ({ code: EXIT_CODE.OK });
+
 const BREACHES = [
 	'lint-presets: tests/a.spec.ts [<500ms] over the 200 ms unit budget',
 	'lint-presets: src/a.ts has no mirror spec',
@@ -18,6 +20,7 @@ const BREACHES = [
 describe('precheckDelivery', () => {
 	it('[<20ms] passes when the static gates pass', async () => {
 		const outcome = await precheckDelivery({
+			coveragePrecheck: PASSES,
 			precheck: async () => ({ code: EXIT_CODE.OK }),
 		});
 		expect(outcome).toBeUndefined();
@@ -25,6 +28,7 @@ describe('precheckDelivery', () => {
 
 	it("[<20ms] refuses with the proof's own messages and says nothing was proved", async () => {
 		const outcome = await precheckDelivery({
+			coveragePrecheck: PASSES,
 			precheck: async () => ({
 				code: EXIT_CODE.VALIDATION,
 				error: BREACHES,
@@ -35,8 +39,35 @@ describe('precheckDelivery', () => {
 		expect(outcome?.error).toContain('before the compute slot');
 	});
 
+	it("[<20ms] refuses, with the coverage gate's message, a module covered only by a non-mirror spec", async () => {
+		const gate =
+			'changed-file-coverage: FAIL — src/a.ts: 0% lines (covered only by tests/b.spec.ts)';
+		const outcome = await precheckDelivery({
+			precheck: PASSES,
+			coveragePrecheck: async () => ({
+				code: EXIT_CODE.VALIDATION,
+				error: gate,
+			}),
+		});
+		expect(outcome?.code).toBe(EXIT_CODE.VALIDATION);
+		expect(outcome?.error).toContain(gate);
+	});
+
+	it('[<20ms] does not run the coverage pre-check when the static one refuses', async () => {
+		let covered = false;
+		await precheckDelivery({
+			precheck: async () => ({ code: EXIT_CODE.VALIDATION, error: 'x' }),
+			coveragePrecheck: async () => {
+				covered = true;
+				return { code: EXIT_CODE.OK };
+			},
+		});
+		expect(covered).toBe(false);
+	});
+
 	it('[<20ms] keeps a usage error a usage error', async () => {
 		const outcome = await precheckDelivery({
+			coveragePrecheck: PASSES,
 			precheck: async () => ({
 				code: EXIT_CODE.USAGE,
 				error: 'bad gate',
@@ -57,6 +88,7 @@ describe('precheckDelivery', () => {
 			}),
 			preflight: async () => ({ ok: true }),
 			transition: async () => ({ ok: true }),
+			coveragePrecheck: PASSES,
 			precheck: async () => {
 				calls.push('precheck');
 				return { code: EXIT_CODE.VALIDATION, error: BREACHES };

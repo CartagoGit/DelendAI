@@ -153,6 +153,14 @@ export {
 	prepareDerived,
 	pushDerived,
 } from './lib/integration/land/land-bring-forward.helper';
+export { repairDevelopRed } from './lib/integration/land/land-repair.helper';
+export type {
+	ILandCiRun,
+	ILandRepairPorts,
+	ILandRepairResult,
+	ILandRevertBuild,
+	ILandRevertGit,
+} from './lib/integration/land/land-revert.interface';
 export { landConfigFromPolicy } from './lib/integration/land/land-config.helper';
 export { LandBranchGoneError } from './lib/integration/land/land-branch-gone.helper';
 export {

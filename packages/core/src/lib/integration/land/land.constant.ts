@@ -3,6 +3,8 @@ import type { ILandWorkflowInput } from './land.interface';
 /** Labels and markers `land` leaves on the forge. */
 export const LAND_LABEL_CULPRIT = 'delendai:culprit';
 export const LAND_LABEL_NEEDS_UPDATE = 'delendai:needs-update';
+/** A revert of the merge that turned the integration branch red: admitted ahead of every other candidate. */
+export const LAND_LABEL_REPAIR = 'delendai:repair';
 /** The branch name of a batch: `<prefix>batch-a+b+c`. */
 export const LAND_BATCH_BRANCH = 'batch-';
 /** The state `land` keeps in a batch pull request's body, read back each pass. */

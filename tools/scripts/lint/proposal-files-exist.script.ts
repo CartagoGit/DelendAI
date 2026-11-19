@@ -30,7 +30,7 @@ import { readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 
 import { withoutNewMarker } from '../../../plugins/proposals/src/lib/proposals/expand-declared-files';
 import { declaredPathExists } from './lib/declared-path-exists.lib';
-import { join, relative } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 
 import { repoRoot } from '../lib/monorepo-paths';
 import { lintRepoRoot, refuseMissingScanRoots } from './lib/scan-roots.lib';
@@ -209,6 +209,11 @@ const existedWhenShipped = (
 	path: string,
 ): boolean =>
 	commits.some((commit) => {
+		// Only a commit the checked-out history holds: an object a local
+		// clone keeps without any ref (a rewritten or never-pushed commit)
+		// does not exist in CI, so counting it made a local `--update`
+		// differ from the forge's count.
+		if (!inHistory(root, commit)) return false;
 		try {
 			execFileSync('git', ['cat-file', '-e', `${commit}:${path}`], {
 				cwd: root,
@@ -220,15 +225,106 @@ const existedWhenShipped = (
 		}
 	});
 
+const historyChecks = new Map<string, boolean>();
+
+/**
+ * Whether `commit` is in the history a checkout of the forge holds: an
+ * ancestor of HEAD, or on a remote branch (CI fetches every one).
+ */
+const inHistory = (root: string, commit: string): boolean => {
+	const key = `${root}\0${commit}`;
+	const known = historyChecks.get(key);
+	if (known !== undefined) return known;
+	const git = (args: readonly string[]): string | undefined => {
+		try {
+			return execFileSync('git', [...args], {
+				cwd: root,
+				encoding: 'utf8',
+				stdio: ['ignore', 'pipe', 'ignore'],
+			});
+		} catch {
+			return undefined;
+		}
+	};
+	const held =
+		git(['merge-base', '--is-ancestor', commit, 'HEAD']) !== undefined ||
+		(
+			git([
+				'for-each-ref',
+				'--count=1',
+				'--contains',
+				commit,
+				'refs/remotes',
+				'refs/tags',
+			]) ?? ''
+		).trim().length > 0;
+	historyChecks.set(key, held);
+	return held;
+};
+
+/**
+ * The files git tracks under `root`, or undefined when `root` is no git
+ * checkout. The count a baseline records must be the one CI reads, and CI
+ * has only what is tracked: an ignored local file made `--update` differ.
+ */
+export const trackedFilesOf = (
+	root: string,
+): ReadonlySet<string> | undefined => {
+	try {
+		const top = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+			cwd: root,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		}).trim();
+		if (resolve(top) !== resolve(root)) return undefined;
+		const listed = execFileSync('git', ['ls-files', '-z'], {
+			cwd: root,
+			encoding: 'utf8',
+			maxBuffer: 1 << 28,
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+		return new Set(listed.split('\0').filter((name) => name.length > 0));
+	} catch {
+		return undefined;
+	}
+};
+
+/** Whether a tracked file, or a directory holding one, is `path`. */
+const isTrackedPath = (tracked: ReadonlySet<string>, path: string): boolean => {
+	if (tracked.has(path)) return true;
+	const prefix = path.endsWith('/') ? path : `${path}/`;
+	for (const name of tracked) if (name.startsWith(prefix)) return true;
+	return false;
+};
+
 /** Returns `{ relProposalPath: [missingPath, ...] }` for proposals with dangling Files: refs. */
 export const scanMissingFiles = (root: string): Record<string, string[]> => {
 	const result: Record<string, string[]> = {};
+	const tracked = trackedFilesOf(root);
+	const trackedProposalNames = new Set(
+		[...(tracked ?? [])]
+			.filter((name) => name.startsWith(`${PROPOSALS_ROOT}/`))
+			.map((name) => basename(name)),
+	);
+	const present = (path: string): boolean => {
+		if (tracked === undefined) return declaredPathExists(root, path);
+		// A proposal is one document wherever its status folder puts it.
+		const isProposal =
+			path.startsWith(`${PROPOSALS_ROOT}/`) && path.endsWith('.md');
+		return isProposal
+			? trackedProposalNames.has(basename(path))
+			: isTrackedPath(tracked, path) && existsSync(join(root, path));
+	};
 	for (const dir of SCAN_DIRS) {
 		const abs = join(root, PROPOSALS_ROOT, dir);
 		if (!existsSync(abs)) continue;
 		const files: string[] = [];
 		walkMarkdown(abs, files);
 		for (const proposalAbs of files) {
+			const proposalRel = relative(root, proposalAbs)
+				.split('\\')
+				.join('/');
+			if (tracked !== undefined && !tracked.has(proposalRel)) continue;
 			const text = readFileSync(proposalAbs, 'utf8');
 			const missing: string[] = [];
 			const shipped = shippedInCommits(text);
@@ -258,7 +354,7 @@ export const scanMissingFiles = (root: string): Record<string, string[]> => {
 					if (isRuntimeStatePath(p)) continue;
 					const base = stripLineRefs(p);
 					if (
-						!declaredPathExists(root, base) &&
+						!present(base) &&
 						!existedWhenShipped(root, shipped, base)
 					)
 						missing.push(

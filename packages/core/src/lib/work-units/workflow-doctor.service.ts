@@ -19,7 +19,7 @@ import { liveUnitRefs } from './unit-liveness.service';
 import { listWorkRefs } from './work-swarm.service';
 import { checkWorkflowInvariants } from './workflow-invariants.service';
 import { workRefLoopsInvariant } from './work-ref-moves.service';
-import { huskDirectories, husksInvariant } from './worktree-husks.service';
+import { huskReport } from '../ref-reconciler/unit-reconcile.service';
 import { shortName } from '../integration/decisions/namespaces.helper';
 
 /**
@@ -94,13 +94,11 @@ export const runWorkflowDoctor = async (input: {
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 	});
 	// What a removed worktree's path was written into afterwards.
-	const husks = husksInvariant(
-		await huskDirectories({
-			root,
-			now: Math.floor(Date.now() / 1000),
-		}),
-		leaseWindowSeconds(policy.coordination.leaseTtlMinutes),
-	);
+	const husks = await huskReport({
+		root,
+		now: Math.floor(Date.now() / 1000),
+		windowSeconds: leaseWindowSeconds(policy.coordination.leaseTtlMinutes),
+	});
 	// A ref two components keep undoing for each other: read from the
 	// clone's journal of forge moves.
 	const loops = await workRefLoopsInvariant(root);

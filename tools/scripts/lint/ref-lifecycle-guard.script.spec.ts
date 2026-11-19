@@ -7,6 +7,7 @@
  * reapable and fails until it is removed. These cases pin what "already
  * published" means, with the forge's ancestry check injected.
  */
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
@@ -534,5 +535,16 @@ describe('retireOnForge into a taken slot', () => {
 		).toBe(true);
 		expect(count(calls, 'DELETE')).toBe(1);
 		expect(calls.flat().some((arg) => /force/u.test(arg))).toBe(false);
+	});
+});
+
+describe('the guard only reports', () => {
+	it('[<50ms] has no --reap path: the reconciler performs every deletion', () => {
+		const source = readFileSync(
+			new URL('./ref-lifecycle-guard.script.ts', import.meta.url),
+			'utf8',
+		);
+		expect(source).not.toContain("includes('--reap')");
+		expect(source).not.toContain('REAP');
 	});
 });

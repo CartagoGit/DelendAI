@@ -5520,13 +5520,13 @@
 					],
 					"listed": []
 				},
-				"packages/core/tests/src/lib/work-units/stray-ref-retire.service.spec.ts": {
+				"packages/core/tests/src/lib/ref-reconciler/stray-ref-retire.service.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
 					"listed": []
 				},
-				"packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts": {
+				"packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11016,7 +11016,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/authoring-stale-index.spec.ts": {
+				"plugins/proposals/tests/src/lib/authoring-stale-index.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11035,7 +11035,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/authoring.spec.ts": {
+				"plugins/proposals/tests/src/lib/authoring.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11386,7 +11386,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/plugin-register-wiring.spec.ts": {
+				"plugins/proposals/tests/src/lib/plugin-register-wiring.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -11404,7 +11404,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/proposal-create.concurrency.spec.ts": {
+				"plugins/proposals/tests/src/lib/proposal-create.concurrency.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14291,7 +14291,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-mutex.spec.ts": {
+				"plugins/proposals/tests/src/lib/proposals/sync-proposal-registry-mutex.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14327,7 +14327,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/review.tool.spec.ts": {
+				"plugins/proposals/tests/src/lib/review.tool.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14703,7 +14703,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -14799,7 +14799,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -16507,7 +16507,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -16603,7 +16603,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/proposal-review-note-literal.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],

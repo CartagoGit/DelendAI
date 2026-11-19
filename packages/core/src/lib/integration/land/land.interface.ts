@@ -290,6 +290,11 @@ export interface ILandWorkflowInput {
 	 * when the branch is green, files one urgent repair when it is red.
 	 */
 	readonly promotionCommand?: string;
+	/**
+	 * Run in the same job after a red run of the integration branch: opens one
+	 * revert of the culprit merge as a repair (see land-revert.helper).
+	 */
+	readonly repairCommand?: string;
 	/** Run when the release branch moves: carries it back into the integration branch. */
 	readonly forwardSyncCommand?: string;
 	/** Upkeep run on the schedule, every step whatever the previous one concluded. */
@@ -341,4 +346,40 @@ export interface IBatchAssemblyReport {
 	readonly why: (number: number, reason: string) => void;
 	readonly note: (line: string) => void;
 	readonly needsUpdate: (pr: ILandPullRequest, reason: string) => void;
+}
+
+/** One merge on the integration branch between the last green run and a red one. */
+export interface IDevelopMerge {
+	readonly number: number;
+	readonly sha: string;
+}
+
+/** A red integration-branch run: where it ran and what failed. */
+export interface IDevelopRedRun {
+	readonly commit: string;
+	readonly failingSpecs: ReadonlySet<string>;
+	readonly failingZones: ReadonlySet<string>;
+}
+
+/** What `diagnoseDevelopRed` reads and writes; the real forge and store live elsewhere. */
+export interface IDevelopRedPorts {
+	/** The merges after `green` up to `red`, oldest first. */
+	mergesBetween(
+		green: string,
+		red: string,
+	): Promise<readonly IDevelopMerge[]>;
+	/** The merge's footprint: files, zones, and the specs that read its files. */
+	footprintOf(merge: IDevelopMerge): Promise<IChangeFootprint>;
+	/** Keep the failing spec ids as the known-failing set of a commit. */
+	recordKnownFailing(commit: string, specs: readonly string[]): Promise<void>;
+}
+
+/** Whose merge to revert first, and why. */
+export interface IDevelopRedDiagnosis {
+	/** The one merge whose footprint reaches the failure. */
+	readonly culprit?: IDevelopMerge;
+	/** Every merge that meets it, earliest first; the first is tried first. */
+	readonly suspects: readonly IDevelopMerge[];
+	/** The merge to try reverting first: the culprit, else the earliest suspect. */
+	readonly revertFirst?: IDevelopMerge;
 }

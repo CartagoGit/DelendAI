@@ -84,12 +84,12 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 
 ### S7 — work enter and the stray-ref reap write refs under one lock
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/unit-start-point.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/tests/src/lib/work-units/unit-start-point.service.spec.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `new: packages/core/src/lib/work-units/ref-writer-lock.helper.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/unit-start-point.service.ts`, `packages/core/src/lib/ref-reconciler/stray-refs-sweep.service.ts`, `packages/core/tests/src/lib/work-units/unit-start-point.service.spec.ts`, `packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts`, `new: packages/core/src/lib/work-units/ref-writer-lock.helper.ts`
 - **Gate**: lint
 - **Decisions**: No retry: the ref creation is serialised with the writer it races. The competing writer is the stray-ref reap (`update-ref -d` under the same refs/heads namespace); creation and reap take the same withFileMutex from ref-writer-lock.helper.ts, so `createUnitRef` becomes async.
 - acceptance:
   - "`bunx vitest run packages/core/tests/src/lib/work-units/unit-start-point.service.spec.ts` runs `work enter` ref creation concurrently with the stray-ref reap deleting under the same namespace; the spec reproduces `Could not create refs/heads/...` without the lock and passes with it"
-  - "`bunx vitest run packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts` proves the reap and the creation take the same withFileMutex"
+  - "`bunx vitest run packages/core/tests/src/lib/ref-reconciler/stray-refs-sweep.service.e2e.spec.ts` proves the reap and the creation take the same withFileMutex"
 
 ### S8 — Specs that skip proposals also skip files derived from them
 - **Status**: pending
@@ -98,6 +98,15 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 - **Decisions**: The list lives next to the script that generates the baseline and is exported once.
 - acceptance:
   - "`bunx vitest run tools/scripts/forge/land-cutover.e2e.spec.ts` reads the derived-from-proposals list from the single exported constant in proposal-readiness.script.ts"
+
+### S9 — Two specs that failed only under load are deterministic
+- **Status**: pending
+- **Files**: `plugins/quality/tests/src/lib/run-all.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Gate**: lint
+- **Decisions**: No retry and no larger timeout. The concurrency spec holds every started scope on a deferred promise the test releases, so the peak is reached by construction. The proposals-db unit case reads a small fixture proposals tree instead of the whole repository.
+- acceptance:
+  - "`bunx vitest run plugins/quality/tests/src/lib/run-all.spec.ts` passes and the file has no real timer (no setTimeout)"
+  - "`bunx vitest run plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts` passes with the unit case reading a fixture tree, not the repository's docs/delendai/proposals"
 
 ## acceptance
 

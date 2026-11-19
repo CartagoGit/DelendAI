@@ -13,11 +13,16 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { affectedSpecsSince, repositorySince } from './affected-specs.service';
+import {
+	affectedFiles,
+	affectedSpecsSince,
+	repositorySince,
+} from './affected-specs.service';
+import type { IAffectedSpecsInput } from './affected-specs.interface';
 import { readTestScope, touchedSpecsOf, type ITestScope } from './test-scope';
 import { ZONE_READ_MAP_PATH } from './test-zones.constant';
 import type { IZoneReadMap } from './test-zones.interface';
-import { parseZoneReadMap, readersOf } from './zone-reads';
+import { declaredReadersOf, parseZoneReadMap, readersOf } from './zone-reads';
 
 /** The sources whose nearest specs are worth running. */
 const SOURCE = /^(packages|plugins|tools|extensions|apps)\/.*\.ts$/u;
@@ -79,6 +84,23 @@ export const nearSpecs = (
 	}
 	return [...out].sort();
 };
+
+const SPEC = /\.(?:spec|test)\.tsx?$/u;
+
+/**
+ * The specs that consume a changed file, or the file a changed barrel
+ * re-exports it from: one importer step of the module graph followed by
+ * symbol, so the barrel in between never hides a consumer. Plus the
+ * declared readers the change reaches, which import nothing they read.
+ * Bounded: a consumer's own consumers are not followed.
+ */
+export const consumerSpecs = (input: IAffectedSpecsInput): readonly string[] =>
+	[
+		...new Set([
+			...affectedFiles(input, 1).filter((file) => SPEC.test(file)),
+			...declaredReadersOf(input.changed, new Set(affectedFiles(input))),
+		]),
+	].sort();
 
 const git = (root: string, args: readonly string[]): string =>
 	execFileSync('git', [...args], {
@@ -166,7 +188,8 @@ export const nearSpecsSince = (
 				...readerSpecs(changedSince(root, base), readMapAt(root)),
 			]),
 		].sort();
-	const { files, changed, paths } = repositorySince(root, base);
+	const input = repositorySince(root, base);
+	const { files, changed, paths } = input;
 	if (scope === 'all')
 		return files
 			.filter((file) => /\.(?:spec|test)\.tsx?$/u.test(file))
@@ -183,6 +206,7 @@ export const nearSpecsSince = (
 				baseTextAt(root, base),
 			),
 			...readerSpecs(changed, readMapAt(root)),
+			...consumerSpecs(input),
 		]),
 	].sort();
 };
