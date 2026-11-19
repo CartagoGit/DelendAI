@@ -6,9 +6,13 @@ import { describe, expect, it } from 'vitest';
 
 import { fakePartial } from '@delendai/test-kit';
 
+import type {
+	IUnitStanding,
+	IUnitStandingEntry,
+} from '@delendai/core/lib/work-units/unit-lease.interface';
 import type { ISwarmUnit } from '@delendai/core/lib/contracts/interfaces/work-swarm.interface';
 import {
-	collisionsWith,
+	collisionsWith as collisionsOf,
 	describeCollisions,
 } from '@delendai/core/lib/work-units/scope-collision.service';
 
@@ -24,8 +28,50 @@ const unit = (
 		paths,
 	});
 
+const standingOf = (ref: string, standing: IUnitStanding): IUnitStandingEntry =>
+	fakePartial<IUnitStandingEntry, 'ref' | 'standing'>({ ref, standing });
+
+/** Every unit given holds a live lease unless the caller says otherwise. */
+const collisionsWith = (
+	input: Omit<Parameters<typeof collisionsOf>[0], 'standings'> & {
+		readonly standings?: readonly IUnitStandingEntry[];
+	},
+) =>
+	collisionsOf({
+		standings: input.units.map((unit) => standingOf(unit.ref, 'live')),
+		...input,
+	});
+
 describe('collisionsWith (x00555 S2)', () => {
-	it('names the other agent, its unit and only the shared paths', () => {
+	it('[<100ms] reports only units whose lease is live', () => {
+		const mine = ['src/a.ts'];
+		const theirs = unit('codex', ['src/a.ts']);
+		const verdict = (standing: IUnitStanding) =>
+			collisionsWith({
+				agent: 'me',
+				scope: mine,
+				units: [theirs],
+				standings: [standingOf(theirs.ref, standing)],
+			});
+		expect(verdict('live')).toHaveLength(1);
+		for (const quiet of [
+			'idle',
+			'waiting',
+			'abandoned',
+			'delivered',
+		] as const)
+			expect(verdict(quiet)).toEqual([]);
+		expect(
+			collisionsWith({
+				agent: 'me',
+				scope: mine,
+				units: [theirs],
+				standings: [],
+			}),
+		).toEqual([]);
+	});
+
+	it('[<100ms] names the other agent, its unit and only the shared paths', () => {
 		const found = collisionsWith({
 			agent: 'claude-opus-5',
 			scope: ['src/a.ts', 'src/b.ts'],
@@ -40,7 +86,7 @@ describe('collisionsWith (x00555 S2)', () => {
 		expect(found[0]?.paths).toStrictEqual(['src/b.ts']);
 	});
 
-	it('is silent when the same agent already holds a unit', () => {
+	it('[<100ms] is silent when the same agent already holds a unit', () => {
 		expect(
 			collisionsWith({
 				agent: 'claude-opus-5',
@@ -50,7 +96,7 @@ describe('collisionsWith (x00555 S2)', () => {
 		).toStrictEqual([]);
 	});
 
-	it('collides when either side claims a directory the other is inside', () => {
+	it('[<100ms] collides when either side claims a directory the other is inside', () => {
 		expect(
 			collisionsWith({
 				agent: 'a',
@@ -67,7 +113,7 @@ describe('collisionsWith (x00555 S2)', () => {
 		).toHaveLength(1);
 	});
 
-	it('does not mistake a shared name prefix for a shared directory', () => {
+	it('[<100ms] does not mistake a shared name prefix for a shared directory', () => {
 		expect(
 			collisionsWith({
 				agent: 'a',
@@ -77,7 +123,7 @@ describe('collisionsWith (x00555 S2)', () => {
 		).toStrictEqual([]);
 	});
 
-	it('reports every colliding unit, not just the first', () => {
+	it('[<100ms] reports every colliding unit, not just the first', () => {
 		expect(
 			collisionsWith({
 				agent: 'a',
@@ -87,7 +133,7 @@ describe('collisionsWith (x00555 S2)', () => {
 		).toStrictEqual(['b', 'c']);
 	});
 
-	it('offers wait, re-scope and take-over, and the command for the last', () => {
+	it('[<100ms] offers wait, re-scope and take-over, and the command for the last', () => {
 		const advice = describeCollisions(
 			collisionsWith({
 				agent: 'a',

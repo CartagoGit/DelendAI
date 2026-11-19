@@ -199,7 +199,7 @@ export const createPolicyPersistence = (
 				handled: true,
 				status: 'refused',
 				code: 'WIP_SLICE_HELD',
-				reason: `WIP_SLICE_HELD: ${request.proposalId} ${request.sliceId} is held by ${ownership.others.map((unit) => `${unit.agent} (${unit.ref})`).join(', ')}; nothing was checkpointed under \`${agentIdOf(options.agentId)}\`.`,
+				reason: `WIP_SLICE_HELD: ${request.proposalId} ${request.sliceId} has a live lease held by ${ownership.others.map((unit) => `${unit.agent} (${unit.ref})`).join(', ')}; nothing was checkpointed under \`${agentIdOf(options.agentId)}\`.`,
 				remedy: 'Work on a slice nobody holds, or take this one over with `delendai work claim --ref=<their ref>`.',
 			};
 		}

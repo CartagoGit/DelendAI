@@ -179,14 +179,6 @@ export const readUnitStandings = async (
 					delivery.delivered &&
 					mine !== undefined &&
 					proposalInProgress(root, mine.proposal, sha),
-				claimedByOther:
-					mine !== undefined &&
-					[...identities.entries()].some(
-						([other, identity]) =>
-							other !== ref &&
-							identity?.proposal === mine.proposal &&
-							identity.agent !== mine.agent,
-					),
 				now,
 				windowSeconds: window,
 				parked: parkedReason(
@@ -336,16 +328,15 @@ export const unitVerdictOf = async (
 	);
 
 /**
- * Whether a unit still holds the slice it was entered for. An abandoned
- * unit does not: its owner is gone, so the slice is offered for adoption
- * (`work claim`) instead of refusing everyone else. A delivered unit has
- * landed its slice. Live and idle units hold it — an idle owner is only
- * quiet. A ref with no verdict is assumed to hold, the cautious reading.
+ * Whether a unit holds the slice it was entered for. A claim is a lease
+ * that only stops two agents editing at once, so only a LIVE lease holds:
+ * a heartbeat inside the idle window. Idle, waiting, abandoned, delivered
+ * and published-and-handed-over units hold nothing, and a ref with no
+ * verdict has no lease to hold with.
  */
 export const isUnitHolding = (
 	entries: readonly IUnitStandingEntry[],
 	ref: string,
 ): boolean => {
-	const standing = entries.find((entry) => entry.ref === ref)?.standing;
-	return standing !== 'abandoned' && standing !== 'delivered';
+	return entries.find((entry) => entry.ref === ref)?.standing === 'live';
 };

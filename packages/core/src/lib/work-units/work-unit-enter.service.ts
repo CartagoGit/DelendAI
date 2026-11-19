@@ -14,7 +14,7 @@ import { readSwarm } from './work-swarm.service';
 import { entrantNameRefusal } from './agents-seen.service';
 import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
-import { isUnitHolding, readUnitStandings } from './unit-standings.service';
+import { readUnitStandings } from './unit-standings.service';
 import { resolveUnitsDirectory } from './units-directory.service';
 import { freeDirectory } from './free-directory.helper';
 import { liveProposalBranch } from './proposal-branch.service';
@@ -79,7 +79,7 @@ const ENTER_POLL_MS = 200;
  * both chose g1, both tried to add its worktree, and the one that lost
  * rolled back the ref the other had just made: neither got a unit. Held
  * on the unit (its agent, kind, proposal and slice, any generation), the
- * second waits for the first, then sees g1 held by another session and
+ * second waits for the first, then sees g1 held by a different session and
  * takes g2.
  */
 export const entering = new Map<string, Promise<unknown>>();
@@ -201,23 +201,21 @@ export const enteredHeld = async (
 		(await closedForImplementing(root, policy, args, proposal));
 	if (notToImplement !== undefined) return notToImplement;
 	if (!args.includes('--alongside')) {
-		const onSlice = holdersOfSlice({
+		// Only a live lease holds a slice: a unit its owner left, or whose
+		// work landed, holds nothing, though the swarm view still shows it.
+		const standings = await readUnitStandings({ root, policy });
+		const holders = holdersOfSlice({
 			view: swarm,
+			standings,
 			agent,
 			kind: scalarArg(args, 'kind') ?? 'implement',
 			proposal,
 			slice,
 		});
-		// A unit its owner left, or whose work landed, holds nothing: the
-		// slice is free, and the swarm view still shows the unit.
-		const standings = await readUnitStandings({ root, policy });
-		const holders = onSlice.filter((unit) =>
-			isUnitHolding(standings, unit.ref.replace(/^refs\/heads\//u, '')),
-		);
 		if (holders.length > 0) {
 			return refused(
-				`${proposal} ${slice} is already being worked on by another agent: two units on one slice do the same work twice and collide when they land.`,
-				describeSliceHolders(holders).join('\n'),
+				`${proposal} ${slice} is already being worked on under a live lease: two units on one slice do the same work twice and collide when they land.`,
+				describeSliceHolders(holders, standings).join('\n'),
 			);
 		}
 	}
@@ -282,7 +280,7 @@ export const enteredHeld = async (
 		});
 	}
 	// A proposal in progress keeps one branch: later work continues on the
-	// branch the agent already has for it, unless another session is
+	// branch the agent already has for it, unless a different session is
 	// working in it, whose work runs alongside on its own unit.
 	const continued = liveProposalBranch(
 		policy.branches.workRefTemplate,
