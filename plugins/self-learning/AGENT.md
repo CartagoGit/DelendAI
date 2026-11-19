@@ -39,10 +39,10 @@
 
 ## Tests
 
+- plugins/self-learning/tests/src/lib/collectors/failure-collectors.service.spec.ts
 - plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts
 - plugins/self-learning/tests/src/lib/lessons/model-lessons.spec.ts
 - plugins/self-learning/tests/src/lib/store/observation-store.spec.ts
-- plugins/self-learning/tests/src/lib/tools/lessons.tool.spec.ts
 
 ## Do not
 
