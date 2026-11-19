@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 
 import {
 	budgetChanges,
+	estimatesOfRuns,
+	mayWriteEstimates,
+	percentile95,
+	withProvisionalEstimates,
 	calibratedBudget,
 	longestDurations,
 	parseFlatted,
@@ -113,5 +117,55 @@ describe('test budget calibration', () => {
 		}));
 		expect(referenceOfDurations(longestDurations(measured))).toBe(60);
 		expect(referenceOfDurations({})).toBeUndefined();
+	});
+});
+
+describe('test time estimates', () => {
+	const run = (tookMs: number, loadFactor = 1) =>
+		longestDurations([
+			{ file: 'a.spec.ts', name: '[<10ms] t', tookMs, loadFactor },
+		]);
+
+	it('[<20ms] is the p95 of the runs normalized by load, not the max', () => {
+		const runs = Array.from({ length: 20 }, (_, i) => run(i + 1));
+		runs.push(run(1000));
+		expect(estimatesOfRuns(runs)['a.spec.ts > t']).toBe(20);
+		expect(percentile95([])).toBeUndefined();
+	});
+
+	it('[<20ms] gives the same estimate to a run measured under a doubled load factor', () => {
+		expect(estimatesOfRuns([run(50, 2)])).toEqual(
+			estimatesOfRuns([run(25)]),
+		);
+	});
+
+	it('[<20ms] gives a test without an estimate a provisional one and keeps the others', () => {
+		const next = withProvisionalEstimates(
+			{ 'a.spec.ts > old': 7 },
+			run(12),
+		);
+		expect(next).toEqual({ 'a.spec.ts > old': 7, 'a.spec.ts > t': 12 });
+	});
+
+	it('[<20ms] writes estimates only on develop, never on a pull request', () => {
+		expect(
+			mayWriteEstimates({ GITHUB_REF_NAME: 'develop' }, 'develop'),
+		).toBe(true);
+		expect(
+			mayWriteEstimates(
+				{ ESTIMATES_BRANCH: 'develop', GITHUB_REF_NAME: 'main' },
+				'develop',
+			),
+		).toBe(true);
+		expect(
+			mayWriteEstimates(
+				{
+					GITHUB_REF_NAME: 'develop',
+					GITHUB_EVENT_NAME: 'pull_request',
+				},
+				'develop',
+			),
+		).toBe(false);
+		expect(mayWriteEstimates({}, 'develop')).toBe(false);
 	});
 });
