@@ -3,12 +3,17 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
+import { createGitRepoTemplate } from '@delendai/test-kit';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
 	scanMissingFiles,
 	shippedInCommits,
 } from './proposal-files-exist.script';
+
+const ignoring = createGitRepoTemplate({
+	files: { '.gitignore': 'local-only/\n' },
+});
 
 describe('proposal-files-exist lint', () => {
 	let root = '';
@@ -26,7 +31,7 @@ describe('proposal-files-exist lint', () => {
 		rmSync(root, { recursive: true, force: true });
 	});
 
-	it('flags a Files: path that does not exist on disk', () => {
+	it('[<50ms] flags a Files: path that does not exist on disk', () => {
 		write(
 			'docs/delendai/proposals/done/feats/f00001-thing.md',
 			'---\nid: f00001\nstatus: done\n---\n\n' +
@@ -41,7 +46,7 @@ describe('proposal-files-exist lint', () => {
 		).toEqual(['packages/core/src/lib/ghost.ts']);
 	});
 
-	it('passes when every Files: path exists, including multi-line lists', () => {
+	it('[<50ms] passes when every Files: path exists, including multi-line lists', () => {
 		write('packages/core/src/lib/real.ts', 'export const x = 1;\n');
 		write('packages/core/src/lib/real2.ts', 'export const y = 2;\n');
 		write(
@@ -56,7 +61,7 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('ignores ready/ and paused/ proposals (planned, not yet built)', () => {
+	it('[<50ms] ignores ready/ and paused/ proposals (planned, not yet built)', () => {
 		write(
 			'docs/delendai/proposals/ready/f00003-thing.md',
 			'- **Files**: `packages/core/src/lib/not-yet.ts`\n',
@@ -68,7 +73,7 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('ignores JSX-like tags and none/n-a placeholders', () => {
+	it('[<50ms] ignores JSX-like tags and none/n-a placeholders', () => {
 		write(
 			'docs/delendai/proposals/done/feats/f00005-thing.md',
 			'- **Files**: `<PageHeader>`, none\n',
@@ -76,7 +81,7 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('refuses a pattern in a slice that ran: it names none of the files that shipped', () => {
+	it('[<50ms] refuses a pattern in a slice that ran: it names none of the files that shipped', () => {
 		write(
 			'docs/delendai/proposals/done/feats/f00006-thing.md',
 			'- **Files**: `plugins/*/src/index.ts`\n',
@@ -88,7 +93,7 @@ describe('proposal-files-exist lint', () => {
 		});
 	});
 
-	it('does not flag a proposal self-referencing its own pre-transition ready/ path', () => {
+	it('[<50ms] does not flag a proposal self-referencing its own pre-transition ready/ path', () => {
 		write(
 			'docs/delendai/proposals/done/plans/q00099-thing.md',
 			'- **Files**: `docs/delendai/proposals/ready/q00099-thing.md`\n',
@@ -96,7 +101,7 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('strips trailing line-number references before checking existence', () => {
+	it('[<50ms] strips trailing line-number references before checking existence', () => {
 		write('packages/core/src/lib/real.ts', 'export const x = 1;\n');
 		write(
 			'docs/delendai/proposals/done/audits/a00099-thing.md',
@@ -105,7 +110,7 @@ describe('proposal-files-exist lint', () => {
 		expect(scanMissingFiles(root)).toEqual({});
 	});
 
-	it('accepts a file a later change deleted, when a shipped-in commit held it', () => {
+	it('[<200ms] accepts a file a later change deleted, when a shipped-in commit held it', () => {
 		const git = (...args: string[]): string =>
 			execFileSync('git', args, {
 				cwd: root,
@@ -132,6 +137,7 @@ describe('proposal-files-exist lint', () => {
 				'- **Status**: done\n' +
 				'- **Files**: `packages/gone/src/store.ts`, `packages/never/x.ts`\n',
 		);
+		git('add', '.');
 		expect(
 			shippedInCommits(
 				`shipped-in:\n  - "${shipped}"\n- shipped-in: \`abc1234\``,
@@ -142,5 +148,25 @@ describe('proposal-files-exist lint', () => {
 				'docs/delendai/proposals/review/x00001-thing.md'
 			],
 		).toEqual(['packages/never/x.ts']);
+	});
+
+	it('[<200ms] counts tracked files only: an ignored local file is no deliverable', () => {
+		const repo = ignoring.copy();
+		const at = (path: string): string => join(repo.root, path);
+		mkdirSync(at('local-only'));
+		writeFileSync(at('local-only/notes.ts'), 'export {};');
+		mkdirSync(at('docs/delendai/proposals/done/audits'), {
+			recursive: true,
+		});
+		writeFileSync(
+			at('docs/delendai/proposals/done/audits/a00098-thing.md'),
+			'- **Files**: `local-only/notes.ts`\n',
+		);
+		repo.git('add', '-A');
+		expect(
+			scanMissingFiles(repo.root)[
+				'docs/delendai/proposals/done/audits/a00098-thing.md'
+			],
+		).toEqual(['local-only/notes.ts']);
 	});
 });
