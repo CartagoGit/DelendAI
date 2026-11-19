@@ -57,7 +57,7 @@ export interface ILandRepairPorts {
 	/** The section a failed check reports, as the project names it. */
 	readonly sectionOfCheck: (name: string) => string | undefined;
 	readonly develop: IDevelopRedPorts;
-	/** Where the repairs' branches live: `<ns>/repair/`. */
+	/** Where the repairs' branches live: `<ns>/queue/repair/`. */
 	readonly repairPrefix: string;
 	readonly note: (line: string) => void;
 }
