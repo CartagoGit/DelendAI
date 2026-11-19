@@ -24,6 +24,7 @@ export const repairDevelopRed = async (
 	const tip = await forge.integrationTip();
 	if (tip !== latest.commit)
 		return { kind: 'nothing', why: 'the red run is no longer the tip' };
+	// The last green is the newest SUCCESSFUL run: red and cancelled ones are skipped.
 	const green = runs.find((run) => run.conclusion === 'success');
 	if (green === undefined)
 		return { kind: 'nothing', why: 'no green run to measure from' };
@@ -41,11 +42,18 @@ export const repairDevelopRed = async (
 			failingZones: zones,
 		},
 	});
-	const merge = diagnosis.revertFirst;
+	// Nobody's footprint reaches a failure known only by its check's name:
+	// the earliest merge since the last green is then tried first, as the
+	// suspects of an unowned failure always are.
+	const [earliest] =
+		diagnosis.revertFirst === undefined
+			? await ports.develop.mergesBetween(green.commit, latest.commit)
+			: [];
+	const merge = diagnosis.revertFirst ?? earliest;
 	if (merge === undefined)
 		return {
 			kind: 'nothing',
-			why: 'no merge between the green and red runs',
+			why: 'no merge between the last green run and the red one',
 		};
 	return openRepair({
 		forge,
