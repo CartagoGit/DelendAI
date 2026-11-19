@@ -1,3 +1,6 @@
+/** The folder, under the project's namespace, a repair's branch lives in. */
+export const LAND_REPAIR_SEGMENT = 'repair';
+
 /** The most rounds one pass makes: a round re-reads the forge when a land run was created while it worked. */
 export const LAND_MAX_ROUNDS = 3;
 

@@ -16,7 +16,7 @@ const reader = (files: Record<string, string>): IFileReader => ({
 });
 
 describe('runAllScopes', async () => {
-	it('aggregates 3 passing scopes into one ok:true report', async () => {
+	it('[<200ms] aggregates 3 passing scopes into one ok:true report', async () => {
 		const run: ICommandRunner = async () => ({
 			code: 0,
 			output: 'ok',
@@ -38,7 +38,7 @@ describe('runAllScopes', async () => {
 		expect(report.results.every((r) => r.errors.length === 0)).toBe(true);
 	});
 
-	it('marks summary.ok false and surfaces errors when one scope fails', async () => {
+	it('[<200ms] marks summary.ok false and surfaces errors when one scope fails', async () => {
 		const run: ICommandRunner = async (command) =>
 			command.includes('fail')
 				? { code: 1, output: 'boom output', timedOut: false }
@@ -59,31 +59,55 @@ describe('runAllScopes', async () => {
 		expect(report.summary.firstFailure).toContain('fail-test');
 	});
 
-	it('bounds parallel scopes to the configured resource budget', async () => {
+	it('[<200ms] bounds parallel scopes to the configured resource budget', async () => {
+		// Every started scope is held on a deferred promise the test releases,
+		// so the peak is reached by construction, never by timing.
 		let active = 0;
 		let peak = 0;
-		const report = await runAllScopes(
+		let started = 0;
+		const releases: Array<() => void> = [];
+		const onStart: Array<() => void> = [];
+		const run: ICommandRunner = async () => {
+			active += 1;
+			started += 1;
+			peak = Math.max(peak, active);
+			onStart.shift()?.();
+			await new Promise<void>((release) => releases.push(release));
+			active -= 1;
+			return { code: 0, output: 'ok', timedOut: false };
+		};
+		const reached = (count: number): Promise<void> =>
+			started >= count
+				? Promise.resolve()
+				: new Promise<void>((resolve) => onStart.push(resolve)).then(
+						() => reached(count),
+					);
+		const pending = runAllScopes(
 			{
 				lint: [{ command: 'lint', expect: 'exit0' }],
 				test: [{ command: 'test', expect: 'exit0' }],
 				build: [{ command: 'build', expect: 'exit0' }],
 			},
 			'/ws',
-			async () => {
-				active += 1;
-				peak = Math.max(peak, active);
-				await new Promise((resolve) => setTimeout(resolve, 5));
-				active -= 1;
-				return { code: 0, output: 'ok', timedOut: false };
-			},
+			run,
 			undefined,
 			{ mode: 'collect', maxParallel: 2 },
 		);
+		await reached(2);
+		// Two are running and held: the third cannot have started.
+		await Promise.resolve();
+		expect(started).toBe(2);
 		expect(peak).toBe(2);
-		expect(report.summary.duration).toBeGreaterThanOrEqual(5);
+		releases.shift()?.();
+		await reached(3);
+		for (const release of releases.splice(0)) release();
+		const report = await pending;
+		expect(peak).toBe(2);
+		expect(started).toBe(3);
+		expect(report.summary.duration).toBeGreaterThanOrEqual(0);
 	});
 
-	it('an empty scope map reports a vacuous ok:true with zero scopes', async () => {
+	it('[<200ms] an empty scope map reports a vacuous ok:true with zero scopes', async () => {
 		const run: ICommandRunner = async () => ({
 			code: 0,
 			output: '',
@@ -96,7 +120,7 @@ describe('runAllScopes', async () => {
 		expect(report.results).toEqual([]);
 	});
 
-	it('terminates for a self-referential/cyclic-looking scope name without hanging', async () => {
+	it('[<200ms] terminates for a self-referential/cyclic-looking scope name without hanging', async () => {
 		// IScopeMap has no inter-scope dependency edges — each scope is just a
 		// list of shell commands — so a scope that mentions another scope's
 		// name in its own command string cannot create a real cycle. This
@@ -121,7 +145,7 @@ describe('runAllScopes', async () => {
 });
 
 describe('quality_run_all tool registration', async () => {
-	it('rejects an unknown/empty scope configuration', async () => {
+	it('[<200ms] rejects an unknown/empty scope configuration', async () => {
 		const registration = buildRunAllToolRegistration({
 			namespacePrefix: 'quality',
 			reader: reader({}),
@@ -146,7 +170,7 @@ describe('quality_run_all tool registration', async () => {
 		expect(result.isError).toBe(true);
 	});
 
-	it('aggregates configured option scopes end to end', async () => {
+	it('[<200ms] aggregates configured option scopes end to end', async () => {
 		const registration = buildRunAllToolRegistration({
 			namespacePrefix: 'quality',
 			reader: reader({}),
@@ -180,7 +204,7 @@ describe('quality_run_all tool registration', async () => {
 	// incident logging into run_quality and never got the same wrapper —
 	// its toolError path emitted no incident even though a logsSink was
 	// already being passed into the same options object.
-	it('emits an incident on the logsSink when no scopes are configured', async () => {
+	it('[<200ms] emits an incident on the logsSink when no scopes are configured', async () => {
 		const recorded: ISinkEvent[] = [];
 		const fakeSink: ILogsSink = {
 			id: 'fake',
