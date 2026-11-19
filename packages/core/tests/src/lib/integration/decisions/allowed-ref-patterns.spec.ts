@@ -23,15 +23,18 @@ import {
 	repairBranch,
 } from '@delendai/core/lib/integration/land/land-revert.helper';
 
+/** GitHub's fnmatch: `**` crosses `/`, `**` + `/` may match nothing, `*` stays in one segment. */
 const globMatches = (pattern: string, ref: string): boolean =>
 	new RegExp(
-		`^${pattern
-			.replace(/[.+^${}()|[\]\\]/gu, '\\$&')
-			.replace(/\*\*\//gu, '\u0001')
-			.replace(/\*\*/gu, '\u0000')
-			.replace(/\*/gu, '[^/]*')
-			.replace(/\u0001/gu, '(?:.*/)?')
-			.replace(/\u0000/gu, '.*')}$`,
+		`^${pattern.replace(/\*\*\/|\*\*|\*|[.+^${}()|[\]\\]/gu, (token) =>
+			token === '**/'
+				? '(?:.*/)?'
+				: token === '**'
+					? '.*'
+					: token === '*'
+						? '[^/]*'
+						: `\\${token}`,
+		)}$`,
 		'u',
 	).test(ref);
 
