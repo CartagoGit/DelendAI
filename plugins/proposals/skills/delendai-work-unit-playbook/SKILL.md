@@ -72,16 +72,17 @@ Shipped proposals sent back for fresh evidence are re-validated with `delendai w
 `prove`, `deliver` and `publish` can wait their turn for the machine's proof slot. Wait
 for them one way, once:
 
-- Run the command itself in the background and let its exit wake you. When a check has
-  to run alone, test something that ends with the work: `kill -0 <pid>`, or a marker
-  the command writes when it exits.
+- Start the long command (`deliver`, `prove`, `publish`) once, with the host's own
+  background mechanism (Claude Code: `run_in_background: true`), and wait for the host's
+  completion notification. Never poll. A host with no notification gets one blocking
+  call with a timeout, never a loop.
 - Never wait on a pattern that can match the waiter itself. `pgrep -f '<command>'`
   finds its own shell and never ends.
 - Start a waiter once, never again on each turn, and stop every waiter you started
   before you report. A leftover waiter keeps the machine busy and wakes whoever started
   it, and each wake costs a read of that agent's whole context.
-- Do not start a second `prove`, `deliver` or `publish` of a unit that is already
-  waiting; it queues a second proof.
+- Never start a second `deliver` of the same unit: the compute slot already joins
+  callers of the same tip. Do not start a second `prove` or `publish` either.
 
 ## Running one gate of the proof
 

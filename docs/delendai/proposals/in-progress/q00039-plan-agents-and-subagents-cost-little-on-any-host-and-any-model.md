@@ -2,10 +2,14 @@
 id: q00039
 title: "Plan: agents and subagents cost little on any host and any model"
 kind: plan
-status: ready
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
+last-transition-id: 10e2cdc7-f14c-474f-a5b0-e96a786b5843
+last-correlation-id: 10e2cdc7-f14c-474f-a5b0-e96a786b5843
+last-transition-from: ready
+last-transition-at: 2026-11-19T16:35:49.365Z
 ---
 
 # q00039 — Plan: agents and subagents cost little on any host and any model

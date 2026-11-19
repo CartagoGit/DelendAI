@@ -23,7 +23,9 @@ or have their own config file. Use the same single-pointer pattern:
 - Save a fact or rule about this project in the host's project-scoped
   memory, never in a memory shared by every project.
 
-When you wait on long work, have one waiter per thing, and make it end with
-the work: the command's exit, `kill -0 <pid>`, or a marker the command writes.
-Never use a `pgrep -f` that matches itself. Leave no waiter behind when you
-report (see the work unit playbook).
+When you wait on long work, start the command (deliver, prove, publish) once, in
+the host's background mechanism, and wait for its completion notification. Never poll
+and never use a pattern that can match the waiter itself. Never start a second deliver
+of the same unit. Leave no waiter behind when you report. A host with no completion
+notification gets one blocking call with a timeout, never a loop (see the work unit
+playbook).
