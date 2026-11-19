@@ -16,6 +16,17 @@
  * in S5 are frequencies and correlations across these kinds, not
  * language.
  */
+export const FAILURE_STAGES = [
+	'edit',
+	'hook',
+	'precheck',
+	'gate',
+	'deliver',
+	'ci',
+	'land',
+	'runtime',
+] as const;
+
 export const OBSERVATION_KINDS = [
 	/** A command ran and the outcome is known. */
 	'command-outcome',
@@ -27,6 +38,7 @@ export const OBSERVATION_KINDS = [
 	'refusal',
 	/** A slice closed, cleanly or not. */
 	'slice-outcome',
+	'failure',
 ] as const;
 
 export type IObservationKind = (typeof OBSERVATION_KINDS)[number];
@@ -39,7 +51,20 @@ export type IObservationKind = (typeof OBSERVATION_KINDS)[number];
  * `outcome` is deliberately three-valued: a store that only remembers
  * failures cannot say whether something usually works.
  */
+/** The pipeline stages a failure can surface at, earliest first. */
+export type IFailureStage = (typeof FAILURE_STAGES)[number];
+
+/** What a failure collector knows about one failure (q00049 S1). */
+export interface IFailureFacts {
+	readonly class: string;
+	readonly stage: IFailureStage;
+	readonly files: readonly string[];
+	readonly unit: string;
+	readonly minutesLost: number;
+}
+
 export interface IObservation {
+	readonly failure?: IFailureFacts;
 	readonly kind: IObservationKind;
 	readonly subject: string;
 	readonly outcome: 'ok' | 'fail' | 'unknown';
@@ -98,3 +123,40 @@ export interface IObservationStoreOptions {
 	 */
 	readonly workspaceRoot?: string;
 }
+
+/** Where observations go; the plugin binds it to the observation store. */
+export type IObservationSink = (
+	observations: readonly IObservation[],
+) => Promise<unknown>;
+
+/** What every collector call tells us about the failure. */
+export interface IFailureReport {
+	readonly subject: string;
+	readonly files?: readonly string[];
+	readonly unit?: string;
+	readonly minutesLost?: number;
+	readonly class?: string;
+}
+
+export interface IFailureCollectors {
+	gate(report: IFailureReport): Promise<void>;
+	hook(report: IFailureReport): Promise<void>;
+	ciJob(report: IFailureReport): Promise<void>;
+	landVerdict(report: IFailureReport): Promise<void>;
+	deliverRefusal(report: IFailureReport): Promise<void>;
+	toolError(
+		report: IFailureReport & {
+			readonly error?: unknown;
+			readonly result?: unknown;
+			readonly cancelled?: boolean;
+		},
+	): Promise<void>;
+}
+
+/** Where a failure came from: the collector that records it. */
+export type IFailureSource =
+	| 'gate'
+	| 'hook'
+	| 'ciJob'
+	| 'landVerdict'
+	| 'deliverRefusal';

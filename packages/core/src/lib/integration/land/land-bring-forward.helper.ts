@@ -144,3 +144,11 @@ export const settleUnbuilt = async (input: {
 		);
 	else report.needsUpdate(pr, waits);
 };
+
+/** A stale head that merges cleanly where no batch can be pushed: brought forward, and why. */
+export const staleCleanReason = async (input: {
+	readonly deps: ILandDeps;
+	readonly pr: ILandPullRequest;
+	readonly tip: string;
+}): Promise<string> =>
+	`stale base, clean merge; ${bringForwardReason(await bringForwardUnbuilt(input))}`;

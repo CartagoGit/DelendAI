@@ -3,7 +3,7 @@ id: self-learning
 package: @delendai/self-learning
 version: 0.3.0
 maturity: experimental
-generated: 2026-11-03T01:24:49.458Z
+generated: 2026-11-18T18:23:37.217Z
 ---
 
 # Self Learning
@@ -21,7 +21,10 @@ Per-project learning store: accumulates observations the runtime already writes 
 
 ## Presets
 
+- team-pr
+- swarm
 - everything
+- dogfood
 
 ## Permissions
 
