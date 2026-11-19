@@ -19,8 +19,12 @@ export const repairDevelopRed = async (
 	const { forge, note } = ports;
 	const runs = await ports.recentRuns();
 	const [latest] = runs;
-	if (latest === undefined || !RED.has(latest.conclusion))
+	if (latest === undefined || !RED.has(latest.conclusion)) {
+		// A finished green run knows no failures: its commit keeps an empty set.
+		if (latest?.conclusion === 'success')
+			await ports.develop.recordKnownFailing(latest.commit, []);
 		return { kind: 'nothing', why: 'the latest CI run is not red' };
+	}
 	const tip = await forge.integrationTip();
 	if (tip !== latest.commit)
 		return { kind: 'nothing', why: 'the red run is no longer the tip' };
