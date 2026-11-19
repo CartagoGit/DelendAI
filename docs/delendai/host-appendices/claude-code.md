@@ -43,8 +43,6 @@ for the rest of the session, so how you call these tools matters:
   wake (a background timer) before then, since rewriting it cold costs far
   more than a cached read. Keep one conversation and let it compact; new
   ones re-read the project.
-- **Run long delendai commands once in the background.** Start `deliver`, `prove` or
-  `publish` with `run_in_background: true` and wait for the completion notification;
-  never poll (`pgrep -f`, `kill -0` loops, `grep; sleep`), since each poll re-reads
-  the whole context. Never start a second deliver of the same unit, and leave no
-  waiter behind when you report.
+- **Run long delendai commands once.** Start `deliver`, `prove` or `publish` with
+  `run_in_background: true`, wait for the completion notification, never poll, never
+  start a second deliver of a unit, leave no waiter behind.
