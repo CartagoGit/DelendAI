@@ -102,6 +102,7 @@ develop's own CI ran the full suite and went red. Nothing reacted. ci.yml:406 st
 
 ### S7 — needs-update only on a real conflict; a stale clean PR is tested as a merged candidate
 - **Status**: pending
+- **DependsOn**: [S3]
 - **Files**: `packages/core/src/lib/integration/land/land.helper.ts`, `tools/scripts/forge/land.spec.ts`
 - **Gate**: type
 - **Decisions**: none
