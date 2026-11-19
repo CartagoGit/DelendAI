@@ -1,5 +1,5 @@
 /**
- * stray-refs-reap-kept.service.e2e.spec.ts — a stranded or rescued ref goes
+ * stray-refs-sweep-kept.service.e2e.spec.ts — a stranded or rescued ref goes
  * when its patches are on the integration branch, and is listed otherwise.
  */
 import { execFileSync } from 'node:child_process';
@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { reapStrayRefs } from '@delendai/core/lib/work-units/stray-refs-reap.service';
+import { reapStrayRefs } from '@delendai/core/lib/ref-reconciler/stray-refs-sweep.service';
 
 const dirs: string[] = [];
 

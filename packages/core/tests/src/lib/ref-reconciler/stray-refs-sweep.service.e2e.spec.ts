@@ -1,5 +1,5 @@
 /**
- * stray-refs-reap.service.spec.ts — a stray ref is removed only when it
+ * stray-refs-sweep.service.spec.ts — a stray ref is removed only when it
  * carries no work.
  */
 import { execFileSync } from 'node:child_process';
@@ -13,7 +13,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import {
 	holdsOnlyEmptyCommits,
 	reapStrayRefs,
-} from '@delendai/core/lib/work-units/stray-refs-reap.service';
+} from '@delendai/core/lib/ref-reconciler/stray-refs-sweep.service';
 
 const dirs: string[] = [];
 
@@ -65,7 +65,7 @@ const repo = () => {
 };
 
 describe('reapStrayRefs', () => {
-	it('removes a stray ref of empty commits and keeps one that carries work', () => {
+	it('[<2000ms] removes a stray ref of empty commits and keeps one that carries work', () => {
 		const { root, git } = repo();
 		expect(reapStrayRefs({ root, policy, apply: false })).toEqual([
 			{ ref: 'refs/delendai-remote-claims/foreign', outcome: 'kept' },
@@ -109,7 +109,7 @@ describe('reapStrayRefs', () => {
 		);
 	});
 
-	it('removes a claim taken on a branch the integration branch merged', () => {
+	it('[<2000ms] removes a claim taken on a branch the integration branch merged', () => {
 		const { root, git } = repo();
 		// The reviewer's branch claims on its own commit, and reaches the
 		// integration branch through a merge: its tree is never one of the
@@ -137,7 +137,7 @@ describe('reapStrayRefs', () => {
 		});
 	});
 
-	it('removes a copy of what the forge holds, and keeps a tip only here', () => {
+	it('[<2000ms] removes a copy of what the forge holds, and keeps a tip only here', () => {
 		const { root, git } = repo();
 		const forge = mkdtempSync(join(tmpdir(), 'stray-forge-'));
 		dirs.push(forge);
@@ -191,7 +191,7 @@ describe('reapStrayRefs', () => {
 		});
 	});
 
-	it('never touches branches, tags or the product namespace', () => {
+	it('[<2000ms] never touches branches, tags or the product namespace', () => {
 		const { root, git } = repo();
 		git('update-ref', 'refs/delendai/journal', 'HEAD');
 		git('tag', 'v1');
@@ -207,7 +207,7 @@ describe('reapStrayRefs', () => {
 });
 
 describe('holdsOnlyEmptyCommits', () => {
-	it('is true for nothing beyond the base, and false for a merge', () => {
+	it('[<2000ms] is true for nothing beyond the base, and false for a merge', () => {
 		const { root, git, base } = repo();
 		expect(holdsOnlyEmptyCommits(root, base, base)).toBe(true);
 		const tree = git('rev-parse', `${base}^{tree}`);

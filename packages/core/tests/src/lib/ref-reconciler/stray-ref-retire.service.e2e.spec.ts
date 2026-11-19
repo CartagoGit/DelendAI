@@ -10,7 +10,7 @@ import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
-import { retireStrayRef } from '@delendai/core/lib/work-units/stray-ref-retire.service';
+import { retireStrayRef } from '@delendai/core/lib/ref-reconciler/stray-ref-retire.service';
 
 const dirs: string[] = [];
 
@@ -75,7 +75,7 @@ const setUp = () => {
 };
 
 describe('retireStrayRef', () => {
-	it('keeps a tip only this clone has on the forge, then removes the ref', () => {
+	it('[<2000ms] keeps a tip only this clone has on the forge, then removes the ref', () => {
 		const { git, work, retire, forgeRefs } = setUp();
 		const result = retire('refs/remotes/prg14');
 		const kept = `refs/delendai/retired/bot-1.0/stray/remotes/prg14-${work.slice(0, 12)}`;
@@ -96,7 +96,7 @@ describe('retireStrayRef', () => {
 		).toBe('');
 	});
 
-	it('removes a copy of what the forge already holds without pushing it again', () => {
+	it('[<2000ms] removes a copy of what the forge already holds without pushing it again', () => {
 		const { git, retire, forgeRefs } = setUp();
 		git(
 			'update-ref',
@@ -111,7 +111,7 @@ describe('retireStrayRef', () => {
 		expect(forgeRefs()).toBe(before);
 	});
 
-	it('retires a rescued ref, keeping its tip on the forge', () => {
+	it('[<2000ms] retires a rescued ref, keeping its tip on the forge', () => {
 		// The start-up rescue kept a00095 edits found in the shared
 		// checkout under refs/delendai/rescued/; once published, nothing
 		// could remove the copy.
@@ -124,7 +124,7 @@ describe('retireStrayRef', () => {
 		expect(git('for-each-ref', '--format=%(refname)', rescued)).toBe('');
 	});
 
-	it('leaves anything that is not a stray ref to the caller', () => {
+	it('[<2000ms] leaves anything that is not a stray ref to the caller', () => {
 		const { retire } = setUp();
 		expect(retire('refs/heads/develop')).toBeUndefined();
 		expect(retire('refs/remotes/origin/develop')).toBeUndefined();

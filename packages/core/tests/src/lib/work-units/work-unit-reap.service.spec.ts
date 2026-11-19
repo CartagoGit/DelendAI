@@ -62,7 +62,7 @@ vi.mock('@delendai/core/lib/work-units/retired-landed.service', () => ({
 vi.mock('@delendai/core/lib/work-units/slice-reservation-reap.service', () => ({
 	reapSpentReservations: m.reapSpentReservations,
 }));
-vi.mock('@delendai/core/lib/work-units/stray-refs-reap.service', () => ({
+vi.mock('@delendai/core/lib/ref-reconciler/stray-refs-sweep.service', () => ({
 	reapStrayRefs: m.reapStrayRefs,
 }));
 vi.mock('@delendai/core/lib/work-units/retired-machinery-reap.service', () => ({
