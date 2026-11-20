@@ -92,6 +92,12 @@ export const rehearsalPolicy = (
 						: {
 								publicationRefPrefix:
 									runPublicationPrefix(integration),
+								// Land derives its batch and repair prefixes from the
+								// namespace, so the run's own root keeps them out of the
+								// real queue's.
+								namespacePrefix: runPublicationPrefix(
+									integration,
+								).replace(/\/$/u, ''),
 							}),
 				},
 				integration: {
