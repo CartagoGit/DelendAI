@@ -2,14 +2,14 @@
 id: x01092
 title: "The core-proposals boundary lint fails on what its spec fails on"
 kind: fix
-status: review
+status: done
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: 76932e7d-9036-4096-acd9-33e18172776a
-last-correlation-id: 76932e7d-9036-4096-acd9-33e18172776a
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T02:01:17.573Z
+last-transition-id: 264fb41e-0217-43e1-8363-31052e5a105d
+last-correlation-id: 264fb41e-0217-43e1-8363-31052e5a105d
+last-transition-from: review
+last-transition-at: 2026-11-20T23:38:40.748Z
 shipped-in:
   - "d97732a47200690f68f9f94f11d7bd03ba9406c1"
 ---
