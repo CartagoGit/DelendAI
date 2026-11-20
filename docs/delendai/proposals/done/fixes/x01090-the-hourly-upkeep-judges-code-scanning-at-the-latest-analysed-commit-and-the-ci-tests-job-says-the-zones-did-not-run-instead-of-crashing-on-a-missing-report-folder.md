@@ -2,14 +2,14 @@
 id: x01090
 title: "The hourly upkeep judges code scanning at the latest analysed commit, and the CI tests job says the zones did not run instead of crashing on a missing report folder"
 kind: fix
-status: review
+status: done
 type: proposal
 track: architecture
 date: 2026-11-17
-last-transition-id: 135de960-83a5-4588-bc0b-78b5ab4c665e
-last-correlation-id: 135de960-83a5-4588-bc0b-78b5ab4c665e
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T01:21:51.288Z
+last-transition-id: 2b8fc67a-d4cc-47eb-9252-265eb25f088b
+last-correlation-id: 2b8fc67a-d4cc-47eb-9252-265eb25f088b
+last-transition-from: review
+last-transition-at: 2026-11-20T22:16:44.972Z
 shipped-in:
   - "19ccc8b30a8b86c76a6621404821711071fd7844"
 ---
