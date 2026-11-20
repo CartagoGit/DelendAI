@@ -10,7 +10,9 @@ import {
 	REHEARSAL_CHECKOUT_ACTION,
 	REHEARSAL_DOWNLOAD_ACTION,
 	REHEARSAL_GROUP_REPORTS_DIR,
+	REHEARSAL_IN_PROCESS_COMMAND,
 	REHEARSAL_JOB_TIMEOUT_MINUTES,
+	REHEARSAL_REAL_FORGE_CONDITION,
 	REHEARSAL_REPORT_DIR,
 	REHEARSAL_REPORT_RETENTION_DAYS,
 	REHEARSAL_UPLOAD_ACTION,
@@ -32,6 +34,7 @@ const repoSetup = [
 const planJob = (command: string): readonly string[] => [
 	'    plan:',
 	'        name: plan',
+	`        if: ${REHEARSAL_REAL_FORGE_CONDITION}`,
 	'        runs-on: ubuntu-latest',
 	`        timeout-minutes: ${String(PLAN_TIMEOUT_MINUTES)}`,
 	'        outputs:',
@@ -58,6 +61,7 @@ const playJob = (input: {
 	'    play:',
 	'        name: play ${{ matrix.group }}/${{ needs.plan.outputs.total }}',
 	'        needs: plan',
+	`        if: ${REHEARSAL_REAL_FORGE_CONDITION}`,
 	'        runs-on: ubuntu-latest',
 	`        timeout-minutes: ${String(REHEARSAL_JOB_TIMEOUT_MINUTES)}`,
 	'        strategy:',
@@ -100,7 +104,7 @@ const reportJob = (command: string): readonly string[] => [
 	'    report:',
 	'        name: report',
 	'        needs: [plan, play]',
-	'        if: always()',
+	`        if: always() && ${REHEARSAL_REAL_FORGE_CONDITION}`,
 	'        runs-on: ubuntu-latest',
 	`        timeout-minutes: ${String(REPORT_TIMEOUT_MINUTES)}`,
 	'        steps:',
@@ -130,13 +134,51 @@ const reportJob = (command: string): readonly string[] => [
 	`${STEP}      retention-days: ${String(REHEARSAL_REPORT_RETENTION_DAYS)}`,
 ];
 
+/** What a pull request runs: the rehearsal on the in-process fake forge, which opens nothing on the real one. */
+const inProcessJob = (): readonly string[] => [
+	'    in-process:',
+	'        name: in-process',
+	"        if: github.event_name == 'pull_request'",
+	'        runs-on: ubuntu-latest',
+	`        timeout-minutes: ${String(PLAN_TIMEOUT_MINUTES)}`,
+	'        steps:',
+	...repoSetup,
+	`${STEP}- name: Play the land specs against the fake forge`,
+	`${STEP}  run: ${REHEARSAL_IN_PROCESS_COMMAND}`,
+	'',
+];
+
+/** The `cleanup` job: sweeps what the plays left, even when a play failed or was cancelled. */
+const cleanupJob = (input: {
+	readonly identity: readonly string[];
+	readonly token: string;
+	readonly command: string;
+}): readonly string[] => [
+	'',
+	'    cleanup:',
+	'        name: cleanup',
+	'        needs: [play]',
+	`        if: always() && ${REHEARSAL_REAL_FORGE_CONDITION}`,
+	'        runs-on: ubuntu-latest',
+	`        timeout-minutes: ${String(REPORT_TIMEOUT_MINUTES)}`,
+	'        steps:',
+	...input.identity.map((line) => (line === '' ? line : `${STEP}${line}`)),
+	...repoSetup,
+	`${STEP}- name: Close the pull requests and delete the refs of the run`,
+	`${STEP}  env:`,
+	`${STEP}      GH_TOKEN: ${input.token}`,
+	`${STEP}  run: ${input.command} integration rehearse --sweep`,
+];
+
 /** The `jobs:` body of the rehearsal workflow. */
 export const rehearsalGroupJobs = (input: {
 	readonly identity: readonly string[];
 	readonly token: string;
 	readonly command: string;
 }): readonly string[] => [
+	...inProcessJob(),
 	...planJob(input.command),
 	...playJob(input),
 	...reportJob(input.command),
+	...cleanupJob(input),
 ];

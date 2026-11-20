@@ -19,6 +19,7 @@ import {
 	REHEARSAL_TOKEN_PUSH_LABEL,
 	REHEARSAL_TOKEN_RUN_NAME,
 	REHEARSAL_WORKFLOW_NAME,
+	REHEARSAL_REAL_PUSH_PATHS,
 } from '../contracts/constants/rehearsal.constant';
 
 import { renderSignalJob } from './integration-adoption.service';
@@ -178,9 +179,10 @@ export const renderRehearsalTokenWorkflow = (input: {
 };
 
 /**
- * The workflow that runs the rehearsal: on demand, and on a push to a
- * publication branch that touches the integration code. It never runs on the
- * integration or release branch. Three jobs: `plan` cuts the catalogue into
+ * The workflow that runs the rehearsal: on demand, on a push to the
+ * integration branch that touches the land engine (real forge, once per merge),
+ * and on a pull request, which plays in process against the fake forge and
+ * opens nothing on the real one. Three jobs: `plan` cuts the catalogue into
  * groups, `play` plays one group per job, `report` merges their reports and
  * reports whatever happened.
  */
@@ -202,10 +204,15 @@ export const renderRehearsalWorkflow = (input: {
 		`        branches: ['${input.integration}']`,
 		'        paths:',
 		...input.codePaths.map((path) => `            - '${path}'`),
+		'    push:',
+		`        branches: ['${input.integration}']`,
+		'        paths:',
+		...REHEARSAL_REAL_PUSH_PATHS.map((path) => `            - '${path}'`),
 		'',
-		"# One rehearsal at a time: a second run would read the first one's branches.",
+		"# One real-forge rehearsal at a time: a second run would read the first one's branches.",
+		'# A pull request plays in process and never waits for it.',
 		'concurrency:',
-		`    group: ${REHEARSAL_WORKFLOW_NAME}`,
+		`    group: ${REHEARSAL_WORKFLOW_NAME}-\${{ github.event_name == 'pull_request' && github.ref || 'real' }}`,
 		'    cancel-in-progress: false',
 		'',
 		'permissions:',

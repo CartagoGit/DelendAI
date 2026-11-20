@@ -301,3 +301,17 @@ export const REHEARSAL_HEAD_UNIT = 'rehearsal/implement/x00000-S1-g1';
 
 /** The mode a run plays when nobody chose: a push has no inputs. */
 export const MODE_EXPRESSION = "${{ inputs.mode || 'fast' }}";
+
+/** What a merge to the integration branch must touch for the real-forge rehearsal to run once for it. */
+export const REHEARSAL_REAL_PUSH_PATHS = [
+	'packages/core/src/lib/integration/land/**',
+	'plugins/integration/src/**',
+] as const;
+
+/** The condition of the jobs that act on the real forge: never a pull request. */
+export const REHEARSAL_REAL_FORGE_CONDITION =
+	"github.event_name != 'pull_request'";
+
+/** What a pull request runs instead: the rehearsal specs, on the in-process fake forge. */
+export const REHEARSAL_IN_PROCESS_COMMAND =
+	'bunx vitest run --maxWorkers=2 plugins/integration/tests/src/lib/services/rehearsal packages/core/tests/src/lib/integration/land';

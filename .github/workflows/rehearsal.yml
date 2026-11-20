@@ -20,10 +20,16 @@ on:
         paths:
             - 'plugins/integration/**'
             - '.github/workflows/rehearsal.yml'
+    push:
+        branches: ['develop']
+        paths:
+            - 'packages/core/src/lib/integration/land/**'
+            - 'plugins/integration/src/**'
 
-# One rehearsal at a time: a second run would read the first one's branches.
+# One real-forge rehearsal at a time: a second run would read the first one's branches.
+# A pull request plays in process and never waits for it.
 concurrency:
-    group: rehearsal
+    group: rehearsal-${{ github.event_name == 'pull_request' && github.ref || 'real' }}
     cancel-in-progress: false
 
 permissions:
@@ -33,8 +39,20 @@ permissions:
     actions: read
 
 jobs:
+    in-process:
+        name: in-process
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Play the land specs against the fake forge
+              run: bunx vitest run --maxWorkers=2 plugins/integration/tests/src/lib/services/rehearsal packages/core/tests/src/lib/integration/land
+
     plan:
         name: plan
+        if: github.event_name != 'pull_request'
         runs-on: ubuntu-latest
         timeout-minutes: 10
         outputs:
@@ -54,6 +72,7 @@ jobs:
     play:
         name: play ${{ matrix.group }}/${{ needs.plan.outputs.total }}
         needs: plan
+        if: github.event_name != 'pull_request'
         runs-on: ubuntu-latest
         timeout-minutes: 45
         strategy:
@@ -97,7 +116,7 @@ jobs:
     report:
         name: report
         needs: [plan, play]
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         runs-on: ubuntu-latest
         timeout-minutes: 10
         steps:
@@ -125,3 +144,24 @@ jobs:
                   path: .cache/delendai/rehearsal/report-${{ inputs.mode || 'fast' }}.json
                   if-no-files-found: ignore
                   retention-days: 30
+
+    cleanup:
+        name: cleanup
+        needs: [play]
+        if: always() && github.event_name != 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Mint the integrator identity token
+              id: identity
+              uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+              with:
+                  app-id: ${{ vars.DELENDAI_APP_ID }}
+                  private-key: ${{ secrets.DELENDAI_APP_PRIVATE_KEY }}
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Close the pull requests and delete the refs of the run
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+              run: bun run cli -- integration rehearse --sweep
