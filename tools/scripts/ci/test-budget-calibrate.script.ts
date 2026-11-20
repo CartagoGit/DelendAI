@@ -45,7 +45,11 @@ import { INTEGRATION_REF } from './declared-test-budget';
 import { checkBudgets } from './test-budget-check';
 import {
 	budgetChanges,
+	estimatesOfRuns,
 	longestDurations,
+	mayWriteEstimates,
+	withProvisionalEstimates,
+	type ITestEstimates,
 	measuredTestsOfBlob,
 	referenceOfDurations,
 	type ITestDurations,
@@ -172,6 +176,66 @@ const requireCalibrated = (blobs: string): number => {
 	return verdict.code;
 };
 
+const ESTIMATES_FILE = 'tools/scripts/test/test-time-estimates.json';
+
+const readEstimates = (): ITestEstimates => {
+	try {
+		const parsed = JSON.parse(
+			readFileSync(resolve(repoRoot(), ESTIMATES_FILE), 'utf8'),
+		) as { estimates?: ITestEstimates };
+		return parsed.estimates ?? {};
+	} catch {
+		return {};
+	}
+};
+
+/** The durations one downloaded run's shards digested (its own directory under `dir`). */
+const durationsOfRun = (runDir: string): ITestDurations => {
+	let durations: ITestDurations = {};
+	for (const file of jsonFiles(runDir)) {
+		const part = JSON.parse(readFileSync(file, 'utf8')) as ITestDurations;
+		durations = longestDurations(
+			Object.entries(part).flatMap(([f, tests]) =>
+				Object.entries(tests).map(([name, tookMs]) => ({
+					file: f,
+					name,
+					tookMs,
+				})),
+			),
+			durations,
+		);
+	}
+	return durations;
+};
+
+/**
+ * Estimate each test as the p95 of develop's runs (load-normalized); a test
+ * with no history keeps a provisional one from the first run. Prints them,
+ * and writes the file only on develop.
+ */
+const estimateFromDevelop = (dir: string, runs: readonly string[]): void => {
+	const perRun = runs.map((run) => durationsOfRun(join(dir, run)));
+	const existing = readEstimates();
+	const estimates = {
+		...withProvisionalEstimates(existing, perRun[0] ?? {}),
+		...estimatesOfRuns(perRun),
+	};
+	console.log(JSON.stringify({ estimates }, null, '\t'));
+	if (!mayWriteEstimates(process.env, INTEGRATION_BRANCH)) {
+		console.log(
+			`test-budget-calibrate: ${String(Object.keys(estimates).length)} estimate(s) not written (only on ${INTEGRATION_BRANCH}, never on a PR).`,
+		);
+		return;
+	}
+	writeFileSync(
+		resolve(repoRoot(), ESTIMATES_FILE),
+		`${JSON.stringify({ estimates }, null, '\t')}\n`,
+	);
+	console.log(
+		`test-budget-calibrate: wrote ${String(Object.keys(estimates).length)} estimate(s) to ${ESTIMATES_FILE}.`,
+	);
+};
+
 const main = (): number => {
 	const blobs = arg('digest');
 	if (blobs !== undefined)
@@ -193,6 +257,8 @@ const main = (): number => {
 		);
 		return 2;
 	}
+	if (arg('from-develop') !== undefined && runs.length > 0)
+		estimateFromDevelop(dir, runs);
 	let durations: ITestDurations = {};
 	for (const file of jsonFiles(dir)) {
 		const part = JSON.parse(readFileSync(file, 'utf8')) as ITestDurations;

@@ -50,6 +50,9 @@ jobs:
               env:
                   GH_TOKEN: ${{ github.token }}
                   RUNS: ${{ inputs.runs || '10' }}
+                  # Also writes tools/scripts/test/test-time-estimates.json (p95 of
+                  # these runs, load-normalized); never on a pull request.
+                  ESTIMATES_BRANCH: develop
               run: bun run test:budgets:calibrate --from-develop="$RUNS" --update
 
             - name: Keep the calibration as a patch

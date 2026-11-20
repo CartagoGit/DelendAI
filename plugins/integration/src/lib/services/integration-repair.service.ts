@@ -10,6 +10,7 @@ import {
 	integrationProtocolRefusal,
 	knownFailingNoteOf,
 	landConfigFromPolicy,
+	landRepairPrefix,
 	repairDevelopRed,
 } from '@delendai/core/cli';
 import type { ILandCiRun } from '@delendai/core/cli';
@@ -17,7 +18,6 @@ import type { ILandCiRun } from '@delendai/core/cli';
 import {
 	BATCH_COMMIT_IDENTITY,
 	LAND_REMOTE,
-	LAND_REPAIR_SEGMENT,
 } from '../contracts/constants/integration-pass.constant';
 import type { IIntegrationPassInput } from '../contracts/interfaces/integration-pass.interface';
 
@@ -86,7 +86,7 @@ export const runIntegrationRepair = async (
 			exec,
 		}),
 		sectionOfCheck: ports.sectionOfCheck,
-		repairPrefix: `${config.batchPrefix.replace(/queue\/$/u, '')}${LAND_REPAIR_SEGMENT}/`,
+		repairPrefix: landRepairPrefix(config.batchPrefix),
 		note: (line) => log(`land-repair: ${line}`),
 		recentRuns: async (): Promise<readonly ILandCiRun[]> => {
 			const out = await input.runGh([

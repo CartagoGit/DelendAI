@@ -183,7 +183,16 @@ export const reviewClaims = async (
 		// commit, when its tip is still the integration branch's.
 		if (worktree.length === 0 && ended.has(name)) continue;
 		// A unit whose holder has gone quiet holds nothing; its work stays.
-		if (holding !== undefined && !holding(name)) continue;
+		// A published review the integration branch does not hold yet is not
+		// a lease but pending work: a second reviewer would redo its verdicts.
+		const published =
+			name.startsWith('refs/remotes/') &&
+			ownedPrefixPairs(shape).some(
+				({ publication }) =>
+					publication.length > 0 &&
+					name.split('/').slice(3).join('/').startsWith(publication),
+			);
+		if (!published && holding !== undefined && !holding(name)) continue;
 		const ref = ownedWorkRefFor(name, shape);
 		if (ref === undefined) continue;
 		const identity = parser.parse(ref);

@@ -210,7 +210,7 @@ describe('a unit under the scope grammar (f00808)', () => {
 
 	it('[<400ms] chooseGeneration reads -G{n} from the name when the trailer is absent', () => {
 		const root = repo();
-		const scoped = SCOPED.replace('x00001-S1-G2', 'x00001-S1-G2');
+		const scoped = SCOPED;
 		git(root, 'update-ref', scoped, 'HEAD');
 		const dir = `${root}-wt-sg`;
 		git(

@@ -207,3 +207,70 @@ export const withCalibratedBudget = (
 		? parts.join(`[<${String(change.calibrated)}ms] ${rest}`)
 		: undefined;
 };
+
+/** A test's estimate: its id (`<spec> > <name>`) to milliseconds at the reference load. */
+export type ITestEstimates = Readonly<Record<string, number>>;
+
+/** The id a test's estimate is kept under: its spec and its name without the `[<Nms]` prefix. */
+export const testEstimateId = (file: string, name: string): string =>
+	`${file} > ${name.replace(BUDGET_PREFIX, '')}`;
+
+/** The nearest-rank 95th percentile of `values`; nothing for none. */
+export const percentile95 = (values: readonly number[]): number | undefined => {
+	if (values.length === 0) return undefined;
+	const sorted = [...values].sort((a, b) => a - b);
+	return sorted[Math.max(0, Math.ceil(sorted.length * 0.95) - 1)];
+};
+
+const estimatedTimes = (
+	run: ITestDurations,
+): readonly (readonly [string, number])[] =>
+	Object.entries(run)
+		.filter(([file]) => file !== LOAD_ENTRY)
+		.flatMap(([file, tests]) =>
+			Object.entries(tests).map(
+				([name, ms]) => [testEstimateId(file, name), ms] as const,
+			),
+		);
+
+/**
+ * Each test's estimate: the p95 of the times the develop `runs` measured,
+ * every one already taken to the reference load (see `longestDurations`),
+ * so a run measured under a doubled load factor estimates the same.
+ */
+export const estimatesOfRuns = (
+	runs: readonly ITestDurations[],
+): ITestEstimates => {
+	const perTest = new Map<string, number[]>();
+	for (const run of runs)
+		for (const [id, ms] of estimatedTimes(run))
+			perTest.set(id, [...(perTest.get(id) ?? []), ms]);
+	const out: Record<string, number> = {};
+	for (const [id, times] of perTest)
+		out[id] = Math.round((percentile95(times) ?? 0) * 10) / 10;
+	return out;
+};
+
+/**
+ * `existing` plus a provisional estimate, from this green run's time, for
+ * every test that has none: no author edits the estimates file.
+ */
+export const withProvisionalEstimates = (
+	existing: ITestEstimates,
+	green: ITestDurations,
+): ITestEstimates => {
+	const out: Record<string, number> = { ...existing };
+	for (const [id, ms] of estimatedTimes(green)) out[id] ??= ms;
+	return out;
+};
+
+/** Whether the estimates file may be written: only on the integration branch, never a PR. */
+export const mayWriteEstimates = (
+	env: Readonly<Record<string, string | undefined>>,
+	integrationBranch: string,
+): boolean =>
+	env.GITHUB_EVENT_NAME !== 'pull_request' &&
+	env.GITHUB_EVENT_NAME !== 'pull_request_target' &&
+	// A scheduled workflow runs on the default branch and checks develop out:
+	// it names the branch it works on in ESTIMATES_BRANCH.
+	(env.ESTIMATES_BRANCH ?? env.GITHUB_REF_NAME) === integrationBranch;
