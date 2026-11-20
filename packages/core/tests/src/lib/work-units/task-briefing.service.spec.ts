@@ -22,11 +22,11 @@ afterEach(() => {
 });
 
 describe('the task briefing', () => {
-	it('is nothing without a provider', async () => {
+	it('[<20ms] is nothing without a provider', async () => {
 		expect(await taskBriefingFor(request)).toBeUndefined();
 	});
 
-	it('comes from the provider', async () => {
+	it('[<20ms] comes from the provider', async () => {
 		registerTaskBriefingProvider(async () => task);
 		registerTaskReachProvider(async () => undefined);
 		expect(await taskBriefingFor(request)).toEqual({
@@ -36,7 +36,7 @@ describe('the task briefing', () => {
 		});
 	});
 
-	it('adds consumers and specs from the graph, capped', async () => {
+	it('[<20ms] adds consumers and specs from the graph, capped', async () => {
 		registerTaskBriefingProvider(async () => task);
 		const many = Array.from({ length: 30 }, (_, i) => `c${String(i)}.ts`);
 		registerTaskReachProvider(async (_worktree, files) => {
@@ -48,7 +48,7 @@ describe('the task briefing', () => {
 		expect(out?.specs).toEqual(['a.spec.ts', 'x.spec.ts']);
 	});
 
-	it('survives a graph that fails', async () => {
+	it('[<20ms] survives a graph that fails', async () => {
 		registerTaskBriefingProvider(async () => task);
 		registerTaskReachProvider(async () => {
 			throw new Error('no graph');
@@ -56,14 +56,14 @@ describe('the task briefing', () => {
 		expect((await taskBriefingFor(request))?.specs).toEqual(task.specs);
 	});
 
-	it('never fails an entry', async () => {
+	it('[<20ms] never fails an entry', async () => {
 		registerTaskBriefingProvider(async () => {
 			throw new Error('unreadable');
 		});
 		expect(await taskBriefingFor(request)).toBeUndefined();
 	});
 
-	it('reads to a person', () => {
+	it('[<20ms] reads to a person', () => {
 		expect(
 			describeTaskBriefing({
 				...task,
