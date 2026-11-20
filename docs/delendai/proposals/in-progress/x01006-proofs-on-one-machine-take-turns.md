@@ -2,14 +2,14 @@
 id: x01006
 title: "Proofs on one machine take turns"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: c482dd83-e811-441c-a130-6f204323cb7f
-last-correlation-id: c482dd83-e811-441c-a130-6f204323cb7f
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T11:38:31.290Z
+last-transition-id: 28a9f06d-5d44-4d7d-8d8d-9569324394b3
+last-correlation-id: 28a9f06d-5d44-4d7d-8d8d-9569324394b3
+last-transition-from: review
+last-transition-at: 2026-11-19T23:28:05.781Z
 ---
 
 # x01006 — Proofs on one machine take turns
@@ -32,7 +32,7 @@ On 2026-11-03 several agents proved units at once on one machine (load 20-30): e
 - global_gate: none
 
 ### S1 — Put the proof under the compute slot
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/lib/contracts/constants/compute-slot.constant.ts`, `packages/core/src/lib/contracts/interfaces/compute-slot.interface.ts`, `tools/scripts/lib/with-compute-lock.script.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.e2e.spec.ts`
 - **Gate**: none
 - acceptance:

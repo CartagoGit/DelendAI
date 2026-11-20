@@ -2,14 +2,14 @@
 id: x00993
 title: "The already-implemented lint reads git once, so lint-governance finishes inside its time limit"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 194717b7-5709-49d8-88a5-843786c1964b
-last-correlation-id: 194717b7-5709-49d8-88a5-843786c1964b
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:35:57.697Z
+last-transition-id: 027af331-f51b-4232-959c-bbc0d7396512
+last-correlation-id: 027af331-f51b-4232-959c-bbc0d7396512
+last-transition-from: review
+last-transition-at: 2026-11-19T23:26:13.651Z
 ---
 
 # x00993 — The already-implemented lint reads git once, so lint-governance finishes inside its time limit
@@ -32,7 +32,7 @@ On 2026-10-28 all twelve open pull requests were BLOCKED and none was armed. Eve
 - global_gate: type
 
 ### S1 — One `git ls-files` and one history walk
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/lib/git-file-origin.ts`, `tools/scripts/lint/proposal-already-implemented.script.ts`, `tools/tests/lib/git-file-origin.spec.ts`
 - **Gate**: type
 - acceptance:

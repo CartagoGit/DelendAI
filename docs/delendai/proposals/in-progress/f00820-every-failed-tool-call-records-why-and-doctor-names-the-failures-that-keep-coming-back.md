@@ -2,14 +2,14 @@
 id: f00820
 title: "Every failed tool call records why, and doctor names the failures that keep coming back"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: feats
 date: 2026-11-18
-last-transition-id: fae49456-46db-48a5-95be-a5ca4eb85e93
-last-correlation-id: fae49456-46db-48a5-95be-a5ca4eb85e93
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T03:21:52.633Z
+last-transition-id: f8872d48-4ba3-4b30-83ad-eb4abbdf04a4
+last-correlation-id: f8872d48-4ba3-4b30-83ad-eb4abbdf04a4
+last-transition-from: review
+last-transition-at: 2026-11-19T23:24:24.375Z
 shipped-in:
   - "64d614baf4ee024c4a9ed2396f26533bfdcd0cbd"
 ---
@@ -64,7 +64,7 @@ Measured 2026-11-18 over .cache/delendai/runtime/events.jsonl, 2026-11-11..18: r
 - review-log: approved by mai-code-2 — verified at 64d614baf4ee, validate exit 0 and tests 28/28 claimed, no recorded run cited; acceptance 2/2: (1) runFailuresView reads <workspace>/<cacheDir>/runtime/events.jsonl with a default 7-day window, summariseToolFailures folds tool.completed/tool.failed events an… (2) kpis.command.spec.ts supplies JSONL with completed/failed events, asserts b before a, exact calls/failureShare/topCodes order in JSON, missing/odd-line behavio… — Reviewed the delivered diff and current implementation; no later change touches these slice files. The 28 focused specs pass and the lint gate exits 0. The failures view reads project runtime events, folds calls/failures and ranks failure codes consistently in text and JSON.
 
 ### S3 — doctor reports a recurring failure code
-- **Status**: pending
+- **Status**: in-progress
 - **DependsOn**: [S2]
 - **Files**: `packages/cli/src/commands/doctor-checks/recurring-tool-failures.check.ts`, `packages/cli/src/commands/doctor-checks/recurring-tool-failures.check.spec.ts`, `packages/cli/src/commands/doctor.ts`
 - **Gate**: lint

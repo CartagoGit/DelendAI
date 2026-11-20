@@ -2,14 +2,14 @@
 id: x01010
 title: "The maintenance lease lives in the shared checkout, not in a worktree"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-03
-last-transition-id: b257d91f-6c4b-47cc-b343-ad6c4aebe4d2
-last-correlation-id: b257d91f-6c4b-47cc-b343-ad6c4aebe4d2
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T08:08:32.409Z
+last-transition-id: 4714fa09-657f-4ca6-a381-50715f7c5c6f
+last-correlation-id: 4714fa09-657f-4ca6-a381-50715f7c5c6f
+last-transition-from: review
+last-transition-at: 2026-11-19T23:28:47.494Z
 ---
 
 # x01010 — The maintenance lease lives in the shared checkout, not in a worktree

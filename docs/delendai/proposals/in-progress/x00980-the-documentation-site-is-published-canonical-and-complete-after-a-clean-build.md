@@ -2,14 +2,14 @@
 id: x00980
 title: "The documentation site is published, canonical and complete after a clean build"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-24
-last-transition-id: e2688ed5-cb49-4b8c-8fda-14ca35732fec
-last-correlation-id: e2688ed5-cb49-4b8c-8fda-14ca35732fec
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T20:26:04.621Z
+last-transition-id: cd9e7595-0cbd-4b3f-93cb-40d093be05cb
+last-correlation-id: cd9e7595-0cbd-4b3f-93cb-40d093be05cb
+last-transition-from: review
+last-transition-at: 2026-11-19T23:25:47.681Z
 ---
 
 # x00980 — The documentation site is published, canonical and complete after a clean build
@@ -31,7 +31,7 @@ Joint audit a00095. G136: the documentation site is not published: has_pages is 
 - global_gate: type
 
 ### S1 — Pages publishes the site
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `.github/workflows/pages.yml`, `apps/web/astro.config.mjs`
 - **Gate**: type
 - acceptance:
@@ -43,7 +43,7 @@ Joint audit a00095. G136: the documentation site is not published: has_pages is 
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S2 — Canonical, hreflang, one h1
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `apps/web/src/layouts/Base.astro`, `apps/web/src/pages/capabilities.astro`, `apps/web/src/pages/[lang]/capabilities.astro`
 - **Gate**: type
 - acceptance:
@@ -55,7 +55,7 @@ Joint audit a00095. G136: the documentation site is not published: has_pages is 
 - review-log: requested_changes by gpt-5.3-codex — Need empirical acceptance evidence in this review round (validate exit code, test pass/total, and shipped commit hash) so the slice can be approved under current review policy.
 
 ### S3 — /api is built, not linked
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `apps/web/scripts/sync-public-api.ts`, `apps/web/package.json`
 - **Gate**: type
 - acceptance:

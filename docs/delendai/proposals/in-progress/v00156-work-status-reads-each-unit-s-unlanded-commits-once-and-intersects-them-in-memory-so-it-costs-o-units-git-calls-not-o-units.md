@@ -2,14 +2,14 @@
 id: v00156
 title: "work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)"
 kind: perf
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-17
-last-transition-id: d55652b1-be06-4563-91dc-8f185012842f
-last-correlation-id: d55652b1-be06-4563-91dc-8f185012842f
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T13:50:27.922Z
+last-transition-id: 1e93d914-3af2-4c23-b258-6e21f3cb246e
+last-correlation-id: 1e93d914-3af2-4c23-b258-6e21f3cb246e
+last-transition-from: review
+last-transition-at: 2026-11-19T23:25:20.941Z
 ---
 
 # v00156 — work status reads each unit's unlanded commits once and intersects them in memory, so it costs O(units) git calls, not O(units²)
@@ -34,7 +34,7 @@ Acceptance evidence (d), measured in this repo with `nice -n 19`: `strace -f -e 
 - global_gate: none
 
 ### S1 — Read each unit's unlanded commits once; intersect in memory
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/work-units/work-swarm-relations.service.ts`, `packages/core/src/lib/work-units/work-swarm.service.ts`
 - **Gate**: type
 - acceptance:

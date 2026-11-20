@@ -2,14 +2,14 @@
 id: f00804
 title: "The proof slot has an urgent lane"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-11-03
-last-transition-id: f8522331-63f6-4911-ae46-c5df6ace8c85
-last-correlation-id: f8522331-63f6-4911-ae46-c5df6ace8c85
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T11:43:18.447Z
+last-transition-id: b74d4116-a6ab-4622-9f01-c6967b63430e
+last-correlation-id: b74d4116-a6ab-4622-9f01-c6967b63430e
+last-transition-from: review
+last-transition-at: 2026-11-19T23:23:29.037Z
 ---
 
 # f00804 — The proof slot has an urgent lane
@@ -35,7 +35,7 @@ The change is an urgent lane: a unit is urgent when its proposal is a fix and th
 - global_gate: none
 
 ### S1 — Urgent lane in the compute slot
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `packages/core/src/lib/shared/compute-slot.service.ts`, `packages/core/src/lib/shared/compute-slot-lane.service.ts`, `packages/core/src/lib/contracts/interfaces/urgent-turn.interface.ts`, `packages/core/src/lib/contracts/interfaces/compute-slot.interface.ts`, `packages/core/src/runtime/index.ts`, `packages/core/src/lib/contracts/interfaces/unit-proof.interface.ts`, `packages/core/src/lib/work-units/work-unit-proof.service.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-status.service.ts`, `packages/core/src/lib/work-units/urgent-turn.service.ts`, `packages/core/tests/src/lib/shared/compute-slot.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/urgent-turn.service.spec.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`
 - **Gate**: none
 - acceptance:
