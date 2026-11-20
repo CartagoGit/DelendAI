@@ -2,14 +2,14 @@
 id: f00810
 title: "A project pins the delendai release it runs with --version"
 kind: feat
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-08
-last-transition-id: 6840f9bf-a7d1-48ae-8a6d-60d0c35fee71
-last-correlation-id: 6840f9bf-a7d1-48ae-8a6d-60d0c35fee71
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:34:52.068Z
+last-transition-id: 55a0ba2b-3635-4b52-ad63-218a3503a097
+last-correlation-id: 55a0ba2b-3635-4b52-ad63-218a3503a097
+last-transition-from: review
+last-transition-at: 2026-11-20T22:20:43.305Z
 ---
 
 # f00810 — A project pins the delendai release it runs with --version
@@ -31,7 +31,7 @@ Owner request: pin the release a project runs, so landing work in the delendai c
 - global_gate: none
 
 ### S1 — Pin a release with --version
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/host/branch-runtime.helper.ts`, `tools/scripts/host/branch-runtime.helper.spec.ts`, `tools/scripts/host/host-server.script.ts`, `packages/cli/src/commands/init/init.command.ts`
 - **Gate**: none
 - acceptance:

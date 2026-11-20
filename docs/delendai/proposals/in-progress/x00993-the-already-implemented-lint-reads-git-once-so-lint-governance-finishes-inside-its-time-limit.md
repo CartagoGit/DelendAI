@@ -2,14 +2,14 @@
 id: x00993
 title: "The already-implemented lint reads git once, so lint-governance finishes inside its time limit"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: a00095-consistency
 date: 2026-10-28
-last-transition-id: 194717b7-5709-49d8-88a5-843786c1964b
-last-correlation-id: 194717b7-5709-49d8-88a5-843786c1964b
-last-transition-from: in-progress
-last-transition-at: 2026-11-17T07:35:57.697Z
+last-transition-id: 9981a606-1d63-442c-a3ec-8cae49e3c429
+last-correlation-id: 9981a606-1d63-442c-a3ec-8cae49e3c429
+last-transition-from: review
+last-transition-at: 2026-11-20T22:24:29.196Z
 ---
 
 # x00993 — The already-implemented lint reads git once, so lint-governance finishes inside its time limit
