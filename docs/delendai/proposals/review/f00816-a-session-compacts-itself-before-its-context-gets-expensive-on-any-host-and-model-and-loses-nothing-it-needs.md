@@ -10,6 +10,9 @@ last-transition-id: 121f096c-7fdf-4185-bddc-859025088f44
 last-correlation-id: 121f096c-7fdf-4185-bddc-859025088f44
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T02:42:43.711Z
+shipped-in:
+  - "83d022a1235b6764b1d9b0fd50d0b287bca47438"
+  - "e4f1b787e1b487fda2bccc52e8c02fd2a96abce3"
 ---
 
 # f00816 — A session compacts itself before its context gets expensive, on any host and model, and loses nothing it needs
@@ -51,7 +54,7 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - global_gate: lint
 
 ### S1 — Model-selection policy from config
-- **Status**: review
+- **Status**: done
 - **Extends**: `plugins/auto-agent-selector` (`routing/task-mode.service.ts`, `escalate/run-with-escalation.ts`)
 - **Files**: `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/src/lib/escalate/run-with-escalation.ts`, `plugins/auto-agent-selector/tests/src/lib/routing/task-class-tier.service.spec.ts`
 - **Gate**: type
@@ -60,11 +63,13 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "A worker that needs more capacity returns a blocker; nothing escalates automatically."
   - "The model actually used is recorded and a mismatch with the requested one is reported."
 - shipped-in: `1b07857f5f92`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) task-class-tier.service.spec maps mechanical to small, coding to mid, blocks unauthorized top and reads configured tiers. (2) run-with-escalation/auto-run specs show unauthorized tiers become blockers and a failed first rung is not automatically escalated. (3) modelMismatch specs pass for a real model outside the requested set and remain silent for matching/unknown inputs. — Reviewed tier mapping, authorization, blocker behavior and model mismatch detection. Focused f00816 suite passed 86/86.
 
 ### S2 — Closed worker contract
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`
 - **Files**: `plugins/orchestrator-runner/src/lib/invoke/task-pack.service.ts`, `plugins/orchestrator-runner/src/lib/contracts/interfaces/closed-contract.interface.ts`, `plugins/orchestrator-runner/tests/src/lib/invoke/task-pack.spec.ts`
@@ -74,11 +79,13 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "The worker receives only that contract and is told it cannot redesign, widen scope or launch agents; each contract is bound to one isolated unit."
   - "A contract missing a section is refused."
 - shipped-in: `64a1d01af0d0`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) renderTaskPack/renderClosedContract tests enumerate every required section and limits. (2) Closed-contract renderer spec checks the no-redesign/no-widen/no-agents instruction and the unit reference in the contract. (3) task-pack.spec passes the refusal case and verifies the named missing sections. — Reviewed the closed contract shape, renderer, unit binding and missing-section refusal. Focused f00816 suite passed 86/86.
 
 ### S3 — Session handover from delendai's own stores
-- **Status**: review
+- **Status**: done
 - **Extends**: `packages/core/src/lib/work-units/work-unit.service.ts`, `plugins/usage-tracking/src/lib/services/checkpoint-advisory.service.ts`
 - **Files**: `packages/core/src/lib/work-units/session-handover.service.ts`, `packages/core/src/lib/work-units/session-handover.interface.ts`, `packages/core/tests/src/lib/work-units/session-handover.service.spec.ts`
 - **Gate**: type
@@ -87,11 +94,13 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "After compaction a bounded index is re-injected and details are fetched selectively on demand."
   - "A resumed session rebuilds from the stores, never from a model summary; missing information is fetched from its source, never invented."
 - shipped-in: `e9063b122825`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) session-handover.service.spec reads all 12 sections from store ports and persists/reloads the snapshot. (2) Index/detail spec bounds entries and summaries and fetches one full record by section/id. (3) Resume specs rebuild every available section, fall back only to the persisted store artifact for missing sections and assert nothing is invented when neither a… — Reviewed store rebuild, persistence, bounded index, selective detail and no-invention fallback. Focused f00816 suite passed 86/86.
 
 ### S4 — Compaction threshold rendered per host from one policy
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Extends**: `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/hosts/host-capability-profile.ts`
 - **Files**: `packages/core/src/lib/hosts/compaction-policy.helper.ts`, `packages/core/src/lib/hosts/agent-renderers.helper.ts`, `packages/core/src/lib/contracts/interfaces/agent-host.interface.ts`, `packages/core/src/lib/contracts/constants/agent-hosts.constant.ts`, `packages/core/tests/src/lib/hosts/compaction-policy.helper.spec.ts`
@@ -100,22 +109,26 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One policy value renders per host: Claude Code gets CLAUDE_AUTOCOMPACT_PCT_OVERRIDE plus PreCompact and SessionStart hooks that run S3."
   - "A host with a native setting gets it; any other host gets a compact-now directive from the MCP server."
 - shipped-in: `d16f4e651030`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at 83d022a1235b, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 2/2: (1) compaction-policy/helper and host constant specs render the native threshold variable plus before-compaction/session-start handover commands. (2) Renderer specs cover variable-only, hooks-only and directive hosts across the full host list. — Reviewed host-neutral compaction rendering, native hooks and MCP fallback directive. Focused f00816 suite passed 86/86.
 
 ### S1b — Task-class tier policy wired to plugin config
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/auto-agent-selector` (`index.ts` options schema)
 - **Files**: `plugins/auto-agent-selector/src/index.ts`, `plugins/auto-agent-selector/src/lib/tools/auto-run.tool.ts`, `plugins/auto-agent-selector/src/lib/routing/task-class-tier.service.ts`, `plugins/auto-agent-selector/tests/src/index.spec.ts`, `plugins/auto-agent-selector/tests/src/lib/tools/auto-run.tool.spec.ts`
 - **Gate**: type
 - acceptance:
   - "The plugin options carry `taskClassTiers` and `ownerAuthorizedTopTier`; `auto_run` caps the ladder at the tier of the task class and returns a blocker when the top tier lacks the owner authorization."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 1/1: (1) index.spec accepts/refuses the policy options; auto-run.tool.spec caps the ladder and returns a named blocker for unauthorized top tier. — Reviewed plugin options and auto_run tier cap/authorization blocker. Focused f00816 suite passed 86/86.
 
 ### S5a — Ledger record and cost per correct result
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`
 - **Files**: `plugins/usage-tracking/src/lib/types.ts`, `plugins/usage-tracking/src/lib/contracts/invocation-record.interface.ts`, `plugins/usage-tracking/src/lib/contracts/usage-rollup.interface.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup.service.ts`, `plugins/usage-tracking/src/lib/services/usage-rollup-buckets.helper.ts`, `plugins/usage-tracking/src/lib/services/cost-per-correct.helper.ts`, `plugins/usage-tracking/tests/src/lib/services/usage-rollup.service.spec.ts`
@@ -124,11 +137,13 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
   - "One invocation record holds requested model, real model, tokens in, out, cache read and cache write, wall time, turns, retries, task class and an outcome (correct, blocked or failed) set from a gate result, never self-reported."
   - "The rollup reports cost per correct result by task class and model, with the sample count."
   - "Records without the new fields still read."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 3/3: (1) Invocation record/interfaces and usage-rollup tests cover every metric field and derive outcomes only from a gate result. (2) buildCostPerCorrect spec asserts task-class/model grouping, cost per correct and sample count. (3) usage-rollup compatibility spec reads records created before the new ledger fields. — Reviewed invocation ledger shape, gate-derived outcomes, compatibility and cost-per-correct rollups. Focused f00816 suite passed 86/86.
 
 ### S5b — Cost limits and the no-progress stop
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S1]
 - **Extends**: `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`
 - **Files**: `plugins/agent-orchestrator/src/lib/policy/types.ts`, `plugins/agent-orchestrator/src/lib/policy/policy.ts`, `plugins/agent-orchestrator/src/lib/budget/budget-tracker.ts`, `plugins/agent-orchestrator/tests/src/lib/budget/budget-tracker.spec.ts`, `plugins/agent-orchestrator/tests/src/lib/policy/policy.spec.ts`
@@ -136,11 +151,13 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "The budget policy limits calls, turns, retries and concurrency; exceeding one returns a blocker naming the limit."
   - "A run with N consecutive turns and no progress signal stops, using the progress signal the orchestrator already has."
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: approved by mai-code-2 — verified at e4f1b787e1b4, validate exit 0 and tests 86/86 claimed, no recorded run cited; acceptance 2/2: (1) budget-tracker.spec passes each call/turn/retry/concurrency overrun and asserts a blocker names the exact limit. (2) Budget tracker spec stops after the configured barren-turn count via the orchestrator progress signal. — Reviewed budget limit blockers, concurrency release and no-progress stop. Focused f00816 suite passed 86/86.
 
 ### S5c — Proof reuse and duplicate-work detection
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S5a]
 - **Extends**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
 - **Files**: `packages/core/src/lib/work-units/work-unit-proof.service.ts`
@@ -148,8 +165,10 @@ Owner, 2026-11-12. Cost is driven by long expensive contexts, wrong-tier models,
 - acceptance:
   - "Duplicate work is detected across units and a still-valid result or proof is reused."
   - "The report states what cannot be technically guaranteed on each host."
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2
+- review-log: requested_changes by mai-code-2 — The delivery only keys and reuses a proof for the same work-unit tree/command; it does not detect equivalent duplicate work across units or reuse another unit's still-valid result. work-unit-proof.service.spec exercises same-unit proof reuse, reruns after any substantive commit, and proposal-transition invalidation, but has no cross-unit duplicate detector or reuse case. The service also emits no per-host report of what cannot be technically guaranteed. Add an across-unit equivalence key/lookup and reuse evidence plus a host-capability limitations report, then cover both acceptance items with specs.
 
 ## acceptance
 
