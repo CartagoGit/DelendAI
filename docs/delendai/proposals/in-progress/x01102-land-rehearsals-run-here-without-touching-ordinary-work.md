@@ -2,10 +2,14 @@
 id: x01102
 title: "Land rehearsals run here without touching ordinary work"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-19
+last-transition-id: be229684-1443-4ec0-b3ef-3880859dafd8
+last-correlation-id: be229684-1443-4ec0-b3ef-3880859dafd8
+last-transition-from: ready
+last-transition-at: 2026-11-20T23:50:07.125Z
 ---
 
 # x01102 — Land rehearsals run here without touching ordinary work
