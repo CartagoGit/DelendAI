@@ -137,7 +137,7 @@ export const enteredLocked = async (
 		'--git-common-dir',
 	]);
 	if (common === undefined) return enteredHeld(args, ctx);
-	const deadline = Date.now() + ENTER_WAIT_MS;
+	const deadline = performance.now() + ENTER_WAIT_MS;
 	for (;;) {
 		const held = await holdWorkRef({
 			gitCommonDir: common,
@@ -152,7 +152,7 @@ export const enteredLocked = async (
 				await held.release();
 			}
 		}
-		if (Date.now() >= deadline) {
+		if (performance.now() >= deadline) {
 			return refused(
 				`Another instance (${held.holder}) is still entering ${unit}.`,
 				'Try again in a moment; it holds the unit only while it creates its worktree.',
