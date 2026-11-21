@@ -2,14 +2,14 @@
 id: x01114
 title: "Land-repair attributes a red by failing specs and the perf e2e names why its capture fails"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-11-21
-last-transition-id: a7ccc467-2768-4966-8f1d-08ad4e12315f
-last-correlation-id: a7ccc467-2768-4966-8f1d-08ad4e12315f
-last-transition-from: ready
-last-transition-at: 2026-11-21T05:45:05.351Z
+last-transition-id: 416ae3a7-16bd-493d-999a-5e45d4525600
+last-correlation-id: 416ae3a7-16bd-493d-999a-5e45d4525600
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T06:00:54.742Z
 ---
 
 # x01114 — Land-repair attributes a red by failing specs and the perf e2e names why its capture fails
@@ -32,7 +32,7 @@ Follow-up of x01106. Develop bc5442a9a (merge of #3337) went red only on real-pe
 - global_gate: none
 
 ### S1 — Attribute a red by failing specs, not zones
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/integration/land/land-repair.helper.ts`, `packages/core/src/lib/integration/land/land-revert.interface.ts`, `packages/core/src/lib/integration/land/github-land-forge.service.ts`, `plugins/integration/src/lib/services/integration-repair.service.ts`, `packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts`, `packages/core/tests/src/lib/integration/land/github-land-forge.service.spec.ts`, `package.json`
 - **Gate**: none
 - **Decisions**: none
@@ -41,14 +41,20 @@ Follow-up of x01106. Develop bc5442a9a (merge of #3337) went red only on real-pe
   - "packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: a red whose only failure is a zone-level check name reverts nobody"
   - "packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: a failing spec inside one merge footprint still reverts that merge"
   - "packages/core/tests/src/lib/integration/land/github-land-forge.service.spec.ts: a failed check reports the spec paths of its annotations as failingSpecs"
+- shipped-in: `b80afab23220`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Perf profile e2e prints its error and the capture failure is fixed
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
   - "plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts: a failed capture prints the run's error and stderr in the assertion message"
+- shipped-in: `b80afab23220`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
