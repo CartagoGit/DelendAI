@@ -30,6 +30,19 @@ export const KpiTopPluginSchema = z
 	})
 	.strict();
 
+export const KpiTokensPerAcceptedUnitSchema = z
+	.object({
+		host: z.string(),
+		model: z.string(),
+		acceptedUnits: z.number().int().min(0),
+		totalTokens: z.number().min(0),
+		retryTokens: z.number().min(0),
+		discardedSubagentTokens: z.number().min(0),
+		reviewTokens: z.number().min(0),
+		tokensPerAcceptedUnit: z.number().min(0).optional(),
+	})
+	.strict();
+
 export const KpiHealthSectionSchema = z
 	.object({
 		status: z.enum(KPI_VALUE_STATUSES),
@@ -56,6 +69,9 @@ export const KpiUsageSectionSchema = z
 		tokensSaved: KpiMetricSchema,
 		memoryCompactionSavingsTokens: KpiMetricSchema,
 		topPlugins: z.array(KpiTopPluginSchema),
+		tokensPerAcceptedUnit: z
+			.array(KpiTokensPerAcceptedUnitSchema)
+			.optional(),
 		note: z.string().optional(),
 	})
 	.strict();

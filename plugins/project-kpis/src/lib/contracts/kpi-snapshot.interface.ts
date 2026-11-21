@@ -41,6 +41,20 @@ export interface IKpiTopPlugin {
 	readonly costUsd: number;
 }
 
+/** What one host and model spent per unit of work that was accepted. */
+export interface IKpiTokensPerAcceptedUnit {
+	readonly host: string;
+	readonly model: string;
+	readonly acceptedUnits: number;
+	/** Every token the group spent, accepted or not. */
+	readonly totalTokens: number;
+	readonly retryTokens: number;
+	readonly discardedSubagentTokens: number;
+	readonly reviewTokens: number;
+	/** `totalTokens / acceptedUnits`; absent when no unit was accepted. */
+	readonly tokensPerAcceptedUnit?: number;
+}
+
 export interface IKpiHealthSection {
 	readonly status: TKpiValueStatus;
 	readonly source: string;
@@ -64,6 +78,8 @@ export interface IKpiUsageSection {
 	readonly tokensSaved: IKpiMetric;
 	readonly memoryCompactionSavingsTokens: IKpiMetric;
 	readonly topPlugins: readonly IKpiTopPlugin[];
+	/** Absent when no record names a unit of work. */
+	readonly tokensPerAcceptedUnit?: readonly IKpiTokensPerAcceptedUnit[];
 	readonly note?: string;
 }
 

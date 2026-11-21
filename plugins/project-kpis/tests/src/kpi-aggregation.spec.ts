@@ -7,7 +7,10 @@ import type {
 import type { IProjectHealthOutput } from '@delendai/project-health/public';
 
 import { KpiSnapshotOutputSchema } from '../../src/lib/contracts/kpi-snapshot.schema';
-import { buildKpiSnapshot } from '../../src/lib/services/kpi-aggregation.service';
+import {
+	buildKpiSnapshot,
+	computeTokensPerAcceptedUnit,
+} from '../../src/lib/services/kpi-aggregation.service';
 
 const FIXED_NOW = new Date('2026-08-29T12:00:00.000Z');
 
@@ -234,5 +237,51 @@ describe('buildKpiSnapshot', async () => {
 		expect(first.health.next.length).toBeLessThanOrEqual(3);
 		expect(first.usage.topPlugins.length).toBeLessThanOrEqual(3);
 		expect(first.usage.costUsd.status).toBe('measured');
+	});
+});
+
+describe('computeTokensPerAcceptedUnit', () => {
+	const row = (extra: object): IInvocationRecord => ({
+		ts: '2026-08-29T10:00:00.000Z',
+		sessionId: 's1',
+		agent: { id: 'claude', kind: 'claude-code', extension: 'cli' },
+		plugin: 'work',
+		tool: 'work',
+		model: { provider: 'anthropic', modelId: 'sonnet', kind: 'api' },
+		usage: { totalTokens: 100 },
+		costUsd: null,
+		durationMs: 1,
+		outcome: 'success',
+		fallbackFrom: null,
+		error: null,
+		correlation: { id: 'unit-1', source: 'args' },
+		...extra,
+	});
+
+	it('counts a retry, a discarded subagent and review in one unit', () => {
+		const [entry] = computeTokensPerAcceptedUnit([
+			row({
+				delegations: [{ tokensUsed: 50 }],
+				taskOutcome: 'failed',
+			}),
+			row({ retry: true, retries: 1 }),
+			row({ taskClass: 'review', taskOutcome: 'correct' }),
+		]);
+		expect(entry).toEqual({
+			host: 'claude-code',
+			model: 'sonnet',
+			acceptedUnits: 1,
+			totalTokens: 350,
+			retryTokens: 100,
+			discardedSubagentTokens: 50,
+			reviewTokens: 100,
+			tokensPerAcceptedUnit: 350,
+		});
+	});
+
+	it('reports no per-unit figure when nothing was accepted', () => {
+		const [entry] = computeTokensPerAcceptedUnit([row({})]);
+		expect(entry?.acceptedUnits).toBe(0);
+		expect(entry?.tokensPerAcceptedUnit).toBeUndefined();
 	});
 });
