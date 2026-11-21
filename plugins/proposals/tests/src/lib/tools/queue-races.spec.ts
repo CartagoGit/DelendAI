@@ -33,12 +33,14 @@ import { createFakeToolServer } from '@delendai/test-kit/public';
 const mutexFault = vi.hoisted(() => ({ contend: false }));
 
 vi.mock('@delendai/core/runtime', async (importOriginal) => {
-	const actual = await importOriginal<Record<string, unknown>>();
-	const real = actual['withFileMutex'] as (
-		path: string,
-		fn: () => Promise<unknown>,
-		options?: unknown,
-	) => Promise<unknown>;
+	const actual = await importOriginal<{
+		withFileMutex: (
+			path: string,
+			fn: () => Promise<unknown>,
+			options?: unknown,
+		) => Promise<unknown>;
+	}>();
+	const real = actual.withFileMutex;
 	return {
 		...actual,
 		withFileMutex: (
@@ -169,7 +171,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		);
 	};
 
-	it('N concurrent watchdog enqueues land N entries — none lost (barrier)', async () => {
+	it('[<1500ms] N concurrent watchdog enqueues land N entries — none lost (barrier)', async () => {
 		const N = 8;
 		// Barrier: all transactions launched in the same tick, racing the
 		// same queue file. Pre-mutex, most persists overwrote each other.
@@ -187,7 +189,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		);
 	});
 
-	it('names the entries not enqueued when the queue mutex cannot be taken', async () => {
+	it('[<500ms] names the entries not enqueued when the queue mutex cannot be taken', async () => {
 		mutexFault.contend = true;
 		try {
 			const result = await reconcileZombie(0);
@@ -202,7 +204,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		expect(queue.entries).toEqual([]);
 	});
 
-	it('the expire sweep racing concurrent enqueues clobbers nothing', async () => {
+	it('[<1500ms] the expire sweep racing concurrent enqueues clobbers nothing', async () => {
 		const N = 6;
 		const repair = await captureRepairHandler({
 			namespacePrefix: 'proposals',
@@ -227,7 +229,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		}
 	});
 
-	it('serialized transactions keep the one-entry-per-taskId parser invariant', async () => {
+	it('[<500ms] serialized transactions keep the one-entry-per-taskId parser invariant', async () => {
 		// The same zombie reconciled twice concurrently must not append a
 		// duplicate taskId (parseQueue hard-fails on duplicates). Both
 		// reconciles must share the same lock file so each one releases
