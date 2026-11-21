@@ -34,7 +34,7 @@ describe('isBeating', () => {
 describe('heldByAnother', () => {
 	it('[<10ms] a quiet lease never refuses, whatever session stamp is left', () => {
 		expect(
-			heldByAnother('/no/such/worktree', 'mine', false),
+			heldByAnother('/no/such/worktree', 'mine', true),
 		).toBeUndefined();
 	});
 });

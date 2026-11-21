@@ -163,7 +163,7 @@ export const chooseGeneration = (
 	agent: string,
 	proposal: string,
 	slice: string,
-	beating?: ReadonlySet<string>,
+	quiet?: ReadonlySet<string>,
 ): { readonly generation: number } | { readonly refusal: IWorkUnitResult } => {
 	const session = sessionFor(args);
 	// Occupancy is by unit, whatever topic another instance chose.
@@ -216,12 +216,8 @@ export const chooseGeneration = (
 				: [exact]),
 		]);
 		const other = [...refs].find((ref) => {
-			// Only a beating lease holds; a stamp left by a finished owner does not.
-			if (
-				beating !== undefined &&
-				!beating.has(ref.replace(/^refs\/heads\//u, ''))
-			)
-				return false;
+			// A quiet lease holds nothing: the stamp a finished owner left does not.
+			if (quiet?.has(ref.replace(/^refs\/heads\//u, ''))) return false;
 			const holder = sessionHolding(root, ref);
 			return holder !== undefined && holder !== session;
 		});

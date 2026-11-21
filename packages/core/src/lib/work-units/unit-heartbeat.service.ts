@@ -1,5 +1,5 @@
 /**
- * unit-heartbeat.service.ts — which units are beating right now.
+ * unit-heartbeat.service.ts — which units have gone quiet.
  *
  * WHY: a worktree's session stamp outlives its owner. A fixer re-entering a
  * unit was refused "held by a live lease" because the stamp was still there
@@ -26,8 +26,12 @@ export const isBeating = (
 	return Math.max(0, now - lease.heartbeatAt) <= windowSeconds;
 };
 
-/** The short refs of the units whose lease is beating. */
-export const beatingUnitRefs = async (
+/**
+ * The short refs of the units whose lease exists and is not beating. A unit
+ * with no lease yet is mid-entry (its owner records the lease just after
+ * the entry returns), so it is not quiet.
+ */
+export const quietUnitRefs = async (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
 	now: number = nowSeconds(),
@@ -37,7 +41,7 @@ export const beatingUnitRefs = async (
 	const window = leaseWindowSeconds(policy.coordination.leaseTtlMinutes);
 	return new Set(
 		[...(await listUnitLeases(common)).entries()]
-			.filter(([, lease]) => isBeating(lease, now, window))
+			.filter(([, lease]) => !isBeating(lease, now, window))
 			.map(([ref]) => ref),
 	);
 };

@@ -336,16 +336,16 @@ export const withSessionOfCwd = (
 
 /**
  * A refusal when a different session of this agent holds `path`. Only a
- * beating lease holds: a unit whose owner went quiet, or handed it over, is
+ * lease that is not quiet holds: a unit whose owner went quiet, or handed it over, is
  * free to enter.
  */
 export const heldByAnother = (
 	path: string,
 	session: string | undefined,
-	beating: boolean,
+	quiet: boolean,
 ): IWorkUnitResult | undefined => {
 	const held = worktreeSession(path);
-	if (!beating || held === undefined || held === session) return undefined;
+	if (quiet || held === undefined || held === session) return undefined;
 	return refused(
 		`${path} is held by a live lease of a different session: the unit has one editor at a time, even under the same agent id.`,
 		'If this is your unit, pass the --session you were given when you entered it (or set DELENDAI_SESSION_ID). Otherwise enter your own unit: a different --topic, or --generation=<next>.',

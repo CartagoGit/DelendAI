@@ -30,7 +30,7 @@ import { journalEnteredUnit } from './work-event-journal.service';
 import { readWorkspacePolicy } from './development-policy.service';
 import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 
-import { beatingUnitRefs, shortBranch } from './unit-heartbeat.service';
+import { quietUnitRefs, shortBranch } from './unit-heartbeat.service';
 import {
 	agentFor,
 	claimWorktree,
@@ -213,7 +213,7 @@ export const enteredHeld = async (
 		});
 		if (held !== undefined) return held;
 	}
-	const beating = await beatingUnitRefs(root, policy);
+	const quiet = await quietUnitRefs(root, policy);
 	if (scalarArg(args, 'generation') === undefined) {
 		const chosen = chooseGeneration(
 			root,
@@ -222,7 +222,7 @@ export const enteredHeld = async (
 			agent,
 			proposal,
 			slice,
-			beating,
+			quiet,
 		);
 		if ('refusal' in chosen) return chosen.refusal;
 		args = [...args, `--generation=${String(chosen.generation)}`];
@@ -264,7 +264,7 @@ export const enteredHeld = async (
 		const held =
 			path === undefined
 				? undefined
-				: heldByAnother(path, session, beating.has(shortBranch(ref)));
+				: heldByAnother(path, session, quiet.has(shortBranch(ref)));
 		if (held !== undefined) return held;
 		const claimed =
 			path === undefined ? session : claimWorktree(path, agent, session);
@@ -290,7 +290,7 @@ export const enteredHeld = async (
 		heldByAnother(
 			continued.path,
 			session,
-			beating.has(shortBranch(continued.ref)),
+			quiet.has(shortBranch(continued.ref)),
 		) === undefined
 	) {
 		const path = continued.path;
