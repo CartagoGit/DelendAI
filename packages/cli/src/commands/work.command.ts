@@ -4,6 +4,7 @@
  * `progress` view of the work, which is the CLI's own.
  */
 import { spawnSync } from 'node:child_process';
+import { basename, dirname } from 'node:path';
 
 import {
 	compileOwnedWorkRefParser,
@@ -48,6 +49,8 @@ import {
 	flagsOfLiveUnit,
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
+import type { ILeaveWorktreePorts } from '../contracts/interfaces/leave-worktree-ports.interface';
+import type { ILoadedOnce } from '../contracts/interfaces/loaded-once.interface';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -149,6 +152,78 @@ const runRenameNamespace = async (
 		: { code: EXIT_CODE.VALIDATION, error: report.message };
 };
 
+/**
+ * The last submit removes the unit worktree, and a module imported lazily
+ * from it afterwards fails with ENOENT, losing the end-of-run answer. The
+ * verbs that can end a unit start these loads up front; every later use
+ * awaits the same promise.
+ */
+const WORKTREE_ENDING_VERBS: ReadonlySet<string> = new Set([
+	'deliver',
+	'publish',
+	'prove',
+]);
+
+/** Whether a run of `verb` can remove the unit worktree it was started in. */
+export const endsWorktree = (verb: string): boolean =>
+	WORKTREE_ENDING_VERBS.has(verb);
+
+/** Loads `load` at most once, on `preload()` rather than on first use. */
+export const loadedOnce = <T>(load: () => Promise<T>): ILoadedOnce<T> => {
+	let pending: Promise<T> | undefined;
+	const get = (): Promise<T> => {
+		pending ??= load();
+		return pending;
+	};
+	return {
+		preload: () => {
+			// An unused failed load must not become an unhandled rejection.
+			get().catch(() => undefined);
+		},
+		get,
+	};
+};
+
+const gitLocate: ILeaveWorktreePorts['locate'] = (cwd) => {
+	const read = spawnSync(
+		'git',
+		[
+			'rev-parse',
+			'--path-format=absolute',
+			'--show-toplevel',
+			'--git-common-dir',
+		],
+		{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+	);
+	const [top, commonDir] = read.stdout?.trim().split('\n') ?? [];
+	return read.status === 0 && top && commonDir
+		? { top, commonDir }
+		: undefined;
+};
+
+/**
+ * The context moved to the shared checkout's root when it runs in a linked
+ * worktree. The last submit removes the unit worktree: anything resolved from
+ * that directory afterwards (the repository, the forge, the answer size)
+ * fails, so the run stands on a directory that outlives the unit.
+ */
+export const leaveWorktree = (
+	ctx: ICliCommandContext,
+	ports: ILeaveWorktreePorts = { locate: gitLocate, chdir: process.chdir },
+): ICliCommandContext => {
+	const found = ports.locate(ctx.cwd);
+	if (found === undefined || basename(found.commonDir) !== '.git') return ctx;
+	const root = dirname(found.commonDir);
+	if (root === found.top) return ctx;
+	ports.chdir(root);
+	return { ...ctx, cwd: root };
+};
+
+/** Read after the transition to review, when the worktree may be gone: preloaded by the verbs that end a unit. */
+const deliveredRemote = loadedOnce(
+	() => import('../lib/work-deliver-remote.service'),
+);
+
 /** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
 export const deliverPortsOf = (
 	ctx: ICliCommandContext,
@@ -172,10 +247,7 @@ export const deliverPortsOf = (
 			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
 		publicationReached: async (publication, checkout) => {
-			// Loaded when asked for: only a delivery needs it (startup budget).
-			const { publicationReachedFrom } = await import(
-				'../lib/work-deliver-remote.service'
-			);
+			const { publicationReachedFrom } = await deliveredRemote.get();
 			return publicationReachedFrom(
 				checkout ?? ctx.cwd,
 				ctx.cwd,
@@ -357,14 +429,24 @@ export const withUnitHere = async (
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
-	run: async (rawArgs, ctx) => {
+	run: async (rawArgs, startCtx) => {
+		let ctx = startCtx;
 		const verbose = rawArgs.includes('--verbose');
 		const args = rawArgs.filter((arg) => arg !== '--verbose');
-		// Loaded when an answer is sized: only these verbs need it (startup budget).
+		// Loaded for the verbs that size an answer (startup budget). Those that
+		// can end the unit load it now: after the last submit removes the
+		// worktree, an import from it fails with ENOENT.
+		const answerSize = loadedOnce(
+			() => import('../lib/work-answer-size.service'),
+		);
+		if (endsWorktree(args[0] ?? '')) {
+			answerSize.preload();
+			deliveredRemote.preload();
+		}
 		const sized = async (
 			result: ICliCommandResult,
 		): Promise<ICliCommandResult> =>
-			(await import('../lib/work-answer-size.service')).sizedAnswer({
+			(await answerSize.get()).sizedAnswer({
 				verb: args[0] ?? '',
 				result,
 				verbose,
@@ -414,6 +496,7 @@ export const createWorkCommand = (): ICliCommand => ({
 				if ('refusal' in found) return found.refusal;
 				withSlice = [...here, ...found.flags];
 			}
+			ctx = leaveWorktree(ctx);
 			return await sized(
 				await deliverUnit(
 					deliverPortsOf(ctx, {
@@ -438,6 +521,7 @@ export const createWorkCommand = (): ICliCommand => ({
 			args[0] === 'prove' || args[0] === 'publish'
 				? [args[0], ...(await withUnitHere(args.slice(1), ctx.cwd))]
 				: args;
+		if (args[0] === 'publish') ctx = leaveWorktree(ctx);
 		const result = await runWorkUnit(unitArgs, ctx);
 		return args[0] === 'enter'
 			? withSlicesView(result, ctx)
