@@ -156,6 +156,35 @@ describe('the GitHub land forge', () => {
 		]);
 	});
 
+	it('[<12ms] names the specs a failed check run annotates, and only those', async () => {
+		const { forge } = harness((call) =>
+			call.includes('/annotations')
+				? json([
+						{ path: 'packages/a/tests/x.spec.ts' },
+						{ path: 'packages/a/tests/x.spec.ts' },
+						{ path: '.github' },
+					])
+				: json({
+						check_runs: [
+							{
+								id: 9,
+								name: 'tests: a 1/4',
+								conclusion: 'failure',
+							},
+							{ id: 10, name: 'lint', conclusion: 'success' },
+						],
+					}),
+		);
+		expect(await forge.checks('abc')).toEqual([
+			{
+				name: 'tests: a 1/4',
+				conclusion: 'failure',
+				failingSpecs: ['packages/a/tests/x.spec.ts'],
+			},
+			{ name: 'lint', conclusion: 'success' },
+		]);
+	});
+
 	it('[<12ms] says the integration branch is gone when the forge answers 404, not that the pass failed', async () => {
 		const { forge } = harness(() => ({
 			exitCode: 1,

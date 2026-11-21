@@ -2,7 +2,8 @@
  * land-repair.helper.ts — the repair pass: when the integration branch's
  * latest completed CI run is red and still the tip, name the culprit merge
  * (`diagnoseDevelopRed`) and open its one revert (`openRepair`). A red no
- * merge reaches reverts nobody and is reported `unowned`. Anything
+ * merge's footprint reaches by a failing SPEC (a check name alone is a whole
+ * zone, never an owner) reverts nobody and is reported `unowned`. Anything
  * else is a no-op, so running it again, or on every completed run, is safe.
  */
 import { diagnoseDevelopRed } from './develop-red.helper';
@@ -12,6 +13,7 @@ import type {
 	ILandRepairResult,
 } from './land-revert.interface';
 
+const SPEC_ID = /\.spec\.[cm]?[jt]sx?$/u;
 const RED = new Set(['failure', 'timed_out']);
 
 export const repairDevelopRed = async (
@@ -34,17 +36,14 @@ export const repairDevelopRed = async (
 	if (green === undefined)
 		return { kind: 'nothing', why: 'no green run to measure from' };
 	const failing = failedIds(await forge.checks(latest.commit));
-	const zones = new Set<string>();
-	for (const name of failing) {
-		const zone = ports.sectionOfCheck(name);
-		if (zone !== undefined) zones.add(zone);
-	}
 	const diagnosis = await diagnoseDevelopRed(ports.develop, {
 		green: green.commit,
 		red: {
 			commit: latest.commit,
-			failingSpecs: new Set(failing),
-			failingZones: zones,
+			failingSpecs: new Set(failing.filter((id) => SPEC_ID.test(id))),
+			// A check name alone is a whole zone: any merge in it would
+			// "reach" a red it did not cause. Only failing specs attribute.
+			failingZones: new Set<string>(),
 		},
 	});
 	// A failure no merge's footprint reaches belongs to nobody in this

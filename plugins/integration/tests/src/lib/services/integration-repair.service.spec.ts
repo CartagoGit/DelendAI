@@ -92,7 +92,11 @@ describe('runIntegrationRepair on a red tip', () => {
 			integrationTip: () => Promise.resolve('r'),
 			checks: () =>
 				Promise.resolve<ILandCheck[]>([
-					{ name: 'tests: a', conclusion: 'failure' },
+					{
+						name: 'tests: a',
+						conclusion: 'failure',
+						failingSpecs: ['a.spec.ts'],
+					},
 				]),
 			openPullRequests: () => Promise.resolve([]),
 			openPullRequest: ({ head }) => {
@@ -139,7 +143,7 @@ describe('runIntegrationRepair on a red tip', () => {
 				forge,
 				git: fakePartial<ILandGit>({
 					landedSince: () => ({
-						files: new Set(['a.ts']),
+						files: new Set(['a.spec.ts']),
 						zones: new Set(['a']),
 					}),
 				}),

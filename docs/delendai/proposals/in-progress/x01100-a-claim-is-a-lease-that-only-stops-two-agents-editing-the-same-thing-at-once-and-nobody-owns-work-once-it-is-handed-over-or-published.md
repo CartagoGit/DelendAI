@@ -34,7 +34,7 @@ Owner decision 2026-11-19: a claim or assignment is a lease that only prevents t
 
 ### S1 — One lease model: live only while the heartbeat is inside the idle window
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-lease.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-verdict.service.ts`, `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/scope-collision.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`
+- **Files**: `new:packages/core/src/lib/work-units/slice-held-refusal.service.ts`, `new:packages/core/src/lib/work-units/unit-heartbeat.service.ts`, `packages/core/src/lib/work-units/unit-liveness.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-lease.service.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-verdict.service.ts`, `packages/core/src/lib/work-units/slice-holders.service.ts`, `packages/core/src/lib/work-units/slice-reservation.service.ts`, `packages/core/src/lib/work-units/scope-collision.service.ts`, `packages/core/src/lib/work-units/work-unit-checkpoint.service.ts`, `plugins/commit-policy/src/lib/persistence/wip-persistence.ts`, `plugins/proposals/src/lib/services/claim-liveness.service.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
@@ -42,11 +42,13 @@ Owner decision 2026-11-19: a claim or assignment is a lease that only prevents t
   - "packages/core/tests/src/lib/work-units/slice-holders.service.spec.ts: holdersOfSlice and readSliceOwnership return a unit only when its lease is live; a published unit with ahead>0 and a quiet lease is not a holder."
   - "packages/core/tests/src/lib/work-units/scope-collision.service.spec.ts: collisionsWith reports only units whose lease is live."
   - "packages/core/tests/src/lib/work-units/unit-standings.service.spec.ts: claimedByOther no longer changes a standing; the lease owner is evidence of liveness only."
+  - "packages/core/tests/src/lib/work-units/unit-heartbeat.service.spec.ts: only a lease whose heartbeat is inside the idle window holds a unit; a leftover session stamp of a quiet or handed-over unit does not refuse enter."
   - "packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts: the refusal text of a live-lease block names the lease heartbeat age and the idle window, and no refusal text in packages/core/src/lib/work-units says 'someone else' or 'another session'."
 
 ### S2 — Re-entry: any agent enters a handed-over or published unit; a new generation only against a live lease
 - **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/src/lib/work-units/work-unit-retire.service.ts`, `packages/core/src/lib/work-units/work-unit-claim.service.ts`, `packages/core/src/lib/work-units/work-claim.service.ts`, `packages/core/src/lib/work-units/proposal-branch.service.ts`, `packages/core/src/lib/contracts/constants/work-arguments.constant.ts`
+- **DependsOn**: [S1]
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
