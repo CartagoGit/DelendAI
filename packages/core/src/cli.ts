@@ -151,8 +151,17 @@ export {
 	headNotBuilt,
 	outsideDerived,
 	prepareDerived,
+	movedProposalComment,
 	pushDerived,
+	refreshMovedProposal,
 } from './lib/integration/land/land-bring-forward.helper';
+export type {
+	ILandRefreshMoved,
+	IMovedProposalConflict,
+	IMovedProposalOutcome,
+	IMovedProposalPorts,
+	IMovedProposalRefresh,
+} from './lib/integration/land/land-moved-proposal.interface';
 export { landRepairPrefix } from './lib/integration/land/land-revert.helper';
 export { repairDevelopRed } from './lib/integration/land/land-repair.helper';
 export { knownFailingNoteOf } from './lib/integration/land/known-failing-note.helper';

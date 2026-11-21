@@ -58,6 +58,7 @@ export interface IIntegrationPassInput {
 		readonly forge?: ILandForge;
 		readonly git?: ILandGit;
 		readonly bringForward?: ILandDeps['bringForward'];
+		readonly refreshMoved?: ILandDeps['refreshMoved'];
 		readonly gitExec?: IGitExec;
 		readonly runProjectCommand?: IProjectCommandRunner;
 		/** The pause between forge read attempts; the real clock when absent. */

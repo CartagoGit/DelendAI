@@ -1,11 +1,12 @@
 /**
  * Contract shapes for `./land`: what one pass reads from the forge and from
  * git, and what it reports. Any forge implements `ILandForge` (GitLab has
- * every call: pipelines, merge with `sha`, rebase, labels, notes, merge
- * requests); GitHub is the first implementation (`./land-forge.github`).
+ * every call); GitHub is the first implementation (`./land-forge.github`).
  */
 import type { ITrainCandidate } from '../decisions/culprit.interface';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
+
+import type { ILandRefreshMoved } from './land-moved-proposal.interface';
 
 /** One check on a commit: no conclusion yet means it is still running. */
 export interface ILandCheck {
@@ -191,17 +192,18 @@ export interface ILandDeps {
 	readonly config: ILandConfig;
 	/**
 	 * Merge the tip into a head the forge never built and push it as the
-	 * identity, so the forge builds the new head. No generator runs. `current`:
-	 * the head already holds the tip, so there is nothing to push. Absent
-	 * where the actor's pushes are not built: the author then updates it.
+	 * identity, so the forge builds it; `current`: it holds the tip already.
+	 * Absent where its pushes are not built: the author updates it.
 	 */
 	readonly bringForward?:
 		| ((pr: ILandPullRequest, tip: string) => Promise<ILandForward>)
 		| undefined;
+	/** Carry develop's edit onto a proposal the head moved; absent: the author does. */
+	readonly refreshMoved?: ILandRefreshMoved | undefined;
 	/**
 	 * Start the two jobs that resolve a derived-file conflict of `pr` (one
-	 * tokenless job regenerates, one pushes as the identity); whether the
-	 * forge took it. Absent: a batch regenerates it, as before.
+	 * regenerates tokenless, one pushes as the identity); whether the forge
+	 * took it. Absent: a batch regenerates it.
 	 */
 	readonly resolveDerived?:
 		| ((pr: ILandPullRequest) => Promise<boolean>)

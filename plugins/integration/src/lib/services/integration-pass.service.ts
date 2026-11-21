@@ -26,6 +26,7 @@ import type {
 
 import { createBringForward } from './land-bring-forward.helper';
 import { createLandGit } from './land-git.service';
+import { createRefreshMoved } from './land-refresh-moved.helper';
 import { landProjectPorts } from './land-project-ports.helper';
 import { runLandRounds } from './land-rounds.helper';
 import { runGit } from './land-train-assembly.helper';
@@ -110,6 +111,14 @@ export const runIntegrationPass = async (
 					remote: LAND_REMOTE,
 					token: env.GH_TOKEN ?? '',
 					normalize: ports.normalizeBatch,
+				}),
+			// A proposal file the head moved while the tip edited its old copy.
+			refreshMoved:
+				input.ports?.refreshMoved ??
+				createRefreshMoved({
+					root,
+					remote: LAND_REMOTE,
+					token: env.GH_TOKEN ?? '',
 				}),
 			// A derived conflict is two jobs of the land workflow, never this pass.
 			resolveDerived: (pr) =>

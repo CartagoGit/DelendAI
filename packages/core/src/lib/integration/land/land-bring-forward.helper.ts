@@ -159,10 +159,10 @@ export const staleCleanReason = async (input: {
 
 /** The one comment a publication gets when its moved proposal cannot be refreshed. */
 export const movedProposalComment = (
-	generation: number,
+	generation: number | undefined,
 	paths: readonly string[],
 ): string =>
-	`The integration branch edited ${paths.join(', ')}, which this publication moved, and the edit does not apply on its own. Re-enter the unit with \`work enter --generation ${String(generation)}\`, run \`git merge\` of the integration branch, resolve the proposal file and republish.`;
+	`The integration branch edited ${paths.join(', ')}, which this publication moved, and the edit does not apply on its own. Re-enter the unit with \`work enter --generation ${generation === undefined ? '<n>' : String(generation)}\`, run \`git merge\` of the integration branch, resolve the proposal file and republish.`;
 
 /**
  * A publication whose only conflict is a proposal file it moved while the
@@ -172,7 +172,8 @@ export const movedProposalComment = (
  */
 export const refreshMovedProposal = (input: {
 	readonly ports: IMovedProposalPorts;
-	readonly generation: number;
+	/** The unit's generation when known; the comment says `<n>` otherwise. */
+	readonly generation?: number;
 }): IMovedProposalRefresh => {
 	const { ports, generation } = input;
 	const ask = (paths: readonly string[]): IMovedProposalRefresh => ({
