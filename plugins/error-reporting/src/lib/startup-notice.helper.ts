@@ -49,9 +49,20 @@ export const buildErrorReportingStartupNotice = (input: {
  * Write the notice. Never throws: a boot message must not be able to
  * stop the server it is describing.
  */
+// permissions-declared-authorized: a process-tree marker the notice sets and reads, never configuration or a secret.
+/** Set once the notice was printed, so child processes stay quiet. */
+const NOTICE_SHOWN_ENV = 'DELENDAI_ERROR_REPORTING_NOTICE_SHOWN';
+
 export const announceErrorReportingStartup = (
 	notice: IErrorReportingStartupNotice,
 	write?: (line: string) => void,
 ): void => {
+	// Once per process tree: a proof starts many CLI processes, and the
+	// same three lines printed in each of them. The marker rides the
+	// environment to the children; an injected writer is always honoured.
+	if (write === undefined) {
+		if (process.env[NOTICE_SHOWN_ENV] === '1') return;
+		process.env[NOTICE_SHOWN_ENV] = '1';
+	}
 	announceLines(notice.lines, write);
 };
