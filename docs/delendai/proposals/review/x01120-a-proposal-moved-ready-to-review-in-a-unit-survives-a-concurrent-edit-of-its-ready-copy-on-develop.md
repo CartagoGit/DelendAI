@@ -2,14 +2,14 @@
 id: x01120
 title: "A proposal moved ready to review in a unit survives a concurrent edit of its ready copy on develop"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: 9f89137f-b902-4888-a0fa-6c916d541798
-last-correlation-id: 9f89137f-b902-4888-a0fa-6c916d541798
-last-transition-from: ready
-last-transition-at: 2026-11-21T10:09:03.187Z
+last-transition-id: b2625a61-6ef3-4bf1-ae23-3a5770c186c3
+last-correlation-id: b2625a61-6ef3-4bf1-ae23-3a5770c186c3
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T10:16:30.517Z
 ---
 
 # x01120 — A proposal moved ready to review in a unit survives a concurrent edit of its ready copy on develop
@@ -31,13 +31,16 @@ PR #3373 (x01114): the unit moved x01114 from ready/ to review/ while develop co
 - global_gate: none
 
 ### S1 — Publishing detects a stale second copy of a moved proposal and re-applies the move
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/proposal-uniqueness.script.ts`, `tools/scripts/lint/proposal-uniqueness.script.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`, `packages/cli/src/commands/work.command.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep."
   - "work-deliver.service.spec.ts: after develop is merged into a unit whose proposal moved to review while develop edited the ready/ copy, deliver removes the stale ready/ copy, keeping the edits in the review/ file, before it proves; with no stale copy it changes nothing."
+- shipped-in: `8d5eeeba3383`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
