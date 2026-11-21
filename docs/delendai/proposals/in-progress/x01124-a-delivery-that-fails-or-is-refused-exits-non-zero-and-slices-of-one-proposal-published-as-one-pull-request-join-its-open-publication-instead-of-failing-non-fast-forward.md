@@ -2,10 +2,14 @@
 id: x01124
 title: "A delivery that fails or is refused exits non-zero, and slices of one proposal published as one pull request join its open publication instead of failing non-fast-forward"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 58780d4e-8bbb-4090-9206-50f50b7dccbd
+last-correlation-id: 58780d4e-8bbb-4090-9206-50f50b7dccbd
+last-transition-from: ready
+last-transition-at: 2026-11-21T10:25:29.386Z
 ---
 
 # x01124 — A delivery that fails or is refused exits non-zero, and slices of one proposal published as one pull request join its open publication instead of failing non-fast-forward
