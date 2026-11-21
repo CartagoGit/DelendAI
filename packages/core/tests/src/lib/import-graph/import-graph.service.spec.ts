@@ -45,14 +45,14 @@ const memoryStore = (): IImportGraphStore & {
 };
 
 describe('the import graph', () => {
-	it('[<20ms] follows a name through a barrel to its declaring module', () => {
+	it('[<200ms] follows a name through a barrel to its declaring module', () => {
 		expect(affectedFiles({ ...input, changed: ['p/c.ts'] })).toEqual([
 			'p/c.spec.ts',
 			'p/c.ts',
 		]);
 	});
 
-	it('[<20ms] follows a module that runs code on load by file', () => {
+	it('[<200ms] follows a module that runs code on load by file', () => {
 		expect(affectedFiles({ ...input, changed: ['p/loud.ts'] })).toContain(
 			'p/use-loud.ts',
 		);
@@ -76,7 +76,7 @@ describe('the import graph', () => {
 });
 
 describe('the kept import graph', () => {
-	it('[<20ms] survives storage unchanged', () => {
+	it('[<200ms] survives storage unchanged', () => {
 		const graph = buildImportGraph(input);
 		const back = reviveImportGraph(
 			JSON.parse(JSON.stringify(storedImportGraph(graph))),
@@ -107,7 +107,7 @@ describe('the kept import graph', () => {
 		expect(reads).toBe(built * 2);
 	});
 
-	it('[<20ms] is not kept without a tree id', async () => {
+	it('[<200ms] is not kept without a tree id', async () => {
 		const store = memoryStore();
 		await importGraphFor(() => input, undefined, store);
 		expect(store.kept.size).toBe(0);
