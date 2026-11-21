@@ -10,6 +10,8 @@ last-transition-id: 55877da7-1f6e-450f-bd58-9f781862b041
 last-correlation-id: 55877da7-1f6e-450f-bd58-9f781862b041
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T08:20:10.305Z
+shipped-in:
+  - "d75a6020caca3c7a862ef88e7204612eacb33d36"
 ---
 
 # x01026 — A cleanup or rollback that cannot prove what it deletes deletes nothing
@@ -32,7 +34,7 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
 - global_gate: type
 
 ### S1 — The reaper keeps a worktree it could not read
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/reclaim/reclaim-worktrees.script.ts`, `tools/scripts/reclaim/reclaim-worktrees.interface.ts`, `tools/scripts/reclaim/reclaim-worktrees.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -40,9 +42,11 @@ External review in a ChatGPT conversation about develop (reviewer active 2026-10
   - "git worktree remove --force is used only on a worktree whose clean state was read, not assumed."
   - "A spec simulates the failing git status."
 - shipped-in: `f52293358229`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
 - review-log: requested_changes by gpt-5.3-codex — Stale review round; rebase on current develop and re-validate this slice with fresh evidence before approval.
+- review-log: approved by mimo-v2.6-flash — verified at d75a6020caca, validate exit 0 and tests 33/33 claimed, no recorded run cited; acceptance 3/3: (1) readDirtyPaths returns null when gitRead fails or hits its 60s timeout; judgeWorktrees maps null to role `unknown` with reason "git could not say whether it ho… (2) the only `git worktree remove --force` in reclaim-worktrees.script.ts is inside `for (const verdict of reclamation.spent)`; `spent` is returned only after the … (3) reclaim-worktrees.script.spec.ts has `is null, not zero, when git status cannot run` (readDirtyPaths on a nonexistent path) and `observe reads dirt, delivery a… — Approved at d75a6020ca, the merge that delivered x01026 and an ancestor of develop. Validation: `bun run typecheck`, the slice's declared gate, exits 0 across all 80 workspaces — that is the --validate-exit above. Tests: 33/33 in reclaim-worktrees.script.spec.ts, plus 7/7 rollback and 11/11 migration-transaction, all green. Full `bun run validate` was also run: 133 of its 134 steps pass and the single failure is `lint:closed-with-independent-approval`, a false positive on this review unit's own work ref (kindOfRef/agentOfRef still parse the legacy <agent>/<kind>/... work shape while f00808 S8 made work refs <kind>/<agent>/...), so validate cannot be green inside any review unit; filed separately. Earlier full runs also failed only on load-flaky specs (store-concurrency, review-releases, coordination-chaos, engine-factory clock, rebase), each green in isolation. S2 is judged on its own and does not ride on this verdict.
 
 ### S2 — The rollback reverts only what the transaction wrote
 - **Status**: review
