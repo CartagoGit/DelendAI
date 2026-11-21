@@ -14,7 +14,6 @@ import type { ICliCommandResult } from '../contracts/interfaces/cli-command.inte
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
 import { isRecord } from './helpers/cli-command.helper';
 import type { IDeliverLockOptions } from '../contracts/interfaces/deliver-lock.interface';
-import { acquireDeliverLock } from './work-deliver-lock.service';
 
 const textOf = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -272,6 +271,8 @@ const runDelivery = async (
 	const checkout = textOf(unit.worktree);
 	// One delivery per unit at a time: a second one would race the first on
 	// the unit's git index. It is refused at once, naming the running pid.
+	// Loaded on use: the work command's startup graph stays within its budget.
+	const { acquireDeliverLock } = await import('./work-deliver-lock.service');
 	const lock = await acquireDeliverLock(
 		checkout ?? `slice:${ports.slice}`,
 		lockOptions,
