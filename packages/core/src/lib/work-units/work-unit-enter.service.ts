@@ -12,9 +12,8 @@ import { withBriefing } from './work-unit-enter-briefing.service';
 import { reconcileReentry } from '../ref-reconciler/unit-reconcile.service';
 import { readSwarm } from './work-swarm.service';
 import { entrantNameRefusal } from './agents-seen.service';
-import { describeSliceHolders, holdersOfSlice } from './slice-holders.service';
+import { sliceHeldRefusal } from './slice-held-refusal.service';
 import { sliceHeldOnForge } from './slice-reservation.service';
-import { readUnitStandings } from './unit-standings.service';
 import { resolveUnitsDirectory } from './units-directory.service';
 import { freeDirectory } from './free-directory.helper';
 import { ownedTemplates } from '../development-policy/owned-work-ref-parser';
@@ -31,6 +30,7 @@ import { journalEnteredUnit } from './work-event-journal.service';
 import { readWorkspacePolicy } from './development-policy.service';
 import type { IPolicyIdentity } from '../contracts/interfaces/policy-identity.interface';
 
+import { quietUnitRefs, shortBranch } from './unit-heartbeat.service';
 import {
 	agentFor,
 	claimWorktree,
@@ -202,24 +202,18 @@ export const enteredHeld = async (
 		(await closedForImplementing(root, policy, args, proposal));
 	if (notToImplement !== undefined) return notToImplement;
 	if (!args.includes('--alongside')) {
-		// Only a live lease holds a slice: a unit its owner left, or whose
-		// work landed, holds nothing, though the swarm view still shows it.
-		const standings = await readUnitStandings({ root, policy });
-		const holders = holdersOfSlice({
-			view: swarm,
-			standings,
+		const held = await sliceHeldRefusal({
+			root,
+			policy,
+			swarm,
 			agent,
 			kind: scalarArg(args, 'kind') ?? 'implement',
 			proposal,
 			slice,
 		});
-		if (holders.length > 0) {
-			return refused(
-				`${proposal} ${slice} is already being worked on under a live lease: two units on one slice do the same work twice and collide when they land.`,
-				describeSliceHolders(holders, standings).join('\n'),
-			);
-		}
+		if (held !== undefined) return held;
 	}
+	const quiet = await quietUnitRefs(root, policy);
 	if (scalarArg(args, 'generation') === undefined) {
 		const chosen = chooseGeneration(
 			root,
@@ -228,6 +222,7 @@ export const enteredHeld = async (
 			agent,
 			proposal,
 			slice,
+			quiet,
 		);
 		if ('refusal' in chosen) return chosen.refusal;
 		args = [...args, `--generation=${String(chosen.generation)}`];
@@ -267,7 +262,9 @@ export const enteredHeld = async (
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
 		const held =
-			path === undefined ? undefined : heldByAnother(path, session);
+			path === undefined
+				? undefined
+				: heldByAnother(path, session, quiet.has(shortBranch(ref)));
 		if (held !== undefined) return held;
 		const claimed =
 			path === undefined ? session : claimWorktree(path, agent, session);
@@ -290,7 +287,11 @@ export const enteredHeld = async (
 	);
 	if (
 		continued !== undefined &&
-		heldByAnother(continued.path, session) === undefined
+		heldByAnother(
+			continued.path,
+			session,
+			quiet.has(shortBranch(continued.ref)),
+		) === undefined
 	) {
 		const path = continued.path;
 		const claimed =

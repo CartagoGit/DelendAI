@@ -24,7 +24,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		rmSync(dir, { recursive: true, force: true });
 	});
 
-	it('onContention:fail throws LockContentionError on a live holder instead of stealing (M28)', async () => {
+	it('[<200ms] onContention:fail throws LockContentionError on a live holder instead of stealing (M28)', async () => {
 		writeFileSync(target, '{}');
 		// Simulate a live holder: a fresh sidecar that is NOT stale.
 		const lockPath = `${target}.mutex`;
@@ -50,7 +50,37 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(lockPath)).toBe(true);
 	});
 
-	it('a00065 S2: the DEFAULT (omitted onContention) now fails on a live holder instead of stealing', async () => {
+	it('[<200ms] x01116: waiters queued behind short healthy holders all acquire although their summed hold time passes timeoutMs', async () => {
+		writeFileSync(target, '{}');
+		const holders = 5;
+		const holdMs = 20;
+		const timeoutMs = 40;
+		expect(holders * holdMs).toBeGreaterThan(timeoutMs * 2);
+		let inside = 0;
+		let maxInside = 0;
+		const outcomes = await Promise.allSettled(
+			Array.from({ length: holders }, () =>
+				withFileMutex(
+					target,
+					async () => {
+						inside += 1;
+						maxInside = Math.max(maxInside, inside);
+						await new Promise((resolve) =>
+							setTimeout(resolve, holdMs),
+						);
+						inside -= 1;
+					},
+					{ timeoutMs, staleMs: 30_000, pollMs: 5 },
+				),
+			),
+		);
+		expect(outcomes.map((o) => o.status)).toEqual(
+			Array.from({ length: holders }, () => 'fulfilled'),
+		);
+		expect(maxInside).toBe(1);
+	});
+
+	it('[<200ms] a00065 S2: the DEFAULT (omitted onContention) now fails on a live holder instead of stealing', async () => {
 		writeFileSync(target, '{}');
 		writeFileSync(
 			`${target}.mutex`,
@@ -72,7 +102,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(`${target}.mutex`)).toBe(true);
 	});
 
-	it("a00085 #6: onContention:'wait' never steals a live holder (same as fail at deadline)", async () => {
+	it("[<200ms] a00085 #6: onContention:'wait' never steals a live holder (same as fail at deadline)", async () => {
 		writeFileSync(target, '{}');
 		writeFileSync(
 			`${target}.mutex`,
@@ -97,7 +127,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(`${target}.mutex`)).toBe(true);
 	});
 
-	it("a00065 S2: explicit onContention:'steal' still reclaims a live lock past the timeout", async () => {
+	it("[<200ms] a00065 S2: explicit onContention:'steal' still reclaims a live lock past the timeout", async () => {
 		writeFileSync(target, '{}');
 		writeFileSync(
 			`${target}.mutex`,
@@ -119,7 +149,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(ran).toBe(true);
 	});
 
-	it('a00065 S2: a crashed (stale) holder is reclaimed regardless of the default fail', async () => {
+	it('[<200ms] a00065 S2: a crashed (stale) holder is reclaimed regardless of the default fail', async () => {
 		writeFileSync(target, '{}');
 		// A stale sidecar: mtime far in the past simulates a holder that
 		// crashed and stopped its heartbeat. Must be reclaimed even though
@@ -139,7 +169,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(ran).toBe(true);
 	});
 
-	it('serializes concurrent read → mutate → write (no lost updates)', async () => {
+	it('[<200ms] serializes concurrent read → mutate → write (no lost updates)', async () => {
 		writeFileSync(target, JSON.stringify({ items: [] as string[] }));
 
 		// Without the mutex these interleave and lose updates; with it,
@@ -163,7 +193,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(final.items.sort()).toEqual(['a', 'b', 'c', 'd', 'e']);
 	});
 
-	it('removes the sidecar lock on success and on throw', async () => {
+	it('[<50ms] removes the sidecar lock on success and on throw', async () => {
 		const sidecar = `${target}.mutex`;
 		await withFileMutex(target, async () => undefined);
 		expect(existsSync(sidecar)).toBe(false);
@@ -176,7 +206,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(sidecar)).toBe(false);
 	});
 
-	it('does NOT delete the lock if it was stolen by another holder', async () => {
+	it('[<50ms] does NOT delete the lock if it was stolen by another holder', async () => {
 		// Regression for the steal-and-delete race: A holds the lock, its
 		// fn() overruns, B steals it (replacing the sidecar with B's token).
 		// When A finally returns, its release must NOT remove B's lock.
@@ -213,7 +243,7 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(readFileSync(sidecar, 'utf8')).toBe(stolenToken);
 	});
 
-	it('steals an abandoned (stale) lock instead of deadlocking', async () => {
+	it('[<200ms] steals an abandoned (stale) lock instead of deadlocking', async () => {
 		const sidecar = `${target}.mutex`;
 		// Simulate a crashed holder: a stale sidecar left on disk.
 		writeFileSync(sidecar, '99999\n0');
