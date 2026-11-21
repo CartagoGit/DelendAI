@@ -2,10 +2,14 @@
 id: x01123
 title: "Work-unit entry hints and authoring stay inside their own unit, and a mocked module in a non-isolated zone is refused where it is written"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: c8c237c1-9713-4d88-bede-bec603bde285
+last-correlation-id: c8c237c1-9713-4d88-bede-bec603bde285
+last-transition-from: ready
+last-transition-at: 2026-11-21T07:28:20.760Z
 ---
 
 # x01123 — Work-unit entry hints and authoring stay inside their own unit, and a mocked module in a non-isolated zone is refused where it is written
