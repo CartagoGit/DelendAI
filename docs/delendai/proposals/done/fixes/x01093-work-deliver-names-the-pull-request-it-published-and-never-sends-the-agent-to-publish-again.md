@@ -2,14 +2,14 @@
 id: x01093
 title: "work deliver names the pull request it published, and never sends the agent to publish again"
 kind: fix
-status: review
+status: done
 type: proposal
 track: fixes
 date: 2026-11-18
-last-transition-id: a19d9fc1-d280-488b-b36d-be98a0fac1a6
-last-correlation-id: a19d9fc1-d280-488b-b36d-be98a0fac1a6
-last-transition-from: in-progress
-last-transition-at: 2026-11-18T04:02:32.048Z
+last-transition-id: ab6e3e55-8495-498e-b422-1e114bf69cb2
+last-correlation-id: ab6e3e55-8495-498e-b422-1e114bf69cb2
+last-transition-from: review
+last-transition-at: 2026-11-21T00:15:27.849Z
 shipped-in:
   - "1466311d6921d578e8502dc205164aadfb2b8346"
 ---
