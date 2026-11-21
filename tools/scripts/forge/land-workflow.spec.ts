@@ -1,14 +1,3 @@
-import { spawnSync } from 'node:child_process';
-import {
-	chmodSync,
-	mkdtempSync,
-	readFileSync,
-	rmSync,
-	writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-
 import { parse } from 'yaml';
 import { describe, expect, it } from 'vitest';
 
@@ -105,99 +94,13 @@ describe('the land workflow wakes on events only', () => {
 		expect(text).not.toContain('check_suite');
 	});
 
-	it('[<10ms] keeps its only timer as a watchdog that is strict only when no event-driven pass is in flight', () => {
+	it('[<10ms] keeps its only timer as a watchdog that fails and files the evidence', () => {
 		expect(text.match(/- cron:/gu)).toHaveLength(1);
 		expect(text).toContain(
-			"LAND_WATCHDOG: ${{ github.event_name == 'schedule' && steps.inflight.outputs.count == '0' && '1' || '' }}",
+			"LAND_WATCHDOG: ${{ github.event_name == 'schedule'",
 		);
-		expect(text).toContain('select(.event != "schedule")');
-		expect(text).not.toContain('failure() && github.event_name');
-		expect(text).not.toContain(
-			'gh issue create --repo "${GITHUB_REPOSITORY}"\n',
-		);
+		expect(text).toContain('gh issue create');
 	});
-});
-
-describe('the watchdog keeps one issue per missed event', () => {
-	const steps = (
-		parse(renderLandWorkflow(REPO_LAND_WORKFLOW)) as {
-			jobs: { land: { steps: { name: string; run?: string }[] } };
-		}
-	).jobs.land.steps;
-	const script = steps.find((step) =>
-		step.name.startsWith('Keep the one issue'),
-	)?.run;
-
-	/** Runs the step's script with a fake `gh` that logs its calls and lists `open`. */
-	const keep = (rc: string, open: readonly number[]): string[] => {
-		const dir = mkdtempSync(join(tmpdir(), 'watchdog-'));
-		try {
-			const gh = join(dir, 'gh');
-			writeFileSync(
-				gh,
-				`#!/bin/bash\nif [ "$2" = list ] || [ "$3" = list ]; then ${open.map((n) => `echo ${String(n)};`).join(' ')} exit 0; fi\necho "$*" | tr "\\n" " " >> "${dir}/calls"; echo >> "${dir}/calls"\n`,
-			);
-			chmodSync(gh, 0o755);
-			writeFileSync(
-				join(dir, 'evidence.md'),
-				'- Commit: abc\n  - #3022 merged\n',
-			);
-			const done = spawnSync('bash', ['-c', script ?? 'exit 9'], {
-				env: {
-					PATH: `${dir}:${process.env.PATH ?? ''}`,
-					GITHUB_REPOSITORY: 'o/n',
-					RC: rc,
-					RUN: '7',
-					RUN_URL: 'https://x/runs/7',
-					SHA: 'abc',
-					EVIDENCE: join(dir, 'evidence.md'),
-				},
-				encoding: 'utf8',
-			});
-			expect(done.status).toBe(0);
-			try {
-				return readFileSync(join(dir, 'calls'), 'utf8')
-					.trim()
-					.split('\n');
-			} catch {
-				return [];
-			}
-		} finally {
-			rmSync(dir, { recursive: true, force: true });
-		}
-	};
-
-	it('[<100ms] opens one issue naming the run and the evidence when none is open', () => {
-		const [call, ...rest] = keep('1', []);
-		expect(rest).toEqual([]);
-		expect(call).toContain('issue create');
-		expect(call).toContain('Run 7');
-		expect(call).toContain('#3022 merged');
-	});
-
-	it('[<100ms] refreshes the first open issue and closes its duplicates', () => {
-		const calls = keep('1', [2763, 3024]);
-		expect(calls).toHaveLength(2);
-		expect(calls[0]).toContain('issue close 3024');
-		expect(calls[0]).toContain('Duplicate of #2763');
-		expect(calls[1]).toContain('issue edit 2763');
-	});
-
-	it('[<100ms] closes every open issue once a strict pass finds nothing', () => {
-		const calls = keep('0', [2763, 3024]);
-		expect(calls.map((c) => c.slice(0, 16))).toEqual([
-			'issue close 2763',
-			'issue close 3024',
-		]);
-	});
-
-	it('[<100ms] files nothing for a crashed pass: the failed run is the evidence', () => {
-		expect(keep('5', [2763])).toEqual([]);
-	});
-});
-
-describe('the land workflow stays out of the pull request code', () => {
-	const text = renderLandWorkflow(REPO_LAND_WORKFLOW);
 
 	it('[<10ms] never checks out or runs pull request code', () => {
 		expect(text).not.toContain('github.event.pull_request.head');

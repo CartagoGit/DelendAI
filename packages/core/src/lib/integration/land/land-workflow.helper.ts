@@ -27,11 +27,6 @@ import type {
 } from './land.interface';
 import { LAND_DERIVED_JOBS, LAND_WORKFLOW_NAME } from './land.constant';
 import { indentLines as indent } from './land-signal.helper';
-import {
-	inflightStep,
-	watchdogIssueStep,
-	watchdogPassStep,
-} from './land-watchdog-steps.helper';
 import { workflowConcurrencyLines } from './land-workflow-concurrency.helper';
 
 const envLines = (env: Readonly<Record<string, string>>): string[] =>
@@ -199,10 +194,22 @@ export const renderLandWorkflow = (input: ILandWorkflowInput): string => {
 				timeout: 30,
 				setup: input.setupSteps,
 				steps: [
-					...inflightStep(envLines, token),
-					...watchdogPassStep(envLines, token, input.passCommand),
+					'- name: One pass',
+					...envLines({
+						...token,
+						GITHUB_REPOSITORY: '${{ github.repository }}',
+						LAND_WATCHDOG: `\${{ github.event_name == 'schedule' && '1' || '' }}`,
+					}),
+					`  run: ${input.passCommand}`,
+					'',
 					...reconcileStep(input.reconcileCommand, envLines(token)),
-					...watchdogIssueStep(envLines, token),
+					'- name: File the evidence of a missed event',
+					`  if: \${{ failure() && github.event_name == 'schedule' }}`,
+					...envLines({ ...token, RUN: '${{ github.run_id }}' }),
+					'  run: >-',
+					'      gh issue create --repo "${GITHUB_REPOSITORY}"',
+					'      --title "The watchdog found work no event had started"',
+					'      --body "The scheduled pass acted, so an event was missed. Run ${RUN}."',
 				],
 			},
 			input.identity,

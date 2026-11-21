@@ -6,7 +6,6 @@
  */
 // effect-boundary-authorized: runs the project's own commands, the one port that spawns for the pass
 import { spawnSync } from 'node:child_process';
-import { writeFile } from 'node:fs/promises';
 
 import {
 	createGithubLandForge,
@@ -131,21 +130,16 @@ export const runIntegrationPass = async (
 		(outcome) => outcome instanceof LandBranchGoneError,
 	);
 	for (const note of notes) log(`land: ${note}`);
-	const actions: string[] = [];
+	let acted = 0;
 	for (const outcome of reports) {
 		if (outcome instanceof LandBranchGoneError) {
 			log(`land: ${outcome.message}; nothing to settle.`);
 			return 0;
 		}
-		actions.push(...outcome.actions);
+		acted += outcome.actions.length;
 		logReport(outcome, log);
 	}
-	return await finish(
-		env,
-		actions,
-		error,
-		input.ports?.writeEvidence ?? writeFile,
-	);
+	return finish(env, acted, error);
 };
 
 /** What one round did, one line each. */
@@ -161,33 +155,17 @@ const logReport = (report: ILandReport, log: (line: string) => void): void => {
 	);
 };
 
-/**
- * The watchdog runs the same pass on a timer: work it finds is work no event
- * started, so it fails the run. It also says which event: the trigger, the
- * commit and each thing it did (a pull request number is in the line), in the
- * file the workflow reads to keep the one open issue.
- */
-const finish = async (
+/** The watchdog runs the same pass on a timer: work it finds is work no event started, so it fails the run and the workflow files the evidence. */
+const finish = (
 	env: Readonly<Record<string, string | undefined>>,
-	actions: readonly string[],
+	acted: number,
 	error: (line: string) => void,
-	writeEvidence: (path: string, text: string) => void | Promise<void>,
-): Promise<number> => {
-	if (env.LAND_WATCHDOG !== '1' || actions.length === 0) return 0;
-	error(
-		`land: the watchdog acted ${String(actions.length)} time(s): an event was missed.`,
-	);
-	const path = env.LAND_WATCHDOG_EVIDENCE;
-	if (path !== undefined && path !== '')
-		await writeEvidence(
-			path,
-			[
-				`- Trigger: ${env.GITHUB_EVENT_NAME ?? 'schedule'} on ${env.GITHUB_REF_NAME ?? 'the integration branch'}`,
-				`- Commit: ${env.GITHUB_SHA ?? 'unknown'}`,
-				'- What the pass did that no event had started:',
-				...actions.map((line) => `  - ${line}`),
-				'',
-			].join('\n'),
+): number => {
+	if (env.LAND_WATCHDOG === '1' && acted > 0) {
+		error(
+			`land: the watchdog acted ${String(acted)} time(s): an event was missed.`,
 		);
-	return 1;
+		return 1;
+	}
+	return 0;
 };

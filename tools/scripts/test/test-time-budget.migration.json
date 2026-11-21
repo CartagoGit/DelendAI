@@ -2241,6 +2241,7 @@
 		"tools/scripts/metrics/diff-snapshots.script.spec.ts",
 		"tools/scripts/metrics/get-baseline.script.spec.ts",
 		"tools/scripts/migrate/evidence-paths.spec.ts",
+		"tools/scripts/migrate/rebrand-propagate.spec.ts",
 		"tools/scripts/proposals/canonicalize-headings.script.spec.ts",
 		"tools/scripts/proposals/close-approved-proposals.script.spec.ts",
 		"tools/scripts/proposals/collect-evidence.script.spec.ts",
