@@ -28,7 +28,7 @@ Seen 3 times: the last submit removes the unit worktree, then the CLI lazily imp
 
 ### S1 — Preload the answer sizer before the worktree can go
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-answer-sizer.service.ts`, `packages/cli/src/lib/work-answer-sizer.service.spec.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `new:packages/cli/src/lib/work-answer-sizer.service.ts`, `new:packages/cli/src/lib/work-answer-sizer.service.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
