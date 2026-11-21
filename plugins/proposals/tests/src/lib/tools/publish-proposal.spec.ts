@@ -90,63 +90,63 @@ const request = (
 });
 
 describe('publicationRefFor', () => {
-	it('names the ref in the shape of every other publication', () => {
+	it('[<70ms] names the ref in the shape of every other publication', () => {
 		expect(
 			publicationRefFor('delendai/pr/', 'f00551', {
 				agent: 'Claude Opus 5.5',
 				title: 'A proposal: keeps one branch!',
 			}),
 		).toBe(
-			'delendai/pr/claude-opus-5.5/create/f00551-all-g1/a-proposal-keeps-one-branch',
+			'delendai/pr/create/claude-opus-5.5/f00551-all/a-proposal-keeps-one-branch',
 		);
 	});
 
-	it('tolerates a prefix written without its trailing slash', () => {
+	it('[<20ms] tolerates a prefix written without its trailing slash', () => {
 		expect(
 			publicationRefFor('team/publish', 'f00551', {
 				agent: 'a',
 				title: 't',
 			}),
-		).toBe('team/publish/a/create/f00551-all-g1/t');
+		).toBe('team/publish/create/a/f00551-all/t');
 	});
 
-	it('says unattributed when nothing declares the agent, never a guess', () => {
+	it('[<20ms] says unattributed when nothing declares the agent, never a guess', () => {
 		expect(
 			publicationRefFor('delendai/pr/', 'f00551', {
 				agent: '',
 				title: '',
 			}),
-		).toBe('delendai/pr/unattributed/create/f00551-all-g1/proposal');
+		).toBe('delendai/pr/create/unattributed/f00551-all/proposal');
 	});
 });
 
 describe('shouldPublishOnRef', () => {
-	it('publishes where the project integrates through a pull request', () => {
+	it('[<20ms] publishes where the project integrates through a pull request', () => {
 		expect(shouldPublishOnRef(PR_POLICY)).toBe(true);
 	});
 
-	it('publishes nothing for a project that integrates directly', () => {
+	it('[<20ms] publishes nothing for a project that integrates directly', () => {
 		expect(shouldPublishOnRef({ requiresPullRequest: false })).toBe(false);
 	});
 
-	it('publishes nothing when no policy was resolved at all', () => {
+	it('[<20ms] publishes nothing when no policy was resolved at all', () => {
 		expect(shouldPublishOnRef(undefined)).toBe(false);
 	});
 });
 
 describe('protectedPushTarget', () => {
-	it('names the integration branch when a ref would land on it', () => {
+	it('[<20ms] names the integration branch when a ref would land on it', () => {
 		expect(protectedPushTarget('develop', PR_POLICY)).toBe('develop');
 	});
 
-	it('names the release branch too', () => {
+	it('[<20ms] names the release branch too', () => {
 		expect(protectedPushTarget('main', PR_POLICY)).toBe('main');
 	});
 
-	it('leaves an ordinary publication ref alone', () => {
+	it('[<20ms] leaves an ordinary publication ref alone', () => {
 		expect(
 			protectedPushTarget(
-				'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+				'delendai/pr/create/agent-a/f00551-all/a-proposal',
 				PR_POLICY,
 			),
 		).toBeUndefined();
@@ -154,7 +154,7 @@ describe('protectedPushTarget', () => {
 });
 
 describe('publishProposalOnRef', () => {
-	it('builds the commit off to the side on the integration head, and pushes it by SHA', async () => {
+	it('[<20ms] builds the commit off to the side on the integration head, and pushes it by SHA', async () => {
 		const { run, calls } = recordingRunner();
 		const { commit, inputs } = recordingCommit();
 
@@ -164,7 +164,7 @@ describe('publishProposalOnRef', () => {
 
 		expect(outcome).toEqual({
 			published: true,
-			ref: 'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+			ref: 'delendai/pr/create/agent-a/f00551-all/a-proposal',
 			sha: 'c0ffee1234567',
 		});
 		// Based on the integration branch, never on whatever HEAD is.
@@ -185,11 +185,11 @@ describe('publishProposalOnRef', () => {
 			'push',
 			'--',
 			'origin',
-			'c0ffee1234567:refs/heads/delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+			'c0ffee1234567:refs/heads/delendai/pr/create/agent-a/f00551-all/a-proposal',
 		]);
 	});
 
-	it('does nothing at all for a project that integrates directly', async () => {
+	it('[<20ms] does nothing at all for a project that integrates directly', async () => {
 		const { run, calls } = recordingRunner();
 
 		const outcome = await publishProposalOnRef(
@@ -203,7 +203,7 @@ describe('publishProposalOnRef', () => {
 		expect(calls).toEqual([]);
 	});
 
-	it('says a project with work refs and no pull request lands a proposal as a unit, on its own branch', async () => {
+	it('[<20ms] says a project with work refs and no pull request lands a proposal as a unit, on its own branch', async () => {
 		const { run, calls } = recordingRunner();
 
 		const outcome = await publishProposalOnRef(
@@ -222,7 +222,7 @@ describe('publishProposalOnRef', () => {
 		expect(calls).toEqual([]);
 	});
 
-	it('reports a failed push instead of throwing, so the document is not lost', async () => {
+	it('[<20ms] reports a failed push instead of throwing, so the document is not lost', async () => {
 		const { run } = recordingRunner({
 			step: 'push',
 			reason: 'remote rejected',
@@ -236,11 +236,11 @@ describe('publishProposalOnRef', () => {
 		// The ref is still reported: the agent needs to know which ref
 		// the work is owed on.
 		expect(outcome.ref).toBe(
-			'delendai/pr/agent-a/create/f00551-all-g1/a-proposal',
+			'delendai/pr/create/agent-a/f00551-all/a-proposal',
 		);
 	});
 
-	it('reports a failed commit and never reaches the push', async () => {
+	it('[<20ms] reports a failed commit and never reaches the push', async () => {
 		const { run, calls } = recordingRunner();
 
 		const outcome = await publishProposalOnRef(
@@ -255,7 +255,7 @@ describe('publishProposalOnRef', () => {
 		expect(calls.some((call) => call[0] === 'push')).toBe(false);
 	});
 
-	it('falls back to a usable prefix rather than emitting an unpushable ref', async () => {
+	it('[<20ms] falls back to a usable prefix rather than emitting an unpushable ref', async () => {
 		const { run } = recordingRunner();
 
 		const outcome = await publishProposalOnRef(
@@ -271,11 +271,11 @@ describe('publishProposalOnRef', () => {
 		// no reachable policy makes a publication ref collide with a
 		// branch, which is why there is no integration case for it here.
 		// The default policy's prefix, never a spelled namespace (f00808).
-		expect(outcome.ref).toBe('pr/agent-a/create/f00551-all-g1/a-proposal');
+		expect(outcome.ref).toBe('pr/create/agent-a/f00551-all/a-proposal');
 		expect(outcome.published).toBe(true);
 	});
 
-	it('pushes to the remote the caller names', async () => {
+	it('[<20ms] pushes to the remote the caller names', async () => {
 		const { run, calls } = recordingRunner();
 
 		await publishProposalOnRef(request({ git: run, remote: 'upstream' }));
@@ -285,11 +285,11 @@ describe('publishProposalOnRef', () => {
 });
 
 describe('publicationRefFor with no prefix (f00808)', () => {
-	it('falls back to the default policy prefix, never a spelled namespace', () => {
+	it('[<20ms] falls back to the default policy prefix, never a spelled namespace', () => {
 		const ref = publicationRefFor('', 'f00551', {
 			agent: 'agent-a',
 			title: 'A proposal',
 		});
-		expect(ref.startsWith('pr/agent-a/')).toBe(true);
+		expect(ref.startsWith('pr/create/agent-a/')).toBe(true);
 	});
 });

@@ -14,12 +14,11 @@
  * agent is the implementer; the round still says who carried it.
  */
 import { fetchMakerNotes, makersOf } from '@delendai/core/runtime';
-import { compileWorkRefParser } from '@delendai/core/public';
 import { retiredRefRoots } from '@delendai/core/cli';
 
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
-import { unitOfRef } from './review-claims.service';
+import { ownedParserOf, unitOfRef } from './review-claims.service';
 
 /** The tool's own commits and claims: made where they are, never carried. */
 const BOOKKEEPING = /^chore\((?:delendai|review|wip)\):/u;
@@ -85,11 +84,7 @@ export const carriedFrom = async (
 	if (enteredAt === undefined) return undefined;
 	// Anything made in the unit after it was entered is the submitter's.
 	if (commits.some(([, at]) => Number(at) >= enteredAt)) return undefined;
-	const parser = compileWorkRefParser(
-		shape.workRefTemplate,
-		shape.workRefPrefix,
-		{ requireKind: false },
-	);
+	const parser = ownedParserOf(shape, { requireKind: false });
 	if (parser === undefined) return undefined;
 	const makers = new Set<string>();
 	for (const [commit = ''] of commits) {

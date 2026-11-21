@@ -24,6 +24,7 @@ import {
 } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import type { IGuardedGitOperation } from '@delendai/core/cli';
+import { compileOwnedWorkRefParser } from '@delendai/core/cli';
 import {
 	gitActorMarker,
 	hookFreeEnvironment,
@@ -658,15 +659,11 @@ export const createGuardCommand = (
 		// A worktree made before the stamp existed still says whose it is:
 		// a linked worktree on a work branch belongs to the agent the branch
 		// names.
-		const workPrefix = policy.branches.workRefPrefix
-			.replace(/^refs\//u, '')
-			.replace(/^heads\//u, '');
-		const onWorkBranch =
-			!facts.inMainWorktree() &&
-			workPrefix.length > 0 &&
-			(facts.branch() ?? '').startsWith(workPrefix)
-				? (facts.branch() ?? '').slice(workPrefix.length).split('/')[0]
-				: undefined;
+		// Every owned namespace: a unit under a former one names its agent.
+		const unitParser = compileOwnedWorkRefParser(policy.branches);
+		const onWorkBranch = facts.inMainWorktree()
+			? undefined
+			: unitParser?.parse(`refs/heads/${facts.branch() ?? ''}`)?.agent;
 		const branchName = facts.branch();
 		const stamped =
 			facts.worktreeAgent?.() ??

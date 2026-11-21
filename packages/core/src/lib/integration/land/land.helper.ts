@@ -19,11 +19,11 @@
  * - Derived files that conflict are regenerated on the batch; authored
  *   code labels the pull request for its author.
  */
+import { batchPrefixesOf } from './land-config.helper';
 import { trainMembers } from '../decisions/culprit.helper';
 import { overlapBetween, staleAgainstTip } from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
-
 import { openBatch as assembleBatch } from './land-batch-assembly.helper';
 import {
 	headNotBuilt,
@@ -76,7 +76,7 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		deps.config.requiredChecks.length > 0
 			? deps.config.requiredChecks
 			: await forge.requiredChecks();
-	const batches = await forge.batchPullRequests(deps.config.batchPrefix);
+	const batches = await forge.batchPullRequests(batchPrefixesOf(deps.config));
 	const recordOf = (pr: ILandPullRequest): ILandBatchRecord | undefined =>
 		readBatchRecord(pr.body);
 

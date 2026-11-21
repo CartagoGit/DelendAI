@@ -98,7 +98,8 @@ const openReviewSession = (
 			const path = /^worktree (.+)$/mu.exec(block)?.[1];
 			const branch = /^branch (.+)$/mu.exec(block)?.[1];
 			return path !== undefined &&
-				branch?.includes(`/${agent}/review/`) === true &&
+				(branch?.includes(`/review/${agent}/`) === true ||
+					branch?.includes(`/${agent}/review/`) === true) &&
 				worktreeAgent(path) === agent
 				? [worktreeSession(path)]
 				: [];

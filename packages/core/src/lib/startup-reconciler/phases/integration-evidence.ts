@@ -28,6 +28,7 @@
  * task that says exactly which ref and which SHA to go looking for.
  */
 
+import type { IPolicyBranches } from '../../contracts/interfaces/development-policy.interface';
 import type { IStartupFinding } from '../contracts';
 import { finding } from '../finding-catalog';
 import { ensureMergeCandidate } from '../merge-candidate';
@@ -59,11 +60,18 @@ export const runIntegrationEvidencePhase = async (input: {
 	readonly keptBy?: readonly string[];
 	/** Where work and publications live, to read which publications merged. */
 	readonly branches?:
-		| {
-				readonly integration: string;
-				readonly workRefPrefix: string;
-				readonly publicationRefPrefix: string;
-		  }
+		| (Pick<
+				IPolicyBranches,
+				'integration' | 'workRefPrefix' | 'publicationRefPrefix'
+		  > &
+				Partial<
+					Pick<
+						IPolicyBranches,
+						| 'namespacePrefix'
+						| 'formerNamespacePrefixes'
+						| 'workRefVisibility'
+					>
+				>)
 		| undefined;
 	/**
 	 * Commits the forge keeps as retired work. A unit given up with

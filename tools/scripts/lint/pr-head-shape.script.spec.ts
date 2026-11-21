@@ -8,23 +8,23 @@ import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/
 import { prHeadProblem } from './pr-head-shape.script';
 
 const BRANCHES = {
-	workRefTemplate:
-		'heads/delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+	workRefTemplate: 'heads/delendai/wip/${kind}/${agent}/${scope}/${topic}',
 	workRefPrefix: 'heads/delendai/wip/',
 	publicationRefPrefix: 'delendai/pr/',
 };
 
 describe('prHeadProblem', () => {
-	it('[<20ms] accepts a publication of the shape, and one written before the kind', () => {
+	it('[<20ms] accepts a publication of the shape, and one in the shape it replaced', () => {
 		expect(
 			prHeadProblem(
-				'delendai/pr/claude-opus-5-5/review/x00001-all-g1/batch',
+				'delendai/pr/review/claude-opus-5-5/x00001-all/batch',
 				BRANCHES,
 			),
 		).toBeUndefined();
+		// The shape the default replaced still reads (f00808 S8).
 		expect(
 			prHeadProblem(
-				'delendai/pr/claude-opus-5-5/x00001-S1-g1/t',
+				'delendai/pr/claude-opus-5-5/implement/x00001-S1-g1/t',
 				BRANCHES,
 			),
 		).toBeUndefined();
@@ -33,7 +33,7 @@ describe('prHeadProblem', () => {
 	it('[<20ms] refuses a pull request opened from a work ref', () => {
 		expect(
 			prHeadProblem(
-				'delendai/wip/minimax-m3/review/x00558-all-g1/review',
+				'delendai/wip/review/minimax-m3/x00558-all/review',
 				BRANCHES,
 			),
 		).toContain('is a work ref');
@@ -42,7 +42,7 @@ describe('prHeadProblem', () => {
 	it('[<20ms] refuses an agent named after the program it runs in (x00694)', () => {
 		expect(
 			prHeadProblem(
-				'delendai/pr/copilot/review/batch-all-g1/close-the-ready-review-batches',
+				'delendai/pr/review/copilot/batch-all/close-the-ready-review-batches',
 				BRANCHES,
 			),
 		).toContain('the program the agent runs in');
@@ -51,7 +51,7 @@ describe('prHeadProblem', () => {
 	it('[<20ms] refuses an agent that spells the kind of work', () => {
 		expect(
 			prHeadProblem(
-				'delendai/pr/minimax-m3-review-20260926/x00558-review-g1/review',
+				'delendai/pr/review/minimax-m3-review-20260926/x00558-S1/review',
 				BRANCHES,
 			),
 		).toContain('spells the kind of work');
@@ -79,11 +79,11 @@ describe('prHeadProblem in a namespace transition (f00808)', () => {
 
 	it('[<20ms] accepts a publication of either prefix, and nothing outside them', () => {
 		expect(
-			prHeadProblem('pr/claude-opus-5-5/implement/x00642-S2-g1/t', moved),
+			prHeadProblem('pr/implement/claude-opus-5-5/x00642-S2/t', moved),
 		).toBeUndefined();
 		expect(
 			prHeadProblem(
-				'delendai/pr/claude-opus-5-5/implement/x00642-S2-g1/t',
+				'delendai/pr/implement/claude-opus-5-5/x00642-S2/t',
 				moved,
 			),
 		).toBeUndefined();
@@ -106,7 +106,7 @@ describe('prHeadProblem under the policy of a base branch', () => {
 			},
 		}).branches;
 		const head =
-			'delendai/rehearsal/r1/rehearsal/implement/x00000-S1-g1/one-pr-a';
+			'delendai/rehearsal/r1/implement/rehearsal/x00000-S1/one-pr-a';
 		expect(prHeadProblem(head, run)).toBeUndefined();
 		// The project's own policy does not take it for a publication.
 		expect(prHeadProblem(head, project)).toContain('outside');

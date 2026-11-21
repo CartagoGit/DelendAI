@@ -15,8 +15,13 @@
  * Two agents can then decide between themselves, which is what a hive
  * does and a lock does not.
  */
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { readGit } from '../shared/git-read.helper';
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
@@ -52,27 +57,35 @@ const git = (cwd: string, args: readonly string[], input?: string): string =>
 export const listWorkRefs = (
 	root: string,
 	policy: IResolvedDevelopmentPolicy,
-	refPrefix: string = policy.branches.workRefPrefix,
+	refPrefix?: string,
 ): ReadonlyMap<string, string> => {
-	const prefix = shortName(refPrefix);
+	// With no prefix named, every owned namespace is listed, current
+	// first: a unit under a former one is still a unit (f00808).
+	const prefixes =
+		refPrefix === undefined
+			? ownedWorkRefPrefixes(policy.branches)
+			: [refPrefix];
 	const refs = new Map<string, string>();
-	if (prefix.length === 0) return refs;
-	const listed = git(root, [
-		'for-each-ref',
-		'--format=%(refname)%09%(objectname)',
-		// `**` so the pattern crosses the remote's own path components:
-		// `refs/remotes/*/ns/wip/` matches nothing, which silently made a
-		// swarm spread over several clones look like an empty one.
-		`refs/heads/${prefix}**`,
-		`refs/remotes/**/${prefix}**`,
-	]);
-	for (const line of listed.split('\n')) {
-		const [refName, sha] = line.split('\t');
-		if (refName === undefined || sha === undefined) continue;
-		const logical = refName
-			.replace(/^refs\/heads\//u, '')
-			.replace(/^refs\/remotes\/[^/]+\//u, '');
-		if (!refs.has(logical)) refs.set(logical, sha);
+	for (const owned of prefixes) {
+		const prefix = shortName(owned);
+		if (prefix.length === 0) continue;
+		const listed = git(root, [
+			'for-each-ref',
+			'--format=%(refname)%09%(objectname)',
+			// `**` so the pattern crosses the remote's own path components:
+			// `refs/remotes/*/ns/wip/` matches nothing, which silently made a
+			// swarm spread over several clones look like an empty one.
+			`refs/heads/${prefix}**`,
+			`refs/remotes/**/${prefix}**`,
+		]);
+		for (const line of listed.split('\n')) {
+			const [refName, sha] = line.split('\t');
+			if (refName === undefined || sha === undefined) continue;
+			const logical = refName
+				.replace(/^refs\/heads\//u, '')
+				.replace(/^refs\/remotes\/[^/]+\//u, '');
+			if (!refs.has(logical)) refs.set(logical, sha);
+		}
 	}
 	return refs;
 };
@@ -87,10 +100,15 @@ export const identityOf = (
 	const tail = logicalName.startsWith(prefix)
 		? logicalName.slice(prefix.length)
 		: logicalName;
-	const [agent, ...rest] = tail.split('/');
+	// The agent sits wherever the shape puts it (f00808): the parser says
+	// which segment it is, and the subject is the name without it.
+	const segments = tail.split('/');
+	const named = unitOfName(tail)?.agent;
+	const at = named === undefined ? 0 : Math.max(segments.indexOf(named), 0);
+	const [agent] = segments.splice(at, 1);
 	return {
 		agent: agent ?? 'unknown',
-		subject: rest.join('/'),
+		subject: segments.join('/'),
 	};
 };
 
@@ -243,8 +261,14 @@ export const readSwarm = (input: {
 				};
 			})
 			.sort((left, right) => (left.ref < right.ref ? -1 : 1));
-	const units = read(policy.branches.workRefPrefix);
-	const published = read(policy.branches.publicationRefPrefix);
+	// Every owned namespace, current and former: a unit under a former one
+	// still holds its slice and still counts (f00808).
+	const readAll = (prefixes: readonly string[]): ISwarmUnit[] =>
+		prefixes
+			.flatMap(read)
+			.sort((left, right) => (left.ref < right.ref ? -1 : 1));
+	const units = readAll(ownedWorkRefPrefixes(policy.branches));
+	const published = readAll(ownedPublicationRefPrefixes(policy.branches));
 	return {
 		integration,
 		units,

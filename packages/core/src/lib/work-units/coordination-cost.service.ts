@@ -8,6 +8,7 @@
  * integration branch took in is the number a swarm should drive down.
  */
 import type { ICoordinationCost } from '../contracts/interfaces/workflow-kpis.interface';
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { readGit } from './work-unit-shared.service';
 
 /** A commit that coordinates rather than delivers, by its subject. */
@@ -20,13 +21,19 @@ const BOOKKEEPING = /^chore\((?:generated|delendai|review)\)[:!]/u;
  */
 const publicationIn = (
 	subject: string,
-	prefix: string,
+	prefixes: readonly string[],
 ): { readonly ref: string; readonly agent: string } | undefined => {
-	if (prefix.length === 0) return undefined;
+	// Longest first, so `delendai/pr/` is not read as `pr/` inside it.
+	const prefix = [...prefixes]
+		.filter((each) => each.length > 0 && subject.includes(each))
+		.sort((a, b) => b.length - a.length)[0];
+	if (prefix === undefined) return undefined;
 	const at = subject.indexOf(prefix);
-	if (at === -1) return undefined;
 	const ref = /^[^\s'"]+/u.exec(subject.slice(at))?.[0] ?? '';
-	const agent = ref.slice(prefix.length).split('/')[0] ?? '';
+	const agent =
+		unitOfName(ref.slice(prefix.length))?.agent ??
+		ref.slice(prefix.length).split('/')[0] ??
+		'';
 	return agent.length === 0 ? undefined : { ref, agent };
 };
 
@@ -34,8 +41,9 @@ const publicationIn = (
 export const coordinationCostOf = (
 	log: string,
 	windowDays: number,
-	publicationRefPrefix = '',
+	publicationRefPrefix: string | readonly string[] = '',
 ): ICoordinationCost => {
+	const prefixes = [publicationRefPrefix].flat();
 	let commits = 0;
 	let merges = 0;
 	let bookkeeping = 0;
@@ -47,7 +55,7 @@ export const coordinationCostOf = (
 		commits += 1;
 		if (parents.trim().split(' ').length > 1) {
 			merges += 1;
-			const landed = publicationIn(subject, publicationRefPrefix);
+			const landed = publicationIn(subject, prefixes);
 			if (landed !== undefined) {
 				units.add(landed.ref);
 				agents.add(landed.agent);
@@ -55,7 +63,7 @@ export const coordinationCostOf = (
 		} else if (BOOKKEEPING.test(subject)) bookkeeping += 1;
 	}
 	return {
-		...(publicationRefPrefix.length === 0
+		...(prefixes.every((prefix) => prefix.length === 0)
 			? {}
 			: { landed: { units: units.size, agents: agents.size } }),
 		windowDays,
@@ -74,7 +82,7 @@ export const readCoordinationCost = (
 	root: string,
 	integration: string,
 	windowDays: number,
-	publicationRefPrefix = '',
+	publicationRefPrefix: string | readonly string[] = '',
 ): ICoordinationCost | undefined => {
 	const log = readGit(root, [
 		'log',

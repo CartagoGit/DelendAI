@@ -1,4 +1,7 @@
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type {
 	IWorkUnitContext,
@@ -69,9 +72,8 @@ export const reaped = async (
 	const spent = new Set<string>();
 	for (const unit of units) spent.add(unit.ref);
 	for (const unit of ended)
-		spent.add(
-			`${shortName(opened.policy.branches.workRefPrefix)}${unit.unit}`,
-		);
+		for (const prefix of ownedWorkRefPrefixes(opened.policy.branches))
+			spent.add(`${shortName(prefix)}${unit.unit}`);
 	const kept = (
 		await readUnitStandings({
 			root: opened.root,

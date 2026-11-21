@@ -146,7 +146,7 @@ afterEach(() => {
 describe.each(['shared-checkout-pr', 'worktree-pr'])(
 	'work units under %s',
 	(profile) => {
-		it('enter makes a worktree on the work ref, which publish turns into the publication ref', async () => {
+		it('[<7000ms] enter makes a worktree on the work ref, which publish turns into the publication ref', async () => {
 			const root = repoOn(profile);
 			const entered = await runWorkUnit(
 				['enter', ...UNIT],
@@ -158,7 +158,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 				readonly branch: string;
 			};
 			expect(data.branch).toBe(
-				'delendai/wip/claude-sonnet-5-5/implement/x1-S1-g1/probe',
+				'delendai/wip/implement/claude-sonnet-5-5/x1-S1/probe',
 			);
 			expect(existsSync(data.path)).toBe(true);
 			expect(git(data.path, 'symbolic-ref', '--short', 'HEAD')).toBe(
@@ -182,11 +182,11 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			expect(
 				git(root, 'ls-remote', 'origin', 'refs/heads/delendai/pr/**'),
 			).toContain(
-				'refs/heads/delendai/pr/claude-sonnet-5-5/implement/x1-S1-g1/probe',
+				'refs/heads/delendai/pr/implement/claude-sonnet-5-5/x1-S1/probe',
 			);
 		});
 
-		it('checkpoint from the shared checkout takes nothing and names the unit worktree (x01003)', async () => {
+		it('[<4000ms] checkpoint from the shared checkout takes nothing and names the unit worktree (x01003)', async () => {
 			const root = repoOn(profile);
 			const entered = await runWorkUnit(
 				['enter', ...UNIT],
@@ -215,7 +215,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			expect(git(root, 'rev-parse', branch)).toBe(tip);
 		});
 
-		it('checkpoint leaves a file another writer edited in the shared checkout (x01003)', async () => {
+		it('[<3000ms] checkpoint leaves a file another writer edited in the shared checkout (x01003)', async () => {
 			const root = repoOn(profile);
 			const entered = await runWorkUnit(
 				['enter', ...UNIT],
@@ -248,7 +248,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			expect(git(root, 'rev-parse', branch)).toBe(tip);
 		});
 
-		it('checkpoint from inside the unit worktree is refused and leaves it exactly as it was', async () => {
+		it('[<3000ms] checkpoint from inside the unit worktree is refused and leaves it exactly as it was', async () => {
 			const root = repoOn(profile);
 			const entered = await runWorkUnit(
 				['enter', ...UNIT],
@@ -272,7 +272,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			expect(git(path, 'status', '--porcelain')).toBe('?? b.ts');
 		});
 
-		it('publish from inside the unit worktree removes it and opens the pull request of an ssh-style origin', async () => {
+		it('[<5000ms] publish from inside the unit worktree removes it and opens the pull request of an ssh-style origin', async () => {
 			const root = repoOn(profile);
 			// The remote is the GitHub ssh URL, reached through a transport
 			// that serves the bare repository, as a forge-backed clone is.
@@ -305,7 +305,7 @@ describe.each(['shared-checkout-pr', 'worktree-pr'])(
 			expect(readFileSync(forge.log, 'utf8')).toContain('pr create');
 		});
 
-		it('names the URL it saw when the remote is not GitHub, and never invites opening the pull request by hand', async () => {
+		it('[<7000ms] names the URL it saw when the remote is not GitHub, and never invites opening the pull request by hand', async () => {
 			const root = repoOn(profile);
 			const entered = await runWorkUnit(
 				['enter', ...UNIT],

@@ -26,7 +26,7 @@ const parser = compileWorkRefParser(
 );
 
 describe('work refs carry the model and what the work is', () => {
-	it('names the ref after the exact model and the topic', () => {
+	it('[<20ms] names the ref after the exact model and the topic', () => {
 		expect(
 			resolveWorkRef(branches.workRefTemplate, {
 				agent: 'claude-opus-5',
@@ -36,11 +36,11 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'configurable-ref-namespace',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g1/configurable-ref-namespace',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00546-S1/configurable-ref-namespace',
 		);
 	});
 
-	it('recovers every field, even with hyphens inside the topic', () => {
+	it('[<20ms] recovers every field, even with hyphens inside the topic', () => {
 		expect(
 			parser?.parse(
 				'refs/heads/delendai/wip/claude-opus-5/x00546-S1-g12-configurable-ref-namespace',
@@ -55,7 +55,7 @@ describe('work refs carry the model and what the work is', () => {
 		});
 	});
 
-	it('still attributes a ref written before the template had a topic', () => {
+	it('[<20ms] still attributes a ref written before the template had a topic', () => {
 		// Otherwise one upgrade makes existing work unattributable.
 		expect(
 			parser?.parse('refs/heads/delendai/wip/claude-opus-5/x00546-S1-g3'),
@@ -68,7 +68,7 @@ describe('work refs carry the model and what the work is', () => {
 		});
 	});
 
-	it('falls back to a readable topic instead of `unnamed`', () => {
+	it('[<20ms] falls back to a readable topic instead of `unnamed`', () => {
 		expect(
 			resolveWorkRef(branches.workRefTemplate, {
 				agent: 'claude-opus-5',
@@ -77,11 +77,11 @@ describe('work refs carry the model and what the work is', () => {
 				generation: 2,
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g2/work',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00546-S1-G2/work',
 		);
 	});
 
-	it('sanitises a topic written as prose', () => {
+	it('[<20ms] sanitises a topic written as prose', () => {
 		expect(
 			resolveWorkRef(branches.workRefTemplate, {
 				agent: 'claude-opus-5',
@@ -91,17 +91,17 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'fix the ref guard: namespaces!',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00546-S1-g1/fix-the-ref-guard-namespaces',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00546-S1/fix-the-ref-guard-namespaces',
 		);
 	});
 
-	it('does not attribute a ref that is not shaped like work at all', () => {
+	it('[<20ms] does not attribute a ref that is not shaped like work at all', () => {
 		expect(
 			parser?.parse('refs/heads/delendai/wip/mystery'),
 		).toBeUndefined();
 	});
 
-	it('renders the documented shape, with the explanation as its own component (x00563)', () => {
+	it('[<20ms] renders the documented shape, with the explanation as its own component (x00563)', () => {
 		expect(
 			resolveWorkRef(branches.workRefTemplate, {
 				agent: 'claude-opus-5',
@@ -111,11 +111,11 @@ describe('work refs carry the model and what the work is', () => {
 				topic: 'the explanation of what was done',
 			}),
 		).toBe(
-			'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation-of-what-was-done',
+			'refs/heads/delendai/wip/implement/claude-opus-5/x00563-S1/the-explanation-of-what-was-done',
 		);
 	});
 
-	it('still attributes a ref written under the dash shape', () => {
+	it('[<20ms] still attributes a ref written under the dash shape', () => {
 		// Changing the template must not turn a machine's existing work
 		// into `unattributable` and boot it DEGRADED.
 		expect(
@@ -131,7 +131,7 @@ describe('work refs carry the model and what the work is', () => {
 		});
 	});
 
-	it('round-trips the shape it renders', () => {
+	it('[<20ms] round-trips the shape it renders', () => {
 		const ref = resolveWorkRef(branches.workRefTemplate, {
 			agent: 'codex',
 			proposal: 'f00099',

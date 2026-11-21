@@ -16,19 +16,19 @@ import {
 const BRANCHES = declaredBranches(repoRoot());
 
 describe('unpublishedPullRequests', () => {
-	it('closes a pull request from a work ref or outside the namespaces, and keeps publications and forks', () => {
+	it('[<90ms] closes a pull request from a work ref or outside the namespaces, and keeps publications and forks', () => {
 		const toClose = unpublishedPullRequests(
 			[
 				{
 					number: 514,
 					headRefName:
-						'delendai/wip/minimax-3/review/f00553-review-g1/review',
+						'delendai/wip/review/minimax-3/f00553-review/review',
 					isCrossRepository: false,
 				},
 				{
 					number: 520,
 					headRefName:
-						'delendai/pr/claude-opus-5-5/implement/x00681-all-g1/a-refused-close-says-why-in-the-test',
+						'delendai/pr/implement/claude-opus-5-5/x00681-all/a-refused-close-says-why-in-the-test',
 					isCrossRepository: false,
 				},
 				{ number: 9, headRefName: 'feature', isCrossRepository: true },
@@ -44,13 +44,13 @@ describe('unpublishedPullRequests', () => {
 		expect(toClose[0]?.problem).toContain('work ref');
 	});
 
-	it('closes a publication that changes no file, and keeps a pull request of history alone', () => {
+	it('[<200ms] closes a publication that changes no file, and keeps a pull request of history alone', () => {
 		const toClose = unpublishedPullRequests(
 			[
 				{
 					number: 1018,
 					headRefName:
-						'delendai/pr/glm-5.3-max/review/batch-all-g5/verdicts',
+						'delendai/pr/review/glm-5.3-max/batch-all-G5/verdicts',
 					baseRefName: 'develop',
 					isCrossRepository: false,
 					changedFiles: 0,
@@ -58,7 +58,7 @@ describe('unpublishedPullRequests', () => {
 				{
 					number: 1017,
 					headRefName:
-						'delendai/pr/glm-5.3-max/review/batch-all-g4/verdicts',
+						'delendai/pr/review/glm-5.3-max/batch-all-G4/verdicts',
 					baseRefName: 'develop',
 					isCrossRepository: false,
 					changedFiles: 2,
@@ -77,13 +77,13 @@ describe('unpublishedPullRequests', () => {
 		expect(toClose[0]?.problem).toContain('deliver nothing');
 	});
 
-	it('tells the author how to publish, and that the branch was kept', () => {
+	it('[<30ms] tells the author how to publish, and that the branch was kept', () => {
 		const comment = closingComment('`x` is a work ref.');
 		expect(comment).toContain('delendai work publish');
 		expect(comment).toContain('The branch was left as it is');
 	});
 
-	it('keeps the promotion into the release branch and the forward sync back', () => {
+	it('[<200ms] keeps the promotion into the release branch and the forward sync back', () => {
 		const toClose = unpublishedPullRequests(
 			[
 				{

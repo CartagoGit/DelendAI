@@ -5,6 +5,7 @@ import {
 	defaultChangeBase,
 	freshBudgets,
 	INTEGRATION_REF,
+	isFirstRun,
 	budgetsOverUnitLimit,
 	judgeUnitLimit,
 	judgeDeclaredBudgets,
@@ -172,5 +173,19 @@ describe('declared test budgets', () => {
 			).map((b) => b.path),
 		).toEqual(['u.spec.ts']);
 		expect(judgeUnitLimit(over, new Set()).length).toBe(3);
+	});
+
+	it('[<20ms] counts a changed or new test as on its first run, which never blocks', () => {
+		const estimates = { 'a.e2e.spec.ts > old': 10 };
+		const fresh = ['a.e2e.spec.ts\t[<20ms] old'];
+		expect(
+			isFirstRun('a.e2e.spec.ts', '[<20ms] old', fresh, estimates),
+		).toBe(true);
+		expect(isFirstRun('a.e2e.spec.ts', '[<20ms] old', [], estimates)).toBe(
+			false,
+		);
+		expect(isFirstRun('a.e2e.spec.ts', '[<20ms] new', [], estimates)).toBe(
+			true,
+		);
 	});
 });

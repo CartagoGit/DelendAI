@@ -17,6 +17,7 @@ import { sliceHeldOnForge } from './slice-reservation.service';
 import { readUnitStandings } from './unit-standings.service';
 import { resolveUnitsDirectory } from './units-directory.service';
 import { freeDirectory } from './free-directory.helper';
+import { ownedTemplates } from '../development-policy/owned-work-ref-parser';
 import { liveProposalBranch } from './proposal-branch.service';
 import { createUnitRef } from './unit-start-point.service';
 import { withReviewKind } from './review-kind.service';
@@ -283,7 +284,7 @@ export const enteredHeld = async (
 	// branch the agent already has for it, unless a different session is
 	// working in it, whose work runs alongside on its own unit.
 	const continued = liveProposalBranch(
-		policy.branches.workRefTemplate,
+		ownedTemplates(policy.branches),
 		ref,
 		existing,
 	);
@@ -337,9 +338,9 @@ export const enteredHeld = async (
 	// reviewers each entering `--proposal=batch --slice=all` were both sent
 	// to `batch-all`, and took turns checking their branches out in it.
 	// Units live beside each other under the SHARED checkout, wherever
-	// `work enter` runs: entered from inside another unit, the default
-	// placed the new worktree inside that one's `.cache`, and installing
-	// dependencies there pointed every hook in the clone at it.
+	// `work enter` runs: from inside another unit, the default placed the
+	// worktree inside that one's `.cache`, and installing dependencies
+	// there pointed every hook in the clone at it.
 	const dir =
 		scalarArg(args, 'dir') ??
 		(await freeDirectory(

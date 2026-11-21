@@ -10,6 +10,7 @@ import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { endFinishedUnits } from '@delendai/core/lib/ref-reconciler/finished-units-end.service';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 import { recordUnitEntered } from '@delendai/core/lib/work-units/unit-lease.service';
 
 import {
@@ -100,6 +101,40 @@ describe('endFinishedUnits', () => {
 		expect(git(repo.root, 'branch', '--list', 'fix/typo')).toContain(
 			'fix/typo',
 		);
+	});
+
+	it('[<2000ms] ends a unit of a former namespace, its tip kept under that namespace', async () => {
+		const { repo, forge } = withForge();
+		const policy = resolveDevelopmentPolicy({
+			development: {
+				profile: 'shared-checkout-pr',
+				branches: {
+					namespacePrefix: '',
+					formerNamespacePrefixes: ['delendai'],
+				},
+			},
+		});
+		const ref = reviewRef('auditor');
+		await quietUnit(repo, ref, 'verdict.md');
+		const tip = git(repo.root, 'rev-parse', ref);
+		landOnForge(repo.root, ref);
+
+		const [ended] = await endFinishedUnits({
+			root: repo.root,
+			policy,
+			apply: true,
+		});
+
+		expect(ended?.outcome).toBe('ended');
+		expect(git(repo.root, 'branch', '--list', ref)).toBe('');
+		expect(git(forge, 'branch', '--list', ref)).toBe('');
+		expect(
+			git(
+				repo.root,
+				'rev-parse',
+				'refs/delendai/retired/auditor/review/i00002-all-g1/verdicts',
+			),
+		).toBe(tip);
 	});
 
 	it('[<2000ms] reports without deleting when not applied', async () => {

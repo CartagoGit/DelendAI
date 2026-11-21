@@ -99,16 +99,22 @@ export const runCloseSliceGateProbe = async (
  */
 export const workUnitBranch = async (
 	run: IGitRunner,
-	workRefPrefix: string | undefined,
+	workRefPrefix: string | readonly string[] | undefined,
 ): Promise<string | undefined> => {
-	const prefix = (workRefPrefix ?? '')
-		.replace(/^refs\/heads\//u, '')
-		.replace(/^heads\//u, '');
-	if (prefix.length === 0) return undefined;
+	// Every owned namespace's prefix may be given (f00808).
+	const prefixes = [workRefPrefix ?? '']
+		.flat()
+		.map((prefix) =>
+			prefix.replace(/^refs\/heads\//u, '').replace(/^heads\//u, ''),
+		)
+		.filter((prefix) => prefix.length > 0);
+	if (prefixes.length === 0) return undefined;
 	const result = await run(['rev-parse', '--abbrev-ref', 'HEAD']);
 	if (!result.ok) return undefined;
 	const branch = result.output.trim();
-	return branch.startsWith(prefix) ? branch : undefined;
+	return prefixes.some((prefix) => branch.startsWith(prefix))
+		? branch
+		: undefined;
 };
 
 /**

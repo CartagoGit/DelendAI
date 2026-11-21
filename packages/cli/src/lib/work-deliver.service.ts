@@ -356,20 +356,28 @@ const runDelivery = async (
 				}
 			: published;
 	}
-	return handed === undefined
-		? {
-				code: EXIT_CODE.OK,
-				data: {
-					delivered: 'review',
-					publication: unit.publication,
-					pullRequest: await pullRequestWithLookup(
-						ports,
-						undefined,
-						unit.publication,
-						ports.slice,
-					),
-					proved: proved.data,
-				},
-			}
-		: { code: EXIT_CODE.VALIDATION, error: handed };
+	if (handed !== undefined)
+		return { code: EXIT_CODE.VALIDATION, error: handed };
+	// Said "pushed" only for a publication the remote holds with this head.
+	// Loaded here, not at startup: only a delivery needs it (startup budget).
+	const { ensurePublished } = await import('./work-deliver-remote.service');
+	const ensured = await ensurePublished(ports, unit, checkout);
+	if (ensured.refusal !== undefined) return ensured.refusal;
+	return {
+		code: EXIT_CODE.OK,
+		data: {
+			delivered: 'review',
+			publication: unit.publication,
+			...(ensured.published === undefined
+				? {}
+				: { published: ensured.published.data }),
+			pullRequest: await pullRequestWithLookup(
+				ports,
+				ensured.published?.data,
+				unit.publication,
+				ports.slice,
+			),
+			proved: proved.data,
+		},
+	};
 };

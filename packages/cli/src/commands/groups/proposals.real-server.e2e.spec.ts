@@ -39,7 +39,7 @@ const CLI = join(REPOSITORY, 'packages/cli/src/index.ts');
 
 const PROPOSAL = 'x00001';
 const AGENT = 'claude-sonnet-5-5';
-const UNIT_BRANCH = `wip/${AGENT}/implement/${PROPOSAL}-S1-g1/the-topic`;
+const UNIT_BRANCH = `wip/implement/${AGENT}/${PROPOSAL}-S1/the-topic`;
 const PROPOSAL_FILE = `docs/delendai/proposals/in-progress/fixes/${PROPOSAL}-demo.md`;
 
 const PROPOSAL_TEXT = `---
@@ -226,7 +226,7 @@ const proposalStatusIn = (checkout: string): string =>
 describe.each(Object.keys(PROFILES) as IProfile[])(
 	'the proposals CLI against a real server under %s',
 	(profile) => {
-		it('close-slice from the unit worktree closes it there and leaves the shared checkout alone', async () => {
+		it('[<180000ms] close-slice from the unit worktree closes it there and leaves the shared checkout alone', async () => {
 			const { shared, unit } = fixture(profile);
 			await cli(unit, 'proposals', 'sync');
 
@@ -243,7 +243,7 @@ describe.each(Object.keys(PROFILES) as IProfile[])(
 			expect(sliceStatusIn(shared)).toBe('pending');
 		}, 180_000);
 
-		it('close-slice from the shared checkout binds to the live unit that carries the proposal', async () => {
+		it('[<180000ms] close-slice from the shared checkout binds to the live unit that carries the proposal', async () => {
 			const { shared, unit } = fixture(profile);
 			await cli(unit, 'proposals', 'sync');
 
@@ -260,7 +260,7 @@ describe.each(Object.keys(PROFILES) as IProfile[])(
 			expect(sliceStatusIn(shared)).toBe('pending');
 		}, 180_000);
 
-		it('keeps a claim made by delegate or continue after the CLI process that made it has exited', async () => {
+		it('[<180000ms] keeps a claim made by delegate or continue after the CLI process that made it has exited', async () => {
 			const { unit } = fixture(profile);
 			await cli(unit, 'proposals', 'sync');
 
@@ -295,7 +295,7 @@ describe.each(Object.keys(PROFILES) as IProfile[])(
 			expect(status.raw).toContain(`${PROPOSAL}-S2`);
 		}, 180_000);
 
-		it('transition to review from the unit takes the agent from its ref and opens the round there', async () => {
+		it('[<180000ms] transition to review from the unit takes the agent from its ref and opens the round there', async () => {
 			const { shared, unit } = fixture(profile, true);
 			await cli(unit, 'proposals', 'sync');
 			deliver(unit);
@@ -325,7 +325,7 @@ describe.each(Object.keys(PROFILES) as IProfile[])(
 			expect(sliceStatusIn(shared)).toBe('pending');
 		}, 180_000);
 
-		it('transition from the shared checkout binds to the unit and writes nothing in the shared tree', async () => {
+		it('[<180000ms] transition from the shared checkout binds to the unit and writes nothing in the shared tree', async () => {
 			const { shared, unit } = fixture(profile, true);
 			await cli(unit, 'proposals', 'sync');
 			deliver(unit);
@@ -359,7 +359,7 @@ describe.each(Object.keys(PROFILES) as IProfile[])(
 			).toBe('');
 		}, 180_000);
 
-		it('refuses a hand-off to review that names nobody, rather than opening no round', async () => {
+		it('[<180000ms] refuses a hand-off to review that names nobody, rather than opening no round', async () => {
 			const { shared, unit } = fixture(profile, true);
 			await cli(unit, 'proposals', 'sync');
 			deliver(unit);

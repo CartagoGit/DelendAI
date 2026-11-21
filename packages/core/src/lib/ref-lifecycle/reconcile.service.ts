@@ -53,7 +53,9 @@ import type {
 } from './reconcile.interface';
 import {
 	ownedBatchPrefixes,
+	ownedPublicationRefPrefixes,
 	ownedRehearsalPrefixes,
+	ownedWorkRefPrefixes,
 	retiredMachineryPrefixes,
 	shortName as shortenRef,
 } from '../integration/decisions/namespaces.helper';
@@ -94,8 +96,11 @@ const byHeadRef = (
 	return index;
 };
 
-const inNamespace = (name: string, prefix: string): boolean =>
-	prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix));
+const inNamespace = (name: string, prefixes: readonly string[]): boolean =>
+	prefixes.some(
+		(prefix) =>
+			prefix !== '' && shortenRef(name).startsWith(shortenRef(prefix)),
+	);
 
 /**
  * Whether the ref moved past the pull request that merged. A unit reopened
@@ -155,7 +160,7 @@ const roleOf = (
 					reason: 'a land batch whose pull request is settled: its members keep their own branches',
 				};
 	}
-	if (inNamespace(name, branches.workRefPrefix)) {
+	if (inNamespace(name, ownedWorkRefPrefixes(branches))) {
 		if (ref.publishedIn !== undefined) {
 			return {
 				role: 'work-published',
@@ -179,7 +184,7 @@ const roleOf = (
 			reason: 'a work ref an agent is developing on: visible before publication on purpose, and never reaped here because no pull request has had the chance to prove it spent',
 		};
 	}
-	if (inNamespace(name, branches.publicationRefPrefix)) {
+	if (inNamespace(name, ownedPublicationRefPrefixes(branches))) {
 		if (request === undefined || carriesNewWork(ref, request)) {
 			if (
 				ref.updatedAt !== undefined &&

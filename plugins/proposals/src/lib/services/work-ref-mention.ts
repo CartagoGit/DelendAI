@@ -13,20 +13,12 @@
  * work or publication refs and decodes it with the project's own
  * `workRefTemplate` — wherever that template puts the agent.
  */
-import { compileWorkRefParser } from '@delendai/core/public';
+import { ownedParserOf, ownedPrefixPairs } from './review-claims.service';
 
 import type {
 	IWorkRefMention,
 	IWorkRefShape,
 } from '../contracts/interfaces/review-attribution.interface';
-
-const bare = (prefix: string): string => {
-	const trimmed = prefix
-		.replace(/^refs\//u, '')
-		.replace(/^heads\//u, '')
-		.replace(/^\/+|\/+$/gu, '');
-	return trimmed.length === 0 ? '' : `${trimmed}/`;
-};
 
 /** Characters a ref name may carry; anything else ends the token. */
 // `+` joins the parts of a scope set (`x01003-S1+S4`).
@@ -57,23 +49,28 @@ export const findWorkRefMention = (
 	text: string,
 	shape: IWorkRefShape,
 ): IWorkRefMention | undefined => {
-	const parser = compileWorkRefParser(
-		shape.workRefTemplate,
-		shape.workRefPrefix,
+	const parser = ownedParserOf(shape);
+	// Longest prefix first: `delendai/wip/` before the `wip/` inside it.
+	const pairs = [...ownedPrefixPairs(shape)].sort(
+		(a, b) => b.work.length - a.work.length,
 	);
-	const work = bare(shape.workRefPrefix);
-	const publication = bare(shape.publicationRefPrefix);
-	if (parser === undefined || work.length === 0) return undefined;
+	if (parser === undefined || pairs.every(({ work }) => work.length === 0)) {
+		return undefined;
+	}
 	for (const [token] of text.matchAll(REF_TOKEN_RE)) {
-		const candidates = [
-			...componentStarts(token, work).map((at) => token.slice(at)),
-			...(publication.length === 0
+		// Every owned namespace: a unit named under a former one still names
+		// its agent, so a reviewer cannot approve what they wrote (f00808).
+		const candidates = pairs.flatMap(({ work, publication }) => [
+			...(work.length === 0
+				? []
+				: componentStarts(token, work).map((at) => token.slice(at))),
+			...(publication.length === 0 || work.length === 0
 				? []
 				: componentStarts(token, publication).map(
 						(at) =>
 							`${work}${token.slice(at + publication.length)}`,
 					)),
-		];
+		]);
 		for (const candidate of candidates) {
 			const ref = `refs/heads/${candidate.replace(/[.]+$/u, '')}`;
 			const identity = parser.parse(ref);

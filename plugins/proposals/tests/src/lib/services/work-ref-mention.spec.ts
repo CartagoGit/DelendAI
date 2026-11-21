@@ -133,3 +133,24 @@ describe('findWorkRefMention', () => {
 		).toBeUndefined();
 	});
 });
+
+describe('findWorkRefMention across namespaces (f00808)', () => {
+	const NOW = resolveDevelopmentPolicy({
+		development: {
+			profile: 'shared-checkout-pr',
+			branches: {
+				namespacePrefix: '',
+				formerNamespacePrefixes: ['delendai'],
+			},
+		},
+	}).branches;
+
+	it('[<20ms] names the agent of a unit under the former namespace', () => {
+		for (const text of [
+			'Merge pull request #7 from Org/delendai/pr/implement/claude-opus-5/x00568-S1/t',
+			'Merge pull request #7 from Org/pr/implement/claude-opus-5/x00568-S1/t',
+		]) {
+			expect(findWorkRefMention(text, NOW)?.agent).toBe('claude-opus-5');
+		}
+	});
+});

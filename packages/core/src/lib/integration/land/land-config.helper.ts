@@ -24,13 +24,13 @@ export const landConfigFromPolicy = (
 		readonly unbuiltAuthors?: readonly string[];
 	} = {},
 ): ILandConfig => {
-	const [batchPrefix = `${LAND_QUEUE_SEGMENT}/`] = ownedBatchPrefixes(
-		policy.branches,
-	);
+	const batchPrefixes = ownedBatchPrefixes(policy.branches);
+	const [batchPrefix = `${LAND_QUEUE_SEGMENT}/`] = batchPrefixes;
 	return {
 		integrationBranch: policy.branches.integration,
 		releaseBranch: policy.branches.release,
 		batchPrefix,
+		batchPrefixes,
 		withoutChecks: policy.integration.landWithoutChecks,
 		batches: project.batches ?? false,
 		unbuiltAuthors: project.unbuiltAuthors ?? [LAND_WORKFLOW_TOKEN_ACTOR],
@@ -40,3 +40,8 @@ export const landConfigFromPolicy = (
 		sectionOfCheck: project.sectionOfCheck ?? (() => undefined),
 	};
 };
+
+/** Every prefix a batch may live under, current first (f00808). */
+export const batchPrefixesOf = (
+	config: Pick<ILandConfig, 'batchPrefix' | 'batchPrefixes'>,
+): readonly string[] => config.batchPrefixes ?? [config.batchPrefix];

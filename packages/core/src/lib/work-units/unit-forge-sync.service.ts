@@ -25,7 +25,8 @@ import { createGitRunner } from '../shared/git-write';
 import { resolveDurabilityRemote } from '../wip-engine/durability-remote';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
+import { compileOwnedWorkRefParser } from '../development-policy/owned-work-ref-parser';
+import { ownedWorkRefPrefixes } from '../integration/decisions/namespaces.helper';
 import { carriesNothingBeyond } from './landed-work.service';
 import { proposalInProgress } from './publication-target.service';
 import { keepUnitWork } from './unit-uncommitted-work.service';
@@ -72,14 +73,29 @@ const worktreesByBranch = async (
 	return found;
 };
 
+/**
+ * Every owned namespace's units are kept level with the forge: a unit under
+ * a former one is still somebody's work (f00808).
+ */
 export const syncUnitsWithForge = async (
 	input: IUnitForgeSyncInput,
+): Promise<readonly IUnitForgeSync[]> => {
+	const synced: IUnitForgeSync[] = [];
+	for (const prefix of ownedWorkRefPrefixes(input.policy.branches)) {
+		synced.push(...(await syncNamespaceUnits(input, prefix)));
+	}
+	return synced;
+};
+
+const syncNamespaceUnits = async (
+	input: IUnitForgeSyncInput,
+	workRefPrefix: string,
 ): Promise<readonly IUnitForgeSync[]> => {
 	const { run, runIn, policy, remote } = input;
 	if (!policy.persistence.autoPushAfterCommit) return [];
 	// The prefix names no placeholder, so resolving it yields the
 	// qualified namespace the way every work ref is qualified.
-	const local = resolveWorkRef(policy.branches.workRefPrefix, {
+	const local = resolveWorkRef(workRefPrefix, {
 		agent: '',
 		proposal: '',
 		slice: '',
@@ -227,13 +243,15 @@ const publishUnitsOutOfProgress = async (
 ): Promise<readonly IUnitForgeSync[]> => {
 	const base = integrationBase(root, policy);
 	if (base === undefined) return [];
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	// Units of a former namespace publish under their own name too.
+	const parser = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	});
 	const done: IUnitForgeSync[] = [];
-	for (const [ref] of listWorkRefs(root, policy)) {
+	const owned = ownedWorkRefPrefixes(policy.branches).flatMap((prefix) => [
+		...listWorkRefs(root, policy, prefix),
+	]);
+	for (const [ref] of owned) {
 		const unit = parser?.parse(`refs/heads/${ref}`);
 		if (
 			unit === undefined ||

@@ -22,6 +22,7 @@ import {
 	workRefOpennessOf,
 } from '@delendai/core/runtime';
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { ownedWorkRefPrefixes } from '@delendai/core/cli';
 
 import type {
 	IReapIntegratedWorkRefsInput,
@@ -143,12 +144,21 @@ const fateOf = async (
 export const reapIntegratedWorkRefs = async (
 	input: IReapIntegratedWorkRefsInput,
 ): Promise<IReapIntegratedWorkRefsResult> => {
-	const namespace = qualify(input.policy.branches.workRefPrefix);
+	// Every owned namespace: integrated work under a former one is reaped
+	// by the same rule (f00808).
+	const namespaces = ownedWorkRefPrefixes(input.policy.branches).map(qualify);
 	const inUse = await checkedOut(input.run);
+	const { remote } = input;
 	const onRemote =
-		input.remote === undefined
+		remote === undefined
 			? []
-			: await remoteWorkRefs(input.run, input.remote, namespace);
+			: (
+					await Promise.all(
+						namespaces.map((namespace) =>
+							remoteWorkRefs(input.run, remote, namespace),
+						),
+					)
+				).flat();
 	const fate = (
 		ref: string,
 		tip: string,
@@ -164,7 +174,12 @@ export const reapIntegratedWorkRefs = async (
 	const removedRemote: string[] = [];
 	const failures: string[] = [];
 
-	for (const { ref, sha } of await localWorkRefs(input.run, namespace)) {
+	const local = (
+		await Promise.all(
+			namespaces.map((namespace) => localWorkRefs(input.run, namespace)),
+		)
+	).flat();
+	for (const { ref, sha } of local) {
 		if (keep.has(ref)) continue;
 		if (!(await isWorkIntegrated(input.run, sha, input.integrationSha)))
 			continue;

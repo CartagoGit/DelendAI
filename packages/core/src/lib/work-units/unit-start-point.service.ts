@@ -1,6 +1,6 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { integrationRemote, readGit } from './work-unit-shared.service';
-import { planRetirement } from './work-retire.service';
+import { planOwnedRetirement } from './work-retire.service';
 
 /**
  * The commit a new work ref starts from: the integration base, unless the
@@ -18,12 +18,7 @@ export const unitStartPoint = (input: {
 	readonly base: string;
 }): string => {
 	const { root, policy, base } = input;
-	const plan = planRetirement({
-		branch: input.branch,
-		namespace: policy.branches.namespacePrefix,
-		workRefPrefix: policy.branches.workRefPrefix,
-		publicationRefPrefix: policy.branches.publicationRefPrefix,
-	});
+	const plan = planOwnedRetirement(policy.branches, input.branch);
 	if (plan === undefined) return base;
 	const remote = integrationRemote(root, policy);
 	const published = `refs/heads/${plan.publicationBranch}`;

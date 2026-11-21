@@ -347,7 +347,7 @@
 	"f00808::S9::decisions::no Decisions field",
 	"f00808::S9::files::packages/core/src/lib/work-units/work-ref-record.service.ts does not exist; write new:packages/core/src/lib/work-units/work-ref-record.service.ts if the slice creates it",
 	"f00808::S9::files::packages/core/tests/src/lib/work-units/work-ref-record.service.spec.ts does not exist; write new:packages/core/tests/src/lib/work-units/work-ref-record.service.spec.ts if the slice creates it",
-	"f00808::S9::shared-file::packages/cli/src/commands/work-ref-migration.spec.ts is also listed by S7, with no DependsOn between them",
+	"f00808::S9::shared-file::packages/cli/src/commands/work-ref-migration.e2e.spec.ts is also listed by S7, with no DependsOn between them",
 	"f00809::S1::acceptance::A pure renderer yields the title and the body sections in the fixed order for implement, review, create, batch close and issue kinds.",
 	"f00809::S1::acceptance::A spec per kind, and a check that two different agent ids get identical shape.",
 	"f00809::S1::acceptance::Caller-supplied fields can only set the summary text; type, scope and section order cannot be overridden.",

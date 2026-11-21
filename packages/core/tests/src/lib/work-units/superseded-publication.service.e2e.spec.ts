@@ -34,6 +34,9 @@ const policy = fakePartial<IResolvedDevelopmentPolicy>({
 		integration: 'develop',
 		workRefPrefix: 'delendai/wip/',
 		publicationRefPrefix: 'delendai/pr/',
+		namespacePrefix: 'delendai',
+		workRefTemplate:
+			'delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
 	}),
 });
 const OLD_WORK = 'delendai/wip/gpt-6/implement/x00001-S1-g1/t';

@@ -204,8 +204,8 @@ export const releaseClaimedSlices = (
 	const unit = from
 		.replace(/^refs\/heads\//u, '')
 		.slice(bare(policy.branches.workRefPrefix).length);
-	const proposal = /^[^/]+\/implement\/(?<proposal>[^-/]+)-/u.exec(unit)
-		?.groups?.proposal;
+	const held = unitOfName(unit);
+	const proposal = held?.kind === 'implement' ? held.proposal : undefined;
 	return proposal === undefined
 		? 0
 		: releaseSlices({

@@ -1,11 +1,14 @@
 /**
  * review-earlier-pack.service.ts — one agent, one pack at a time.
  */
-import { compileWorkRefParser } from '@delendai/core/public';
 
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
-import { unitOfRef } from './review-claims.service';
+import {
+	ownedParserOf,
+	ownedPrefixPairs,
+	unitOfRef,
+} from './review-claims.service';
 
 /**
  * The agent's first review unit, when it is not this one and still holds
@@ -21,15 +24,12 @@ export const earlierPackWithVerdicts = async (
 	integration: string,
 ): Promise<string | undefined> => {
 	if (current.agent === undefined) return undefined;
-	const parser = compileWorkRefParser(
-		shape.workRefTemplate,
-		shape.workRefPrefix,
-	);
+	const parser = ownedParserOf(shape);
 	const listed = await run([
 		'for-each-ref',
 		'--sort=creatordate',
 		'--format=%(refname)',
-		`refs/heads/${shape.workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}`,
+		...ownedPrefixPairs(shape).map(({ work }) => `refs/heads/${work}`),
 	]);
 	if (!listed.ok) return undefined;
 	for (const ref of listed.output.split('\n')) {

@@ -10,7 +10,7 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { ISwarmUnit } from '../contracts/interfaces/work-swarm.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
+import { compileOwnedWorkRefParser } from '../development-policy/owned-work-ref-parser';
 import {
 	integratedDocumentOf,
 	integratedDocumentPathOf,
@@ -56,11 +56,10 @@ export const unitsOutsideTheirSlice = (input: {
 	readonly policy: Pick<IResolvedDevelopmentPolicy, 'branches'>;
 	readonly units: readonly ISwarmUnit[];
 }): readonly { readonly ref: string; readonly files: readonly string[] }[] => {
-	const parser = compileWorkRefParser(
-		input.policy.branches.workRefTemplate,
-		input.policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	// Every owned namespace: a unit under a former one is judged too (f00808).
+	const parser = compileOwnedWorkRefParser(input.policy.branches, {
+		requireKind: false,
+	});
 	return input.units.flatMap((unit) => {
 		const identity = parser?.parse(`refs/heads/${unit.ref}`);
 		if (

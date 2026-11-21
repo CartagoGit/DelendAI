@@ -15,6 +15,7 @@
  * that worktree showing its own changes reverted. And it never touches
  * the checkout the host runs in, whose dirty files may be a person's.
  */
+import { ownedWorkRefPrefixes } from '../integration/decisions/namespaces.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
 import type { IDelendaiHostConfig } from '../contracts/interfaces/host-config.interface';
@@ -230,13 +231,18 @@ export const publishWorkCheckouts = async (
 	if (!listed.ok) return [];
 	// The prefix names no placeholder, so resolving it as a template yields
 	// the qualified namespace exactly the way every work ref is qualified.
-	const namespace = resolveWorkRef(policy.branches.workRefPrefix, {
-		agent: '',
-		proposal: '',
-		slice: '',
-		generation: 0,
-	});
-	const refs = workCheckoutRefs(listed.output, namespace);
+	// Every owned namespace: a unit under a former one is published too.
+	const refs = ownedWorkRefPrefixes(policy.branches).flatMap((prefix) =>
+		workCheckoutRefs(
+			listed.output,
+			resolveWorkRef(prefix, {
+				agent: '',
+				proposal: '',
+				slice: '',
+				generation: 0,
+			}),
+		),
+	);
 	if (refs.length === 0) return [];
 	const remote = await resolveDurabilityRemote(run, remoteOption);
 	if (remote === undefined) {

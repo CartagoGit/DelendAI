@@ -12,7 +12,11 @@ import type {
 	IGitGuardVerdict,
 	IGuardedGitOperation,
 } from '../contracts/interfaces/git-guard.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
+import {
+	alternateTemplate,
+	compileWorkRefParser,
+	type IWorkRefParser,
+} from '../startup-reconciler/work-ref-identity';
 import {
 	insideNamespaces,
 	policyNamespaces,
@@ -58,7 +62,9 @@ export const refuseUnshapedWorkRef = (
 		requireKind,
 	});
 	if (parser === undefined) return undefined;
-	const identity = parser.parse(ref);
+	const identity =
+		parser.parse(ref) ??
+		legacyIdentity(template, owned.prefix, ref, owned.current, requireKind);
 	if (identity === undefined) {
 		return {
 			refused: true,
@@ -67,6 +73,28 @@ export const refuseUnshapedWorkRef = (
 		};
 	}
 	return refuseKindInAgent(identity.agent, branch);
+};
+
+/**
+ * A live unit written in the shape the default replaced (f00808 S8): still
+ * somebody's work under a former namespace, or one that exists already
+ * under the current one, so it stays pushable. A ref being created under
+ * the current namespace never takes this path.
+ */
+const legacyIdentity = (
+	template: string,
+	prefix: string,
+	ref: string,
+	current: boolean,
+	requireKind: boolean,
+): ReturnType<IWorkRefParser['parse']> => {
+	if (current && requireKind) return undefined;
+	const other = alternateTemplate(template);
+	if (other === undefined) return undefined;
+	return compileWorkRefParser(other, prefix, {
+		strict: true,
+		requireKind: false,
+	})?.parse(ref);
 };
 
 /**
@@ -126,8 +154,10 @@ export const refuseUnshapedPublication = (
 		requireKind: false,
 	});
 	const asWork = `refs/heads/${work}${branch.slice(publication.length)}`;
-	const identity = parser?.parse(asWork);
 	if (parser === undefined) return undefined;
+	const identity =
+		parser.parse(asWork) ??
+		legacyIdentity(template, shape.prefix, asWork, shape.current, false);
 	if (identity === undefined) {
 		return {
 			refused: true,

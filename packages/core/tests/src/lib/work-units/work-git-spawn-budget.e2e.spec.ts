@@ -61,7 +61,7 @@ const UNIT = [
 	`--agent=${AGENT}`,
 	'--topic=probe',
 ];
-const REF = `delendai/wip/${AGENT}/implement/x1-S1-g1/probe`;
+const REF = `delendai/wip/implement/${AGENT}/x1-S1/probe`;
 
 const contextFor = (cwd: string): IWorkUnitContext =>
 	fakePartial<IWorkUnitContext, 'cwd' | 'globals'>({

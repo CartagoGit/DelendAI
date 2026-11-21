@@ -39,7 +39,6 @@ import { strandedProposalsInvariant } from './in-progress-units.service';
 import { landedForgeRefKept } from './work-ref-lifecycle.service';
 import { unitsOnForgeInvariant } from './units-on-forge.service';
 import { inProgressProposals } from './publication-target.service';
-import { workRefTailSegments } from '../development-policy/work-ref-placeholders';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 
 import type {
@@ -47,7 +46,13 @@ import type {
 	IInvariantResult,
 	IInvariantScope,
 } from '../contracts/interfaces/workflow-invariants.interface';
-import { shortName as bare } from '../integration/decisions/namespaces.helper';
+import { publicationsCanonicalInvariant } from './publications-canonical.service';
+import {
+	ownedNamespaces,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName as bare,
+} from '../integration/decisions/namespaces.helper';
 
 export type {
 	IInvariantReport,
@@ -87,8 +92,14 @@ export const checkWorkflowInvariants = (input: {
 	const { root, policy } = input;
 	const remote = input.remote ?? 'origin';
 	const integration = policy.branches.integration;
-	const workPrefix = bare(policy.branches.workRefPrefix);
-	const pubPrefix = bare(policy.branches.publicationRefPrefix);
+	// Every owned namespace, current first: a unit under a former one is a
+	// unit all the same (f00808).
+	const workPrefixes = ownedWorkRefPrefixes(policy.branches).map(bare);
+	const pubPrefixes = ownedPublicationRefPrefixes(policy.branches).map(bare);
+	const underWork = (ref: string): boolean =>
+		workPrefixes.some(
+			(prefix) => prefix.length > 0 && ref.startsWith(prefix),
+		);
 	const results: IInvariantResult[] = [];
 
 	const wanted = input.scopes;
@@ -146,7 +157,7 @@ export const checkWorkflowInvariants = (input: {
 		git(root, [
 			'for-each-ref',
 			'--format=%(refname:short)',
-			`refs/heads/${workPrefix}**`,
+			...workPrefixes.map((prefix) => `refs/heads/${prefix}**`),
 		]),
 	);
 	const abandoned = localWork.filter(
@@ -174,34 +185,18 @@ export const checkWorkflowInvariants = (input: {
 	const heads = lines(git(root, ['ls-remote', '--heads', '--', remote])).map(
 		(line) => line.split('\t')[1]?.replace('refs/heads/', '') ?? '',
 	);
-	const published = heads.filter((ref) => ref.startsWith(pubPrefix));
-	// The shape is the policy's own work-ref template, which the
-	// publication ref repeats under its prefix: the count of components
-	// is read from it, so a component added to the template (as `kind`
-	// was) cannot leave this check judging the old shape.
-	const expectedSegments = workRefTailSegments(
-		policy.branches.workRefTemplate,
+	const published = heads.filter((ref) =>
+		pubPrefixes.some(
+			(prefix) => prefix.length > 0 && ref.startsWith(prefix),
+		),
 	);
-	const misshapen =
-		expectedSegments === 0
-			? []
-			: published.filter((ref) => {
-					const tail = ref.slice(pubPrefix.length);
-					return tail.split('/').length !== expectedSegments;
-				});
-	add({
-		scope: 'forge',
-		id: 'publications-canonical',
-		claim: 'every publication ref carries agent, slice and generation',
-		holds: misshapen.length === 0,
-		observed:
-			published.length === 0
-				? 'no publication refs'
-				: misshapen.length === 0
-					? `${String(published.length)} ref(s), all canonical`
-					: `${String(misshapen.length)} flat: ${misshapen.slice(0, 3).join(', ')}`,
-		remedy: `give ${pubPrefix}<name> the agent, slice and generation segments (or delete the flat ref), then publish the unit again with \`delendai work publish\``,
-	});
+	add(
+		publicationsCanonicalInvariant({
+			heads,
+			prefixes: pubPrefixes,
+			template: policy.branches.workRefTemplate,
+		}),
+	);
 
 	// Not an invariant: "every candidate contains the integration branch".
 	// A candidate nothing moved under lands as it is, and one that is
@@ -230,7 +225,7 @@ export const checkWorkflowInvariants = (input: {
 		if ([...runtimeTrees].some((tree) => path.endsWith(`/${tree}`)))
 			return false;
 		const branch = git(path, ['symbolic-ref', '--short', 'HEAD']);
-		return branch === '' || !branch.startsWith(workPrefix);
+		return branch === '' || !underWork(branch);
 	});
 	add({
 		scope: 'checkout',
@@ -257,7 +252,7 @@ export const checkWorkflowInvariants = (input: {
 		remote,
 		integration,
 		refs: heads.filter(
-			(ref) => ref.startsWith(workPrefix) && !worktreeBranches.has(ref),
+			(ref) => underWork(ref) && !worktreeBranches.has(ref),
 		),
 		leaseTtlMinutes: policy.coordination.leaseTtlMinutes,
 		now: input.now,
@@ -282,7 +277,14 @@ export const checkWorkflowInvariants = (input: {
 		remedy: 'publish the unit (`delendai work publish`); one that waits on someone says so with a commit in it (`git commit --allow-empty -m "parked" --trailer "Delendai-Parked: <what it waits on>"`); one that will not land is retired with its work kept (`delendai work retire --ref=<ref> --reason=<why>`)',
 	});
 
-	add(unitsOnForgeInvariant({ root, remote, integration, workPrefix }));
+	add(
+		unitsOnForgeInvariant({
+			root,
+			remote,
+			integration,
+			workPrefix: workPrefixes,
+		}),
+	);
 
 	// 8. A publication still on the forge holds something integration lacks.
 	add(spentPublicationsInvariant({ root, remote, integration, published }));
@@ -326,17 +328,15 @@ export const checkWorkflowInvariants = (input: {
 	add(
 		idleUnitsInvariant({
 			integration,
-			units: [...worktreeBranches]
-				.filter((ref) => ref.startsWith(workPrefix))
-				.map((ref) => ({
-					ref,
-					counts: git(root, [
-						'rev-list',
-						'--left-right',
-						'--count',
-						`${integration}...refs/heads/${ref}`,
-					]),
-				})),
+			units: [...worktreeBranches].filter(underWork).map((ref) => ({
+				ref,
+				counts: git(root, [
+					'rev-list',
+					'--left-right',
+					'--count',
+					`${integration}...refs/heads/${ref}`,
+				]),
+			})),
 		}),
 	);
 
@@ -356,7 +356,7 @@ export const checkWorkflowInvariants = (input: {
 		strayRefsInvariant({
 			refs: lines(git(root, ['for-each-ref', '--format=%(refname)'])),
 			remotes: lines(git(root, ['remote'])),
-			namespace: policy.branches.namespacePrefix,
+			namespace: ownedNamespaces(policy.branches),
 		}),
 	);
 

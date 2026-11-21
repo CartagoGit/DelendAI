@@ -128,5 +128,5 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 - `bunx vitest run plugins/proposals/tests/src/lib/tools/proposal-transition-checkout.spec.ts` stays green with an optional superseded_by field
 - `bunx vitest run packages/cli/src/lib/work-revalidate.service.spec.ts` proves a delivered slice whose file was renamed or deleted by a merged change does not block the hand-over of another slice
 - `bunx vitest run packages/core/tests/src/lib/work-units/workflow-invariants.service.e2e.spec.ts` proves branch-runtime/develop and branch-runtime/main are not leftover worktrees
-- `bunx vitest run packages/core/tests/src/lib/work-units/work-unit-enter.service.spec.ts` proves a ref-creation lock conflict is retried deterministically and the refusal names the git error
+- `bunx vitest run packages/core/tests/src/lib/work-units/work-unit-enter.service.e2e.spec.ts` proves a ref-creation lock conflict is retried deterministically and the refusal names the git error
 - `bunx vitest run tools/scripts/forge/land-cutover.e2e.spec.ts` reads the derived-from-proposals list from the single exported constant in proposal-readiness.script.ts

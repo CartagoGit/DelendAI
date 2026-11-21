@@ -9,7 +9,7 @@ import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import {
 	resolvePublicationTarget,
-	unitPublicationPattern,
+	unitPublicationSlice,
 } from '@delendai/core/lib/work-units/open-pull-request-republication.service';
 import type { IPublicationTargetRequest } from '@delendai/core/lib/contracts/interfaces/publication-target.interface';
 
@@ -21,8 +21,8 @@ const policy = resolveDevelopmentPolicy({
 });
 
 const AGENT = 'claude-sonnet-5-5';
-const OWN = `delendai/pr/${AGENT}/implement/x01079-all-g1/work`;
-const OLDER = `delendai/pr/${AGENT}/create/x01079-all-g2/proposal-readiness-lint`;
+const OWN = `delendai/pr/implement/${AGENT}/x01079-all/work`;
+const OLDER = `delendai/pr/create/${AGENT}/x01079-all-G2/proposal-readiness-lint`;
 const TIP = 'a'.repeat(40);
 
 const request: IPublicationTargetRequest = {
@@ -35,7 +35,7 @@ const request: IPublicationTargetRequest = {
 	generation: 1,
 	kind: 'implement',
 	base: 'b'.repeat(40),
-	workRef: `refs/heads/delendai/wip/${AGENT}/implement/x01079-all-g1/work`,
+	workRef: `refs/heads/delendai/wip/implement/${AGENT}/x01079-all/work`,
 };
 
 const chooseOwn = () => ({
@@ -105,7 +105,7 @@ describe('resolvePublicationTarget', () => {
 
 	it("[<20ms] ignores another agent's open pull request without a word", () => {
 		const { target } = run({
-			open: openOlder('delendai/pr/gpt-6/create/x01079-all-g2/work'),
+			open: openOlder('delendai/pr/create/gpt-6/x01079-all-G2/work'),
 		});
 		expect(target).toMatchObject({
 			publicationRef: `refs/heads/${OWN}`,
@@ -115,7 +115,7 @@ describe('resolvePublicationTarget', () => {
 
 	it('[<20ms] ignores an open pull request of another slice', () => {
 		const { target } = run({
-			open: openOlder(`delendai/pr/${AGENT}/create/x01079-S2-g2/work`),
+			open: openOlder(`delendai/pr/create/${AGENT}/x01079-S2-G2/work`),
 		});
 		expect(target).toMatchObject({ notes: [] });
 	});
@@ -136,7 +136,7 @@ describe('resolvePublicationTarget', () => {
 			open: [
 				...openOlder(OLDER, 2311),
 				...openOlder(
-					`delendai/pr/${AGENT}/create/x01079-all-g3/other`,
+					`delendai/pr/create/${AGENT}/x01079-all-G3/other`,
 					2400,
 				),
 			],
@@ -206,7 +206,7 @@ describe('resolvePublicationTarget', () => {
 			development: { profile: 'shared-direct' },
 		});
 		expect(
-			unitPublicationPattern(direct, {
+			unitPublicationSlice(direct, {
 				agent: AGENT,
 				proposal: 'x01079',
 			}),

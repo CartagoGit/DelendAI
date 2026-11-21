@@ -17,11 +17,15 @@ import type { IInvariantResult } from '../contracts/interfaces/workflow-invarian
 /** Ref namespaces git itself owns. */
 const GIT_OWN = ['stash', 'notes', 'bisect', 'replace', 'original', 'prefetch'];
 
+/** The bookkeeping roots of a project with no namespace. */
+const BOOKKEEPING = ['retired', 'claims', 'ids', 'publish', 'rescued'];
+
 /** The refs of `refs` that belong to nothing a clone is expected to hold. */
 export const strayRefs = (input: {
 	readonly refs: readonly string[];
 	readonly remotes: readonly string[];
-	readonly namespace: string;
+	/** The current namespace, or every owned one (current first). */
+	readonly namespace: string | readonly string[];
 }): readonly string[] =>
 	input.refs.filter((ref) => {
 		const [, kind = '', ...rest] = ref.split('/');
@@ -30,7 +34,12 @@ export const strayRefs = (input: {
 		if (kind === 'remotes') return !input.remotes.includes(rest[0] ?? '');
 		// Retired work is kept on the forge, not here; the rest of the
 		// product's own namespace is bookkeeping it may cache.
-		if (kind === input.namespace) return rest[0] === 'retired';
+		const namespaces = [input.namespace].flat();
+		if (namespaces.includes(kind)) return rest[0] === 'retired';
+		// A project with no namespace keeps its bookkeeping at `refs/<kind>/`.
+		if (namespaces.includes('') && BOOKKEEPING.includes(kind)) {
+			return kind === 'retired';
+		}
 		return true;
 	});
 
@@ -38,7 +47,7 @@ export const strayRefs = (input: {
 export const strayRefsInvariant = (input: {
 	readonly refs: readonly string[];
 	readonly remotes: readonly string[];
-	readonly namespace: string;
+	readonly namespace: string | readonly string[];
 }): IInvariantResult => {
 	const stray = strayRefs(input);
 	return {

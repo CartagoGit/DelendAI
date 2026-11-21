@@ -7,6 +7,10 @@
  * never wait on the network.
  */
 import type { IWorkflowKpis } from '../contracts/interfaces/workflow-kpis.interface';
+import {
+	ownedPublicationRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import { readCoordinationCost } from './coordination-cost.service';
 import { rosterOf } from './swarm-roster.service';
 import { readUnitStandings } from './unit-standings.service';
@@ -57,7 +61,7 @@ export const readWorkflowKpis = async (
 				root,
 				policy.branches.integration,
 				COORDINATION_WINDOW_DAYS,
-				policy.branches.publicationRefPrefix,
+				ownedPublicationRefPrefixes(policy.branches).map(shortName),
 			),
 		),
 	};

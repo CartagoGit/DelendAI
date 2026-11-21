@@ -22,6 +22,7 @@
 import { execFileSync } from 'node:child_process';
 
 import { readWorkspacePolicy } from '@delendai/core/cli';
+import { compileOwnedWorkRefParser } from '@delendai/core/cli';
 import { applyIdentityPolicy, providerModelId } from '@delendai/core/cli';
 import type { IPolicyIdentity } from '@delendai/core/cli';
 import {
@@ -153,7 +154,16 @@ const agentOfCheckout = async (
 	if (branch === undefined) return undefined;
 	const read =
 		policy ?? (await readWorkspacePolicy(cwd).catch(() => undefined));
-	return agentOfWorkBranch(read?.branches.workRefTemplate, branch);
+	// Every owned namespace: a unit under a former one names its agent too.
+	const identity =
+		read === undefined
+			? undefined
+			: compileOwnedWorkRefParser(read.branches)?.parse(
+					`refs/heads/${branch}`,
+				);
+	return identity === undefined || identity.agent === ''
+		? undefined
+		: identity.agent;
 };
 
 /**

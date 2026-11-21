@@ -51,6 +51,13 @@ export const runFetchPhase = async (input: {
 	readonly workRefPrefix: string;
 	/** Candidate namespace, so a merged candidate's ref is pruned here too. */
 	readonly publicationRefPrefix?: string | undefined;
+	/** Each former namespace's prefixes: its units are fetched and listed too. */
+	readonly former?:
+		| readonly {
+				readonly workRefPrefix: string;
+				readonly publicationRefPrefix: string;
+		  }[]
+		| undefined;
 }): Promise<IFetchPhaseResult> => {
 	const findings: IStartupFinding[] = [];
 	const outcome = await input.git.fetch({
@@ -60,6 +67,15 @@ export const runFetchPhase = async (input: {
 			? {}
 			: { publicationRefPrefix: input.publicationRefPrefix }),
 	});
+	// A unit under a former namespace is still a unit: it is fetched, and
+	// its failure is the current fetch's to report (f00808).
+	for (const old of input.former ?? []) {
+		await input.git.fetch({
+			integrationBranch: input.integrationBranch,
+			workRefPrefix: old.workRefPrefix,
+			publicationRefPrefix: old.publicationRefPrefix,
+		});
+	}
 	if (outcome.ok) {
 		findings.push(
 			finding({
@@ -98,7 +114,20 @@ export const runFetchPhase = async (input: {
 		);
 	}
 
-	const refs = await input.git.listRefs(input.workRefPrefix);
+	const listed = [
+		await input.git.listRefs(input.workRefPrefix),
+		...(await Promise.all(
+			(input.former ?? []).map((old) =>
+				input.git.listRefs(old.workRefPrefix),
+			),
+		)),
+	].flat();
+	const seen = new Set<string>();
+	const refs = listed.filter((ref) => {
+		if (seen.has(ref.name)) return false;
+		seen.add(ref.name);
+		return true;
+	});
 	return {
 		findings,
 		counters: { gitFetches: 1 },

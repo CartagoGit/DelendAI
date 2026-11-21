@@ -82,6 +82,7 @@ describe('precheckDelivery', () => {
 			slice: 'all',
 			publish: async () => ({ code: EXIT_CODE.OK }),
 			readOpenPullRequest: async () => undefined,
+			publicationReached: async () => true,
 			locate: async () => ({
 				code: EXIT_CODE.OK,
 				data: { worktree: '/unit' },
