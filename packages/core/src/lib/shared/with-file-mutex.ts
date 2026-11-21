@@ -166,6 +166,15 @@ export class LockContentionError extends Error {
 	}
 }
 
+/**
+ * Milliseconds on the monotonic clock. A wait budget is elapsed time, not a
+ * wall-clock reading: a wall-clock step (measured on WSL2: `Date.now()` moved
+ * about 5.6 s while `performance.now()` moved 50-340 ms) must never turn into
+ * a `LockContentionError`. Lease timestamps shared across processes stay on
+ * the wall clock.
+ */
+const monotonicNowMs = (): number => performance.now();
+
 const sleep = (ms: number): Promise<void> =>
 	new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -498,7 +507,7 @@ export const withFileMutex = async <T>(
 	// each time the lock changes hands. A waiter behind N short, healthy
 	// holders otherwise fails once their summed hold time (multiplied by
 	// coverage or load) passes `timeoutMs`, though nobody is stuck.
-	let deadline = Date.now() + timeoutMs;
+	let deadline = monotonicNowMs() + timeoutMs;
 	let lastHolderToken: string | undefined;
 	// The directory can go between that `mkdir` and the `open` below — a
 	// start-up migration or eviction tidying an empty one. That ENOENT
@@ -522,7 +531,7 @@ export const withFileMutex = async <T>(
 			}
 			acquired = true;
 			if (waitStartedAt !== undefined) {
-				metrics.recordWaitMs(Date.now() - waitStartedAt);
+				metrics.recordWaitMs(monotonicNowMs() - waitStartedAt);
 			}
 			break;
 		} catch (error) {
@@ -538,7 +547,7 @@ export const withFileMutex = async <T>(
 			if (code !== 'EEXIST') throw error;
 			if (!contentionObserved) {
 				contentionObserved = true;
-				waitStartedAt = Date.now();
+				waitStartedAt = monotonicNowMs();
 				metrics.recordContention();
 			}
 			// Held by another writer. Steal it if it looks abandoned.
@@ -551,7 +560,7 @@ export const withFileMutex = async <T>(
 					lastHolderToken !== undefined &&
 					lastHolderToken !== observedLease.token
 				) {
-					deadline = Date.now() + timeoutMs;
+					deadline = monotonicNowMs() + timeoutMs;
 				}
 				lastHolderToken = observedLease.token;
 				// a silent heartbeat is not proof of death.
@@ -672,7 +681,7 @@ export const withFileMutex = async <T>(
 								acquired = true;
 								if (waitStartedAt !== undefined) {
 									metrics.recordWaitMs(
-										Date.now() - waitStartedAt,
+										monotonicNowMs() - waitStartedAt,
 									);
 								}
 								break;
@@ -716,7 +725,7 @@ export const withFileMutex = async <T>(
 				}
 				throw error;
 			}
-			if (Date.now() >= deadline) {
+			if (monotonicNowMs() >= deadline) {
 				// A live holder outlived the timeout (a stale one was already
 				// reclaimed above). Default 'fail' (a00065 S2) lets the caller
 				// back off rather than preempt a peer mid-write; explicit
@@ -725,7 +734,7 @@ export const withFileMutex = async <T>(
 				// lock we create next, but able to clobber the peer's work.
 				if (onContention === 'fail' || onContention === 'wait') {
 					if (waitStartedAt !== undefined) {
-						metrics.recordWaitMs(Date.now() - waitStartedAt);
+						metrics.recordWaitMs(monotonicNowMs() - waitStartedAt);
 					}
 					metrics.recordFailedAcquisition();
 					throw new LockContentionError(lockPath, timeoutMs);
