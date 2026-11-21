@@ -1,0 +1,11 @@
+{
+	"versions": {
+		"work-ref": 1,
+		"proposal-file": 1,
+		"delendai-config": 1,
+		"cache-layout": 6,
+		"tool-output": 1,
+		"stable-manifest": 1,
+		"idempotency-snapshot": 1
+	}
+}
