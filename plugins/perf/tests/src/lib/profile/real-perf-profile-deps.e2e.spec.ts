@@ -30,7 +30,9 @@ describe('a flame-graph capture on a real Node process', () => {
 				timeoutMs: PROFILER_DEADLINE_MS,
 				format: 'flamegraph',
 			});
-			expect(run).toMatchObject({ ok: true });
+			// A failed capture names its step, exit code, deadline and the
+			// profiler's own output: vitest elides nested fields of a diff.
+			expect(run.ok, JSON.stringify(run)).toBe(true);
 			expect(run.flamegraph).toMatch(/\.cpuprofile$/u);
 			expect((await stat(run.flamegraph ?? '')).size).toBeGreaterThan(0);
 		} finally {

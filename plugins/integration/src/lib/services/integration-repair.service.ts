@@ -85,7 +85,6 @@ export const runIntegrationRepair = async (
 			regenerate: ports.regenerate,
 			exec,
 		}),
-		sectionOfCheck: ports.sectionOfCheck,
 		repairPrefix: landRepairPrefix(config.batchPrefix),
 		note: (line) => log(`land-repair: ${line}`),
 		recentRuns: async (): Promise<readonly ILandCiRun[]> => {

@@ -12,10 +12,14 @@ import type {
 	ILandRevertBuild,
 } from '@delendai/core/lib/integration/land/land-revert.interface';
 
+const SPEC = 'packages/x/tests/a.spec.ts';
+
 const scene = (input: {
 	runs: ILandCiRun[];
 	tip?: string;
 	build?: ILandRevertBuild;
+	/** The red check names no spec: only its zone is known. */
+	zoneOnly?: boolean;
 }) => {
 	const opened: string[] = [];
 	const pushed: string[] = [];
@@ -24,7 +28,11 @@ const scene = (input: {
 		integrationTip: () => Promise.resolve(input.tip ?? 'r'),
 		checks: () =>
 			Promise.resolve<ILandCheck[]>([
-				{ name: 'zone-a', conclusion: 'failure' },
+				{
+					name: 'zone-a',
+					conclusion: 'failure',
+					...(input.zoneOnly ? {} : { failingSpecs: [SPEC] }),
+				},
 				{ name: 'lint', conclusion: 'success' },
 			]),
 		openPullRequests: () =>
@@ -80,8 +88,6 @@ const scene = (input: {
 				},
 			},
 			recentRuns: () => Promise.resolve(input.runs),
-			sectionOfCheck: (name: string) =>
-				name === 'zone-a' ? 'a' : undefined,
 			repairPrefix: 'p/repair/',
 			note: () => undefined,
 			develop: {
@@ -92,7 +98,11 @@ const scene = (input: {
 					]),
 				footprintOf: (merge: { number: number }) =>
 					Promise.resolve({
-						files: new Set([`f${String(merge.number)}`]),
+						files: new Set(
+							merge.number === 5
+								? [SPEC]
+								: [`f${String(merge.number)}`],
+						),
 						zones: new Set(merge.number === 5 ? ['a'] : ['b']),
 					}),
 				recordKnownFailing: () => Promise.resolve(),
@@ -196,9 +206,35 @@ describe('repairDevelopRed', () => {
 				},
 			},
 		});
-		expect(out).toMatchObject({ kind: 'unowned', failing: ['zone-a'] });
+		expect(out).toMatchObject({ kind: 'unowned', failing: [SPEC] });
 		expect(opened).toHaveLength(0);
 		expect(pushed).toHaveLength(0);
-		expect(recorded).toEqual([['9c7bf7c44', ['zone-a']]]);
+		expect(recorded).toEqual([['9c7bf7c44', [SPEC]]]);
+	});
+});
+
+describe('repairDevelopRed, attribution by failing spec', () => {
+	it('[<50ms] reverts nobody for a red shard on a spec outside every merge footprint', async () => {
+		const { ports, opened } = scene({ runs: RED });
+		const out = await repairDevelopRed({
+			...ports,
+			develop: {
+				...ports.develop,
+				footprintOf: () =>
+					Promise.resolve({
+						files: new Set(['other.ts']),
+						zones: new Set(['a']),
+					}),
+			},
+		});
+		expect(out.kind).toBe('unowned');
+		expect(opened).toHaveLength(0);
+	});
+
+	it('[<50ms] reverts nobody when only the zone of the red check is known', async () => {
+		const { ports, opened } = scene({ runs: RED, zoneOnly: true });
+		const out = await repairDevelopRed(ports);
+		expect(out.kind).toBe('unowned');
+		expect(opened).toHaveLength(0);
 	});
 });

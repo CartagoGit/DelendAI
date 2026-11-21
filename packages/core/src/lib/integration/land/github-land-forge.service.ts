@@ -32,7 +32,16 @@ interface IRawPull {
 	head: { ref: string; sha: string; repo?: { full_name?: string } | null };
 }
 
+interface IRawCheckRun {
+	id?: number;
+	name: string;
+	conclusion: string | null;
+	html_url?: string;
+}
+
 const NOT_FOUND = 404;
+const FAILED_CONCLUSIONS = new Set(['failure', 'timed_out']);
+const SPEC_PATH = /\.spec\.[cm]?[jt]sx?$/u;
 
 /** A land batch's head: `queue/batch-N`, under any namespace or none. */
 const BATCH_HEAD = /(?:^|\/)queue\/batch-/u;
@@ -236,30 +245,44 @@ export const createGithubLandForge = (input: {
 			),
 		pullRequest: async (number) =>
 			view(await ok<IRawPull>(`pulls/${String(number)}`)),
-		checks: async (sha): Promise<readonly ILandCheck[]> =>
-			(
-				await all<{
-					name: string;
-					conclusion: string | null;
-					html_url?: string;
-				}>(
-					`commits/${sha}/check-runs`,
-					(page) =>
-						(
-							page as {
-								check_runs: {
-									name: string;
-									conclusion: string | null;
-									html_url?: string;
-								}[];
-							}
-						).check_runs,
-				)
-			).map((c) => ({
-				name: c.name,
-				conclusion: c.conclusion,
-				url: c.html_url,
-			})),
+		checks: async (sha): Promise<readonly ILandCheck[]> => {
+			const runs = await all<IRawCheckRun>(
+				`commits/${sha}/check-runs`,
+				(page) => (page as { check_runs: IRawCheckRun[] }).check_runs,
+			);
+			return Promise.all(
+				runs.map(async (run) => {
+					const check: ILandCheck = {
+						name: run.name,
+						conclusion: run.conclusion,
+						url: run.html_url,
+					};
+					if (
+						run.id === undefined ||
+						!FAILED_CONCLUSIONS.has(run.conclusion ?? '')
+					)
+						return check;
+					// The vitest annotations of a red shard name its failing specs.
+					const specs = [
+						...new Set(
+							(
+								await all<{ path?: string }>(
+									`check-runs/${String(run.id)}/annotations`,
+								)
+							).flatMap((note) =>
+								note.path !== undefined &&
+								SPEC_PATH.test(note.path)
+									? [note.path]
+									: [],
+							),
+						),
+					];
+					return specs.length > 0
+						? { ...check, failingSpecs: specs }
+						: check;
+				}),
+			);
+		},
 		merge: async (number, sha): Promise<ILandMerge> => {
 			const { status } = await call(
 				'PUT',
