@@ -2,10 +2,14 @@
 id: x01121
 title: "Re-delivering a proposal that is in review keeps its status and its slices consistent without any hand edit"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: a2c0d6c4-962e-47b4-94dd-fd8b7fce9144
+last-correlation-id: a2c0d6c4-962e-47b4-94dd-fd8b7fce9144
+last-transition-from: ready
+last-transition-at: 2026-11-21T07:17:56.660Z
 ---
 
 # x01121 — Re-delivering a proposal that is in review keeps its status and its slices consistent without any hand edit
