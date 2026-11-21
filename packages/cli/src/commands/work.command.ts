@@ -48,6 +48,7 @@ import {
 	flagsOfLiveUnit,
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
+import type { ILoadedOnce } from '../contracts/interfaces/loaded-once.interface';
 import { runWorkProgress } from '../lib/work-progress.service';
 
 /**
@@ -149,6 +150,43 @@ const runRenameNamespace = async (
 		: { code: EXIT_CODE.VALIDATION, error: report.message };
 };
 
+/**
+ * The last submit removes the unit worktree, and a module imported lazily
+ * from it afterwards fails with ENOENT, losing the end-of-run answer. The
+ * verbs that can end a unit start these loads up front; every later use
+ * awaits the same promise.
+ */
+const WORKTREE_ENDING_VERBS: ReadonlySet<string> = new Set([
+	'deliver',
+	'publish',
+	'prove',
+]);
+
+/** Whether a run of `verb` can remove the unit worktree it was started in. */
+export const endsWorktree = (verb: string): boolean =>
+	WORKTREE_ENDING_VERBS.has(verb);
+
+/** Loads `load` at most once, on `preload()` rather than on first use. */
+export const loadedOnce = <T>(load: () => Promise<T>): ILoadedOnce<T> => {
+	let pending: Promise<T> | undefined;
+	const get = (): Promise<T> => {
+		pending ??= load();
+		return pending;
+	};
+	return {
+		preload: () => {
+			// An unused failed load must not become an unhandled rejection.
+			get().catch(() => undefined);
+		},
+		get,
+	};
+};
+
+/** Read after the transition to review, when the worktree may be gone: preloaded by the verbs that end a unit. */
+const deliveredRemote = loadedOnce(
+	() => import('../lib/work-deliver-remote.service'),
+);
+
 /** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
 export const deliverPortsOf = (
 	ctx: ICliCommandContext,
@@ -172,10 +210,7 @@ export const deliverPortsOf = (
 			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
 		publicationReached: async (publication, checkout) => {
-			// Loaded when asked for: only a delivery needs it (startup budget).
-			const { publicationReachedFrom } = await import(
-				'../lib/work-deliver-remote.service'
-			);
+			const { publicationReachedFrom } = await deliveredRemote.get();
 			return publicationReachedFrom(
 				checkout ?? ctx.cwd,
 				ctx.cwd,
@@ -360,11 +395,20 @@ export const createWorkCommand = (): ICliCommand => ({
 	run: async (rawArgs, ctx) => {
 		const verbose = rawArgs.includes('--verbose');
 		const args = rawArgs.filter((arg) => arg !== '--verbose');
-		// Loaded when an answer is sized: only these verbs need it (startup budget).
+		// Loaded for the verbs that size an answer (startup budget). Those that
+		// can end the unit load it now: after the last submit removes the
+		// worktree, an import from it fails with ENOENT.
+		const answerSize = loadedOnce(
+			() => import('../lib/work-answer-size.service'),
+		);
+		if (endsWorktree(args[0] ?? '')) {
+			answerSize.preload();
+			deliveredRemote.preload();
+		}
 		const sized = async (
 			result: ICliCommandResult,
 		): Promise<ICliCommandResult> =>
-			(await import('../lib/work-answer-size.service')).sizedAnswer({
+			(await answerSize.get()).sizedAnswer({
 				verb: args[0] ?? '',
 				result,
 				verbose,
