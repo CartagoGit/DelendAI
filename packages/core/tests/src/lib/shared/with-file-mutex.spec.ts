@@ -50,6 +50,36 @@ describe('withFileMutex — cross-process critical section', async () => {
 		expect(existsSync(lockPath)).toBe(true);
 	});
 
+	it('x01116: waiters queued behind short healthy holders all acquire although their summed hold time passes timeoutMs', async () => {
+		writeFileSync(target, '{}');
+		const holders = 5;
+		const holdMs = 20;
+		const timeoutMs = 40;
+		expect(holders * holdMs).toBeGreaterThan(timeoutMs * 2);
+		let inside = 0;
+		let maxInside = 0;
+		const outcomes = await Promise.allSettled(
+			Array.from({ length: holders }, () =>
+				withFileMutex(
+					target,
+					async () => {
+						inside += 1;
+						maxInside = Math.max(maxInside, inside);
+						await new Promise((resolve) =>
+							setTimeout(resolve, holdMs),
+						);
+						inside -= 1;
+					},
+					{ timeoutMs, staleMs: 30_000, pollMs: 5 },
+				),
+			),
+		);
+		expect(outcomes.map((o) => o.status)).toEqual(
+			Array.from({ length: holders }, () => 'fulfilled'),
+		);
+		expect(maxInside).toBe(1);
+	});
+
 	it('a00065 S2: the DEFAULT (omitted onContention) now fails on a live holder instead of stealing', async () => {
 		writeFileSync(target, '{}');
 		writeFileSync(
