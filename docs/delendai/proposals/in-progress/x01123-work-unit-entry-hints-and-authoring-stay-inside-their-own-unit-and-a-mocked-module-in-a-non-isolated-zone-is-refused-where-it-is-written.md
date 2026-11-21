@@ -42,7 +42,7 @@ Four workflow defects found on 2026-11-21 are fixed at their roots: the lease hi
 
 ### S2 — vi.mock is refused in zones whose vitest config sets isolate:false
 - **Status**: pending
-- **Files**: `new:tools/scripts/lint/vitest-no-mock-without-isolation.script.ts`, `new:tools/scripts/lint/vitest-no-mock-without-isolation.script.spec.ts`, `plugins/proposals/vitest.config.ts`
+- **Files**: `new:tools/scripts/lint/vitest-no-mock-without-isolation.script.ts`, `new:tools/scripts/lint/vitest-no-mock-without-isolation.script.spec.ts`, `new:tools/scripts/lint/vitest-no-mock-without-isolation.baseline.json`, `package.json`
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:
