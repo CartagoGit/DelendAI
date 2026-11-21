@@ -2,10 +2,14 @@
 id: t00033
 title: "Remove specs that add no value and keep the ones that do (measured sweep)"
 kind: test
-status: ready
+status: in-progress
 type: proposal
 track: quality
 date: 2026-11-21
+last-transition-id: f8fa287e-88ef-48dc-a76e-02282426aa1c
+last-correlation-id: f8fa287e-88ef-48dc-a76e-02282426aa1c
+last-transition-from: ready
+last-transition-at: 2026-11-21T04:50:09.892Z
 ---
 
 # t00033 — Remove specs that add no value and keep the ones that do (measured sweep)
