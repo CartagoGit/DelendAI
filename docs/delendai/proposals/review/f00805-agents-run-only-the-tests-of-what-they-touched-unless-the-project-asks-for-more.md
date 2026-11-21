@@ -45,15 +45,17 @@ The owner's rule, product-wide: by default delendai runs only the tests of what 
 - review-log: requested_changes by mai-code-2-flash — S1 cannot be approved from its recorded delivery: fae717645a14 is stale and later changes altered the declared S1 files, as the prior reviewer noted. I ran the 3 focused specs against the current worktree and they pass 28/28, but that is post-shipping code and not an independent proof of the recorded delivery. Reproduce with git log fae717645a14..develop -- paths and compare. Redeliver S1 on current HEAD with a fresh shipped-in commit and fixture evidence for touched/reach/all scope.
 
 ### S2 — The advisory tests-for-change tool follows the setting
-- **Status**: review
+- **Status**: pending
 - **Files**: `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`
 - **Gate**: none
 - acceptance:
   - "impact-analysis tests_for_change recommends the touched specs by default and the symbol-reached ones only when testing.scope is reach or all."
 - shipped-in: `615abe74d1d9`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
 - review-log: requested_changes by gpt-5.3-codex — Please resubmit S2 with an explicit empirical evidence bundle for testing.scope behavior in impact-analysis (default touched vs reach/all), including committed test/run output references in the review round payload.
+- review-log: requested_changes by mai-code-2-flash — S2 lacks the empirical evidence bundle required by its acceptance: the review payload has no explicit result for testing.scope=touched, reach, and all in tests_for_change. The 3 focused spec files pass 28/28, but they do not provide committed run/output references for the three modes in the review round. Reproduce by running the impact-analysis spec or tool with each scope and record committed output references. Redeliver or resubmit S2 with those evidence references.
 
 ## acceptance
 
