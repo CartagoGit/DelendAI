@@ -1,0 +1,40 @@
+---
+import type { IMarqueeItem } from '#DATA/marquees';
+
+interface Props {
+	items: readonly IMarqueeItem[];
+	label: string;
+	reverse?: boolean;
+}
+
+const { items, label, reverse = false } = Astro.props;
+---
+
+<div class:list={['mq', { 'mq--reverse': reverse }]}>
+	<span class="mq__label">{label}</span>
+	<div class="mq__viewport">
+		{/* Two identical sets tile seamlessly: the track scrolls exactly one set
+		    width (-50%), so the last item is immediately followed by the first. */}
+		<div class="mq__track">
+			{[0, 1].map((copy) => (
+				<div class="mq__set" aria-hidden={copy === 1 ? 'true' : undefined}>
+					{items.map((it) => (
+						<div class="chip" tabindex={copy === 1 ? -1 : 0} aria-label={it.name}>
+							<span class="chip__icon">
+								{it.path ? (
+									<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true">
+										<path d={it.path} />
+									</svg>
+								) : (
+									<span class="chip__mono">{it.mono}</span>
+								)}
+							</span>
+							{/* Inline label that expands on hover — see _chip.scss */}
+							<span class="chip__label">{it.name}</span>
+						</div>
+					))}
+				</div>
+			))}
+		</div>
+	</div>
+</div>
