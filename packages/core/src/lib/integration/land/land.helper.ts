@@ -24,6 +24,7 @@ import { trainMembers } from '../decisions/culprit.helper';
 import { overlapBetween, staleAgainstTip } from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
+import { settleDrafts } from './land-batch-draft.helper';
 import { openBatch as assembleBatch } from './land-batch-assembly.helper';
 import {
 	headNotBuilt,
@@ -59,14 +60,11 @@ const FAILED = new Set(['failure', 'timed_out']);
 export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 	const { forge, git } = deps;
 	const actions: string[] = [];
-	const note = (line: string): void => {
-		actions.push(line);
-	};
+	const note = (line: string): number => actions.push(line);
 	const mergedPRs: number[] = [];
 	const reasons = new Map<number, string>();
-	const why = (number: number, reason: string): void => {
+	const why = (number: number, reason: string): Map<number, string> =>
 		reasons.set(number, reason);
-	};
 	const landed = (number: number): void => {
 		mergedPRs.push(number);
 		why(number, 'merged');
@@ -173,6 +171,8 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 							git.landedSince(record.tip, batch.headSha),
 							git.landedSince(record.tip, tip),
 						);
+		if (await settleDrafts({ forge, note, batch, open, started }))
+			return false;
 		if (!started && (changed || moved !== undefined)) {
 			await forge.closePullRequest(batch.number);
 			note(

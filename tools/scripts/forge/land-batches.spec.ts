@@ -90,6 +90,53 @@ describe('a batch while the integration branch moves', () => {
 	});
 });
 
+describe('a batch whose member turned draft', () => {
+	it('[<20ms] is closed before any member merged and rebuilt without the draft member', async () => {
+		const { world, pass, lone } = setup();
+		const one = world.addPull({ 'a/one.ts': '1' });
+		const two = world.addPull({ 'a/two.ts': '2' });
+		const three = world.addPull({ 'a/three.ts': '3' });
+		world.ci();
+		await pass();
+		const [first] = [...world.pulls.values()].filter(
+			(pr) => pr.batch !== undefined,
+		);
+		lone(two).draft = true;
+		const report = await pass();
+		expect(first?.state).toBe('closed');
+		expect(report.actions.join('\n')).toContain(
+			`has a draft member (#${String(two)})`,
+		);
+		const fresh = [...world.pulls.values()].filter(
+			(pr) => pr.batch !== undefined && pr.state === 'open',
+		);
+		expect(fresh).toHaveLength(1);
+		expect(fresh[0]?.body).not.toContain(`#${String(two)}`);
+		expect(lone(one).merged || lone(three).merged).toBe(false);
+	});
+
+	it('[<20ms] stands once a member merged and says the batch finishes as opened', async () => {
+		const { world, pass, lone } = setup();
+		world.addPull({ 'a/one.ts': '1' });
+		const two = world.addPull({ 'a/two.ts': '2' });
+		world.ci();
+		await pass();
+		const [first] = [...world.pulls.values()].filter(
+			(pr) => pr.batch !== undefined,
+		);
+		const one = [...world.pulls.values()][0];
+		if (one === undefined) throw new Error('no member');
+		one.merged = true;
+		one.state = 'closed';
+		lone(two).draft = true;
+		const report = await pass();
+		expect(first?.state).toBe('open');
+		expect(report.actions.join('\n')).toContain(
+			'the batch finishes as opened',
+		);
+	});
+});
+
 describe('a head the forge did not build', () => {
 	it('[<15ms] is brought forward by the integrator once, then lands', async () => {
 		const calls: number[] = [];

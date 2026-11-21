@@ -2,10 +2,14 @@
 id: x01125
 title: "Land re-judges a batch member that went draft, enter resolves a create unit from its one open publication, and the queue refreshes a proposal file that develop edited after the unit moved it"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: c9c291cf-56a1-4fec-85c1-866457359b54
+last-correlation-id: c9c291cf-56a1-4fec-85c1-866457359b54
+last-transition-from: ready
+last-transition-at: 2026-11-21T10:53:14.868Z
 ---
 
 # x01125 — Land re-judges a batch member that went draft, enter resolves a create unit from its one open publication, and the queue refreshes a proposal file that develop edited after the unit moved it
