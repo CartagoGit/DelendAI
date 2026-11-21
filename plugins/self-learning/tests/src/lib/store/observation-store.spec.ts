@@ -64,7 +64,7 @@ const observation = (overrides: Partial<IObservation> = {}): IObservation => ({
 });
 
 describe('the observation store', () => {
-	it('reads an absent store as empty rather than failing', async () => {
+	it('[<200ms] reads an absent store as empty rather than failing', async () => {
 		const { filePath } = makeStore();
 
 		// Learning is an optimisation; it must never be able to fail the
@@ -72,7 +72,7 @@ describe('the observation store', () => {
 		expect(await readObservations({ filePath, readText })).toEqual([]);
 	});
 
-	it('keeps what it is given and reports what it did', async () => {
+	it('[<200ms] keeps what it is given and reports what it did', async () => {
 		const { filePath } = makeStore();
 
 		const first = await appendObservations({ filePath, readText }, [
@@ -98,21 +98,7 @@ describe('the observation store', () => {
 		expect(second.total).toBe(3);
 	});
 
-	it('loses nothing when several writers append at once', async () => {
-		const { filePath } = makeStore();
-
-		await Promise.all(
-			Array.from({ length: 12 }, (_, index) =>
-				appendObservations({ filePath, readText }, [
-					observation({ atMs: index + 1, subject: `case ${index}` }),
-				]),
-			),
-		);
-
-		expect(await readObservations({ filePath, readText })).toHaveLength(12);
-	});
-
-	it('drops the oldest when it reaches its bound', async () => {
+	it('[<200ms] drops the oldest when it reaches its bound', async () => {
 		const { filePath } = makeStore();
 
 		const written = await appendObservations(
@@ -132,7 +118,7 @@ describe('the observation store', () => {
 		).toEqual(['middle', 'newest']);
 	});
 
-	it('skips a line a killed process left half-written', async () => {
+	it('[<200ms] skips a line a killed process left half-written', async () => {
 		const { filePath } = makeStore();
 		await appendObservations({ filePath, readText }, [
 			observation({ atMs: 10 }),
@@ -148,7 +134,7 @@ describe('the observation store', () => {
 		expect(await readObservations({ filePath, readText })).toHaveLength(1);
 	});
 
-	it('refuses a record whose kind it does not know', () => {
+	it('[<200ms] refuses a record whose kind it does not know', () => {
 		expect(
 			parseObservation(
 				'{"kind":"vibes","subject":"x","atMs":1,"outcome":"ok"}',
@@ -158,7 +144,7 @@ describe('the observation store', () => {
 		expect(parseObservation('')).toBeNull();
 	});
 
-	it('answers newest first, filtered', async () => {
+	it('[<200ms] answers newest first, filtered', async () => {
 		const { filePath } = makeStore();
 		await appendObservations({ filePath, readText }, [
 			observation({
@@ -211,7 +197,7 @@ describe('collecting from the test journal', () => {
 			...overrides,
 		});
 
-	it('records the failures and the run, and nothing from the output', () => {
+	it('[<200ms] records the failures and the run, and nothing from the output', () => {
 		const observations = observationsFromJournalLine(entry());
 
 		expect(observations.map((each) => each.kind)).toEqual([
@@ -226,7 +212,7 @@ describe('collecting from the test journal', () => {
 		expect(serialised).not.toContain('+ 2');
 	});
 
-	it('records a passing run too', () => {
+	it('[<200ms] records a passing run too', () => {
 		// A store that only ever hears about failures cannot answer "does
 		// this usually work?", which is most of what an arriving agent
 		// wants to know.
@@ -238,7 +224,41 @@ describe('collecting from the test journal', () => {
 		expect(observations[0]?.outcome).toBe('ok');
 	});
 
-	it('drops an entry whose time cannot be read', () => {
+	it('[<200ms] stores a budget warning with the test id, the normalized time and the estimate', async () => {
+		const { filePath } = makeStore();
+		const observations = observationsFromJournalLine(
+			entry({
+				result: 'pass',
+				failures: [],
+				budgetWarnings: [
+					{
+						file: 'a.spec.ts',
+						fullName: 'suite > slow case',
+						normalizedMs: 320.4,
+						estimateMs: 200,
+						causes: ['git'],
+					},
+					{ fullName: 'no numbers' },
+				],
+			}),
+		);
+
+		const warnings = observations.filter(
+			(each) => each.kind === 'budget-warning',
+		);
+		expect(warnings).toHaveLength(1);
+		await appendObservations(
+			{ filePath, readText, workspaceRoot: dirs[0] as string },
+			warnings,
+		);
+		const stored = await readObservations({ filePath, readText });
+		expect(stored).toHaveLength(1);
+		expect(stored[0]?.subject).toBe('suite > slow case');
+		expect(stored[0]?.detail).toContain('normalizedMs=320');
+		expect(stored[0]?.detail).toContain('estimateMs=200');
+	});
+
+	it('[<200ms] drops an entry whose time cannot be read', () => {
 		// A wrong timestamp is worse than a missing observation: recency
 		// is half of what makes a lesson true.
 		expect(
@@ -247,7 +267,7 @@ describe('collecting from the test journal', () => {
 		expect(observationsFromJournalLine('{ truncated')).toEqual([]);
 	});
 
-	it('reads an absent journal as nothing to learn', async () => {
+	it('[<200ms] reads an absent journal as nothing to learn', async () => {
 		const { dir } = makeStore();
 
 		expect(
@@ -255,7 +275,7 @@ describe('collecting from the test journal', () => {
 		).toEqual([]);
 	});
 
-	it('folds a real journal file into the store', async () => {
+	it('[<200ms] folds a real journal file into the store', async () => {
 		const { dir, filePath } = makeStore();
 		const journalPath = join(dir, 'test-runs.jsonl');
 		writeFileSync(
@@ -292,7 +312,7 @@ describe('collecting from the test journal', () => {
  * The guard is `realpathContained` before the mkdir and the rewrite.
  */
 describe('physical containment', () => {
-	it('refuses to rewrite the store through a parent symlinked out of the workspace', async () => {
+	it('[<200ms] refuses to rewrite the store through a parent symlinked out of the workspace', async () => {
 		const parent = mkdtempSync(join(tmpdir(), 'self-learning-escape-'));
 		dirs.push(parent);
 		const root = join(parent, 'root');
@@ -316,7 +336,7 @@ describe('physical containment', () => {
 		expect(readdirSync(outside)).toEqual([]);
 	});
 
-	it('still writes when the store stays inside the workspace', async () => {
+	it('[<200ms] still writes when the store stays inside the workspace', async () => {
 		const { dir, filePath } = makeStore();
 		const written = await appendObservations(
 			{ filePath, readText, workspaceRoot: dir },

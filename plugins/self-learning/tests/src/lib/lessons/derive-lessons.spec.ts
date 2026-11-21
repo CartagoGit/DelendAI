@@ -37,7 +37,7 @@ const repeat = (count: number, make: (index: number) => IObservation) =>
 	Array.from({ length: count }, (_, index) => make(index));
 
 describe('what a history does not support', () => {
-	it('does not turn two sightings into a lesson', () => {
+	it('[<200ms] does not turn two sightings into a lesson', () => {
 		const lessons = deriveLessons(
 			repeat(2, () => observation({ subject: 'bun run test' })),
 			{ nowMs: NOW },
@@ -46,11 +46,11 @@ describe('what a history does not support', () => {
 		expect(lessons).toEqual([]);
 	});
 
-	it('reports nothing at all from an empty store', () => {
+	it('[<200ms] reports nothing at all from an empty store', () => {
 		expect(deriveLessons([], { nowMs: NOW })).toEqual([]);
 	});
 
-	it('takes the threshold it is given', () => {
+	it('[<200ms] takes the threshold it is given', () => {
 		const lessons = deriveLessons(
 			repeat(2, () => observation({ subject: 'bun run test' })),
 			{ nowMs: NOW, minimumSupport: 2 },
@@ -61,7 +61,7 @@ describe('what a history does not support', () => {
 });
 
 describe('what a history does support', () => {
-	it('names a command that mostly fails here, with its evidence', () => {
+	it('[<200ms] names a command that mostly fails here, with its evidence', () => {
 		const lessons = deriveLessons(
 			[
 				...repeat(4, (index) =>
@@ -88,7 +88,7 @@ describe('what a history does support', () => {
 		expect(lesson?.evidence[0]?.atMs).toBe(NOW);
 	});
 
-	it('separates a fragile test from a recurring refusal', () => {
+	it('[<200ms] separates a fragile test from a recurring refusal', () => {
 		const lessons = deriveLessons(
 			[
 				...repeat(3, (index) =>
@@ -115,7 +115,7 @@ describe('what a history does support', () => {
 		]);
 	});
 
-	it('puts what is most likely true today at the top', () => {
+	it('[<200ms] puts what is most likely true today at the top', () => {
 		// An agent reads the top of this list and stops.
 		const lessons = deriveLessons(
 			[
@@ -149,8 +149,43 @@ describe('what a history does support', () => {
 	});
 });
 
+describe('recurring budget warnings', () => {
+	const warning = (index: number, causes: string): IObservation =>
+		observation({
+			kind: 'budget-warning',
+			subject: `spec ${String(index)} > case`,
+			detail: `s${String(index)}.spec.ts normalizedMs=300 estimateMs=100 causes=${causes}`,
+		});
+
+	it('[<200ms] become one lesson proposing a fake instead of real git or timers', () => {
+		const lessons = deriveLessons(
+			[
+				...repeat(3, (index) => warning(index, 'git')),
+				...repeat(3, (index) => warning(index + 10, 'timers')),
+			],
+			{ nowMs: NOW },
+		);
+
+		const git = lessons.filter((each) => each.subject.endsWith(':git'));
+		expect(git).toHaveLength(1);
+		expect(git[0]?.claim).toContain('a fake instead of real git');
+		expect(
+			lessons.find((each) => each.subject.endsWith(':timers'))?.claim,
+		).toContain('fake timers instead of real timers');
+	});
+
+	it('[<200ms] are not a lesson below the support threshold', () => {
+		expect(
+			deriveLessons(
+				repeat(2, (index) => warning(index, 'git')),
+				{ nowMs: NOW },
+			),
+		).toEqual([]);
+	});
+});
+
 describe('a lesson that stops reproducing', () => {
-	it('degrades when the project contradicts it', () => {
+	it('[<200ms] degrades when the project contradicts it', () => {
 		const contradicted = scoreConfidence({
 			support: 4,
 			counterExamples: 6,
@@ -166,7 +201,7 @@ describe('a lesson that stops reproducing', () => {
 		expect(contradicted.band).not.toBe('high');
 	});
 
-	it('degrades when nothing recent supports it', () => {
+	it('[<200ms] degrades when nothing recent supports it', () => {
 		// A lesson about a command nobody has run since June is a
 		// liability rather than knowledge.
 		const stale = scoreConfidence({
@@ -183,7 +218,7 @@ describe('a lesson that stops reproducing', () => {
 		expect(stale.score).toBeLessThan(fresh.score);
 	});
 
-	it('counts nothing as nothing rather than as certainty', () => {
+	it('[<200ms] counts nothing as nothing rather than as certainty', () => {
 		expect(
 			scoreConfidence({
 				support: 0,
@@ -199,7 +234,7 @@ describe('a lesson that stops reproducing', () => {
 		});
 	});
 
-	it('lets recency fall out of the window', () => {
+	it('[<200ms] lets recency fall out of the window', () => {
 		const lessons = deriveLessons(
 			repeat(4, (index) =>
 				observation({
@@ -226,14 +261,14 @@ describe('advice for a stated goal', () => {
 		{ nowMs: NOW },
 	);
 
-	it('matches the goal against what the lessons are about', () => {
+	it('[<200ms] matches the goal against what the lessons are about', () => {
 		expect(adviseFor('lint:web', lessons)).toHaveLength(1);
 		expect(
 			adviseFor('bun run lint:web before pushing', lessons),
 		).toHaveLength(1);
 	});
 
-	it('says nothing rather than guessing', () => {
+	it('[<200ms] says nothing rather than guessing', () => {
 		expect(adviseFor('deploy the site', lessons)).toEqual([]);
 		expect(adviseFor('   ', lessons)).toEqual([]);
 	});
