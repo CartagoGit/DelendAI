@@ -16,6 +16,7 @@ import { policyForRef } from '../development-policy/owned-work-ref-parser';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type { IForeignUnit } from '../contracts/interfaces/foreign-unit.interface';
 import type { IUnitLease } from './unit-lease.interface';
 import type {
 	IAdoptedForgeBranch,
@@ -222,4 +223,34 @@ export const proposalOfCreateUnit = (
 	if (parts === undefined || parts.kind !== 'create') return undefined;
 	if (parts.proposal === UNALLOCATED_PROPOSAL) return undefined;
 	return { branch, proposal: parts.proposal };
+};
+
+/**
+ * The unit `cwd` belongs to when it is NOT the one the caller is acting
+ * for: a different kind, or a different already-allocated proposal. A
+ * checkout that is no unit, or a unit still waiting for its id, belongs
+ * to nobody yet and is not foreign.
+ */
+export const foreignUnitOf = (
+	cwd: string,
+	declared: IResolvedDevelopmentPolicy,
+	wanted: { readonly kind: string; readonly proposal?: string | undefined },
+): IForeignUnit | undefined => {
+	const head = readGit(cwd, ['symbolic-ref', '--quiet', 'HEAD']);
+	if (head === undefined) return undefined;
+	const branch = shortName(head);
+	const policy = policyForRef(declared, branch);
+	if (!branch.startsWith(shortName(policy.branches.workRefPrefix))) {
+		return undefined;
+	}
+	const { subject } = identityOf(branch, policy);
+	const parts = parseWorkSubject(policy.branches.workRefTemplate, subject);
+	if (parts === undefined) return undefined;
+	const unit = { branch, kind: parts.kind, proposal: parts.proposal };
+	if (parts.kind !== wanted.kind) return unit;
+	const sameProposal =
+		parts.proposal === UNALLOCATED_PROPOSAL ||
+		wanted.proposal === undefined ||
+		parts.proposal === wanted.proposal;
+	return sameProposal ? undefined : unit;
 };

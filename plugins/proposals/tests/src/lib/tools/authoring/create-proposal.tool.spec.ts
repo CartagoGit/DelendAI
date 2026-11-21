@@ -8,7 +8,13 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createFakeToolServer } from '@delendai/test-kit';
+import {
+	createFakeToolServer,
+	createGitRepoTemplate,
+	fakePartial,
+} from '@delendai/test-kit';
+
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -41,6 +47,13 @@ const _parse = (result: { content: Array<{ text: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>;
 
 describe('create_proposal', () => {
+	const unitRepo = createGitRepoTemplate({
+		files: { 'a.txt': 'a' },
+		trunk: 'develop',
+		worktrees: {
+			'unit-tree': 'delendai/wip/agent-a/implement/x00001-S1-g1/topic',
+		},
+	});
 	let root = '';
 	let options: IAuthoringToolOptions;
 	beforeEach(() => {
@@ -80,6 +93,33 @@ describe('create_proposal', () => {
 			checkout: join(root, 'not-a-checkout'),
 		});
 		expect(refused.isError).toBe(true);
+	});
+
+	it('[<200ms] create_proposal refuses a checkout owned by another unit, naming it and work enter', async () => {
+		const unit = 'delendai/wip/agent-a/implement/x00001-S1-g1/topic';
+		const { root: repo, worktrees } = unitRepo.copy();
+		const tree = worktrees['unit-tree'] ?? '';
+		const create = await capture(
+			buildCreateProposalRegistration({
+				...options,
+				workspaceRoot: repo,
+				developmentPolicy: fakePartial<IResolvedDevelopmentPolicy>({
+					branches: fakePartial<
+						IResolvedDevelopmentPolicy['branches']
+					>({
+						integration: 'develop',
+						namespacePrefix: 'delendai',
+						workRefPrefix: 'delendai/wip/',
+						workRefTemplate:
+							'delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+					}),
+				}),
+			}),
+		);
+		const refused = await create({ ...proposal, checkout: tree });
+		expect(refused.isError).toBe(true);
+		expect(refused.content[0]?.text).toContain(unit);
+		expect(refused.content[0]?.text).toContain('work enter');
 	});
 
 	it('[<200ms] refuses a document it cannot write', async () => {
