@@ -40,11 +40,11 @@ f00808 renames delendai's own branch namespaces. Its pull request fails ref-life
   - "forge-settings.lib.spec.ts shows an exclusion the live ruleset has and the policy does not name reported as a warning, not a problem, so the guard exits 0"
   - "forge-settings.lib.spec.ts shows an exclusion the policy names and the live ruleset lacks reported as a problem, so the guard fails"
   - "forge-settings.lib.spec.ts shows inactive enforcement and a missing creation rule reported as problems"
-  - "namespace-ruleset-guard.script.ts --sync writes the policy to the forge when only extra exclusions differ"
+  - "`bun tools/scripts/lint/namespace-ruleset-guard.script.ts --sync` writes the policy to the forge when only extra exclusions differ"
 
 ## acceptance
 
 - forge-settings.lib.spec.ts shows an exclusion the live ruleset has and the policy does not name reported as a warning, not a problem, so the guard exits 0
 - forge-settings.lib.spec.ts shows an exclusion the policy names and the live ruleset lacks reported as a problem, so the guard fails
 - forge-settings.lib.spec.ts shows inactive enforcement and a missing creation rule reported as problems
-- namespace-ruleset-guard.script.ts --sync writes the policy to the forge when only extra exclusions differ
+- `bun tools/scripts/lint/namespace-ruleset-guard.script.ts --sync` writes the policy to the forge when only extra exclusions differ
