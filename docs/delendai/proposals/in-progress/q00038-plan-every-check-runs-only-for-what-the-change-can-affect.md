@@ -2,14 +2,14 @@
 id: q00038
 title: "Plan: every check runs only for what the change can affect"
 kind: plan
-status: review
+status: in-progress
 type: proposal
 track: ci
 date: 2026-11-02
-last-transition-id: f82b5992-019a-4fd3-8469-e0d0cff184cc
-last-correlation-id: f82b5992-019a-4fd3-8469-e0d0cff184cc
-last-transition-from: in-progress
-last-transition-at: 2026-11-10T02:21:26.483Z
+last-transition-id: a9ff79c0-679c-461a-959d-86377684fd11
+last-correlation-id: a9ff79c0-679c-461a-959d-86377684fd11
+last-transition-from: review
+last-transition-at: 2026-11-20T23:41:40.056Z
 shipped-in:
   - "07672aeb0"
   - "81bb8408a"
@@ -52,7 +52,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - global_gate: type
 
 ### S1 — Tests run what the change reaches, by symbol
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/ci/affected-specs.service.ts`, `tools/scripts/ci/affected-specs.interface.ts`, `tools/scripts/ci/affected-specs.service.spec.ts`, `tools/scripts/ci/test-zones.script.ts`, `tools/scripts/ci/near-specs.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -66,7 +66,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S2 — Every lint runs only for the files it reads
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.interface.ts`, `tools/scripts/ci/job-scope.script.ts`, `tools/scripts/ci/job-scope.script.spec.ts`, `tools/scripts/ci/job-reach.helper.ts`, `tools/scripts/ci/job-reach.helper.spec.ts`, `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/lib/changed-files-scope.ts`, `tools/scripts/lib/changed-files-scope.spec.ts`, `tools/scripts/lint/biome-baseline.script.ts`, `tools/scripts/lint/file-conventions.script.ts`, `tools/scripts/lint/no-conflict-markers.script.ts`, `tools/scripts/lint/no-control-bytes.script.ts`, `tools/scripts/lint/no-home-directory-in-tracked-files.script.ts`, `tools/scripts/lint/single-frontmatter.script.ts`, `tools/scripts/lint/type-naming.script.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -80,7 +80,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S3 — Types are checked only where the change reaches
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/typecheck.script.ts`, `tools/scripts/ci/typecheck-scope.helper.ts`, `tools/scripts/ci/typecheck-scope.helper.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -93,7 +93,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S4 — The saving is measured
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/ci/pr-ci-cost.script.ts`, `tools/scripts/ci/pr-ci-cost.script.spec.ts`, `tools/scripts/ci/pr-ci-cost.interface.ts`, `package.json`
 - **Gate**: type
 - acceptance:
@@ -105,7 +105,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S5 — Tools are verified for the plugins the change reaches
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/verify/affected-plugins.helper.ts`, `tools/scripts/verify/affected-plugins.helper.spec.ts`, `tools/scripts/verify/plugin-tool-verify.script.ts`, `tools/scripts/ci/affected-specs.service.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -118,7 +118,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S6 — Each publishable package is packed once
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
@@ -130,7 +130,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S7 — The external install runs where the packaging can change
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `.github/workflows/ci.yml`, `tools/scripts/ci/job-scope.constant.ts`, `tools/scripts/ci/job-scope.script.spec.ts`
 - **Gate**: type
 - acceptance:
@@ -142,7 +142,7 @@ So S1 sectioned the tests, while lints and types still ran in full for a one-fil
 - review-log: requested_changes by gpt-5.3-codex — Please redeliver this slice on current HEAD with fresh shipped-in evidence tied to the latest develop state.
 
 ### S10 — The repository-wide lints cost only what the change changes
-- **Status**: pending
+- **Status**: in-progress
 - **Files**: `tools/scripts/lib/content-hash.ts`, `tools/scripts/lib/content-hash.spec.ts`, `tools/scripts/compile/build.script.ts`, `tools/scripts/gen-all.script.ts`, `tools/scripts/lint/check-generated-artifacts.script.ts`, `tools/scripts/report/token-budget-dashboard.script.ts`, `tools/scripts/report/token-budget-report-lib.ts`, `tools/scripts/test/run-actual-preset-budget.script.ts`, `tools/scripts/generate/preset-metadata.script.ts`, `tools/scripts/lint/run-together.script.ts`, `tools/scripts/lint/run-together.script.spec.ts`, `tools/scripts/lint/proposal-cited-commits.script.ts`, `tools/scripts/lint/proposal-cited-commits.script.spec.ts`, `tools/scripts/lint/json-entry-collision.script.ts`, `tools/scripts/lint/no-silent-gates.script.ts`, `tools/scripts/gen-all.spec.ts`, `.github/workflows/ci.yml`
 - **Gate**: type
 - acceptance:
