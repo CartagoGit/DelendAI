@@ -185,7 +185,7 @@ describe('create_proposal publishes what it writes', () => {
 			'add',
 			'-q',
 			'-b',
-			'wip/agent-a/f00001-S1-g1/the-work',
+			'wip/agent-a/create/new-all-g1/the-work',
 			unit,
 			'HEAD',
 		);
@@ -207,7 +207,7 @@ describe('create_proposal publishes what it writes', () => {
 
 		expect(result?.published).toBe(false);
 		expect(result?.publishReason).toContain(
-			'wip/agent-a/f00001-S1-g1/the-work',
+			'wip/agent-a/create/new-all-g1/the-work',
 		);
 		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
@@ -220,7 +220,13 @@ describe('create_proposal publishes what it writes', () => {
 		// error.
 		const options = optionsFor(true);
 		const root = options.workspaceRoot;
-		git(root, 'checkout', '-q', '-b', 'wip/agent-a/f00001-S1-g1/the-work');
+		git(
+			root,
+			'checkout',
+			'-q',
+			'-b',
+			'wip/agent-a/create/new-all-g1/the-work',
+		);
 
 		const result = await created(
 			await handlerFor(options),
@@ -229,7 +235,7 @@ describe('create_proposal publishes what it writes', () => {
 
 		expect(result.published).toBe(false);
 		expect(result.publishReason).toContain(
-			'wip/agent-a/f00001-S1-g1/the-work',
+			'wip/agent-a/create/new-all-g1/the-work',
 		);
 		expect(git(root, 'ls-remote', 'origin', 'refs/heads/*')).toBe('');
 	});
