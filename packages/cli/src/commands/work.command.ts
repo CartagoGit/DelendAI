@@ -34,8 +34,6 @@ import {
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
 import { runGitCommand } from '@delendai/core/runtime';
-import { VERBOSE_FLAG } from '../contracts/constants/work-answer-size.constant';
-import { sizedAnswer } from '../lib/work-answer-size.service';
 import {
 	answerCommittingWrites,
 	toolCommitSubject,
@@ -353,10 +351,13 @@ export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
 	run: async (rawArgs, ctx) => {
-		const verbose = rawArgs.includes(VERBOSE_FLAG);
-		const args = rawArgs.filter((arg) => arg !== VERBOSE_FLAG);
-		const sized = (result: ICliCommandResult): ICliCommandResult =>
-			sizedAnswer({
+		const verbose = rawArgs.includes('--verbose');
+		const args = rawArgs.filter((arg) => arg !== '--verbose');
+		// Loaded when an answer is sized: only these verbs need it (startup budget).
+		const sized = async (
+			result: ICliCommandResult,
+		): Promise<ICliCommandResult> =>
+			(await import('../lib/work-answer-size.service')).sizedAnswer({
 				verb: args[0] ?? '',
 				result,
 				verbose,
@@ -406,7 +407,7 @@ export const createWorkCommand = (): ICliCommand => ({
 				if ('refusal' in found) return found.refusal;
 				withSlice = [...here, ...found.flags];
 			}
-			return sized(
+			return await sized(
 				await deliverUnit(
 					deliverPortsOf(ctx, {
 						id,
@@ -433,7 +434,7 @@ export const createWorkCommand = (): ICliCommand => ({
 		const result = await runWorkUnit(unitArgs, ctx);
 		return args[0] === 'enter'
 			? withSlicesView(result, ctx)
-			: sized(result);
+			: await sized(result);
 	},
 });
 

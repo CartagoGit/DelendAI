@@ -1,6 +1,3 @@
-/** The flag that keeps the full record in the answer. */
-export const VERBOSE_FLAG = '--verbose';
-
 /** How many trailing lines of a failure the answer keeps. */
 export const FAILURE_LINES = 20;
 
