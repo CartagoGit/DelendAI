@@ -2,14 +2,14 @@
 id: x01119
 title: "Two work deliver runs on one unit cannot overlap: deliver takes a per-unit lock and names the running deliver"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: badd36e1-a632-4021-bff6-4d6c2fcfca76
-last-correlation-id: badd36e1-a632-4021-bff6-4d6c2fcfca76
-last-transition-from: ready
-last-transition-at: 2026-11-21T11:01:47.070Z
+last-transition-id: d8c836a8-609f-41ec-985b-fba20b1b538d
+last-correlation-id: d8c836a8-609f-41ec-985b-fba20b1b538d
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T11:11:58.294Z
 ---
 
 # x01119 — Two work deliver runs on one unit cannot overlap: deliver takes a per-unit lock and names the running deliver
@@ -32,13 +32,16 @@ Seen on x01117: two concurrent `work deliver` runs on the same unit overlapped a
 - global_gate: none
 
 ### S1 — Deliver holds a per-unit lock and refuses a second run naming the first
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `new:packages/cli/src/lib/work-deliver-lock.service.ts`, `new:packages/cli/src/lib/work-deliver-lock.service.spec.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "work-deliver-lock.service.spec.ts: a second acquire on the same unit while the first holder's pid is alive is refused with an error naming that pid; a lock whose pid is dead is taken over."
   - "work-deliver.service.spec.ts: deliverUnit run twice concurrently on one unit lets one proceed and answers the other with the refusal naming the running pid, and releases the lock when the delivery ends in success or failure."
+- shipped-in: `1d6e69e53067`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
