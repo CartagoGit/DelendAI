@@ -333,7 +333,7 @@ export const renderReviewLines = (state: IReviewState): string[] => {
  */
 export const flipSliceStatusReview = (block: string): string =>
 	block.replace(
-		/^([-*]\s*\*\*Status\*\*:)\s*(?:pending|in-progress)\b/imu,
+		/^([-*]\s*\*\*Status\*\*:)\s*(?:pending|ready|in-progress)\b/imu,
 		'$1 review',
 	);
 
