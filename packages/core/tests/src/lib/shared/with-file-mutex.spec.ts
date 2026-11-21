@@ -9,7 +9,7 @@ import { utimesSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LockContentionError, withFileMutex } from '@delendai/core/public';
 
@@ -52,32 +52,40 @@ describe('withFileMutex — cross-process critical section', async () => {
 
 	it('[<200ms] x01116: waiters queued behind short healthy holders all acquire although their summed hold time passes timeoutMs', async () => {
 		writeFileSync(target, '{}');
-		const holders = 5;
-		const holdMs = 20;
-		const timeoutMs = 40;
-		expect(holders * holdMs).toBeGreaterThan(timeoutMs * 2);
-		let inside = 0;
-		let maxInside = 0;
-		const outcomes = await Promise.allSettled(
-			Array.from({ length: holders }, () =>
-				withFileMutex(
-					target,
-					async () => {
-						inside += 1;
-						maxInside = Math.max(maxInside, inside);
-						await new Promise((resolve) =>
-							setTimeout(resolve, holdMs),
-						);
-						inside -= 1;
-					},
-					{ timeoutMs, staleMs: 30_000, pollMs: 5 },
+		const holders = 3;
+		const holdMs = 100;
+		const timeoutMs = 150;
+		// The last waiter sits behind (holders - 1) holds: a single deadline
+		// for the whole queue would expire for it, one per holder never does.
+		expect((holders - 1) * holdMs).toBeGreaterThan(timeoutMs);
+		// The deadline reads Date.now(). Only the clock is faked, and a hold
+		// is a virtual jump of holdMs rather than a wait, so no machine
+		// slowness (coverage, load) can add time to the queue.
+		vi.useFakeTimers({ toFake: ['Date'] });
+		try {
+			let inside = 0;
+			let maxInside = 0;
+			const outcomes = await Promise.allSettled(
+				Array.from({ length: holders }, () =>
+					withFileMutex(
+						target,
+						async () => {
+							inside += 1;
+							maxInside = Math.max(maxInside, inside);
+							vi.setSystemTime(Date.now() + holdMs);
+							inside -= 1;
+						},
+						{ timeoutMs, staleMs: 30_000, pollMs: 5 },
+					),
 				),
-			),
-		);
-		expect(outcomes.map((o) => o.status)).toEqual(
-			Array.from({ length: holders }, () => 'fulfilled'),
-		);
-		expect(maxInside).toBe(1);
+			);
+			expect(outcomes.map((o) => o.status)).toEqual(
+				Array.from({ length: holders }, () => 'fulfilled'),
+			);
+			expect(maxInside).toBe(1);
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it('[<200ms] a00065 S2: the DEFAULT (omitted onContention) now fails on a live holder instead of stealing', async () => {
