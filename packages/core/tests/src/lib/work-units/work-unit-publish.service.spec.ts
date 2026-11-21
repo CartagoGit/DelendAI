@@ -67,6 +67,9 @@ vi.mock('@delendai/core/lib/work-units/change-request-forges.service', () => ({
 vi.mock('@delendai/core/lib/work-units/publication-target.service', () => ({
 	proposalInProgress: () => false,
 }));
+vi.mock('@delendai/core/lib/work-units/unit-departures.service', () => ({
+	unitDepartures: () => [],
+}));
 vi.mock('@delendai/core/lib/work-units/unit-fence.service', () => ({
 	readSupersedingUnit: () => state.taken,
 }));
@@ -157,5 +160,17 @@ describe('published', () => {
 	it('[<200ms] refuses when no publication target resolves', async () => {
 		const result = await published(UNIT, ctx);
 		expect(result.error).toContain('no target');
+	});
+
+	it('[<200ms] never asks the agent to merge the publication a slice joins', async () => {
+		state.target = {
+			unit: 'proposal',
+			reason: 'one pull request',
+			publicationRef: 'refs/heads/delendai/pr/a/implement/x00001-all/t',
+			notes: [],
+		};
+		const result = await published([...UNIT, '--no-pull-request'], ctx);
+		expect(JSON.stringify(result)).not.toContain('merge it into this work');
+		expect(result.data).not.toHaveProperty('publication.nextAction');
 	});
 });
