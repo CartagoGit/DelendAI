@@ -30,7 +30,7 @@ queue-races 'expire sweep racing concurrent enqueues clobbers nothing' failed ab
 
 ### S1 — Lock and hold waits run on a monotonic clock
 - **Status**: pending
-- **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `packages/core/tests/src/lib/shared/with-file-mutex-monotonic-deadline.spec.ts`, `packages/core/tests/src/lib/work-units/work-wait-monotonic-deadline.spec.ts`
+- **Files**: `packages/core/src/lib/shared/with-file-mutex.ts`, `packages/core/src/lib/work-units/work-publish.service.ts`, `packages/core/src/lib/work-units/work-unit-enter.service.ts`, `new:packages/core/tests/src/lib/shared/with-file-mutex-monotonic-deadline.spec.ts`, `new:packages/core/tests/src/lib/work-units/work-wait-monotonic-deadline.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
@@ -40,7 +40,7 @@ queue-races 'expire sweep racing concurrent enqueues clobbers nothing' failed ab
 
 ### S2 — gcZombies reports a release it could not make
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/agents/zombie-reconcile.ts`, `plugins/proposals/src/lib/tools/agent-names.tool.ts`, `plugins/proposals/tests/src/lib/agents/zombie-reconcile.not-released.spec.ts`
+- **Files**: `plugins/proposals/src/lib/agents/zombie-reconcile.ts`, `plugins/proposals/src/lib/tools/agent-names.tool.ts`, `new:plugins/proposals/tests/src/lib/agents/zombie-reconcile.not-released.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
