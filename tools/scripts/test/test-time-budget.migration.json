@@ -2196,7 +2196,6 @@
 		"tools/scripts/lint/proposal-frontmatter-yaml.script.spec.ts",
 		"tools/scripts/lint/proposal-ready-to-close.script.spec.ts",
 		"tools/scripts/lint/proposal-slice-completeness.script.spec.ts",
-		"tools/scripts/lint/proposal-uniqueness.script.spec.ts",
 		"tools/scripts/lint/proposals-duplicate-ids.spec.ts",
 		"tools/scripts/lint/proposals-tracked.script.spec.ts",
 		"tools/scripts/lint/publication-scope.script.spec.ts",
