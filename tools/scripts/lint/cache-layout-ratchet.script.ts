@@ -8,6 +8,9 @@
  * carried. The snapshot records the epoch and a checksum of the artifacts;
  * `--update` re-records it, and is refused unless the epoch went up
  * whenever the artifacts changed.
+ *
+ * It is one case of `lint:format-compat`, which runs `judgeRatchet` with the
+ * rest of the format registry; `lint:architecture` chains that, not this.
  */
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';
