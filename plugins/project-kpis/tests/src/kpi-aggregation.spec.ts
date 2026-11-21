@@ -67,7 +67,7 @@ const records: IInvocationRecord[] = [
 ];
 
 describe('buildKpiSnapshot', async () => {
-	it('builds a versioned snapshot and distinguishes measured estimated unavailable and not-configured values', async () => {
+	it('[<200ms] builds a versioned snapshot and distinguishes measured estimated unavailable and not-configured values', async () => {
 		const snapshot = await buildKpiSnapshot({
 			namespacePrefix: 'delendai',
 			workspaceRootAbs: '/workspace',
@@ -100,7 +100,7 @@ describe('buildKpiSnapshot', async () => {
 		expect(snapshot.truncated).toBe(false);
 	});
 
-	it('falls back to the persisted usage summary and keeps output deterministic and bounded', async () => {
+	it('[<200ms] falls back to the persisted usage summary and keeps output deterministic and bounded', async () => {
 		const usageSummary: IUsageSummary = {
 			updatedAt: FIXED_NOW.toISOString(),
 			windowDays: 7,
@@ -262,7 +262,7 @@ describe('computeTokensPerAcceptedUnit', () => {
 		...extra,
 	});
 
-	it('counts a retry, a discarded subagent and review in one unit', () => {
+	it('[<20ms] counts a retry, a discarded subagent and review in one unit', () => {
 		const [entry] = computeTokensPerAcceptedUnit([
 			row({
 				delegations: [{ tokensUsed: 50 }],
@@ -283,7 +283,7 @@ describe('computeTokensPerAcceptedUnit', () => {
 		});
 	});
 
-	it('reports no per-unit figure when nothing was accepted', () => {
+	it('[<20ms] reports no per-unit figure when nothing was accepted', () => {
 		const [entry] = computeTokensPerAcceptedUnit([row({})]);
 		expect(entry?.acceptedUnits).toBe(0);
 		expect(entry?.tokensPerAcceptedUnit).toBeUndefined();
