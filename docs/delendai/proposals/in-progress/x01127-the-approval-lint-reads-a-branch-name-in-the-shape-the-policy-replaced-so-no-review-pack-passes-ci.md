@@ -2,10 +2,14 @@
 id: x01127
 title: "The approval lint reads a branch name in the shape the policy replaced, so no review pack passes CI"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 460a2712-0e11-4ee4-8a3f-c856e874ff87
+last-correlation-id: 460a2712-0e11-4ee4-8a3f-c856e874ff87
+last-transition-from: ready
+last-transition-at: 2026-11-21T11:21:37.759Z
 ---
 
 # x01127 — The approval lint reads a branch name in the shape the policy replaced, so no review pack passes CI
