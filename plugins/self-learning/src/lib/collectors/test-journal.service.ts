@@ -35,6 +35,17 @@ interface IJournalEntryShape {
 	readonly result?: unknown;
 	readonly command?: unknown;
 	readonly failures?: unknown;
+	readonly budgetWarnings?: unknown;
+}
+
+/** One time-budget warning the runner recorded (x01101 S3). */
+interface IJournalBudgetWarningShape {
+	readonly file?: unknown;
+	readonly fullName?: unknown;
+	readonly name?: unknown;
+	readonly normalizedMs?: unknown;
+	readonly estimateMs?: unknown;
+	readonly causes?: unknown;
 }
 
 interface IJournalFailureShape {
@@ -61,6 +72,51 @@ const atMsOf = (timestamp: unknown): number | undefined => {
 	return Number.isNaN(parsed) ? undefined : parsed;
 };
 
+const asFiniteNumber = (value: unknown): number | undefined =>
+	typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+
+/**
+ * A budget warning as an observation: the test id, the normalized time
+ * and the estimate, and nothing else the journal holds. A warning with
+ * no readable time or estimate says nothing about the budget and is
+ * dropped.
+ */
+const budgetWarningOf = (
+	raw: unknown,
+	atMs: number,
+): IObservation | undefined => {
+	if (typeof raw !== 'object' || raw === null) return undefined;
+	const warning = raw as IJournalBudgetWarningShape;
+	const subject = asString(warning.fullName) ?? asString(warning.name);
+	const normalizedMs = asFiniteNumber(warning.normalizedMs);
+	const estimateMs = asFiniteNumber(warning.estimateMs);
+	if (
+		subject === undefined ||
+		normalizedMs === undefined ||
+		estimateMs === undefined
+	)
+		return undefined;
+	const causes = (Array.isArray(warning.causes) ? warning.causes : [])
+		.filter((cause): cause is string => typeof cause === 'string')
+		.map((cause) => cause.replace(/[^a-z0-9-]/gi, ''))
+		.filter((cause) => cause.length > 0);
+	const file = asString(warning.file);
+	const parts = [
+		...(file === undefined ? [] : [file]),
+		`normalizedMs=${String(Math.round(normalizedMs))}`,
+		`estimateMs=${String(Math.round(estimateMs))}`,
+		...(causes.length === 0 ? [] : [`causes=${causes.join(',')}`]),
+	];
+	return {
+		kind: 'budget-warning',
+		subject,
+		outcome: 'fail',
+		atMs,
+		source: 'test-journal',
+		detail: parts.join(' '),
+	};
+};
+
 /** Turn one journal line into observations. Never throws. */
 export const observationsFromJournalLine = (
 	line: string,
@@ -79,6 +135,9 @@ export const observationsFromJournalLine = (
 	if (atMs === undefined) return [];
 
 	const command = asString(entry.command) ?? 'test';
+	const warnings = (
+		Array.isArray(entry.budgetWarnings) ? entry.budgetWarnings : []
+	).flatMap((raw) => budgetWarningOf(raw, atMs) ?? []);
 	if (entry.result === 'pass') {
 		return [
 			{
@@ -88,6 +147,7 @@ export const observationsFromJournalLine = (
 				atMs,
 				source: 'test-journal',
 			},
+			...warnings,
 		];
 	}
 	if (entry.result !== 'fail') return [];
@@ -123,7 +183,7 @@ export const observationsFromJournalLine = (
 				: {}),
 		});
 	}
-	return out;
+	return [...out, ...warnings];
 };
 
 /**
