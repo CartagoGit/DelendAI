@@ -54,7 +54,23 @@ export interface ITaskBriefing {
 	}[];
 	readonly files: readonly ITaskFile[];
 	readonly specs: readonly string[];
+	/** Sources that import the declared files directly, bounded. */
+	readonly consumers?: readonly string[];
+	/** The one-line path from entry to a pull request. */
+	readonly flow?: string;
 }
+
+/** What the project's own module graph says the declared files reach. */
+export interface ITaskReach {
+	readonly consumers: readonly string[];
+	readonly specs: readonly string[];
+}
+
+/** Answers the reach of some files in a worktree; absent when unknown. */
+export type ITaskReachProvider = (
+	worktree: string,
+	files: readonly string[],
+) => Promise<ITaskReach | undefined>;
 
 /** A unit a task briefing is asked for. */
 export interface ITaskBriefingRequest {

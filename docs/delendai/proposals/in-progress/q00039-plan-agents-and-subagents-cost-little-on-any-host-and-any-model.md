@@ -65,7 +65,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 8. Clai
 
 ### S4 — A brief is generated, not written
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/task-briefing.service.ts`
+- **Files**: `packages/core/src/lib/work-units/task-briefing.service.ts`, `packages/core/src/lib/contracts/constants/task-briefing.constant.ts`, `packages/core/src/lib/contracts/interfaces/work-briefing.interface.ts`, `packages/core/tests/src/lib/work-units/task-briefing.service.spec.ts`
 - **Gate**: none
 - acceptance:
   - "An orchestrator names a proposal and slice and the subagent receives the task briefing from work enter: the files, the acceptance and the one-line flow; a brief needs no pasted context."
