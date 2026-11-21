@@ -40,13 +40,13 @@ Two defects found on 2026-11-21 are fixed: `work deliver` reports its verdict in
 
 ### S2 — Publishing a slice into the proposal's open publication merges it into the unit first
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `new:packages/core/src/lib/work-units/publication-join.service.ts`, `new:packages/core/tests/src/lib/work-units/publication-join.service.e2e.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `new:packages/core/src/lib/work-units/publication-join.service.ts`, `new:packages/core/tests/src/lib/work-units/publication-join.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "publication-join.service.e2e.spec.ts: two units of one proposal with a whole-proposal publication target; the first publishes, the second publishes after it with no agent-side merge, and the publication ref holds both units' commits."
   - "publication-join.service.e2e.spec.ts: when the second unit conflicts with the publication, publish is refused with VALIDATION naming the conflicting files and the unit is left unchanged."
-  - "work-unit-publish.service.ts: the nextAction asking the agent to merge the publication into the unit is gone for the join case."
+  - "work-unit-publish.service.spec.ts: for a slice joining the proposal's publication, the publish result carries no nextAction asking the agent to merge the publication into the unit."
   - "nice -n 19 bunx vitest run packages/core/tests/src/lib/work-units/publication-join.service.e2e.spec.ts passes."
 
 ## acceptance
@@ -57,5 +57,5 @@ Two defects found on 2026-11-21 are fixed: `work deliver` reports its verdict in
 - nice -n 19 bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts passes.
 - publication-join.service.e2e.spec.ts: two units of one proposal with a whole-proposal publication target; the first publishes, the second publishes after it with no agent-side merge, and the publication ref holds both units' commits.
 - publication-join.service.e2e.spec.ts: when the second unit conflicts with the publication, publish is refused with VALIDATION naming the conflicting files and the unit is left unchanged.
-- work-unit-publish.service.ts: the nextAction asking the agent to merge the publication into the unit is gone for the join case.
+- work-unit-publish.service.spec.ts: for a slice joining the proposal's publication, the publish result carries no nextAction asking the agent to merge the publication into the unit.
 - nice -n 19 bunx vitest run packages/core/tests/src/lib/work-units/publication-join.service.e2e.spec.ts passes.
