@@ -47,7 +47,7 @@ import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { parseJsonc } from '@delendai/core/cli';
+import { ownedPublicationRefPrefixes, parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import { isLefthookBypassed } from '../lib/lefthook-bypass';
@@ -108,8 +108,11 @@ const stripRefs = (ref: string): string =>
 const isDelete = (update: IPrePushRefUpdate): boolean =>
 	/^0+$/u.test(update.localSha);
 
-/** The publication prefix as the resolved policy defines it. */
-export const publicationPrefix = (): string => {
+/**
+ * The publication prefixes as the resolved policy defines them, current
+ * first: a publication under a former namespace is proved like any other.
+ */
+export const publicationPrefixes = (): readonly string[] => {
 	const { value, errors } = parseJsonc(
 		readFileSync(join(repoRoot(), 'delendai.config.json'), 'utf8'),
 	);
@@ -120,12 +123,16 @@ export const publicationPrefix = (): string => {
 		);
 	}
 	const config = value as { readonly development?: Record<string, unknown> };
-	return resolveDevelopmentPolicy({
+	const { branches } = resolveDevelopmentPolicy({
 		...(config.development === undefined
 			? {}
 			: { development: config.development }),
-	}).branches.publicationRefPrefix;
+	});
+	return ownedPublicationRefPrefixes(branches);
 };
+
+/** The publication prefix as the resolved policy defines it. */
+export const publicationPrefix = (): string => publicationPrefixes()[0] ?? '';
 
 /**
  * Which of these ref updates are publications. Pure, so the decision is
@@ -133,13 +140,13 @@ export const publicationPrefix = (): string => {
  */
 export const publicationsAmong = (
 	updates: readonly IPrePushRefUpdate[],
-	prefix: string,
+	prefix: string | readonly string[],
 ): readonly string[] => {
-	if (prefix === '') return [];
+	const prefixes = [prefix].flat().filter((each) => each !== '');
 	return updates
 		.filter((update) => !isDelete(update))
 		.map((update) => stripRefs(update.remoteRef))
-		.filter((ref) => ref.startsWith(prefix));
+		.filter((ref) => prefixes.some((each) => ref.startsWith(each)));
 };
 
 /**
@@ -207,7 +214,7 @@ export const main = async (): Promise<number> => {
 		chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
 	}
 	const updates = parsePrePushStdin(chunks.join(''));
-	const publications = publicationsAmong(updates, publicationPrefix());
+	const publications = publicationsAmong(updates, publicationPrefixes());
 	const pushed = updates.find(
 		(u) => stripRefs(u.remoteRef) === publications[0],
 	);

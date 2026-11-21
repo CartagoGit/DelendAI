@@ -1,5 +1,6 @@
 import type z from 'zod';
 import { proposalOfCreateUnit } from '@delendai/core/runtime';
+import { ownedWorkRefPrefixes } from '@delendai/core/cli';
 import { relative } from 'node:path';
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { CREATE_PROPOSAL_REFUSED_NEXT_STEP } from '../../contracts/constants/create-proposal.constant';
@@ -187,8 +188,11 @@ export const buildCreateProposalRegistration = (
 						? undefined
 						: await workUnitBranch(
 								git,
-								options.developmentPolicy?.branches
-									.workRefPrefix,
+								options.developmentPolicy === undefined
+									? undefined
+									: ownedWorkRefPrefixes(
+											options.developmentPolicy.branches,
+										),
 							);
 				const publication =
 					unitBranch !== undefined
@@ -286,8 +290,7 @@ export const buildCreateProposalRegistration = (
 									absPath: created.path,
 									ref: publicationRefFor(
 										options.developmentPolicy?.branches
-											.publicationRefPrefix ??
-											'delendai/pr/',
+											.publicationRefPrefix ?? 'pr/',
 										created.id,
 										{
 											title: args.title,

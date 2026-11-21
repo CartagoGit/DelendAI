@@ -10,7 +10,7 @@
 import { spawn, spawnSync } from 'node:child_process';
 
 import {
-	compileWorkRefParser,
+	compileOwnedWorkRefParser,
 	readSwarm,
 	readWorkspacePolicy,
 } from '@delendai/core/cli';
@@ -102,11 +102,10 @@ const tellSharedFiles = async (staged: readonly string[]): Promise<void> => {
 	const root = git('rev-parse', '--show-toplevel').trim();
 	if (branch.length === 0 || root.length === 0) return;
 	const policy = await readWorkspacePolicy(root);
-	const unit = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	)?.parse(`refs/heads/${branch}`);
+	// Every owned namespace: a unit under a former one tells its files too.
+	const unit = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	})?.parse(`refs/heads/${branch}`);
 	if (unit === undefined) return;
 	for (const line of sharedWith(
 		staged,

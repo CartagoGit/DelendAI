@@ -18,7 +18,7 @@ export const unitsOnForgeInvariant = (input: {
 	readonly remote: string;
 	readonly integration: string;
 	/** Branch prefix of the units, without `refs/heads/`. */
-	readonly workPrefix: string;
+	readonly workPrefix: string | readonly string[];
 }): IInvariantResult => {
 	const { root, remote, integration, workPrefix } = input;
 	const units = lines(readGit(root, ['worktree', 'list', '--porcelain']))
@@ -27,7 +27,10 @@ export const unitsOnForgeInvariant = (input: {
 		.flatMap((block) => {
 			const path = /^worktree (.+)$/mu.exec(block)?.[1];
 			const branch = /^branch refs\/heads\/(.+)$/mu.exec(block)?.[1];
-			return path !== undefined && branch?.startsWith(workPrefix) === true
+			return path !== undefined &&
+				[workPrefix]
+					.flat()
+					.some((prefix) => branch?.startsWith(prefix) === true)
 				? [{ path, branch }]
 				: [];
 		});

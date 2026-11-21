@@ -26,7 +26,9 @@ export const dirtyPathsOf = (git: IGitInCheckout): ReadonlySet<string> => {
 	for (let index = 0; index < entries.length; index += 1) {
 		const entry = entries[index] ?? '';
 		if (entry.length <= 3) continue;
-		paths.add(entry.slice(3));
+		// The runner trims the output, so a first entry written ` D path`
+		// reaches here as `D path`: the path starts at the first space.
+		paths.add(entry.slice(entry[2] === ' ' ? 3 : 2));
 		// Under -z a rename or copy is followed by its source path, bare:
 		// a proposal transition is a rename, and slicing that entry too
 		// turned docs/… into s/….

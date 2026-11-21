@@ -55,7 +55,9 @@ export interface ILandForge {
 	/** Open pull requests into the integration branch that are not batches. */
 	openPullRequests(): Promise<readonly ILandPullRequest[]>;
 	/** Batch pull requests under `prefix`, open and closed (the recent ones). */
-	batchPullRequests(prefix: string): Promise<readonly ILandPullRequest[]>;
+	batchPullRequests(
+		prefix: string | readonly string[],
+	): Promise<readonly ILandPullRequest[]>;
 	pullRequest(number: number): Promise<ILandPullRequest>;
 	checks(sha: string): Promise<readonly ILandCheck[]>;
 	/** Merge, refusing when the head is no longer `sha`. */
@@ -157,6 +159,8 @@ export interface ILandConfig {
 	readonly releaseBranch: string;
 	/** Where batch branches live, `<ns>/queue/`. */
 	readonly batchPrefix: string;
+	/** Every prefix a batch may live under, current first: a batch of a former namespace is still read. */
+	readonly batchPrefixes?: readonly string[];
 	readonly mergeMethod: 'merge' | 'squash' | 'rebase';
 	/** The checks that must be green; empty reads them from the forge. */
 	readonly requiredChecks: readonly string[];

@@ -14,11 +14,10 @@
 import { join, relative } from 'node:path';
 
 import type { IGitRunner } from '@delendai/core/contracts';
-import { compileWorkRefParser } from '@delendai/core/public';
 import { isRevalidationIdentity } from '@delendai/core/cli';
 
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
-import { unitOfRef } from './review-claims.service';
+import { ownedParserOf, unitOfRef } from './review-claims.service';
 
 /** The worktree that has `unit` checked out, if any. */
 const worktreeOf = async (
@@ -67,10 +66,7 @@ export const reviewUnitOfAgent = async (input: {
 }): Promise<string | undefined> => {
 	const listed = await input.run(['worktree', 'list', '--porcelain']);
 	if (!listed.ok) return undefined;
-	const parser = compileWorkRefParser(
-		input.shape.workRefTemplate,
-		input.shape.workRefPrefix,
-	);
+	const parser = ownedParserOf(input.shape);
 	const agent = input.agent.toLowerCase();
 	const units = listed.output
 		.split('\n')

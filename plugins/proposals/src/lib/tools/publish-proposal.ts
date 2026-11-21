@@ -115,13 +115,13 @@ export const publicationRefFor = (
 			(naming.title ?? '').toLowerCase().slice(0, TOPIC_MAX_LENGTH) ||
 			'proposal',
 	});
-	// Everything from the agent on is the unit; the head of the template
-	// is the work namespace, replaced by the publication prefix.
-	const head =
-		`refs/${template.slice(0, template.indexOf('${agent}'))}`.replace(
-			/^refs\/refs\//u,
-			'refs/',
-		);
+	// Everything from the first placeholder on is the unit; the literal head
+	// of the template is the work namespace, replaced by the publication
+	// prefix, whatever order the placeholders come in (f00808).
+	const head = `refs/${template.slice(0, template.indexOf('${'))}`.replace(
+		/^refs\/refs\//u,
+		'refs/',
+	);
 	return `${normalised}${rendered.slice(head.length)}`;
 };
 

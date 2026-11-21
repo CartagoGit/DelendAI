@@ -18,7 +18,8 @@
  * publication are one unit under two prefixes.
  */
 import type { IRetirementPlan } from '../contracts/interfaces/work-retire.interface';
-import { namespacedRef } from './namespaced-ref.helper';
+import { branchesForRef } from '../development-policy/owned-work-ref-parser';
+import { namespacedRef, ownedRootsOf } from './namespaced-ref.helper';
 import { shortName as bare } from '../integration/decisions/namespaces.helper';
 
 /**
@@ -48,6 +49,31 @@ export const planRetirement = (input: {
 		retiredRef: namespacedRef(input.namespace, 'retired', unit),
 	};
 };
+
+/**
+ * `planRetirement` for the unit's own namespace, current or former: a unit
+ * under a former one is read by that namespace's prefixes and its tip kept
+ * under the current one (f00808).
+ */
+export const planOwnedRetirement = (
+	branches: Parameters<typeof branchesForRef>[0],
+	branch: string,
+): IRetirementPlan | undefined => {
+	const own = branchesForRef(branches, branch);
+	return planRetirement({
+		branch,
+		namespace: branches.namespacePrefix,
+		workRefPrefix: own.workRefPrefix,
+		publicationRefPrefix: own.publicationRefPrefix,
+	});
+};
+
+/** Where a retired unit's tip may be kept, under every owned namespace. */
+export const retiredRefsOf = (
+	branches: Parameters<typeof branchesForRef>[0],
+	unit: string,
+): readonly string[] =>
+	ownedRootsOf(branches, 'retired').map((root) => `${root}/${unit}`);
 
 /** How the work of a retired unit is brought back. */
 export const restoreAdvice = (remote: string, retiredRef: string): string =>

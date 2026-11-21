@@ -9,7 +9,30 @@
  * (#56) had merged. The merge commit names the publication it came from,
  * and the publication is the work ref's own unit under another prefix.
  */
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '../../integration/decisions/namespaces.helper';
+import type { IPolicyBranches } from '../../contracts/interfaces/development-policy.interface';
 import type { IStartupGitSeam } from '../seams.interface';
+
+/** What the predicate reads: the current prefixes, and the owned ones when known. */
+type IMergedBranches = Pick<
+	IPolicyBranches,
+	'workRefPrefix' | 'publicationRefPrefix'
+> &
+	Partial<
+		Pick<
+			IPolicyBranches,
+			'namespacePrefix' | 'formerNamespacePrefixes' | 'workRefVisibility'
+		>
+	>;
+
+const OWNED_DEFAULTS = {
+	namespacePrefix: '',
+	formerNamespacePrefixes: [],
+	workRefVisibility: 'hidden',
+} as const;
 
 /** The ref prefix as a branch name spells it. */
 const bare = (prefix: string): string =>
@@ -35,22 +58,32 @@ const unitAfter = (text: string, prefix: string): string | undefined => {
  */
 export const mergedPublicationPredicate = (
 	subjects: readonly string[],
-	branches: {
-		readonly workRefPrefix: string;
-		readonly publicationRefPrefix: string;
-	},
+	branches: IMergedBranches,
 ): ((wipRef: string) => boolean) => {
-	const publication = bare(branches.publicationRefPrefix);
-	const merged = new Set(
-		subjects
-			.map((subject) => unitAfter(subject, publication))
-			.filter((unit): unit is string => unit !== undefined),
+	// Each owned namespace pairs its work prefix with its publication
+	// prefix: a unit under a former one merged under that one's (f00808).
+	const works = ownedWorkRefPrefixes({ ...OWNED_DEFAULTS, ...branches });
+	const publications = ownedPublicationRefPrefixes({
+		...OWNED_DEFAULTS,
+		...branches,
+	});
+	const pairs = works.map((work, at) => ({
+		work: bare(work),
+		publication: bare(publications[at] ?? ''),
+	}));
+	const mergedOf = pairs.map(
+		({ publication }) =>
+			new Set(
+				subjects
+					.map((subject) => unitAfter(subject, publication))
+					.filter((unit): unit is string => unit !== undefined),
+			),
 	);
-	const work = bare(branches.workRefPrefix);
-	return (wipRef) => {
-		const unit = unitAfter(bare(wipRef), work);
-		return unit !== undefined && merged.has(unit);
-	};
+	return (wipRef) =>
+		pairs.some(({ work }, at) => {
+			const unit = unitAfter(bare(wipRef), work);
+			return unit !== undefined && mergedOf[at]?.has(unit) === true;
+		});
 };
 
 /**
@@ -60,11 +93,7 @@ export const mergedPublicationPredicate = (
  */
 export const publicationMergedFor = async (
 	git: IStartupGitSeam,
-	branches: {
-		readonly integration: string;
-		readonly workRefPrefix: string;
-		readonly publicationRefPrefix: string;
-	},
+	branches: IMergedBranches & { readonly integration: string },
 ): Promise<(wipRef: string) => boolean> =>
 	mergedPublicationPredicate(
 		(await git.mergeSubjects?.(branches.integration)) ?? [],

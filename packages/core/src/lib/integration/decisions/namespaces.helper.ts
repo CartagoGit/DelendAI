@@ -80,6 +80,25 @@ export const ownedWorkRefPrefixes = (
 	]);
 };
 
+/**
+ * The work and publication prefixes of each FORMER namespace, in step: the
+ * pairs a reader fetches and lists besides the current ones (f00808).
+ */
+export const formerPrefixPairs = (
+	branches: IOwnedBranches,
+): readonly {
+	readonly workRefPrefix: string;
+	readonly publicationRefPrefix: string;
+}[] => {
+	const publications = ownedPublicationRefPrefixes(branches);
+	return ownedWorkRefPrefixes(branches)
+		.slice(1)
+		.map((workRefPrefix, at) => ({
+			workRefPrefix,
+			publicationRefPrefix: publications[at + 1] ?? '',
+		}));
+};
+
 /** Publication prefixes, current first. */
 export const ownedPublicationRefPrefixes = (
 	branches: IOwnedBranches,

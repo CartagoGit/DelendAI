@@ -9,6 +9,8 @@
  */
 import { describeAgentNameShape } from './agent-name-canon.service';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { ownedPublicationRefPrefixes } from '../integration/decisions/namespaces.helper';
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import { isWorkKind } from '../development-policy/work-ref-placeholders';
 import {
 	aliasedIdentity,
@@ -29,19 +31,28 @@ const bare = (prefix: string): string =>
 /** The agents of the publications `subjects` name, in the order given. */
 export const agentsOfMerges = (
 	subjects: readonly string[],
-	publicationPrefix: string,
+	publicationPrefix: string | readonly string[],
 ): readonly string[] => {
-	const prefix = bare(publicationPrefix);
-	if (prefix.length === 0) return [];
+	const prefixes = [publicationPrefix]
+		.flat()
+		.map(bare)
+		.filter((prefix) => prefix.length > 0);
 	const named = subjects.flatMap((subject) => {
-		const at = subject.indexOf(prefix);
-		if (at === -1) return [];
-		// `<agent>/<kind>/…`: a publication named before units had a kind
-		// begins with its topic, which is nobody's name.
-		const [agent = '', kind = ''] = subject
-			.slice(at + prefix.length)
-			.split('/');
-		return agent.length > 0 && isWorkKind(kind) ? [agent] : [];
+		for (const prefix of prefixes) {
+			const at = subject.indexOf(prefix);
+			if (at === -1) continue;
+			const tail =
+				subject.slice(at + prefix.length).split(/\s/u)[0] ?? '';
+			const identity = unitOfName(tail);
+			// A publication named before units had a kind begins with its
+			// topic, which is nobody's name: the kind is written out.
+			const [first = '', second = ''] = tail.split('/');
+			return identity !== undefined &&
+				(isWorkKind(first) || isWorkKind(second))
+				? [identity.agent]
+				: [];
+		}
+		return [];
 	});
 	return [...new Set(named)];
 };
@@ -68,7 +79,10 @@ export const agentsSeen = (input: {
 		.reverse();
 	return [
 		...new Set([
-			...agentsOfMerges(merges, policy.branches.publicationRefPrefix),
+			...agentsOfMerges(
+				merges,
+				ownedPublicationRefPrefixes(policy.branches),
+			),
 			...input.live,
 		]),
 	];

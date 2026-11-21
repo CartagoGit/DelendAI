@@ -26,8 +26,10 @@
  * that disagreed with the writer is no longer expressible, and renders it
  * for messages so a refusal cannot teach a spelling nothing produces.
  */
-import { DEFAULT_WORK_KIND } from '../development-policy/profiles.constant';
-import { compileWorkRefParser } from '../startup-reconciler/index';
+import {
+	alternateTemplate,
+	compileWorkRefParser,
+} from '../startup-reconciler/work-ref-identity';
 
 import type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 
@@ -41,39 +43,31 @@ export {
 export type { IWorkScope } from '../development-policy/work-ref-placeholders';
 export type { IWorkRefParts } from '../contracts/interfaces/work-ref-shape.interface';
 
-const AGENT_MARKER = '${agent}/';
+const AGENT_MARKER = '${agent}';
 
 /**
- * Read a work ref's subject — everything after `${agent}/` — or
- * `undefined` when it is not this shape.
- *
- * The reading is core's, the same parser the reconciler and the guard
- * use, so this module holds no second copy of the shape (f00644). It is
- * strict about the topic's separator: a ref in the old dash spelling
- * cannot be renamed into the shape without guessing where its slice
- * ended. A ref written before the shape named its kind still reads, with
- * its kind derived.
+ * `subject` — a ref's name with its agent segment taken out — read under
+ * `template`: the agent goes back where the template puts it (after the
+ * placeholders that precede it), then the one parser reads the whole name.
  */
-export const parseWorkSubject = (
-	template: string | undefined,
+const parseUnder = (
+	template: string,
 	subject: string,
 ): IWorkRefParts | undefined => {
-	// A profile may declare no work refs at all (`shared-direct`), and a
-	// policy can reach here unresolved. Neither is a crash: both mean
-	// "this project names no work refs", which reads nothing.
-	if (template === undefined || template === '') return undefined;
 	const parser = compileWorkRefParser(template, '', {
 		strict: true,
 		requireKind: false,
 	});
 	if (parser === undefined) return undefined;
 	const at = template.indexOf(AGENT_MARKER);
-	// A kind placed before the agent is not part of the subject: the
-	// subject is read as the default kind's unit.
-	const name =
-		at === -1
-			? subject
-			: `${template.slice(0, at).replace('${kind}', DEFAULT_WORK_KIND)}agent/${subject}`;
+	if (at === -1) return undefined;
+	const before = template.slice(0, at).split('/');
+	before.pop();
+	const literal = before.filter((part) => !part.includes('${'));
+	const placeholders = before.length - literal.length;
+	const segments = subject.split('/');
+	segments.splice(placeholders, 0, 'agent');
+	const name = `${literal.join('/')}${literal.length > 0 ? '/' : ''}${segments.join('/')}`;
 	const identity = parser.parse(
 		name.startsWith('refs/') ? name : `refs/${name}`,
 	);
@@ -87,6 +81,31 @@ export const parseWorkSubject = (
 		generation: String(identity.generation),
 		topic: identity.topic,
 	};
+};
+
+/**
+ * Read a work ref's subject — its name without the agent segment — or
+ * `undefined` when it is not this shape.
+ *
+ * The reading is core's, the same parser the reconciler and the guard
+ * use, so this module holds no second copy of the shape (f00644). It is
+ * strict about the topic's separator: a ref in the old dash spelling
+ * cannot be renamed into the shape without guessing where its slice
+ * ended. A unit written in the shape the default replaced still reads
+ * (f00808), and so does one written before the shape named its kind.
+ */
+export const parseWorkSubject = (
+	template: string | undefined,
+	subject: string,
+): IWorkRefParts | undefined => {
+	// A profile may declare no work refs at all (`shared-direct`), and a
+	// policy can reach here unresolved. Neither is a crash: both mean
+	// "this project names no work refs", which reads nothing.
+	if (template === undefined || template === '') return undefined;
+	const found = parseUnder(template, subject);
+	if (found !== undefined) return found;
+	const other = alternateTemplate(template);
+	return other === undefined ? undefined : parseUnder(other, subject);
 };
 
 /**

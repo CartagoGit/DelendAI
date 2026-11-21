@@ -12,6 +12,7 @@
  * never spelled here.
  */
 import { shortName } from '../integration/decisions/namespaces.helper';
+import { policyForRef } from '../development-policy/owned-work-ref-parser';
 import { resolveWorkRef } from '../wip-engine/ref-name';
 
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
@@ -135,10 +136,12 @@ export const adoptProposalId = async (input: {
 	readonly proposal: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 }): Promise<IUnitAdoption> => {
-	const { cwd, proposal, policy } = input;
+	const { cwd, proposal } = input;
 	const head = readGit(cwd, ['symbolic-ref', '--quiet', 'HEAD']);
 	if (head === undefined) return { status: 'kept' };
 	const branch = shortName(head);
+	// A unit under a former namespace is renamed within it (f00808).
+	const policy = policyForRef(input.policy, branch);
 	if (!branch.startsWith(shortName(policy.branches.workRefPrefix))) {
 		return { status: 'kept' };
 	}
@@ -205,11 +208,12 @@ export const adoptProposalId = async (input: {
  */
 export const proposalOfCreateUnit = (
 	cwd: string,
-	policy: IResolvedDevelopmentPolicy,
+	declared: IResolvedDevelopmentPolicy,
 ): { readonly branch: string; readonly proposal: string } | undefined => {
 	const head = readGit(cwd, ['symbolic-ref', '--quiet', 'HEAD']);
 	if (head === undefined) return undefined;
 	const branch = shortName(head);
+	const policy = policyForRef(declared, branch);
 	if (!branch.startsWith(shortName(policy.branches.workRefPrefix))) {
 		return undefined;
 	}

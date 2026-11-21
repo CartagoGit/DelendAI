@@ -39,7 +39,7 @@ import { spawnSync } from 'node:child_process';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 import {
-	compileWorkRefParser,
+	compileOwnedWorkRefParser,
 	endDeliveredUnits,
 	readUnitStandings,
 	readWorkspacePolicy,
@@ -340,11 +340,9 @@ export const unitCommands = (
 	const identity =
 		policy === undefined
 			? undefined
-			: compileWorkRefParser(
-					policy.branches.workRefTemplate,
-					policy.branches.workRefPrefix,
-					{ requireKind: false },
-				)?.parse(`refs/heads/${ref}`);
+			: compileOwnedWorkRefParser(policy.branches, {
+					requireKind: false,
+				})?.parse(`refs/heads/${ref}`);
 	const unit =
 		identity === undefined
 			? '--proposal=<id> --slice=<slice> --agent=<you>'

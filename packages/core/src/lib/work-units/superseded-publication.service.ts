@@ -14,6 +14,7 @@
  * a pull request open whose commits the new one lacks. When it does not
  * hold, the old publication stays and the answer says why.
  */
+import { workShapeOfPublication } from '../development-policy/owned-work-ref-parser';
 import { shortName } from '../integration/decisions/namespaces.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type {
@@ -231,8 +232,15 @@ export const workRefOfPublicationRef = (
 	publication: string,
 ): string => {
 	const name = shortName(publication);
-	const from = shortName(policy.branches.publicationRefPrefix);
-	return `${shortName(policy.branches.workRefPrefix)}${name.slice(from.length)}`;
+	// A publication under a former namespace swaps that namespace's
+	// prefixes, not the current ones (f00808).
+	const owned = workShapeOfPublication(policy.branches, name);
+	const from =
+		owned?.publication ?? shortName(policy.branches.publicationRefPrefix);
+	const work = shortName(
+		owned?.shape.prefix ?? policy.branches.workRefPrefix,
+	);
+	return `${work}${name.slice(from.length)}`;
 };
 
 /**

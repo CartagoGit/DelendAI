@@ -117,16 +117,18 @@ export const WORK_REF_PLACEHOLDERS = [
  * the other shape (x00563). Change the scheme here and every writer and
  * reader follows.
  */
-export const WORK_REF_SHAPE =
-	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+export const WORK_REF_SHAPE = '${kind}/${agent}/${scope}/${topic}';
 
 /**
- * The readable shape (f00808): action, model, scope, then what it is
- * about. Readers recognise it next to `WORK_REF_SHAPE` already; a project
- * writes it by setting `workRefTemplate` to `wip/` plus this, and the
- * default follows when the repository's own cutover lands.
+ * The shape `WORK_REF_SHAPE` replaced (f00808 S8): agent, kind, then the
+ * proposal-slice-generation spelling. Readers still recognise it so a unit
+ * entered before the switch keeps its name; nothing writes it by default.
  */
-export const READABLE_WORK_REF_SHAPE = '${kind}/${agent}/${scope}/${topic}';
+export const LEGACY_WORK_REF_SHAPE =
+	'${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}';
+
+/** The readable shape (f00808): now the default, kept as an alias. */
+export const READABLE_WORK_REF_SHAPE = WORK_REF_SHAPE;
 
 /**
  * Programs an agent runs inside, which are not agents (x00694). The agent

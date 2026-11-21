@@ -9,6 +9,10 @@
  * 2026-10-20 that handed f00769 to two agents and later f00776 to an
  * agent while develop already held it.
  */
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '../integration/decisions/namespaces.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IWorkUnitResult } from '../contracts/interfaces/work-unit-context.interface';
 import { scalarArg } from './command-args.helper';
@@ -42,8 +46,10 @@ export const takenProposalId = (
 		base === undefined ? undefined : proposalFileAt(root, proposal, base);
 	// Units and publications, here and on the forge (`refs/remotes/…`).
 	const namespaces = [
-		policy.branches.workRefPrefix.replace(/^heads\//u, ''),
-		policy.branches.publicationRefPrefix,
+		...ownedWorkRefPrefixes(policy.branches).map((prefix) =>
+			prefix.replace(/^heads\//u, ''),
+		),
+		...ownedPublicationRefPrefixes(policy.branches),
 	];
 	const others = (
 		readGit(root, ['for-each-ref', '--format=%(refname)']) ?? ''
@@ -51,7 +57,8 @@ export const takenProposalId = (
 		.split('\n')
 		.filter(
 			(ref) =>
-				ref.includes(`/${proposal}-`) &&
+				(ref.includes(`/${proposal}-`) ||
+					ref.includes(`/${proposal}/`)) &&
 				namespaces.some((namespace) => ref.includes(`/${namespace}`)) &&
 				!ref.includes(`/${agent}/`),
 		);

@@ -17,7 +17,8 @@
  */
 import { shortName } from '../integration/decisions/namespaces.helper';
 import { landsByPullRequest } from '../development-policy/branch-rules';
-import { resolveWorkRef } from '../wip-engine/ref-name';
+import { ownedPublicationRefPrefixes } from '../integration/decisions/namespaces.helper';
+import { unitOfName } from '../development-policy/owned-work-ref-parser';
 import type {
 	IOpenPullRequest,
 	IRepublicationPorts,
@@ -25,44 +26,38 @@ import type {
 	IResolvedPublicationTarget,
 } from '../contracts/interfaces/open-pull-request-republication.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { publicationRefFromWorkRef } from './work-publish.service';
 import { choosePublicationTarget } from './publication-target.service';
 
-const SLICE_MARK = 'zzslicemarkzz';
-const KIND_MARK = 'zzkindmarkzz';
-const TOPIC_MARK = 'zztopicmarkzz';
-const GENERATION_MARK = 987_654_321;
 const OPEN_PULL_REQUEST_LIMIT = '200';
 
-const escapeRegExp = (text: string): string =>
-	text.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&');
-
 /**
- * Matches the publication refs of one agent and proposal, whatever their
- * kind, generation and topic. The slice is the first capture group.
+ * Reads the slice a publication head names, for the publications of one
+ * agent and proposal in any owned namespace, whatever their kind,
+ * generation and topic. `undefined` when the project writes no work ref.
+ * The name is read by the one parser, so no shape is spelled here.
  */
-export const unitPublicationPattern = (
+export const unitPublicationSlice = (
 	policy: IResolvedDevelopmentPolicy,
 	unit: { readonly agent: string; readonly proposal: string },
-): RegExp | undefined => {
-	const marked = publicationRefFromWorkRef(
-		policy,
-		resolveWorkRef(policy.branches.workRefTemplate, {
-			agent: unit.agent,
-			kind: KIND_MARK,
-			proposal: unit.proposal,
-			slice: SLICE_MARK,
-			generation: GENERATION_MARK,
-			topic: TOPIC_MARK,
-		}),
+): ((head: string) => string | undefined) | undefined => {
+	if (policy.branches.workRefTemplate.length === 0) return undefined;
+	const prefixes = ownedPublicationRefPrefixes(policy.branches).map(
+		shortName,
 	);
-	if (marked === undefined) return undefined;
-	const source = escapeRegExp(shortName(marked))
-		.replace(SLICE_MARK, '([^/]+?)')
-		.replace(KIND_MARK, '[^/]+')
-		.replace(String(GENERATION_MARK), '\\d+')
-		.replace(TOPIC_MARK, '[^/]+');
-	return new RegExp(`^${source}$`, 'u');
+	return (head) => {
+		const name = shortName(head);
+		if (
+			!prefixes.some(
+				(prefix) => prefix.length > 0 && name.startsWith(prefix),
+			)
+		) {
+			return undefined;
+		}
+		const found = unitOfName(name);
+		return found?.agent === unit.agent && found.proposal === unit.proposal
+			? found.slice
+			: undefined;
+	};
 };
 
 const isOpenPullRequest = (value: unknown): value is IOpenPullRequest => {
@@ -149,11 +144,11 @@ export const resolvePublicationTarget = (
 	const unchanged: IResolvedPublicationTarget = { ...chosen, notes: [] };
 	const { policy, agent, proposal, remote } = request;
 	if (!landsByPullRequest(policy)) return unchanged;
-	const pattern = unitPublicationPattern(policy, { agent, proposal });
+	const sliceOf = unitPublicationSlice(policy, { agent, proposal });
 	const chosenName = shortName(chosen.publicationRef);
-	const slice = pattern?.exec(chosenName)?.[1];
+	const slice = sliceOf?.(chosenName);
 	const tip = ports.git(['rev-parse', '-q', '--verify', request.workRef]);
-	if (pattern === undefined || slice === undefined || tip === undefined) {
+	if (sliceOf === undefined || slice === undefined || tip === undefined) {
 		return unchanged;
 	}
 	const open = readOpenPullRequests(ports);
@@ -162,7 +157,7 @@ export const resolvePublicationTarget = (
 		.filter(
 			(candidate) =>
 				candidate.headRefName !== chosenName &&
-				pattern.exec(candidate.headRefName)?.[1] === slice,
+				sliceOf(candidate.headRefName) === slice,
 		)
 		.sort((first, second) => second.number - first.number);
 	const joined = mine.find((candidate) =>

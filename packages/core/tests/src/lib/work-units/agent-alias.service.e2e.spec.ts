@@ -26,13 +26,13 @@ import { agentsOfMerges } from '@delendai/core/lib/work-units/agents-seen.servic
 const known = ['minimax-m3', 'claude-opus-5-5', 'gpt-5.4'];
 
 describe('aliasedIdentity', () => {
-	it('recognises the same letters and digits in another case or punctuation', () => {
+	it('[<2000ms] recognises the same letters and digits in another case or punctuation', () => {
 		for (const spelling of ['MiniMax-M3', 'minimaxm3', 'minimax_m3']) {
 			expect(aliasedIdentity(spelling, known)).toBe('minimax-m3');
 		}
 	});
 
-	it('leaves an identity that is already known, and a different agent, alone', () => {
+	it('[<2000ms] leaves an identity that is already known, and a different agent, alone', () => {
 		expect(aliasedIdentity('minimax-m3', known)).toBeUndefined();
 		expect(aliasedIdentity('glm-5.3-flash', known)).toBeUndefined();
 		// Another version of the same family is another model.
@@ -46,7 +46,7 @@ describe('aliasedIdentity', () => {
 		expect(aliasedIdentity('anything', [])).toBeUndefined();
 	});
 
-	it('names the spelling to use', () => {
+	it('[<2000ms] names the spelling to use', () => {
 		expect(describeAlias('MiniMax-M3', 'minimax-m3')).toContain(
 			'--agent=minimax-m3',
 		);
@@ -78,7 +78,7 @@ describe('work enter under a re-spelled identity', () => {
 			}),
 		);
 
-	it('is refused with the spelling already in use, and the known one enters', async () => {
+	it('[<3000ms] is refused with the spelling already in use, and the known one enters', async () => {
 		const root = mkdtempSync(join(tmpdir(), 'agent-alias-'));
 		roots.push(root);
 		const git = (...args: string[]) =>
@@ -119,13 +119,13 @@ describe('describeOffRoster', () => {
 		'qwen-3.8-flash',
 	];
 
-	it('lets through a name the project gave', () => {
+	it('[<2000ms] lets through a name the project gave', () => {
 		for (const name of roster) {
 			expect(describeOffRoster(name, roster)).toBeUndefined();
 		}
 	});
 
-	it('refuses every other way a model named itself, pointing at its own names', () => {
+	it('[<2000ms] refuses every other way a model named itself, pointing at its own names', () => {
 		for (const [signed, meant] of [
 			['minimax-3.1', 'minimax-m3.1'],
 			['minimax-m31', 'minimax-m3.1'],
@@ -142,7 +142,7 @@ describe('describeOffRoster', () => {
 		}
 	});
 
-	it('names both when a family has two, and none when it has none', () => {
+	it('[<2000ms] names both when a family has two, and none when it has none', () => {
 		expect(describeOffRoster('gpt-5', roster)).toContain(
 			'If you are `gpt-luna-6.0` or `gpt-5.4`',
 		);
@@ -151,7 +151,7 @@ describe('describeOffRoster', () => {
 		);
 	});
 
-	it('holds nobody to a roster the project did not declare', () => {
+	it('[<2000ms] holds nobody to a roster the project did not declare', () => {
 		expect(describeOffRoster('anything-at-all', [])).toBeUndefined();
 	});
 });
@@ -168,7 +168,7 @@ describe('firstSpelling', () => {
 		'qwen-3.8-flash',
 	];
 
-	it('holds a model to the name it first signed with, however it writes itself later', () => {
+	it('[<2000ms] holds a model to the name it first signed with, however it writes itself later', () => {
 		expect(firstSpelling('minimax-3.1', seen)).toBe('minimax-m31');
 		expect(firstSpelling('MiniMax-M3.1', seen)).toBe('minimax-m31');
 		expect(firstSpelling('minimax-3', seen)).toBe('minimax-m3');
@@ -177,7 +177,7 @@ describe('firstSpelling', () => {
 		);
 	});
 
-	it('leaves the first name itself, a new model, and another version or tier alone', () => {
+	it('[<2000ms] leaves the first name itself, a new model, and another version or tier alone', () => {
 		expect(firstSpelling('minimax-m31', seen)).toBeUndefined();
 		expect(firstSpelling('gpt-luna-6.0', seen)).toBeUndefined();
 		// Not the same model: a version, a tier, or a word apart.
@@ -190,7 +190,7 @@ describe('firstSpelling', () => {
 		).toBeUndefined();
 	});
 
-	it('lets through a name one letter apart when the project lists it as its own', () => {
+	it('[<2000ms] lets through a name one letter apart when the project lists it as its own', () => {
 		expect(firstSpelling('gpt-4o', ['gpt-4'])).toBe('gpt-4');
 		expect(
 			firstSpelling('gpt-4o', ['gpt-4'], ['gpt-4', 'gpt-4o']),
@@ -199,14 +199,14 @@ describe('firstSpelling', () => {
 });
 
 describe('agentsOfMerges', () => {
-	it('reads the agents of the publications that landed, once each, in order', () => {
+	it('[<2000ms] reads the agents of the publications that landed, once each, in order', () => {
 		expect(
 			agentsOfMerges(
 				[
 					'Merge pull request #1 from o/delendai/pr/a-topic-with-no-agent',
-					'Merge pull request #2 from o/delendai/pr/claude-opus-5-5/implement/x00001-S1-g1/t',
-					'Merge develop into delendai/pr/minimax-m3/review/batch-all-g1/v',
-					'Merge pull request #3 from o/delendai/pr/claude-opus-5-5/review/batch-all-g2/v',
+					'Merge pull request #2 from o/delendai/pr/implement/claude-opus-5-5/x00001-S1/t',
+					'Merge develop into delendai/pr/review/minimax-m3/batch-all/v',
+					'Merge pull request #3 from o/delendai/pr/review/claude-opus-5-5/batch-all-G2/v',
 					'feat: not a merge of a publication',
 				],
 				'refs/heads/delendai/pr/',

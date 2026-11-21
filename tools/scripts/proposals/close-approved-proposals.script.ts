@@ -28,6 +28,11 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { declaredBranches } from '../lib/declared-branches';
+import {
+	branchesForRef,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+} from '@delendai/core/cli';
 import { repoRoot } from '../lib/repo-root';
 import { unapprovedSlices } from '../lint/closed-with-independent-approval.script';
 import { waitsOnNobody, withSentBackSlicesOpen } from './sent-back-proposals';
@@ -92,25 +97,40 @@ const tryRun = (
  */
 export const ownPublications = (
 	listing: string,
-	publicationRefPrefix: string,
+	publicationRefPrefix: string | readonly string[],
 ): readonly { readonly ref: string; readonly sha: string }[] => {
-	const prefix = `refs/heads/${publicationRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}`;
+	// Every owned namespace's publications are this closer's to find.
+	const prefixes = [publicationRefPrefix]
+		.flat()
+		.map(
+			(each) => `refs/heads/${each.replace(/^(refs\/)?(heads\/)?/u, '')}`,
+		);
 	return listing
 		.split('\n')
 		.map((line) => line.trim().split(/\s+/u))
 		.flatMap(([sha, ref]) =>
-			sha !== undefined && ref?.startsWith(`${prefix}${AGENT}/`) === true
+			sha !== undefined && ref !== undefined && namesAgent(ref, prefixes)
 				? [{ ref, sha }]
 				: [],
 		);
 };
 
+/** Whether `ref` is under one of `prefixes` with this closer as its agent. */
+const namesAgent = (ref: string, prefixes: readonly string[]): boolean =>
+	prefixes.some((prefix) => {
+		if (!ref.startsWith(prefix)) return false;
+		// The agent is the first segment, or the second after a kind.
+		const [first, second] = ref.slice(prefix.length).split('/');
+		return first === AGENT || second === AGENT;
+	});
+
 /** Remove every unit a pass of this closer entered, worktree and branch. */
 /** Whether the publication of `branch` stands on the remote. */
 const publishedOnRemote = (root: string, branch: string): boolean => {
-	const { workRefPrefix, publicationRefPrefix } = declaredBranches(root);
-	const work = workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '');
-	const publication = publicationRefPrefix.replace(
+	// The unit's own namespace names its publication (f00808).
+	const own = branchesForRef(declaredBranches(root), branch);
+	const work = own.workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '');
+	const publication = own.publicationRefPrefix.replace(
 		/^(refs\/)?(heads\/)?/u,
 		'',
 	);
@@ -167,17 +187,21 @@ const sweepOwnUnits = (root: string): void => {
  */
 export const ownWorkRefs = (
 	listing: string,
-	workRefPrefix: string,
-): readonly string[] =>
-	listing
+	workRefPrefix: string | readonly string[],
+): readonly string[] => {
+	const prefixes = [workRefPrefix]
+		.flat()
+		.map(
+			(each) => `refs/heads/${each.replace(/^(refs\/)?(heads\/)?/u, '')}`,
+		);
+	return listing
 		.split('\n')
 		.map((line) => line.trim().split(/\s+/u)[1])
 		.filter(
 			(ref): ref is string =>
-				ref?.startsWith(
-					`refs/heads/${workRefPrefix.replace(/^(refs\/)?(heads\/)?/u, '')}${AGENT}/`,
-				) === true,
+				ref !== undefined && namesAgent(ref, prefixes),
 		);
+};
 
 /**
  * Remove the remote copies of this closer's units whose every file is
@@ -194,18 +218,17 @@ const sweepRemoteUnits = (
 		tryRun('git', ['ls-remote', '--heads', '--', 'origin'], root) ?? '';
 	const keepers = [
 		integration,
-		...ownPublications(listing, branches.publicationRefPrefix).flatMap(
-			({ ref }) =>
-				tryRun(
-					'git',
-					['fetch', '--quiet', '--', 'origin', ref],
-					root,
-				) === undefined
-					? []
-					: [run('git', ['rev-parse', 'FETCH_HEAD'], root)],
+		...ownPublications(
+			listing,
+			ownedPublicationRefPrefixes(branches),
+		).flatMap(({ ref }) =>
+			tryRun('git', ['fetch', '--quiet', '--', 'origin', ref], root) ===
+			undefined
+				? []
+				: [run('git', ['rev-parse', 'FETCH_HEAD'], root)],
 		),
 	];
-	for (const ref of ownWorkRefs(listing, branches.workRefPrefix)) {
+	for (const ref of ownWorkRefs(listing, ownedWorkRefPrefixes(branches))) {
 		if (
 			tryRun('git', ['fetch', '--quiet', '--', 'origin', ref], root) ===
 			undefined
@@ -468,7 +491,7 @@ const main = (): number => {
 		// closing the same proposals.
 		const open = ownPublications(
 			tryRun('git', ['ls-remote', '--heads', '--', 'origin'], root) ?? '',
-			branches.publicationRefPrefix,
+			ownedPublicationRefPrefixes(branches),
 		);
 		const existing = open[0];
 		for (const publication of open) {

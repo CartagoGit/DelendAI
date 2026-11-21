@@ -126,8 +126,6 @@ describe('readSliceOwnership', () => {
 		]);
 		expect(stranger.own).toBeUndefined();
 		expect(holder.others).toEqual([]);
-		expect(holder.own).toContain(
-			'claude-opus-5/implement/x00001-S1-g1/probe',
-		);
+		expect(holder.own).toContain('implement/claude-opus-5/x00001-S1/probe');
 	});
 });

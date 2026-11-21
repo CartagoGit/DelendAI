@@ -21,7 +21,7 @@ describe('callerUnitCheckout with a session', () => {
 	const git = (cwd: string, ...args: string[]): string =>
 		execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
 
-	it("skips a unit its sibling's session holds", async () => {
+	it("[<2000ms] skips a unit its sibling's session holds", async () => {
 		const top = mkdtempSync(join(tmpdir(), 'caller-unit-'));
 		dirs.push(top);
 		const root = join(top, 'repo');
@@ -46,7 +46,7 @@ describe('callerUnitCheckout with a session', () => {
 			'add',
 			'-q',
 			'-b',
-			'delendai/wip/agent-a/implement/x00001-all-g1/topic',
+			'delendai/wip/implement/agent-a/x00001/topic',
 			unit,
 		);
 		stampWorktreeAgent(unit, 'agent-a', 's1');

@@ -6,7 +6,7 @@
 import { spawnSync } from 'node:child_process';
 
 import {
-	compileWorkRefParser,
+	compileOwnedWorkRefParser,
 	gitNamespaceRenamePorts,
 	noteUnitUrgency,
 	renameNamespace,
@@ -171,6 +171,17 @@ export const deliverPortsOf = (
 		readOpenPullRequest: async (branch) =>
 			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
+		publicationReached: async (publication, checkout) => {
+			// Loaded when asked for: only a delivery needs it (startup budget).
+			const { publicationReachedFrom } = await import(
+				'../lib/work-deliver-remote.service'
+			);
+			return publicationReachedFrom(
+				checkout ?? ctx.cwd,
+				ctx.cwd,
+				publication,
+			);
+		},
 		preflight: (checkout) =>
 			answerOf(
 				request(ctx, TRANSITION_TOOL, {
@@ -266,11 +277,9 @@ export const unitHere = async (
 ): Promise<readonly string[]> => {
 	const policy = await readWorkspacePolicy(cwd).catch(() => undefined);
 	if (policy === undefined) return [];
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	const parser = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	});
 	const branch = spawnSync(
 		'git',
 		['symbolic-ref', '--quiet', '--short', 'HEAD'],
@@ -305,11 +314,9 @@ export const liveUnitFlags = async (
 > => {
 	const agent = input.agent ?? process.env.DELENDAI_AGENT_ID ?? '';
 	const policy = await readWorkspacePolicy(cwd);
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	);
+	const parser = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	});
 	const kind = scalarArg(args, 'kind');
 	const units = liveUnitsOf(
 		await readUnitStandings({ root: cwd, policy }),

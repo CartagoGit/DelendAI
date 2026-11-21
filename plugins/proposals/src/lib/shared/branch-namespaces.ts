@@ -15,7 +15,11 @@
 import { projectBranches } from '@delendai/core/public';
 
 import { AGENT_BRANCH_PREFIX } from '../contracts/constants/agent-branch-convention.constant';
-import { shortName as bare } from '@delendai/core/cli';
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName as bare,
+} from '@delendai/core/cli';
 
 const distinct = (prefixes: readonly string[]): readonly string[] => [
 	...new Set(prefixes.map(bare).filter((prefix) => prefix.length > 0)),
@@ -26,7 +30,7 @@ export const workBranchPrefixes = async (
 	workspaceRoot: string,
 ): Promise<readonly string[]> =>
 	distinct([
-		(await projectBranches(workspaceRoot)).workRefPrefix,
+		...ownedWorkRefPrefixes(await projectBranches(workspaceRoot)),
 		AGENT_BRANCH_PREFIX,
 	]);
 
@@ -35,9 +39,10 @@ export const managedBranchPrefixes = async (
 	workspaceRoot: string,
 ): Promise<readonly string[]> => {
 	const project = await projectBranches(workspaceRoot);
+	// Every owned namespace: a unit under a former one is the swarm's too.
 	return distinct([
-		project.workRefPrefix,
-		project.publicationRefPrefix,
+		...ownedWorkRefPrefixes(project),
+		...ownedPublicationRefPrefixes(project),
 		AGENT_BRANCH_PREFIX,
 	]);
 };

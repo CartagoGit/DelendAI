@@ -11,7 +11,10 @@ import {
 	workRefFate,
 	workRefLanded,
 } from '../integration/decisions/landed.helper';
-import { planRetirement } from '../work-units/work-retire.service';
+import {
+	planOwnedRetirement,
+	retiredRefsOf,
+} from '../work-units/work-retire.service';
 import { workRefIntegrationRef } from '../work-units/work-ref-lifecycle.service';
 import {
 	recordWorkRefMove,
@@ -56,14 +59,18 @@ const forgeHoldsRetired = async (
 	remote: string,
 	ref: string,
 ): Promise<boolean> => {
-	const plan = planRetirement({
-		branch: ref.replace(/^refs\/heads\//u, ''),
-		namespace: policy.branches.namespacePrefix,
-		workRefPrefix: policy.branches.workRefPrefix,
-		publicationRefPrefix: policy.branches.publicationRefPrefix,
-	});
+	const plan = planOwnedRetirement(
+		policy.branches,
+		ref.replace(/^refs\/heads\//u, ''),
+	);
 	if (plan === undefined) return false;
-	const listed = await run(['ls-remote', '--', remote, plan.retiredRef]);
+	// The tip may be kept under any owned namespace (f00808).
+	const listed = await run([
+		'ls-remote',
+		'--',
+		remote,
+		...retiredRefsOf(policy.branches, plan.unit),
+	]);
 	return listed.ok && firstField(listed.output) !== undefined;
 };
 

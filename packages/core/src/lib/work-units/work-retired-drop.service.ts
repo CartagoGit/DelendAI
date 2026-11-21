@@ -21,7 +21,7 @@ import {
 	readGit,
 	refused,
 } from './work-unit-shared.service';
-import { namespacedRef } from './namespaced-ref.helper';
+import { ownedRootsOf } from './namespaced-ref.helper';
 
 /**
  * `work retired --drop=<unit> --reason=<why>` — remove retired work from
@@ -37,7 +37,10 @@ export const retiredDropped = async (
 	const { policy } = opened;
 	const root = mainWorktreeOf(opened.root);
 	const remote = ctx.globals.remote ?? integrationRemote(root, policy);
-	const prefix = `${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`;
+	// Retired work is looked for under every owned namespace (f00808).
+	const prefixes = ownedRootsOf(policy.branches, 'retired').map(
+		(root) => `${root}/`,
+	);
 	const unit = scalarArg(args, 'drop') ?? '';
 	const reason = scalarArg(args, 'reason') ?? '';
 	if (unit.length === 0 || reason.trim().length === 0) {
@@ -50,7 +53,7 @@ export const retiredDropped = async (
 		'ls-remote',
 		'--',
 		remote,
-		`${prefix}${unit}`,
+		...prefixes.map((prefix) => `${prefix}${unit}`),
 	]);
 	if (listed === undefined) {
 		return refused(
@@ -63,9 +66,12 @@ export const retiredDropped = async (
 		.filter((line) => line.length > 0)
 		.map((line) => {
 			const [commit = '', ref = ''] = line.split('\t');
+			const prefix = prefixes.find((each) => ref.startsWith(each)) ?? '';
 			return { unit: ref.slice(prefix.length), ref, commit };
 		})
-		.filter((each) => each.ref.startsWith(prefix));
+		.filter((each) =>
+			prefixes.some((prefix) => each.ref.startsWith(prefix)),
+		);
 	if (found.length === 0) {
 		return refused(
 			`No retired work is named \`${unit}\` on \`${remote}\`.`,

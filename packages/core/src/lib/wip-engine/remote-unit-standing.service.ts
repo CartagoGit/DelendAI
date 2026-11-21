@@ -9,7 +9,10 @@
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { IGitRunner } from '../contracts/interfaces/git-runner.interface';
-import { planRetirement } from '../work-units/work-retire.service';
+import {
+	planOwnedRetirement,
+	retiredRefsOf,
+} from '../work-units/work-retire.service';
 
 /** The remote's word on `ref`, or why it could not be asked. */
 export const remoteUnitStanding = async (
@@ -27,19 +30,11 @@ export const remoteUnitStanding = async (
 			readonly retired?: { readonly ref: string; readonly tip: string };
 	  }
 > => {
-	const retiredRef = planRetirement({
-		branch: ref,
-		namespace: policy.branches.namespacePrefix,
-		workRefPrefix: policy.branches.workRefPrefix,
-		publicationRefPrefix: policy.branches.publicationRefPrefix,
-	})?.retiredRef;
-	const listed = await run([
-		'ls-remote',
-		'--',
-		remote,
-		ref,
-		...(retiredRef === undefined ? [] : [retiredRef]),
-	]);
+	const plan = planOwnedRetirement(policy.branches, ref);
+	// The tip may be kept under any owned namespace (f00808).
+	const retiredRefs =
+		plan === undefined ? [] : retiredRefsOf(policy.branches, plan.unit);
+	const listed = await run(['ls-remote', '--', remote, ref, ...retiredRefs]);
 	if (!listed.ok) {
 		return {
 			ok: false,
@@ -54,6 +49,7 @@ export const remoteUnitStanding = async (
 			.map(([sha = '', name = '']) => [name, sha] as const),
 	);
 	const tip = tips.get(ref);
+	const retiredRef = retiredRefs.find((each) => tips.has(each));
 	const retiredTip =
 		retiredRef === undefined ? undefined : tips.get(retiredRef);
 	return {

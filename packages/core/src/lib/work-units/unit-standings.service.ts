@@ -6,7 +6,10 @@
  * `reclaim:orphans`, `work status`, the overview, `work retire` and the
  * reaper — reads this, so they cannot disagree about a unit.
  */
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedPublicationRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import { workUnitIdentityOf } from '../development-policy/git-guard-unit';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { listUnitLeases, removeUnitLease } from './unit-lease.store';
@@ -40,15 +43,21 @@ const publishedElsewhere = (
 	policy: IResolvedDevelopmentPolicy,
 	sha: string,
 ): boolean => {
-	const prefix = shortName(policy.branches.publicationRefPrefix);
-	if (prefix.length === 0) return false;
+	// Every owned namespace's publications hold it, not only the current's.
+	const patterns = ownedPublicationRefPrefixes(policy.branches)
+		.map(shortName)
+		.filter((prefix) => prefix.length > 0)
+		.flatMap((prefix) => [
+			`refs/heads/${prefix}**`,
+			`refs/remotes/**/${prefix}**`,
+		]);
+	if (patterns.length === 0) return false;
 	const holders = readGit(root, [
 		'for-each-ref',
 		'--contains',
 		sha,
 		'--format=%(refname)',
-		`refs/heads/${prefix}**`,
-		`refs/remotes/**/${prefix}**`,
+		...patterns,
 	]);
 	return holders !== undefined && holders.length > 0;
 };

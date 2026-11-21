@@ -26,7 +26,7 @@ const policy = resolveDevelopmentPolicy({
 });
 
 const OLD = 'delendai/wip/claude-opus-5-5/implement/f00808-S2-g1/guards';
-const NEW = 'wip/claude-opus-5-5/implement/f00808-S2-g1/guards';
+const NEW = 'wip/implement/claude-opus-5-5/f00808-S2/guards';
 
 describe('guard namespaces in a transition', () => {
 	it('[<5ms] reads the prefix from the policy', () => {
