@@ -1,0 +1,26 @@
+---
+import { defaultLang, proposalGlossaryByLang, type Lang } from '#I18N/index';
+
+type Status =
+	| 'ready'
+	| 'in-progress'
+	| 'review'
+	| 'done'
+	| 'paused'
+	| 'blocked'
+	| 'retired';
+
+interface Props {
+	status: Status;
+	lang?: Lang;
+}
+
+const { status, lang = defaultLang } = Astro.props;
+const key = status === 'in-progress' ? 'in_progress' : status;
+const text = proposalGlossaryByLang[lang].statuses[key];
+---
+
+<span class={`proposal-badge proposal-badge--${status}`} title={text.long}>
+	<span class="proposal-badge__dot" aria-hidden="true"></span>
+	<span>{text.label}</span>
+</span>

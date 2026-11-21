@@ -1,0 +1,341 @@
+/**
+ * The development policy, asked about one git operation.
+ *
+ * Guidance can be ignored. An adopter project on `shared-checkout-merge`
+ * had its agent commit straight to `develop` and create worktrees and
+ * `agent/*` branches by hand, and nothing in git stopped either. A hook
+ * that asks this judge stops them for every agent and every human, whatever
+ * tool they use. Every refusal is a reading of the resolved policy; with
+ * no policy, nothing is refused.
+ */
+import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import type {
+	IGitGuardActor,
+	IGitGuardVerdict,
+	IGuardedGitOperation,
+	IUnitRefFacts,
+} from '../contracts/interfaces/git-guard.interface';
+import { takeInOf } from './branch-rules';
+import { briefWorkModel } from './declare-workflow';
+import { describeWorkIsolation } from './work-isolation';
+import { RESCUE_COMMAND } from '../contracts/constants/work-rescue.constant';
+import {
+	looseEditsRefusal,
+	sharedCheckoutStaysClean,
+} from './shared-checkout-clean';
+import {
+	insideNamespaces,
+	policyNamespaces,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
+import {
+	judgeNamespaceShape,
+	refuseLosingDeletion,
+	refuseBorrowedAuthor,
+	refuseUnshapedPublication,
+	refuseUnshapedWorkRef,
+} from './git-guard-shape';
+import { refuseLiveUnitDeletion } from './git-guard-live-unit';
+import { refuseSecondRefOfUnit } from './git-guard-unit';
+import { refuseReviewOutsideScope } from './git-guard-review-scope';
+
+const allow = (reason: string): IGitGuardVerdict => ({
+	refused: false,
+	reason,
+});
+
+const namespaceList = (policy: IResolvedDevelopmentPolicy): string => {
+	const { exact, prefixes } = policyNamespaces(policy);
+	return [
+		...exact.map((name) => `\`${name}\``),
+		...prefixes.map((p) => `\`${p}*\``),
+	].join(', ');
+};
+
+const judgeCommit = (
+	policy: IResolvedDevelopmentPolicy,
+	branch: string | undefined,
+	isMerge: boolean,
+	inMainWorktree: boolean,
+	founding = false,
+): IGitGuardVerdict => {
+	if (branch === undefined) return allow('a detached HEAD is not a branch.');
+	if (isMerge) return allow('a merge is how an integration branch moves.');
+	// A repository with no commit has nothing to branch a unit from and no
+	// base for a pull request: its first commit is the only way to start.
+	if (founding && branch === policy.branches.integration) {
+		return allow(
+			'the founding commit: the integration branch has no commit for a unit to start from.',
+		);
+	}
+	const takeIn = takeInOf(policy, branch);
+	// A `direct` branch takes an agent's commits like any other.
+	if (takeIn === 'direct') {
+		return allow(`\`${branch}\` takes commits directly (its branch rule).`);
+	}
+	if (
+		branch === policy.branches.integration &&
+		(!policy.persistence.allowsDirectIntegrationCommit ||
+			takeIn === 'pull-request')
+	) {
+		return {
+			refused: true,
+			reason: `the \`${policy.profile}\` development profile forbids committing directly to \`${branch}\`, the integration branch: no agent commits there, whatever its model or host.`,
+			remedy: `${describeWorkIsolation(policy).rule} Set DELENDAI_AGENT_ID to your exact model id so the work ref carries it. A person who owns this checkout can allow their own commits with \`development.guard.unknownActor: "person"\`.`,
+		};
+	}
+	if (takeIn === 'pull-request') {
+		return {
+			refused: true,
+			reason: `\`${branch}\` takes in work by pull request (its branch rule): no agent commits there directly.`,
+			remedy: `${describeWorkIsolation(policy).rule} Land the work through a pull request into \`${branch}\`.`,
+		};
+	}
+	if (policy.workspace.pinnedCheckout && !insideNamespaces(policy, branch)) {
+		return {
+			refused: true,
+			reason: `\`${branch}\` is outside the branches the \`${policy.profile}\` development profile uses (${namespaceList(policy)}).`,
+			remedy: describeWorkIsolation(policy).rule,
+		};
+	}
+	// The pinned checkout is the one every other agent reads. Under a
+	// pinned policy it stays on the integration branch, and work refs are
+	// WRITTEN there (`commit-tree`, HEAD untouched), never checked out and
+	// committed on. Allowing this is what let a work branch be created by
+	// hand, committed to and pushed with every gate green. In a linked
+	// worktree under `agentWorktrees` the same commit IS the model.
+	if (
+		policy.workspace.pinnedCheckout &&
+		branch !== policy.branches.integration &&
+		inMainWorktree
+	) {
+		return {
+			refused: true,
+			reason: `the shared checkout is on \`${branch}\`, but the \`${policy.profile}\` development profile anchors it to \`${policy.branches.integration}\`.`,
+			remedy: `Return it with \`git switch ${policy.branches.integration}\` — your edits stay in the working tree — then run \`${RESCUE_COMMAND}\`, which keeps them under a ref and restores the shared checkout; take them from that ref into your unit's worktree (\`delendai work enter\`) and commit there. ${briefWorkModel(policy).land}`,
+		};
+	}
+	return allow(`\`${branch}\` is a branch the policy uses.`);
+};
+
+const judgeBranchCreate = (
+	policy: IResolvedDevelopmentPolicy,
+	ref: string,
+): IGitGuardVerdict => {
+	if (!ref.startsWith('refs/heads/')) {
+		return allow('only local branches are judged.');
+	}
+	const branch = ref.slice('refs/heads/'.length);
+	if (!policy.workspace.pinnedCheckout || insideNamespaces(policy, branch)) {
+		// Inside the WORK namespace the name is not free-form: the policy
+		// states its shape, and a ref that does not match it cannot be
+		// attributed to a proposal, a slice or a generation. Typing the
+		// name by hand is how `…-g1-cli-shape` and `…/visual-studio-code/…`
+		// ended up in the graph beside the convention (x00563 S3).
+		// Only where the policy pins the checkout: a profile that gives
+		// every agent its own worktree deliberately lets them name their
+		// branches, and this must not take that away.
+		if (policy.workspace.pinnedCheckout) {
+			const shapeRefusal = refuseUnshapedWorkRef(policy, ref, branch);
+			if (shapeRefusal !== undefined) return shapeRefusal;
+		}
+		return allow(`\`${branch}\` may be created under the policy.`);
+	}
+	return {
+		refused: true,
+		reason: `the \`${policy.profile}\` development profile does not create \`${branch}\`: branches are limited to ${namespaceList(policy)}.`,
+		remedy: describeWorkIsolation(policy).rule,
+	};
+};
+
+const judgePush = (
+	policy: IResolvedDevelopmentPolicy,
+	remoteRef: string,
+	deleting: boolean,
+	deletedTipKept: boolean | undefined,
+	unit?: IUnitRefFacts,
+	creating = false,
+): IGitGuardVerdict => {
+	if (!remoteRef.startsWith('refs/heads/')) {
+		return allow('only branches are judged.');
+	}
+	const branch = remoteRef.slice('refs/heads/'.length);
+	if (deleting) {
+		return (
+			refuseLosingDeletion(policy, branch, deletedTipKept) ??
+			allow(
+				'the deleted branch holds no commit that is not kept elsewhere.',
+			)
+		);
+	}
+	const protectedBranch =
+		branch === policy.branches.integration ||
+		branch === policy.branches.release;
+	// The forge cannot take a pull request into a branch it does not have:
+	// the push that creates it is how a new project's first commit lands.
+	if (protectedBranch && creating) {
+		return allow(
+			`\`${branch}\` is not on the forge yet: a pull request needs it to go into.`,
+		);
+	}
+	const takeIn = takeInOf(policy, branch);
+	if (takeIn === 'direct') {
+		return allow(`\`${branch}\` takes pushes directly (its branch rule).`);
+	}
+	if (
+		takeIn === 'pull-request' ||
+		(takeIn === undefined &&
+			protectedBranch &&
+			policy.integration.requiresPullRequest)
+	) {
+		if (creating) {
+			return allow(
+				`\`${branch}\` is not on the forge yet: a pull request needs it to go into.`,
+			);
+		}
+		return {
+			refused: true,
+			reason: `the \`${policy.profile}\` development profile integrates \`${branch}\` through pull requests, not pushes.`,
+			remedy: `Push a branch under \`${shortName(policy.branches.publicationRefPrefix)}\` and open a pull request into \`${branch}\`.`,
+		};
+	}
+	if (policy.workspace.pinnedCheckout && !insideNamespaces(policy, branch)) {
+		return {
+			refused: true,
+			reason: `\`${branch}\` is outside the branches the \`${policy.profile}\` development profile uses (${namespaceList(policy)}).`,
+			remedy: describeWorkIsolation(policy).rule,
+		};
+	}
+	if (policy.workspace.pinnedCheckout) {
+		// A work ref is judged for an agent as it is for a person: the
+		// push is the moment a scratch or misnamed ref reaches the remote.
+		const unshaped =
+			refuseUnshapedWorkRef(policy, remoteRef, branch, false) ??
+			refuseSecondRefOfUnit(policy, branch, unit) ??
+			refuseUnshapedPublication(policy, branch);
+		if (unshaped !== undefined) return unshaped;
+	}
+	return allow(`\`${branch}\` may be pushed under the policy.`);
+};
+
+/**
+ * An agent may not stash.
+ *
+ * `refs/stash` is one stack shared by every worktree of the repository.
+ * Work an agent pushes there belongs to nobody: another agent in another
+ * worktree can pop it into its own tree, `git stash clear` from anywhere
+ * deletes it, and nothing in the work model (claims, work refs,
+ * generations, publication) can see it. An agent that stashes to "tidy
+ * up" a checkout hides somebody's work where the only way back is luck.
+ */
+const judgeStash = (policy: IResolvedDevelopmentPolicy): IGitGuardVerdict => ({
+	refused: true,
+	reason: `an agent does not use \`git stash\` under the \`${policy.profile}\` development profile: \`refs/stash\` is one stack shared by every worktree of this repository, so what goes there is invisible to the work model and can be popped or cleared from anywhere.`,
+	remedy: `Keep the work where it is owned: commit it in your unit's worktree. ${describeWorkIsolation(policy).rule}`,
+});
+
+/**
+ * No agent commits anywhere while the shared checkout holds loose edits,
+ * under a policy that keeps it clean: an edit there belongs to no unit,
+ * and the next one to take files from it takes another agent's (x01003).
+ */
+const refuseLooseSharedCheckout = (
+	policy: IResolvedDevelopmentPolicy,
+	shared:
+		| { readonly root: string; readonly paths: readonly string[] }
+		| undefined,
+): IGitGuardVerdict | undefined => {
+	if (shared === undefined || shared.paths.length === 0) return undefined;
+	if (!sharedCheckoutStaysClean(policy)) return undefined;
+	return { refused: true, ...looseEditsRefusal(shared.root, shared.paths) };
+};
+
+/**
+ * Judge one git operation against the resolved policy.
+ *
+ * Only an agent is judged. The policy exists so agents that share a
+ * repository do not leave work behind or step on each other; it is not
+ * a limit on how a person uses their own repository. A person creates
+ * whatever branch they like, commits where they like and stashes when
+ * they like, and whatever the forge enforces (branch protection) is the
+ * repository owner's own rule, not delendai's. The actor is required, so
+ * every caller has to say who is acting.
+ */
+export const judgeGitOperation = (
+	policy: IResolvedDevelopmentPolicy | undefined,
+	operation: IGuardedGitOperation,
+	actor: IGitGuardActor,
+): IGitGuardVerdict => {
+	if (policy === undefined) {
+		return allow('no development policy is declared.');
+	}
+	if (actor.agentMarker === undefined) {
+		// The names inside delendai's own namespaces are not a person's
+		// choice either: the tools write them and every reader parses them.
+		// A host that declares no agent marker still gets its refs judged
+		// there (f00644), and a person's branches elsewhere stay free.
+		const unshaped = judgeNamespaceShape(policy, operation);
+		if (unshaped !== undefined) return unshaped;
+		return allow(
+			'a person is running git; the development policy governs agents.',
+		);
+	}
+	const verdict = judgeAgentOperation(policy, operation);
+	return verdict.refused
+		? {
+				...verdict,
+				reason: `${verdict.reason} (identified as an agent by \`${actor.agentMarker}\`)`,
+			}
+		: verdict;
+};
+
+/** How an agent's operation is judged: one entry per operation kind. */
+const AGENT_JUDGES: {
+	readonly [K in IGuardedGitOperation['kind']]: (
+		policy: IResolvedDevelopmentPolicy,
+		operation: Extract<IGuardedGitOperation, { kind: K }>,
+	) => IGitGuardVerdict;
+} = {
+	commit: (policy, operation) => {
+		const verdict =
+			refuseBorrowedAuthor(policy, operation) ??
+			refuseReviewOutsideScope(policy, operation) ??
+			judgeCommit(
+				policy,
+				operation.branch,
+				operation.isMerge,
+				operation.inMainWorktree ?? true,
+				operation.founding === true,
+			);
+		return verdict.refused
+			? verdict
+			: (refuseLooseSharedCheckout(policy, operation.sharedCheckout) ??
+					verdict);
+	},
+	'branch-create': (policy, operation) =>
+		judgeBranchCreate(policy, operation.ref),
+	push: (policy, operation) =>
+		judgePush(
+			policy,
+			operation.remoteRef,
+			operation.deleting,
+			operation.deletedTipKept,
+			operation.unit,
+			operation.creating === true,
+		),
+	stash: (policy) => judgeStash(policy),
+	'branch-delete': (policy, operation) =>
+		refuseLiveUnitDeletion(policy, operation) ??
+		allow('no unit is working on this branch.'),
+};
+
+const judgeAgentOperation = (
+	policy: IResolvedDevelopmentPolicy,
+	operation: IGuardedGitOperation,
+): IGitGuardVerdict =>
+	(
+		AGENT_JUDGES[operation.kind] as (
+			policy: IResolvedDevelopmentPolicy,
+			operation: IGuardedGitOperation,
+		) => IGitGuardVerdict
+	)(policy, operation);

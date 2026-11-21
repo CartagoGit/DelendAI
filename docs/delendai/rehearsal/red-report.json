@@ -1,0 +1,357 @@
+{
+	"finishedAt": "2026-11-13T00:58:46.876Z",
+	"leftovers": [],
+	"mode": "fast",
+	"ok": false,
+	"repository": "CartagoGit/DelendAI",
+	"runId": "r20261113-001246",
+	"scenarios": [
+		{
+			"expectations": [
+				{
+					"detail": "not merged: a",
+					"expectation": "merged: a",
+					"ok": false
+				},
+				{
+					"detail": "woke the integrator for a (#1917) at 2026-11-13T00:15:39.218Z",
+					"expectation": "no manual step",
+					"ok": false
+				},
+				{
+					"detail": "the integration branch never moved",
+					"expectation": "every integration tip started its push workflows",
+					"ok": false
+				},
+				{
+					"detail": "stopped: convertPullRequestToDraft failed: gh: CartagoGit does not have permission to convert the pull request PR_kwDOS6U0g88AAAABOyl0Hw to draft.",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "one-pr",
+			"integration": "delendai/rehearsal/r20261113-001246/one-pr-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1917
+			},
+			"reproduces": "F2+F7+F9",
+			"title": "One pull request lands on its own, and its merge is built and scanned"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "not merged: a, b",
+					"expectation": "merged: a, b",
+					"ok": false
+				},
+				{
+					"detail": "woke the integrator for a (#1918) at 2026-11-13T00:21:15.383Z; woke the integrator for b (#1919) at 2026-11-13T00:21:17.967Z; woke the integrator for a (#1918) at 2026-11-13T00:23:52.885Z; woke the integrator for b (#1919) at 2026-11-13T00:23:57.177Z",
+					"expectation": "no manual step",
+					"ok": false
+				},
+				{
+					"detail": "merged not reached in 360 s for a, b",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "non-overlapping",
+			"integration": "delendai/rehearsal/r20261113-001246/non-overlapping-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1918,
+				"b": 1919
+			},
+			"title": "Two pull requests in different sections both land with no waiting on each other"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "not merged: a, b",
+					"expectation": "merged: a, b",
+					"ok": false
+				},
+				{
+					"detail": "0 CI run(s) after the members' own",
+					"expectation": "one CI for the group a+b",
+					"ok": false
+				},
+				{
+					"detail": "woke the integrator for a (#1921) at 2026-11-13T00:27:55.025Z; woke the integrator for b (#1922) at 2026-11-13T00:27:59.739Z; woke the integrator for a (#1921) at 2026-11-13T00:30:34.953Z; woke the integrator for b (#1922) at 2026-11-13T00:30:39.365Z",
+					"expectation": "no manual step",
+					"ok": false
+				},
+				{
+					"detail": "merged not reached in 360 s for a, b",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "overlapping",
+			"integration": "delendai/rehearsal/r20261113-001246/overlapping-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1921,
+				"b": 1922
+			},
+			"reproduces": "F5",
+			"title": "Two pull requests in one section are built once, as a batch"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "never labelled",
+					"expectation": "a labelled culprit",
+					"ok": false
+				},
+				{
+					"detail": "not merged: b",
+					"expectation": "merged: b",
+					"ok": false
+				},
+				{
+					"detail": "woke the integrator for a (#1923) at 2026-11-13T00:34:13.836Z; woke the integrator for a (#1923) at 2026-11-13T00:36:47.994Z",
+					"expectation": "no manual step",
+					"ok": false
+				},
+				{
+					"detail": "labelled not reached in 360 s for a",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "red-batch",
+			"integration": "delendai/rehearsal/r20261113-001246/red-batch-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1923,
+				"b": 1924
+			},
+			"title": "A red batch names its culprit and lands the rest"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "not merged: a",
+					"expectation": "merged: a",
+					"ok": false
+				},
+				{
+					"detail": "woke the integrator for a (#1925) at 2026-11-13T00:40:47.595Z; woke the integrator for a (#1925) at 2026-11-13T00:43:20.042Z",
+					"expectation": "no manual step",
+					"ok": false
+				},
+				{
+					"detail": "merged not reached in 360 s for a",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "derived-conflict",
+			"integration": "delendai/rehearsal/r20261113-001246/derived-conflict-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1925
+			},
+			"title": "A conflict only in a derived file is regenerated and the pull request lands"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "labelled",
+					"expectation": "a labelled needs-update",
+					"ok": true
+				},
+				{
+					"detail": "no flip",
+					"expectation": "a labels stable",
+					"ok": true
+				},
+				{
+					"detail": "not merged: a",
+					"expectation": "merged: a",
+					"ok": false
+				},
+				{
+					"detail": "none",
+					"expectation": "no manual step",
+					"ok": true
+				},
+				{
+					"detail": "stopped: convertPullRequestToDraft failed: gh: CartagoGit does not have permission to convert the pull request PR_kwDOS6U0g88AAAABOy5p4Q to draft.",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "authored-conflict",
+			"integration": "delendai/rehearsal/r20261113-001246/authored-conflict-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1926
+			},
+			"reproduces": "F3+F4",
+			"title": "An authored conflict is labelled once, never flips, and lands after the author resolves it"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "no CI started for c4bd54ae06ca",
+					"expectation": "a heads built",
+					"ok": false
+				},
+				{
+					"detail": "none",
+					"expectation": "no manual step",
+					"ok": true
+				}
+			],
+			"id": "bot-head",
+			"integration": "delendai/rehearsal/r20261113-001246/bot-head-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1928
+			},
+			"reproduces": "F1",
+			"title": "A head the workflow token pushed is built by the forge"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "all merged",
+					"expectation": "merged: a",
+					"ok": true
+				},
+				{
+					"detail": "none",
+					"expectation": "no manual step",
+					"ok": true
+				}
+			],
+			"id": "develop-moving",
+			"integration": "delendai/rehearsal/r20261113-001246/develop-moving-integration",
+			"ok": true,
+			"pulls": {
+				"a": 1929
+			},
+			"title": "The integration branch moves in a disjoint section mid-flight and the pull request still lands"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "no session receiver ran: nobody was told",
+					"expectation": "sessions notified",
+					"ok": false
+				}
+			],
+			"id": "host-offline",
+			"integration": "delendai/rehearsal/r20261113-001246/host-offline-integration",
+			"ok": false,
+			"pulls": {},
+			"reproduces": "F8",
+			"title": "A subscribed session is told of every merge and failure whether or not the host was up"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "no head was written with the workflow token",
+					"expectation": "a heads built",
+					"ok": false
+				},
+				{
+					"detail": "none",
+					"expectation": "no manual step",
+					"ok": true
+				},
+				{
+					"detail": "token-open: the workflow token opened no pull request for a",
+					"expectation": "step",
+					"ok": false
+				}
+			],
+			"id": "automation-opened",
+			"integration": "delendai/rehearsal/r20261113-001246/automation-opened-integration",
+			"ok": false,
+			"pulls": {
+				"a": 1930
+			},
+			"reproduces": "F1b",
+			"title": "A pull request a workflow opens with the workflow token is built"
+		},
+		{
+			"expectations": [
+				{
+					"detail": "the integration branch never moved",
+					"expectation": "every integration tip started its push workflows",
+					"ok": false
+				}
+			],
+			"id": "promotion",
+			"integration": "delendai/rehearsal/r20261113-001246/promotion-integration",
+			"ok": false,
+			"pulls": {},
+			"title": "After a green integration branch, the promotion is opened and built"
+		}
+	],
+	"secretHits": [
+		"log scan failed: the log of run 43340073138 could not be read: failed to get run log: log not found"
+	],
+	"startedAt": "2026-11-13T00:12:46.910Z",
+	"targets": [
+		{
+			"detail": "2 of 12 pull request(s) merged",
+			"id": "pr-to-merged-p50",
+			"ok": true,
+			"threshold": 15,
+			"unit": "min",
+			"value": 0.5833333333333334
+		},
+		{
+			"detail": "10 pull request(s) never merged",
+			"id": "pr-to-merged-p95",
+			"ok": false,
+			"threshold": 30,
+			"unit": "min"
+		},
+		{
+			"detail": "0 CI run(s) after the members' own",
+			"id": "one-ci-per-overlapping-group",
+			"ok": false,
+			"threshold": 1,
+			"unit": "run",
+			"value": 0
+		},
+		{
+			"detail": "13 wake(s) or other step(s) a person would have taken",
+			"id": "zero-manual-steps",
+			"ok": false,
+			"threshold": 0,
+			"unit": "step",
+			"value": 13
+		},
+		{
+			"detail": "no session receiver ran: no notification can be timed",
+			"id": "session-notified-p95",
+			"ok": false,
+			"threshold": 10,
+			"unit": "s"
+		},
+		{
+			"detail": "3 of 7 merged tip(s) started a scan",
+			"id": "integration-branch-scanned",
+			"ok": false,
+			"threshold": 1,
+			"unit": "share",
+			"value": 0.42857142857142855
+		},
+		{
+			"detail": "1 hit(s)",
+			"id": "no-secrets-in-logs",
+			"ok": false,
+			"threshold": 0,
+			"unit": "hit",
+			"value": 1
+		}
+	],
+	"tip": "fbaa7b8a64319eb020df7543f81c5043147b7caf"
+}
