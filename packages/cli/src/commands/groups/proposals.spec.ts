@@ -3,6 +3,10 @@
  * (26 commands) and a representative sample of flag→tool mappings,
  * including the positional + required-flag validations. Recording-stub ctx.
  */
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
@@ -51,14 +55,14 @@ describe('proposals group (f00046 S7)', async () => {
 		vi.unstubAllEnvs();
 	});
 
-	it('exposes 26 commands, all prefixed "proposals "', async () => {
+	it('[<20ms] exposes 26 commands, all prefixed "proposals "', async () => {
 		expect(proposalsCommands).toHaveLength(26);
 		for (const command of proposalsCommands) {
 			expect(command.name.startsWith('proposals ')).toBe(true);
 		}
 	});
 
-	it('auto-work maps --mode to persist', async () => {
+	it('[<20ms] auto-work maps --mode to persist', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals auto-work').run(['--mode=commit-and-push'], ctx);
 		expect(calls[0]).toEqual({
@@ -67,7 +71,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('transition needs id + to + --reason', async () => {
+	it('[<20ms] transition needs id + to + --reason', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find('proposals transition').run(
 			['f1', 'done'],
@@ -84,7 +88,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('transition to review names the implementer, from --agent or the environment', async () => {
+	it('[<20ms] transition to review names the implementer, from --agent or the environment', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals transition').run(
 			['x1', 'review', '--reason=done', '--agent=claude-sonnet-5-5'],
@@ -104,7 +108,7 @@ describe('proposals group (f00046 S7)', async () => {
 		expect(calls[1]?.args).toMatchObject({ agent: 'glm-5' });
 	});
 
-	it('transition to review without an agent refuses and names the missing input', async () => {
+	it('[<20ms] transition to review without an agent refuses and names the missing input', async () => {
 		const { ctx, calls } = buildStubContext();
 		const refused = await find('proposals transition').run(
 			['x1', 'review', '--reason=done'],
@@ -116,7 +120,7 @@ describe('proposals group (f00046 S7)', async () => {
 		expect(calls).toHaveLength(0);
 	});
 
-	it('transition and close-slice pass an explicit --checkout through', async () => {
+	it('[<20ms] transition and close-slice pass an explicit --checkout through', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals transition').run(
 			['x1', 'ready', '--reason=r', '--checkout=/units/a'],
@@ -134,14 +138,14 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('close-slice refusal names the missing positional', async () => {
+	it('[<20ms] close-slice refusal names the missing positional', async () => {
 		const { ctx } = buildStubContext();
 		const refused = await find('proposals close-slice').run(['x1'], ctx);
 		expect(refused.code).toBe(EXIT_CODE.USAGE);
 		expect(refused.error).toContain('<sliceId>');
 	});
 
-	it('a lock claim belongs to the agent, not to this short-lived process', async () => {
+	it('[<20ms] a lock claim belongs to the agent, not to this short-lived process', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals lock').run(
 			['--action=claim', '--task=t1', '--files=x.ts'],
@@ -155,7 +159,7 @@ describe('proposals group (f00046 S7)', async () => {
 		expect(calls[1]?.args).not.toHaveProperty('holder');
 	});
 
-	it('close-slice maps two positionals', async () => {
+	it('[<20ms] close-slice maps two positionals', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals close-slice').run(['f1', 'S2'], ctx);
 		expect(calls[0]).toEqual({
@@ -164,7 +168,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('lock maps action + task→task_id + files', async () => {
+	it('[<20ms] lock maps action + task→task_id + files', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals lock').run(
 			['--action=claim', '--task=t1', '--agent=a', '--files=x.ts,y.ts'],
@@ -182,7 +186,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('delegate requires taskId + slot + files', async () => {
+	it('[<20ms] delegate requires taskId + slot + files', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find('proposals delegate').run(['t1'], ctx);
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
@@ -202,7 +206,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('continue claims for the agent, held by the agent, not by this process', async () => {
+	it('[<20ms] continue claims for the agent, held by the agent, not by this process', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals continue').run(
 			['x1', '--mode=claim', '--slice=S1', '--agent=Claude-Sonnet-5-5'],
@@ -222,7 +226,7 @@ describe('proposals group (f00046 S7)', async () => {
 		expect(calls[1]?.args).toEqual({ proposalId: 'x1', mode: 'plan' });
 	});
 
-	it('state-repair defaults to dry-run, --execute switches mode', async () => {
+	it('[<20ms] state-repair defaults to dry-run, --execute switches mode', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals state-repair').run([], ctx);
 		expect(calls[0]?.args).toEqual({ mode: 'dry-run' });
@@ -230,7 +234,7 @@ describe('proposals group (f00046 S7)', async () => {
 		expect(calls[1]?.args).toEqual({ mode: 'execute' });
 	});
 
-	it('plan requires a --json slices array', async () => {
+	it('[<20ms] plan requires a --json slices array', async () => {
 		const { ctx, calls } = buildStubContext();
 		const missing = await find('proposals plan').run([], ctx);
 		expect(missing.code).toBe(EXIT_CODE.USAGE);
@@ -244,7 +248,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('review carries the delivering commit and the approval evidence (x00646)', async () => {
+	it('[<20ms] review carries the delivering commit and the approval evidence (x00646)', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals review').run(
 			[
@@ -279,7 +283,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('review sends no evidence with a change request', async () => {
+	it('[<20ms] review sends no evidence with a change request', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals review').run(
 			[
@@ -302,7 +306,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it('review-queue maps --proposal, --limit and --agent', async () => {
+	it('[<20ms] review-queue maps --proposal, --limit and --agent', async () => {
 		const { ctx, calls } = buildStubContext();
 		await find('proposals review-queue').run(
 			['--proposal=x00001', '--limit=5', '--agent=glm-5.3-max'],
@@ -314,7 +318,7 @@ describe('proposals group (f00046 S7)', async () => {
 		});
 	});
 
-	it.each([
+	const flagMappings = [
 		['proposals board', [], 'delendai_proposals_proposal_board', {}],
 		['proposals health', [], 'delendai_proposals_state_health', {}],
 		[
@@ -405,14 +409,98 @@ describe('proposals group (f00046 S7)', async () => {
 				slices: [{ id: 'S1' }],
 			},
 		],
-	] as const)(
-		'%s maps its flags onto its tool',
+		[
+			'proposals create',
+			[
+				'--title=T',
+				'--why=W',
+				'--non-goals=["a, b","c"]',
+				'--slices=[{"sliceId":"S1","files":["f.ts"],"acceptance":["x.spec.ts"]}]',
+			],
+			'delendai_proposals_create_proposal',
+			{
+				title: 'T',
+				why: 'W',
+				nonGoals: ['a, b', 'c'],
+				slices: [
+					{
+						sliceId: 'S1',
+						files: ['f.ts'],
+						acceptance: ['x.spec.ts'],
+					},
+				],
+			},
+		],
+	] as const;
+
+	it.each(flagMappings)(
+		'[<20ms] %s maps its flags onto its tool',
 		async (name, args, tool, expected) => {
 			const { ctx, calls } = buildStubContext();
 			await find(name).run([...args], ctx);
 			expect(calls[0]).toEqual({ tool, args: expected });
 		},
 	);
+
+	it('[<20ms] proposals create reads the full input from --from and lets flags win', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'proposals-create-'));
+		const file = join(dir, 'input.json');
+		writeFileSync(
+			file,
+			JSON.stringify({
+				title: 'File title',
+				why: 'file why',
+				nonGoals: ['n1'],
+				slices: [
+					{
+						sliceId: 'S1',
+						files: ['a.ts'],
+						acceptance: ['a.spec.ts'],
+					},
+				],
+			}),
+		);
+		const { ctx, calls } = buildStubContext();
+		await find('proposals create').run(
+			[`--from=${file}`, '--why=flag why'],
+			ctx,
+		);
+		rmSync(dir, { recursive: true, force: true });
+		expect(calls[0]).toEqual({
+			tool: 'delendai_proposals_create_proposal',
+			args: {
+				title: 'File title',
+				why: 'flag why',
+				nonGoals: ['n1'],
+				slices: [
+					{
+						sliceId: 'S1',
+						files: ['a.ts'],
+						acceptance: ['a.spec.ts'],
+					},
+				],
+			},
+		});
+	});
+
+	it('[<20ms] proposals create refuses an unreadable --from file', async () => {
+		const { ctx, calls } = buildStubContext();
+		const result = await find('proposals create').run(
+			['--from=/nonexistent/input.json'],
+			ctx,
+		);
+		expect(calls).toHaveLength(0);
+		expect(result.code).not.toBe(EXIT_CODE.OK);
+	});
+
+	it('[<20ms] proposals create takes a plain --non-goals string as one goal', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals create').run(
+			['--title=T', '--non-goals=just one'],
+			ctx,
+		);
+		expect(calls[0]?.args).toEqual({ title: 'T', nonGoals: ['just one'] });
+	});
 
 	it.each([
 		'proposals create',
@@ -421,7 +509,7 @@ describe('proposals group (f00046 S7)', async () => {
 		'proposals diagnose',
 		'proposals force-transition',
 		'proposals reconcile-folder',
-	])('%s calls nothing without what it needs', async (name) => {
+	])('[<20ms] %s calls nothing without what it needs', async (name) => {
 		const { ctx, calls } = buildStubContext();
 		const result = await find(name).run([], ctx);
 		expect(calls).toHaveLength(0);
