@@ -2,7 +2,11 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join, matchesGlob, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vitest/config';
+import { guardFullSuite } from './tools/scripts/lib/agent-full-suite-guard.ts';
 import { sharedSetupFiles, sharedTestOptions } from './vitest.shared.ts';
+
+// An agent runs tests through `delendai work prove`, never the whole suite.
+guardFullSuite();
 
 const workspaceRoot = dirname(fileURLToPath(import.meta.url));
 

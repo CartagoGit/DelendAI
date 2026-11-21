@@ -36,6 +36,7 @@ edited there.
 
 ## Rules that bite
 
+- Tests run through `delendai work prove` and never the whole suite: name the spec files you touched, or let `work prove` select them. Reviewers and implementers alike: an unfiltered `vitest run` is refused for agents.
 - A refused `enter` prints no path. Do not continue in the shared checkout.
 - Never edit the shared checkout. While it holds loose edits every work command and
   commit refuses; `rescue` keeps them under a ref and restores it.

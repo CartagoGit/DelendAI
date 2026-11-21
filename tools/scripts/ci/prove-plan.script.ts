@@ -44,6 +44,7 @@ import {
 	declaredBranches,
 	declaredIntegrationRef,
 } from '../lib/declared-branches';
+import { SANCTIONED_SUITE_ENV } from '../lib/agent-full-suite-guard';
 import { CHANGED_FILES_ENV } from '../lib/changed-files-scope';
 import {
 	changedSince as changedWithDeletionsSince,
@@ -342,6 +343,7 @@ const runTogether = async (
 						env: {
 							...process.env,
 							VITEST_CHANGED_RUN: 'true',
+							...SANCTIONED_SUITE_ENV,
 							...(changedFiles.length > 0
 								? {
 										[CHANGED_FILES_ENV]:
@@ -466,7 +468,11 @@ const step = (label: string, command: readonly string[]): boolean => {
 		stdio: ['ignore', 'pipe', 'pipe'],
 		encoding: 'utf8',
 		maxBuffer: Number.POSITIVE_INFINITY,
-		env: { ...process.env, VITEST_CHANGED_RUN: 'true' },
+		env: {
+			...process.env,
+			VITEST_CHANGED_RUN: 'true',
+			...SANCTIONED_SUITE_ENV,
+		},
 	});
 	process.stderr.write(result.stderr ?? '');
 	const ok = result.status === 0;

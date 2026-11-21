@@ -21,6 +21,7 @@ any host. Judge each change by this order:
 - **Efficient and fast.** Check only what the change affects (tests, lints
   and types) and measure before and after (CPU, disk, time). Never saturate
   the machine.
+- **Tests.** Tests run through `delendai work prove` and never the whole suite: name the spec files you touched, or let `work prove` select them.
 - **Robust.** No work is lost or mixed between agents. Every unit ends,
   and nothing waits forever.
 - **Cheap in tokens.** Short answers, lazy context. Count tokens per
