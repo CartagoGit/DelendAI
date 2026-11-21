@@ -24,6 +24,7 @@ import { trainMembers } from '../decisions/culprit.helper';
 import { overlapBetween, staleAgainstTip } from '../decisions/overlap.helper';
 import type { IChangeFootprint } from '../decisions/overlap.interface';
 import { whyNotReady } from '../decisions/readiness.helper';
+import { settleAuthored } from './land-authored-conflict.helper';
 import { settleDrafts } from './land-batch-draft.helper';
 import { openBatch as assembleBatch } from './land-batch-assembly.helper';
 import {
@@ -38,11 +39,7 @@ import {
 } from './land-batch-record.helper';
 import { LAND_LABEL_CULPRIT, LAND_LABEL_NEEDS_UPDATE } from './land.constant';
 import { mergeCertifiedBatch } from './land-batch-merge.helper';
-import {
-	conflictReason,
-	needsUpdateComment,
-	reconcileLabels,
-} from './land-labels.helper';
+import { needsUpdateComment, reconcileLabels } from './land-labels.helper';
 import { repairReadiness, settleRepairsFirst } from './land-revert.helper';
 import { closeRedBatch, markRedBatch } from './land-verdict.helper';
 import type {
@@ -246,9 +243,12 @@ export const landPass = async (deps: ILandDeps): Promise<ILandReport> => {
 		}
 		const conflict = git.conflictOf(pr, tip);
 		if (conflict === 'authored') {
-			const reason = conflictReason(git, pr, tip);
-			why(pr.number, `needs update: ${reason}`);
-			needsUpdate(pr, reason);
+			await settleAuthored({
+				deps,
+				pr,
+				tip,
+				report: { why, needsUpdate },
+			});
 			continue;
 		}
 		candidates.push({ pr, own: git.footprint(pr), conflict });
