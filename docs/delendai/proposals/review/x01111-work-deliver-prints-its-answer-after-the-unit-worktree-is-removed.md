@@ -2,14 +2,14 @@
 id: x01111
 title: "Work deliver prints its answer after the unit worktree is removed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: b918ccb9-29d3-4efd-8cbb-53ccd767e85a
-last-correlation-id: b918ccb9-29d3-4efd-8cbb-53ccd767e85a
-last-transition-from: review
-last-transition-at: 2026-11-21T04:38:11.819Z
+last-transition-id: ebbafd98-56dd-49a2-a2e0-e786c247777d
+last-correlation-id: ebbafd98-56dd-49a2-a2e0-e786c247777d
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T04:45:39.670Z
 ---
 
 # x01111 — Work deliver prints its answer after the unit worktree is removed
@@ -51,6 +51,9 @@ Seen 3 times: the last submit removes the unit worktree, then the CLI lazily imp
 - acceptance:
   - "[<20ms] packages/cli/src/commands/work.command.spec.ts: a deliver or publish run from a unit worktree continues from the shared checkout root"
   - "[<20ms] packages/cli/src/commands/work.command.spec.ts: a run outside a linked worktree keeps its directory"
+- shipped-in: `e43263c58364`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
