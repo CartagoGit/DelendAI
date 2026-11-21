@@ -2,10 +2,14 @@
 id: x01106
 title: "An unowned red never reverts an innocent merge and the perf e2e fits its budget"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-21
+last-transition-id: ad5873db-16f7-466d-9639-9a692b910ee0
+last-correlation-id: ad5873db-16f7-466d-9639-9a692b910ee0
+last-transition-from: ready
+last-transition-at: 2026-11-21T01:45:11.200Z
 ---
 
 # x01106 — An unowned red never reverts an innocent merge and the perf e2e fits its budget
