@@ -79,6 +79,16 @@ jobs:
                   GH_TOKEN: ${{ github.token }}
                   RUN: ${{ github.run_id }}
               run: >-
-                  gh issue create --repo "${GITHUB_REPOSITORY}"
-                  --title "Test budgets: a calibration from develop's last CI runs is ready"
-                  --body "The patch is the artifact test-budget-calibration of run ${RUN}: git apply it on a branch."
+                  bun tools/scripts/ci/upsert-issue.script.ts
+                  --title="Test budgets: a calibration from develop's last CI runs is ready"
+                  --body="The patch is the artifact test-budget-calibration of run ${RUN}: git apply it on a branch."
+
+            - name: Close the calibration issue once nothing is left to change
+              if: ${{ steps.patch.outputs.changed != '1' }}
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  RUN: ${{ github.run_id }}
+              run: >-
+                  bun tools/scripts/ci/upsert-issue.script.ts
+                  --title="Test budgets: a calibration from develop's last CI runs is ready"
+                  --close="Run ${RUN} found no budget to change: the calibration is applied."
