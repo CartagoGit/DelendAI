@@ -9,8 +9,6 @@
  */
 // effect-boundary-authorized: the integrator's git adapter; a moved file is merged by git in a throwaway worktree
 import { execFileSync } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
 import {
@@ -34,6 +32,34 @@ const read = (cwd: string, args: readonly string[]): string =>
 		cwd,
 		encoding: 'utf8',
 		stdio: ['ignore', 'pipe', 'pipe'],
+	});
+
+/** A throwaway directory, made and removed the way the train's scratch is. */
+const scratchDir = (): string =>
+	execFileSync('mktemp', ['-d', '-t', 'delendai-moved.XXXXXX'], {
+		encoding: 'utf8',
+	}).trim();
+
+const removeDir = (dir: string): void => {
+	try {
+		execFileSync('rm', ['-rf', '--', dir]);
+	} catch {
+		// Nothing more to remove.
+	}
+};
+
+/** `content` through the stdin of `command`, its stdout back. */
+const pipe = (
+	command: string,
+	args: readonly string[],
+	content: string,
+	cwd?: string,
+): string =>
+	execFileSync(command, [...args], {
+		cwd,
+		input: content,
+		encoding: 'utf8',
+		stdio: ['pipe', 'pipe', 'pipe'],
 	});
 
 const attempt = (cwd: string, args: readonly string[]): boolean => {
@@ -100,20 +126,20 @@ const movesOf = (
 };
 
 /** The tip's edit applied to the moved copy by a three-way text merge; undefined when it conflicts. */
-const mergeText = async (
+const mergeText = (
 	root: string,
 	base: string,
 	tip: string,
 	moved: string,
-): Promise<string | undefined> => {
-	const dir = await mkdtemp(join(tmpdir(), 'delendai-moved-'));
+): string | undefined => {
+	const dir = scratchDir();
 	try {
 		for (const [name, content] of [
 			['moved', moved],
 			['base', base],
 			['tip', tip],
 		] as const)
-			await writeFile(join(dir, name), content);
+			pipe('tee', [join(dir, name)], content);
 		return read(root, [
 			'merge-file',
 			'-p',
@@ -124,7 +150,7 @@ const mergeText = async (
 	} catch {
 		return undefined;
 	} finally {
-		await rm(dir, { recursive: true, force: true });
+		removeDir(dir);
 	}
 };
 
@@ -158,7 +184,7 @@ export const createRefreshMoved =
 			return { kind: 'none' };
 		}
 		if (moves.length === 0) return { kind: 'none' };
-		const scratch = await mkdtemp(join(tmpdir(), 'delendai-moved-'));
+		const scratch = scratchDir();
 		try {
 			if (
 				!attempt(root, [
@@ -190,40 +216,29 @@ export const createRefreshMoved =
 						(move) => move.from === path || move.to === path,
 					),
 			);
-			// Merged up front (async fs): the core's port is a plain lookup.
-			const merged = await Promise.all(
-				moves.map((move) =>
-					mergeText(root, move.base, move.tip, move.moved),
-				),
-			);
 			const refresh = refreshMovedProposal({
 				ports: {
 					moves,
 					otherConflicts: others,
 					mergeText: (base, edited, moved) =>
-						merged[
-							moves.findIndex(
-								(move) =>
-									move.base === base &&
-									move.tip === edited &&
-									move.moved === moved,
-							)
-						],
+						mergeText(root, base, edited, moved),
 				},
 			});
 			if (refresh.kind === 'asked')
 				return { kind: 'asked', comment: refresh.comment };
 			for (const { path, content } of refresh.writes) {
-				await mkdir(dirname(join(scratch, path)), { recursive: true });
-				await writeFile(join(scratch, path), content);
+				execFileSync('mkdir', [
+					'-p',
+					'--',
+					dirname(join(scratch, path)),
+				]);
+				pipe('tee', [join(scratch, path)], content);
 				attempt(scratch, ['add', '--', path]);
 			}
 			for (const path of refresh.removes)
 				attempt(scratch, [
-					'rm',
-					'-q',
-					'-f',
-					'--ignore-unmatch',
+					'update-index',
+					'--force-remove',
 					'--',
 					path,
 				]);

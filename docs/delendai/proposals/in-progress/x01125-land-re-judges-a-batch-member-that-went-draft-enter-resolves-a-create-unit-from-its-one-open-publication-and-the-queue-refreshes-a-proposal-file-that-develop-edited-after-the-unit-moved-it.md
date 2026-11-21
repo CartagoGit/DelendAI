@@ -67,6 +67,7 @@ Three frictions of the land queue and unit entry seen on 2026-11-21 are removed:
 - **Files**: `packages/core/src/cli.ts`, `packages/core/src/lib/integration/land/land-bring-forward.helper.ts`, `packages/core/src/lib/integration/land/land-moved-proposal.interface.ts`, `packages/core/src/lib/integration/land/land.helper.ts`, `packages/core/src/lib/integration/land/land.interface.ts`, `packages/core/src/lib/integration/land/land-authored-conflict.helper.ts`, `packages/core/tests/src/lib/integration/land/land-authored-conflict.helper.spec.ts`, `plugins/integration/src/lib/contracts/interfaces/integration-pass.interface.ts`, `plugins/integration/src/lib/services/integration-pass.service.ts`, `plugins/integration/src/lib/services/land-refresh-moved.helper.ts`, `plugins/integration/tests/src/lib/services/land-refresh-moved.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
+- **DependsOn**: [S1, S3]
 - acceptance:
   - "land-refresh-moved.e2e.spec.ts: through landPass, a head that moved a proposal from in-progress/ to review/ while the tip edited the in-progress/ copy is refreshed by the queue path (the edit carried, the in-progress/ copy removed, pushed without force) and the pushed head merges the tip cleanly."
   - "land-refresh-moved.e2e.spec.ts: the same spec: when the edit does not apply, the pull request gets exactly one comment naming `work enter --generation <n>` and `git merge` and nothing is pushed."
