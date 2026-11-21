@@ -16,11 +16,11 @@
 - parseWorktreeList
 - gitStatus
 - gitChanged
+- parseDiffFilePaths
 - gitDiffStat
 - gitLog
 - gitBlame
 - gitShow
-- gitWorktreeList
 
 ## Depends on
 

@@ -9,7 +9,12 @@ import {
 	POLICY_GUIDANCE,
 	resolveTestPolicy,
 } from '@delendai/test-policy/public';
-import { checkRepo, createGitRunner, gitChanged } from '@delendai/git/public';
+import {
+	checkRepo,
+	createGitRunner,
+	gitChanged,
+	parseDiffFilePaths,
+} from '@delendai/git/public';
 import { buildNavEngine } from '@delendai/refactor/public';
 import { searchWorkspace } from '@delendai/search/public';
 
@@ -57,17 +62,6 @@ const normalizePath = (
 
 const stem = (filePath: string): string =>
 	basename(filePath, extname(filePath));
-
-const parseFilesFromGitDiff = (gitDiff: string): string[] =>
-	unique(
-		Array.from(
-			gitDiff.matchAll(
-				/^(?:diff --git a\/.+ b\/(.+)|\+\+\+ b\/(.+))$/gmu,
-			),
-		)
-			.map((match) => match[1] ?? match[2] ?? '')
-			.filter((filePath) => filePath.length > 0),
-	);
 
 const readSource = async (
 	reader: SafeWorkspaceReader,
@@ -261,7 +255,7 @@ const resolveAnchorFiles = async (
 	const normalizedFiles =
 		args.files?.map((file) => normalizePath(reader, file)) ?? [];
 	const diffFiles =
-		args.gitDiff === undefined ? [] : parseFilesFromGitDiff(args.gitDiff);
+		args.gitDiff === undefined ? [] : parseDiffFilePaths(args.gitDiff);
 	// A slice the caller named is the whole slice: the working tree's other
 	// edits belong to another change. It stands in only when nothing is named.
 	const named =
