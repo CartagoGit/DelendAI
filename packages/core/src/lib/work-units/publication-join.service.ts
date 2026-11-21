@@ -9,8 +9,7 @@
  * instead of asking the agent (work model, rule 7). A merge that
  * conflicts is refused with the files named and the unit left as it was.
  */
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import type { IPublicationJoin } from '../contracts/interfaces/publication-join.interface';
@@ -111,7 +110,14 @@ export const joinOpenPublication = async (request: {
 
 	// A unit with no worktree is merged in a throwaway one, and its ref is
 	// moved only if the ref still stands where it was read.
-	const scratch = await mkdtemp(join(tmpdir(), 'publication-join-'));
+	const top = runGitCommand(root, ['rev-parse', '--show-toplevel']);
+	if (!top.ok || top.out.length === 0) return NOTHING_TO_JOIN;
+	const parent = join(top.out, '.cache', 'delendai', 'join');
+	const scratch = join(
+		parent,
+		`${unitTip.out.slice(0, 12)}-${String(process.pid)}-${String(Date.now())}`,
+	);
+	await mkdir(parent, { recursive: true });
 	try {
 		const added = runGitCommand(root, [
 			'worktree',

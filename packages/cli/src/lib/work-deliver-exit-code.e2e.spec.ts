@@ -10,8 +10,6 @@ import { join, resolve } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { knownFailingNoteOf } from '@delendai/core/lib/integration/land/known-failing-note.helper';
-
 const ENTRY = resolve(__dirname, '..', 'index.ts');
 const UNIT_REF = 'delendai/wip/agent-a/implement/x00001-S1-g1/probe';
 const roots: string[] = [];
@@ -98,19 +96,15 @@ describe('the exit code of the work CLI', () => {
 
 	it('[<60000ms] work prove passes only a failure develop already knows, and names baseFailures', () => {
 		const { root, unit, base } = repo();
-		const note = knownFailingNoteOf({
-			namespace: 'delendai',
-			commit: base,
-			failingSpecs: ['a/old.spec.ts'],
-		});
+		// The note format is the product's: a JSON array of spec ids per commit.
 		git(
 			root,
 			'notes',
-			`--ref=${note.ref}`,
+			'--ref=refs/notes/delendai/known-failing',
 			'add',
 			'-m',
-			note.content,
-			note.commit,
+			JSON.stringify(['a/old.spec.ts']),
+			base,
 		);
 		const run = cli(unit, 'prove', ...UNIT_ARGS, '--json');
 		expect(run.code).toBe(0);
