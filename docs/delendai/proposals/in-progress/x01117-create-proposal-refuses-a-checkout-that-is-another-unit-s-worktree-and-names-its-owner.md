@@ -2,14 +2,14 @@
 id: x01117
 title: "create_proposal refuses a checkout that is another unit's worktree and names its owner"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-21
-last-transition-id: 656ae148-bb91-4171-bfe5-f40476581a30
-last-correlation-id: 656ae148-bb91-4171-bfe5-f40476581a30
-last-transition-from: in-progress
-last-transition-at: 2026-11-21T06:13:37.902Z
+last-transition-id: 7b622e15-3425-4533-b875-ef446d2d4729
+last-correlation-id: 7b622e15-3425-4533-b875-ef446d2d4729
+last-transition-from: review
+last-transition-at: 2026-11-21T06:48:51.300Z
 ---
 
 # x01117 — create_proposal refuses a checkout that is another unit's worktree and names its owner
