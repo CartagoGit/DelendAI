@@ -6,8 +6,6 @@
  * Core keeps no planning vocabulary, so a plugin provides the briefing, and a
  * project with none enters as it always did. A briefing never fails an entry.
  */
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 import {
 	BRIEFING_PATH_CAP,
@@ -21,6 +19,12 @@ import type {
 	ITaskBriefingProvider,
 } from '../contracts/interfaces/work-briefing.interface';
 
+import {
+	readSources,
+	repositoryImportGraph,
+} from '../import-graph/import-graph-cache.service';
+import { taskReachIn } from '../import-graph/task-reach.service';
+
 let provider: ITaskBriefingProvider | undefined;
 
 export const registerTaskBriefingProvider = (
@@ -29,38 +33,16 @@ export const registerTaskBriefingProvider = (
 	provider = next;
 };
 
-const SPEC = /\.(?:spec|test)\.tsx?$/u;
-
-/**
- * The reach read from the repository's own affected-specs / near-specs
- * graph, when the worktree carries it. A project without it gets nothing.
- */
+/** The reach read from the project's own import graph, kept per git tree. */
 export const repositoryTaskReach: ITaskReachProvider = async (
 	worktree,
 	files,
-) => {
-	const load = async (name: string): Promise<Record<string, unknown>> =>
-		(await import(
-			pathToFileURL(join(worktree, 'tools/scripts/ci', name)).href
-		)) as Record<string, unknown>;
-	const near = (await load('near-specs.ts')) as {
-		consumerSpecs: (input: unknown) => readonly string[];
-	};
-	const graph = (await load('affected-specs.service.ts')) as {
-		repositorySince: (root: string, base: string) => { changed: unknown };
-		affectedFiles: (input: unknown, hops: number) => readonly string[];
-	};
-	const input = {
-		...graph.repositorySince(worktree, 'HEAD'),
-		changed: files,
-	};
-	return {
-		consumers: graph
-			.affectedFiles(input, 1)
-			.filter((file) => !files.includes(file) && !SPEC.test(file)),
-		specs: near.consumerSpecs(input),
-	};
-};
+) =>
+	taskReachIn(
+		await repositoryImportGraph(worktree),
+		files,
+		await readSources(worktree, files),
+	);
 
 let reachOf: ITaskReachProvider = repositoryTaskReach;
 
