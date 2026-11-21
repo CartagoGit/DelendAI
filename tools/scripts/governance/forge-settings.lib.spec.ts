@@ -14,6 +14,7 @@ import {
 	integrationBranchDocument,
 	releaseBranchDocument,
 	namespaceRuleset,
+	namespaceRulesetDrift,
 	settingsDocument,
 } from './forge-settings.lib';
 
@@ -366,5 +367,60 @@ describe('a project with one branch', () => {
 		expect(branchProtectionDocument(equal)).toEqual(
 			branchProtectionDocument(single),
 		);
+	});
+});
+
+describe('namespaceRulesetDrift', () => {
+	const want = ['refs/heads/delendai/**/*', 'refs/heads/pr/**/*'];
+	const live = (
+		exclude: readonly string[],
+		over: {
+			enforcement?: string;
+			rules?: readonly { type: string }[];
+		} = {},
+	) => ({
+		enforcement: over.enforcement ?? 'active',
+		conditions: { ref_name: { exclude } },
+		rules: over.rules ?? [{ type: 'creation' }],
+	});
+
+	it('[<20ms] reports an exclusion the policy does not name as extra, not a problem', () => {
+		const drift = namespaceRulesetDrift(
+			live([...want, 'refs/heads/wip/**/*']),
+			want,
+		);
+
+		expect(drift.problems).toEqual([]);
+		expect(drift.extra).toEqual(['refs/heads/wip/**/*']);
+	});
+
+	it('[<20ms] reports an exclusion the policy names and the forge lacks as a problem', () => {
+		const drift = namespaceRulesetDrift(
+			live(['refs/heads/delendai/**/*']),
+			want,
+		);
+
+		expect(drift.problems).toHaveLength(1);
+		expect(drift.problems[0]).toContain('MISSING');
+		expect(drift.problems[0]).toContain('refs/heads/pr/**/*');
+		expect(drift.extra).toEqual([]);
+	});
+
+	it('[<20ms] reports inactive enforcement and a missing creation rule as problems', () => {
+		const drift = namespaceRulesetDrift(
+			live(want, { enforcement: 'evaluate', rules: [] }),
+			want,
+		);
+
+		expect(drift.problems).toHaveLength(2);
+		expect(drift.problems[0]).toContain('evaluate');
+		expect(drift.problems[1]).toContain('creation');
+	});
+
+	it('[<20ms] finds nothing when the forge matches the policy', () => {
+		expect(namespaceRulesetDrift(live(want), want)).toEqual({
+			problems: [],
+			extra: [],
+		});
 	});
 });

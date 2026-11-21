@@ -20,6 +20,7 @@ import type {
 	IKpiHealthSection,
 	IKpiMetric,
 	IKpiSnapshot,
+	IKpiTokensPerAcceptedUnit,
 	IKpiTopPlugin,
 	IKpiUsageSection,
 	TKpiMetricUnit,
@@ -259,6 +260,109 @@ const topPluginsFrom = (summary: IUsageSummary): IKpiTopPlugin[] =>
 		costUsd: bucket.costUsd,
 	}));
 
+/** The telemetry fields a row may carry beyond the base record. */
+interface ITelemetryRow {
+	readonly host?: string;
+	readonly retry?: boolean;
+	readonly retries?: number;
+	readonly taskClass?: string;
+	readonly taskOutcome?: 'correct' | 'blocked' | 'failed';
+	readonly correlation?: { readonly id: string } | null;
+	readonly delegations?: readonly { readonly tokensUsed: number }[];
+}
+
+const recordTokens = (record: IInvocationRecord): number =>
+	record.usage?.totalTokens ??
+	(record.usage?.inputTokens ?? 0) + (record.usage?.outputTokens ?? 0);
+
+/**
+ * Tokens spent per accepted unit, per host and model. A unit is the rows
+ * sharing a correlation id (the session when a row has none); it is
+ * accepted when a gate marked one of its rows correct. Everything the unit
+ * spent counts, so a retry, review and a subagent whose work was not kept
+ * (its row failed or was blocked) raise the figure instead of vanishing.
+ */
+export const computeTokensPerAcceptedUnit = (
+	records: readonly IInvocationRecord[],
+): IKpiTokensPerAcceptedUnit[] => {
+	const groups = new Map<
+		string,
+		{
+			host: string;
+			model: string;
+			total: number;
+			retry: number;
+			discarded: number;
+			review: number;
+			accepted: Set<string>;
+		}
+	>();
+	const seen = new Set<string>();
+	for (const record of records) {
+		const row = record as IInvocationRecord & ITelemetryRow;
+		const unit = row.correlation?.id ?? record.sessionId;
+		const host = row.host ?? record.agent.kind;
+		const model = record.model?.modelId ?? 'unknown';
+		const key = `${host}\u0000${model}`;
+		let group = groups.get(key);
+		if (group === undefined) {
+			group = {
+				host,
+				model,
+				total: 0,
+				retry: 0,
+				discarded: 0,
+				review: 0,
+				accepted: new Set(),
+			};
+			groups.set(key, group);
+		}
+		seen.add(unit);
+		const own = recordTokens(record);
+		const subagent = (row.delegations ?? []).reduce(
+			(sum, delegation) => sum + delegation.tokensUsed,
+			0,
+		);
+		group.total += own + subagent;
+		if (row.retry === true || (row.retries ?? 0) > 0) {
+			group.retry += own;
+		}
+		if (row.taskClass === 'review') {
+			group.review += own;
+		}
+		if (row.taskOutcome === 'failed' || row.taskOutcome === 'blocked') {
+			group.discarded += subagent;
+		}
+		if (row.taskOutcome === 'correct') {
+			group.accepted.add(unit);
+		}
+	}
+	if (seen.size === 0) {
+		return [];
+	}
+	return [...groups.values()]
+		.map((group) => ({
+			host: group.host,
+			model: group.model,
+			acceptedUnits: group.accepted.size,
+			totalTokens: group.total,
+			retryTokens: group.retry,
+			discardedSubagentTokens: group.discarded,
+			reviewTokens: group.review,
+			...(group.accepted.size > 0
+				? {
+						tokensPerAcceptedUnit: Number(
+							(group.total / group.accepted.size).toFixed(2),
+						),
+					}
+				: {}),
+		}))
+		.filter((entry) => entry.totalTokens > 0)
+		.sort((a, b) =>
+			`${a.host}/${a.model}`.localeCompare(`${b.host}/${b.model}`),
+		);
+};
+
 const buildUsageSection = async (
 	options: IKpiAggregationOptions,
 	generatedAt: string,
@@ -334,6 +438,7 @@ const buildUsageSection = async (
 		records.length > 0
 			? records.some((record) => record.tokensSaved !== undefined)
 			: summary.totals.calls === 0 || summary.totals.tokensSaved > 0;
+	const perUnit = computeTokensPerAcceptedUnit(records);
 	const calls = summary.totals.calls;
 	const errors = summary.totals.errors;
 	const toolErrorRate = calls === 0 ? 0 : Number((errors / calls).toFixed(4));
@@ -404,6 +509,7 @@ const buildUsageSection = async (
 			observedAt: summary.updatedAt,
 		}),
 		topPlugins: topPluginsFrom(summary),
+		...(perUnit.length > 0 ? { tokensPerAcceptedUnit: perUnit } : {}),
 		...(usage.note !== undefined ? { note: usage.note } : {}),
 	};
 };

@@ -71,4 +71,48 @@ describe('test budget check', () => {
 		});
 		expect(verdict).toEqual({ code: 0, errors: [], warnings: [] });
 	});
+
+	it('[<20ms] fails an over-50% overrun at normal load, and only a reproduced one under high load', () => {
+		const touched = (extra: object) =>
+			checkBudgets({
+				durations: () => over,
+				base: 'abc',
+				changedFiles: () => new Set([spec]),
+				...extra,
+			});
+		expect(touched({ loadFactor: 1 }).code).toBe(1);
+		const single = touched({ loadFactor: 3, rerun: () => undefined });
+		expect(single.code).toBe(0);
+		expect(single.warnings[0]).toContain('single run under load 3');
+		expect(touched({ loadFactor: 3, rerun: () => ({}) }).code).toBe(0);
+		expect(touched({ loadFactor: 3, rerun: () => over }).code).toBe(1);
+	});
+
+	it('[<20ms] lists a warning within +50% and unit-tier advice without failing', () => {
+		const verdict = checkBudgets({
+			durations: () => ({
+				[spec]: { '[<100ms] does x': 140 },
+				'packages/core/tests/src/u.spec.ts': { '[<20ms] unit': 450 },
+				'@load': { '10': 10 },
+			}),
+			base: 'abc',
+			changedFiles: () => new Set([spec]),
+		});
+		expect(verdict.code).toBe(0);
+		expect(verdict.errors).toEqual([]);
+		expect(verdict.warnings).toHaveLength(2);
+		expect(verdict.warnings[0]).toContain('within +50%');
+		expect(verdict.warnings[1]).toContain('Advice only');
+	});
+
+	it('[<20ms] judges a test on its first run by a warning', () => {
+		const verdict = checkBudgets({
+			durations: () => over,
+			base: 'abc',
+			changedFiles: () => new Set([spec]),
+			isFirstRun: () => true,
+		});
+		expect(verdict.code).toBe(0);
+		expect(verdict.warnings[0]).toContain('first run');
+	});
 });

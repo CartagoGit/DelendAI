@@ -11,7 +11,10 @@
 
 import { freshBudgetsOfDiff } from '../../../packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts';
 import { isE2eSpec } from '../../../packages/test-kit/src/lib/time-budget/time-budget-tier.helper.ts';
-import { UNIT_LIMIT_MS } from '../../../packages/test-kit/src/contracts/constants/time-budget.constant.ts';
+import {
+	BUDGET_PREFIX,
+	UNIT_LIMIT_MS,
+} from '../../../packages/test-kit/src/contracts/constants/time-budget.constant.ts';
 import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts';
 
 /** A call to `it`/`test` (not `.each`), up to and including its `(`. */
@@ -255,3 +258,17 @@ export const freshBudgets = (
 		return undefined;
 	}
 };
+
+/**
+ * Whether a test is on its first run: the change declares or changes its
+ * budget (`fresh`, `file<TAB>name` lines), or no estimate holds its id yet.
+ * Such a run has nothing to be judged against, so it never blocks.
+ */
+export const isFirstRun = (
+	file: string,
+	name: string,
+	fresh: readonly string[] | undefined,
+	estimates: Readonly<Record<string, number>>,
+): boolean =>
+	fresh?.includes(`${file}\t${name}`) === true ||
+	!(`${file} > ${name.replace(BUDGET_PREFIX, '')}` in estimates);

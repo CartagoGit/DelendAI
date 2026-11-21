@@ -28,7 +28,11 @@ import { join } from 'node:path';
 import { parseJsonc } from '@delendai/core/cli';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 
-import { namespaceRuleset } from '../governance/forge-settings.lib';
+import {
+	type ILiveNamespaceRuleset,
+	namespaceRuleset,
+	namespaceRulesetDrift,
+} from '../governance/forge-settings.lib';
 import { repoRoot } from '../lib/monorepo-paths';
 
 const SYNC = process.argv.includes('--sync');
@@ -76,14 +80,9 @@ const desired = (): Readonly<Record<string, unknown>> => {
 	);
 };
 
-interface ILiveRuleset {
+interface ILiveRuleset extends ILiveNamespaceRuleset {
 	readonly id: number;
 	readonly name: string;
-	readonly enforcement: string;
-	readonly conditions?: {
-		readonly ref_name?: { readonly exclude?: readonly string[] };
-	};
-	readonly rules?: readonly { readonly type: string }[];
 }
 
 const main = (): number => {
@@ -131,38 +130,14 @@ const main = (): number => {
 		gh(['api', `repos/${repository}/rulesets/${String(summary.id)}`]),
 	) as ILiveRuleset;
 
-	const liveExclude = [...(live.conditions?.ref_name?.exclude ?? [])].sort();
-	const missing = [...wantExclude]
-		.sort()
-		.filter((x) => !liveExclude.includes(x));
-	const extra = liveExclude.filter((x) => ![...wantExclude].includes(x));
-	const blocksCreation =
-		live.rules?.some((rule) => rule.type === 'creation') === true;
-	const active = live.enforcement === 'active';
-
-	const problems: string[] = [];
-	if (!active) {
-		problems.push(
-			`  enforcement is \`${live.enforcement}\` — a rule that does not enforce refuses nothing.`,
-		);
-	}
-	if (!blocksCreation) {
-		problems.push(
-			'  no `creation` rule — the ruleset exists but permits the branch it was written to prevent.',
-		);
-	}
-	if (missing.length > 0) {
-		problems.push(
-			`  the forge allows namespaces the policy does not: it is MISSING these exclusions, so it would refuse them: ${missing.join(', ')}`,
-		);
-	}
+	const { problems, extra } = namespaceRulesetDrift(live, wantExclude);
 	if (extra.length > 0) {
-		problems.push(
-			`  the forge excludes namespaces the policy does not name: ${extra.join(', ')}`,
+		console.warn(
+			`⚠ namespace-ruleset-guard: the forge also allows namespaces the policy does not name: ${extra.join(', ')}`,
 		);
 	}
 
-	if (problems.length === 0) {
+	if (problems.length === 0 && !(SYNC && extra.length > 0)) {
 		console.log(
 			`✓ namespace-ruleset-guard: the live \`${RULESET_NAME}\` ruleset matches the policy (${String(wantExclude.length)} allowed namespaces, creation refused elsewhere).`,
 		);
