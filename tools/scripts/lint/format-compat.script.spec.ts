@@ -97,9 +97,7 @@ describe('wiring', () => {
 		);
 	});
 
-	it('keeps the cache-layout ratchet as a case of the lint, not a second chain entry', () => {
-		expect(pkg.scripts['lint:architecture']).not.toContain(
-			'lint:cache-layout-ratchet',
-		);
+	it('keeps the cache-layout ratchet as a case of the lint, not a second script', () => {
+		expect(pkg.scripts['lint:cache-layout-ratchet']).toBeUndefined();
 	});
 });

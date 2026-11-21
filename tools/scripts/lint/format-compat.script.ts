@@ -190,7 +190,7 @@ const ratchetMessages = (root: string): readonly string[] => {
 	);
 	if (recorded === undefined)
 		return [
-			'cache-layout: no snapshot recorded; run lint:cache-layout-ratchet with --update.',
+			'cache-layout: no snapshot recorded; run `bun tools/scripts/lint/cache-layout-ratchet.script.ts --update`.',
 		];
 	const verdict = judgeRatchet(recorded, {
 		epoch: CACHE_LAYOUT_EPOCH,

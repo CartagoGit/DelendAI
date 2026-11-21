@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * cache-layout-ratchet.script.ts — `bun run lint:cache-layout-ratchet`.
+ * cache-layout-ratchet.script.ts — `bun tools/scripts/lint/cache-layout-ratchet.script.ts`.
  *
  * The cache layout manifest documents the persisted layout. Changing what
  * it lists without raising `CACHE_LAYOUT_EPOCH` ships a layout change with
@@ -10,7 +10,7 @@
  * whenever the artifacts changed.
  *
  * It is one case of `lint:format-compat`, which runs `judgeRatchet` with the
- * rest of the format registry; `lint:architecture` chains that, not this.
+ * rest of the format registry; `lint:architecture` chains that; this file remains for `--update`.
  */
 import { createHash } from 'node:crypto';
 import { readFileSync, writeFileSync } from 'node:fs';

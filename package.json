@@ -330,7 +330,6 @@
 		"lint:no-legacy-cache-paths": "bun tools/scripts/lint/no-legacy-cache-paths.script.ts",
 		"lint:legacy-residue-registry": "bun tools/scripts/lint/legacy-residue-registry.script.ts",
 		"lint:format-compat": "bun tools/scripts/lint/format-compat.script.ts",
-		"lint:cache-layout-ratchet": "bun tools/scripts/lint/cache-layout-ratchet.script.ts",
 		"lint:spec-timeout-undercut": "bun tools/scripts/lint/spec-timeout-undercut.script.ts",
 		"report:spec-timing": "bun tools/scripts/report/spec-timing.script.ts",
 		"report:plugin-size": "bun tools/scripts/report/plugin-size-report.script.ts",
