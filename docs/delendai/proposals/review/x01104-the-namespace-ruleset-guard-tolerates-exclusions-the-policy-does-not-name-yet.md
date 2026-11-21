@@ -2,14 +2,14 @@
 id: x01104
 title: "The namespace ruleset guard tolerates exclusions the policy does not name yet"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: 0cc1333e-ae26-4d06-beae-7d7b05ec555d
-last-correlation-id: 0cc1333e-ae26-4d06-beae-7d7b05ec555d
-last-transition-from: ready
-last-transition-at: 2026-11-21T00:19:20.559Z
+last-transition-id: 703e4755-639e-4328-bc60-d866bfdafd25
+last-correlation-id: 703e4755-639e-4328-bc60-d866bfdafd25
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T00:31:21.661Z
 ---
 
 # x01104 — The namespace ruleset guard tolerates exclusions the policy does not name yet
@@ -32,7 +32,7 @@ f00808 renames delendai's own branch namespaces. Its pull request fails ref-life
 - global_gate: none
 
 ### S1 — Extra ruleset exclusions warn; missing ones still fail
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/lint/namespace-ruleset-guard.script.ts`, `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`
 - **Gate**: none
 - **Decisions**: none
@@ -41,6 +41,9 @@ f00808 renames delendai's own branch namespaces. Its pull request fails ref-life
   - "forge-settings.lib.spec.ts shows an exclusion the policy names and the live ruleset lacks reported as a problem, so the guard fails"
   - "forge-settings.lib.spec.ts shows inactive enforcement and a missing creation rule reported as problems"
   - "`bun tools/scripts/lint/namespace-ruleset-guard.script.ts --sync` writes the policy to the forge when only extra exclusions differ"
+- shipped-in: `9f03aefe0ac9`
+- review-state: in_review
+- review-implementer: claude-opus-5-5
 
 ## acceptance
 
