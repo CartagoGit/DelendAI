@@ -44,12 +44,12 @@ x01109 failed four coverage prechecks, each on a different concurrent-writer spe
 
 ### S2 — A lost watchdog enqueue is reported, not swallowed
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/agent-names.tool.ts`, `plugins/proposals/tests/src/lib/tools/queue-races.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/agent-names.tool.ts`, `plugins/proposals/tests/src/lib/tools/queue-races.e2e.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "queue-races.spec.ts: when the queue mutex cannot be taken the reconcile result names the entries not enqueued instead of dropping them silently."
-  - "queue-races.spec.ts barrier test keeps passing under --coverage."
+  - "queue-races.e2e.spec.ts: when the queue mutex cannot be taken the reconcile result names the entries not enqueued instead of dropping them silently."
+  - "queue-races.e2e.spec.ts barrier test keeps passing under --coverage."
 
 ### S3 — A spec read of delendai.config.json through the generic loader does not select the spec
 - **Status**: pending
@@ -65,7 +65,7 @@ x01109 failed four coverage prechecks, each on a different concurrent-writer spe
 - with-file-mutex.spec.ts: N waiters queued behind short holders whose summed hold time exceeds timeoutMs all acquire, none throws LockContentionError; on the old code the same spec fails.
 - with-file-mutex.spec.ts: one live holder that keeps the lock past timeoutMs still makes a waiter throw LockContentionError.
 - with-file-mutex.race.spec.ts and with-file-mutex.liveness.spec.ts still pass.
-- queue-races.spec.ts: when the queue mutex cannot be taken the reconcile result names the entries not enqueued instead of dropping them silently.
-- queue-races.spec.ts barrier test keeps passing under --coverage.
+- queue-races.e2e.spec.ts: when the queue mutex cannot be taken the reconcile result names the entries not enqueued instead of dropping them silently.
+- queue-races.e2e.spec.ts barrier test keeps passing under --coverage.
 - near-specs.spec.ts: a change to delendai.config.json selects the specs whose reads name a config key the change touched, not every spec that loaded it.
 - near-specs.spec.ts: a change to a root config no spec reads selects no reader.
