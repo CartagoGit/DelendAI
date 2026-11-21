@@ -103,6 +103,15 @@ describe('subtractBaseFailures', () => {
 		expect(out.passed).toBe(false);
 	});
 
+	it('[<50ms] does not excuse a type error that prints a known-failing spec path', () => {
+		const out = subtractBaseFailures({
+			report: failed('a/old.spec.ts(3,1): error TS2322: bad type'),
+			known: new Set(['a/old.spec.ts']),
+			touched: new Set(),
+		});
+		expect(out.passed).toBe(false);
+	});
+
 	it('[<50ms] does not excuse a failed step that names no spec', () => {
 		const out = subtractBaseFailures({
 			report: failed('tsc error TS2322'),

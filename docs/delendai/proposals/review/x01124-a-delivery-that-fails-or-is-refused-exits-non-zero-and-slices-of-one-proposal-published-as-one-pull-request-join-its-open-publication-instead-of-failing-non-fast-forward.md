@@ -2,10 +2,14 @@
 id: x01124
 title: "A delivery that fails or is refused exits non-zero, and slices of one proposal published as one pull request join its open publication instead of failing non-fast-forward"
 kind: fix
-status: ready
+status: review
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 274f57ee-a6db-44ff-925f-8343bc236dab
+last-correlation-id: 274f57ee-a6db-44ff-925f-8343bc236dab
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T10:33:19.927Z
 ---
 
 # x01124 — A delivery that fails or is refused exits non-zero, and slices of one proposal published as one pull request join its open publication instead of failing non-fast-forward
@@ -28,18 +32,21 @@ Two defects found on 2026-11-21 are fixed: `work deliver` reports its verdict in
 - global_gate: none
 
 ### S1 — A failed or refused delivery exits non-zero, proved by running the CLI as a process
-- **Status**: pending
-- **Files**: `packages/cli/src/lib/work-deliver.service.spec.ts`, `new:packages/cli/src/lib/work-deliver-exit-code.e2e.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/commands/work.command.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
+- **Status**: review
+- **Files**: `packages/cli/src/lib/work-deliver.service.spec.ts`, `new:packages/cli/src/lib/work-deliver-exit-code.e2e.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "work-deliver.service.spec.ts: deliverUnit returns a non-zero code when ports.prove returns code VALIDATION and when precheckDelivery refuses, and never a data.delivered."
-  - "work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run with a pre-check refusal exits 4."
-  - "work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed, and its output names baseFailures."
+  - "work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run refused for its arguments exits 4 (a pre-check refusal needs the proposals plugin, which a temp repo lacks), and `work prove` there fails non-zero, and passes with baseFailures only for a failure develop's note names."
+  - "work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed (a compiler error printing such a spec path is not), and `work prove --json` names baseFailures."
   - "nice -n 19 bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts passes."
+- shipped-in: `de079c80d063`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — Publishing a slice into the proposal's open publication merges it into the unit first
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `new:packages/core/src/lib/work-units/publication-join.service.ts`, `new:packages/core/tests/src/lib/work-units/publication-join.service.e2e.spec.ts`, `packages/core/tests/src/lib/work-units/work-unit-publish.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
@@ -48,12 +55,15 @@ Two defects found on 2026-11-21 are fixed: `work deliver` reports its verdict in
   - "publication-join.service.e2e.spec.ts: when the second unit conflicts with the publication, publish is refused with VALIDATION naming the conflicting files and the unit is left unchanged."
   - "work-unit-publish.service.spec.ts: for a slice joining the proposal's publication, the publish result carries no nextAction asking the agent to merge the publication into the unit."
   - "nice -n 19 bunx vitest run packages/core/tests/src/lib/work-units/publication-join.service.e2e.spec.ts passes."
+- shipped-in: `de079c80d063`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
 - work-deliver.service.spec.ts: deliverUnit returns a non-zero code when ports.prove returns code VALIDATION and when precheckDelivery refuses, and never a data.delivered.
-- work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run with a pre-check refusal exits 4.
-- work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed, and its output names baseFailures.
+- work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run refused for its arguments exits 4 (a pre-check refusal needs the proposals plugin, which a temp repo lacks), and `work prove` there fails non-zero, and passes with baseFailures only for a failure develop's note names.
+- work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed (a compiler error printing such a spec path is not), and `work prove --json` names baseFailures.
 - nice -n 19 bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts passes.
 - publication-join.service.e2e.spec.ts: two units of one proposal with a whole-proposal publication target; the first publishes, the second publishes after it with no agent-side merge, and the publication ref holds both units' commits.
 - publication-join.service.e2e.spec.ts: when the second unit conflicts with the publication, publish is refused with VALIDATION naming the conflicting files and the unit is left unchanged.

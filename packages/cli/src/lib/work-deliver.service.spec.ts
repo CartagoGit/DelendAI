@@ -195,6 +195,25 @@ describe('deliverUnit', () => {
 		]);
 	});
 
+	it('[<20ms] answers a non-zero code and never data.delivered when the proof fails or a pre-check refuses', async () => {
+		const failedProof = await deliverUnit(
+			ports({}, EXIT_CODE.VALIDATION).value,
+		);
+		const refusedEarly = await deliverUnit(
+			ports(
+				{},
+				EXIT_CODE.OK,
+				'all',
+				async () => undefined,
+				EXIT_CODE.VALIDATION,
+			).value,
+		);
+		for (const result of [failedProof, refusedEarly]) {
+			expect(result.code).not.toBe(EXIT_CODE.OK);
+			expect(result.data ?? {}).not.toHaveProperty('delivered');
+		}
+	});
+
 	it('[<20ms] goes on from a proposal already in progress', async () => {
 		const { calls, value } = ports({
 			'in-progress': illegal('in-progress', 'in-progress'),
