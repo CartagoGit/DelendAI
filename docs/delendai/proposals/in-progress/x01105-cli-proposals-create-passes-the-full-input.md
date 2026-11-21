@@ -2,10 +2,14 @@
 id: x01105
 title: "CLI proposals create passes the full input"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-21
+last-transition-id: c67b0455-2a29-4377-aa6f-90ae6b66281d
+last-correlation-id: c67b0455-2a29-4377-aa6f-90ae6b66281d
+last-transition-from: ready
+last-transition-at: 2026-11-21T00:37:38.264Z
 ---
 
 # x01105 — CLI proposals create passes the full input
