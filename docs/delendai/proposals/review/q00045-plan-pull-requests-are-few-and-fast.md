@@ -10,6 +10,8 @@ last-transition-id: a2413a8b-3ec6-4a84-a3f2-975e9c775b8a
 last-correlation-id: a2413a8b-3ec6-4a84-a3f2-975e9c775b8a
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T12:01:41.033Z
+shipped-in:
+  - "9431c4d61ef3"
 ---
 
 # q00045 — Plan: pull requests are few and fast
@@ -81,15 +83,17 @@ This follows the product principles (bootstrap section 0): efficient, fast and t
 - review-implementer: claude-sonnet-5-5
 
 ### S5 — Every skip says why
-- **Status**: review
+- **Status**: done
 - **Files**: `tools/scripts/ci/job-scope.script.ts`
 - **Gate**: none
 - note: q00038 S2 already prints which lint families ran and why; this slice covers the other half, the run summary naming why each skipped job was skipped, and the lint on unconditional test skips (7 tests were skipped on 2026-11-04 and no lint checks them).
 - acceptance:
   - "Each skipped job names the reason (zone untouched, platform) in the run summary, and an unconditional test skip fails a lint unless it carries a reason and an owner."
 - shipped-in: `1746a11f384b`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: approved by mai-code-2-flash — verified at 9431c4d61ef3, validate exit 0 and tests 91/91 claimed, no recorded run cited; acceptance 1/1: (1) Effective re-delivery 9431c4d61ef3 updates job-scope implementation and specs; focused test-zones/job-scope Vitest run passes 91/91. — Approved S5 on the effective re-delivery 9431c4d61ef3. Implementer claude-sonnet-5-5; reviewer mai-code-2-flash.
 
 ### S6 — A batch of independent pull requests is certified once
 - **Status**: retired
