@@ -2,10 +2,14 @@
 id: x01115
 title: "Agents run tests through work prove, never the whole suite"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-21
+last-transition-id: 18bc8438-12f8-41af-b519-3c10d864fb12
+last-correlation-id: 18bc8438-12f8-41af-b519-3c10d864fb12
+last-transition-from: ready
+last-transition-at: 2026-11-21T06:03:20.418Z
 ---
 
 # x01115 — Agents run tests through work prove, never the whole suite
