@@ -8,7 +8,12 @@ import {
 } from '@delendai/core/runtime';
 import { classifyPath } from '@delendai/conventions/public';
 import { readDoc, searchDocs } from '@delendai/docs/public';
-import { checkRepo, createGitRunner, gitDiffStat } from '@delendai/git/public';
+import {
+	checkRepo,
+	createGitRunner,
+	gitDiffStat,
+	parseDiffFilePaths,
+} from '@delendai/git/public';
 import { recall } from '@delendai/memory/public';
 import { buildNavEngine } from '@delendai/refactor/public';
 import { searchWorkspace } from '@delendai/search/public';
@@ -57,22 +62,6 @@ const unique = (values: readonly string[]): string[] => [...new Set(values)];
 
 const baseNameWithoutExt = (filePath: string): string =>
 	basename(filePath, extname(filePath));
-
-const parseFilesFromGitDiff = (gitDiff: string): string[] => {
-	const files = new Set<string>();
-	for (const line of gitDiff.split('\n')) {
-		if (line.startsWith('diff --git ')) {
-			const match = /^diff --git a\/(.+) b\/(.+)$/u.exec(line);
-			const filePath = match?.[2];
-			if (filePath !== undefined) files.add(filePath);
-			continue;
-		}
-		if (line.startsWith('+++ b/')) {
-			files.add(line.slice('+++ b/'.length));
-		}
-	}
-	return [...files];
-};
 
 const readSource = async (
 	reader: SafeWorkspaceReader,
@@ -242,9 +231,7 @@ export const runContextForChangeService = async (
 
 	try {
 		const gitDiffFiles =
-			args.gitDiff !== undefined
-				? parseFilesFromGitDiff(args.gitDiff)
-				: [];
+			args.gitDiff !== undefined ? parseDiffFilePaths(args.gitDiff) : [];
 		const inputFiles =
 			args.files?.map((file) => toWorkspacePath(reader, file)) ?? [];
 		const runner = createGitRunner(options.workspaceRootAbs);
