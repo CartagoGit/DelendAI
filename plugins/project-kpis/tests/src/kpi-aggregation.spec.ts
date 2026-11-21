@@ -241,7 +241,7 @@ describe('buildKpiSnapshot', async () => {
 });
 
 describe('computeTokensPerAcceptedUnit', () => {
-	const row = (extra: object): IInvocationRecord => ({
+	const base: IInvocationRecord = {
 		ts: '2026-08-29T10:00:00.000Z',
 		sessionId: 's1',
 		agent: { id: 'claude', kind: 'claude-code', extension: 'cli' },
@@ -254,6 +254,9 @@ describe('computeTokensPerAcceptedUnit', () => {
 		outcome: 'success',
 		fallbackFrom: null,
 		error: null,
+	};
+	const row = (extra: object): IInvocationRecord => ({
+		...base,
 		correlation: { id: 'unit-1', source: 'args' },
 		...extra,
 	});
