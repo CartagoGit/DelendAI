@@ -4,6 +4,7 @@ import {
 	headNotBuilt,
 	outsideDerived,
 	prepareDerived,
+	refreshMovedProposal,
 	pushDerived,
 } from '@delendai/core/lib/integration/land/land-bring-forward.helper';
 import type { ILandPullRequest } from '@delendai/core/lib/integration/land/land.interface';
@@ -120,5 +121,55 @@ describe('the two derived phases', () => {
 			pushed: ['s1'],
 		});
 		expect(run('h1', ['gen/a'], false).verdict).toBe('declined');
+	});
+});
+
+describe('refreshMovedProposal', () => {
+	const move = {
+		from: 'proposals/in-progress/x1.md',
+		to: 'proposals/review/x1.md',
+		base: 'a',
+		tip: 'a+tip',
+		moved: 'a+head',
+	};
+	const join = (_base: string, tip: string, moved: string) =>
+		`${moved}|${tip}`;
+	it('[<5ms] carries the tip edit onto the moved copy and removes the old copy', () => {
+		expect(
+			refreshMovedProposal({
+				generation: 3,
+				ports: { moves: [move], otherConflicts: [], mergeText: join },
+			}),
+		).toEqual({
+			kind: 'carried',
+			writes: [{ path: move.to, content: 'a+head|a+tip' }],
+			removes: [move.from],
+		});
+	});
+	it('[<5ms] changes nothing and asks once when the edit does not apply', () => {
+		const result = refreshMovedProposal({
+			generation: 3,
+			ports: {
+				moves: [move],
+				otherConflicts: [],
+				mergeText: () => undefined,
+			},
+		});
+		expect(result.kind).toBe('asked');
+		if (result.kind === 'asked') {
+			expect(result.comment).toContain('work enter --generation 3');
+			expect(result.comment).toContain('git merge');
+		}
+	});
+	it('[<5ms] asks when any other path conflicts', () => {
+		const result = refreshMovedProposal({
+			generation: 2,
+			ports: {
+				moves: [move],
+				otherConflicts: ['src/a.ts'],
+				mergeText: join,
+			},
+		});
+		expect(result.kind).toBe('asked');
 	});
 });
