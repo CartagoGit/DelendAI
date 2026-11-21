@@ -41,7 +41,11 @@ import { dirname, join } from 'node:path';
 import { resolve } from 'node:path';
 
 import { repoRoot } from '../lib/repo-root';
-import { INTEGRATION_REF } from './declared-test-budget';
+import {
+	freshBudgets,
+	INTEGRATION_REF,
+	isFirstRun,
+} from './declared-test-budget';
 import { checkBudgets } from './test-budget-check';
 import {
 	budgetChanges,
@@ -155,19 +159,47 @@ const filesChangedSince = (base: string): ReadonlySet<string> =>
  * Fail, naming the number CI calls for, while a test runs over its declared
  * budget in a spec the change touches; report one in an untouched spec.
  */
+/** The run's load factor: the median of what its shards measured under; 1 when unknown. */
+const loadFactorOfBlobs = (blobs: string): number => {
+	const factors = jsonFiles(blobs)
+		.flatMap((file) =>
+			measuredTestsOfBlob(readFileSync(file, 'utf8'), repoRoot()),
+		)
+		.map((test) => test.loadFactor ?? 1)
+		.sort((a, b) => a - b);
+	return factors[Math.floor(factors.length / 2)] ?? 1;
+};
+
 const requireCalibrated = (blobs: string): number => {
 	const { SCOPE_BASE: scopeBase, GITHUB_STEP_SUMMARY } = process.env;
 	const verdict = checkBudgets({
 		durations: () => reportedDurations(blobs),
 		base: arg('base') ?? scopeBase ?? '',
 		changedFiles: filesChangedSince,
+		loadFactor: loadFactorOfBlobs(blobs),
+		// --rerun=<blob-dir>: a second run of the same change confirms an error.
+		rerun: () => {
+			const again = arg('rerun');
+			return again === undefined ? undefined : reportedDurations(again);
+		},
+		isFirstRun: (file, name) =>
+			isFirstRun(
+				file,
+				name,
+				freshBudgets(
+					(args) =>
+						execFileSync('git', [...args], { encoding: 'utf8' }),
+					(path) => readFileSync(path, 'utf8'),
+				),
+				readEstimates(),
+			),
 	});
 	for (const line of verdict.errors) console.error(line);
 	for (const line of verdict.warnings) console.warn(`warning: ${line}`);
 	if (GITHUB_STEP_SUMMARY !== undefined && verdict.warnings.length > 0) {
 		appendFileSync(
 			GITHUB_STEP_SUMMARY,
-			`### Budget overruns in specs this change does not touch\n${verdict.warnings.map((line) => `- ${line}`).join('\n')}\n`,
+			`### Budget warnings (reported, never failed)\n${verdict.warnings.map((line) => `- ${line}`).join('\n')}\n`,
 		);
 	}
 	console.log(
