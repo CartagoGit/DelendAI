@@ -33,18 +33,18 @@ f00808 renames delendai's own branch namespaces. Its pull request fails ref-life
 
 ### S1 — Extra ruleset exclusions warn; missing ones still fail
 - **Status**: pending
-- **Files**: `tools/scripts/lint/namespace-ruleset-guard.script.ts`
+- **Files**: `tools/scripts/lint/namespace-ruleset-guard.script.ts`, `tools/scripts/governance/forge-settings.lib.ts`, `tools/scripts/governance/forge-settings.lib.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "An exclusion the live ruleset has and the policy does not name is printed as a warning and the guard exits 0"
-  - "An exclusion the policy names and the live ruleset lacks still fails the guard"
-  - "Inactive enforcement or a missing creation rule still fails the guard"
-  - "--sync still writes the policy to the forge when only extra exclusions differ"
+  - "forge-settings.lib.spec.ts shows an exclusion the live ruleset has and the policy does not name reported as a warning, not a problem, so the guard exits 0"
+  - "forge-settings.lib.spec.ts shows an exclusion the policy names and the live ruleset lacks reported as a problem, so the guard fails"
+  - "forge-settings.lib.spec.ts shows inactive enforcement and a missing creation rule reported as problems"
+  - "namespace-ruleset-guard.script.ts --sync writes the policy to the forge when only extra exclusions differ"
 
 ## acceptance
 
-- An exclusion the live ruleset has and the policy does not name is printed as a warning and the guard exits 0
-- An exclusion the policy names and the live ruleset lacks still fails the guard
-- Inactive enforcement or a missing creation rule still fails the guard
-- --sync still writes the policy to the forge when only extra exclusions differ
+- forge-settings.lib.spec.ts shows an exclusion the live ruleset has and the policy does not name reported as a warning, not a problem, so the guard exits 0
+- forge-settings.lib.spec.ts shows an exclusion the policy names and the live ruleset lacks reported as a problem, so the guard fails
+- forge-settings.lib.spec.ts shows inactive enforcement and a missing creation rule reported as problems
+- namespace-ruleset-guard.script.ts --sync writes the policy to the forge when only extra exclusions differ

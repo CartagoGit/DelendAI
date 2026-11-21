@@ -302,3 +302,57 @@ export const namespaceRuleset = (
 		rules: [{ type: 'creation' }],
 	};
 };
+
+/** The fields of a live ruleset the drift check reads. */
+export interface ILiveNamespaceRuleset {
+	readonly enforcement: string;
+	readonly conditions?: {
+		readonly ref_name?: { readonly exclude?: readonly string[] };
+	};
+	readonly rules?: readonly { readonly type: string }[];
+}
+
+/** How a live ruleset differs from the policy's derivation. */
+export interface INamespaceRulesetDrift {
+	/** Differences that leave the forge refusing what the policy allows, or refusing nothing. */
+	readonly problems: readonly string[];
+	/** Exclusions the forge has and the policy does not name: it allows more, which ref-lifecycle still catches. */
+	readonly extra: readonly string[];
+}
+
+/**
+ * Compares a live `branch-namespace` ruleset with the policy's exclusions.
+ * An extra exclusion only lets the forge allow more than the policy, and
+ * ref-lifecycle still refuses any branch outside the policy's namespaces,
+ * so it is not a problem: the forge can be widened before a namespace
+ * change lands without failing every other pull request.
+ */
+export const namespaceRulesetDrift = (
+	live: ILiveNamespaceRuleset,
+	wantExclude: readonly string[],
+): INamespaceRulesetDrift => {
+	const liveExclude = [...(live.conditions?.ref_name?.exclude ?? [])].sort();
+	const missing = [...wantExclude]
+		.sort()
+		.filter((pattern) => !liveExclude.includes(pattern));
+	const extra = liveExclude.filter(
+		(pattern) => !wantExclude.includes(pattern),
+	);
+	const problems: string[] = [];
+	if (live.enforcement !== 'active') {
+		problems.push(
+			`  enforcement is \`${live.enforcement}\` — a rule that does not enforce refuses nothing.`,
+		);
+	}
+	if (live.rules?.some((rule) => rule.type === 'creation') !== true) {
+		problems.push(
+			'  no `creation` rule — the ruleset exists but permits the branch it was written to prevent.',
+		);
+	}
+	if (missing.length > 0) {
+		problems.push(
+			`  the forge is MISSING exclusions for namespaces the policy allows, so it refuses branches the policy permits: ${missing.join(', ')}`,
+		);
+	}
+	return { problems, extra };
+};
