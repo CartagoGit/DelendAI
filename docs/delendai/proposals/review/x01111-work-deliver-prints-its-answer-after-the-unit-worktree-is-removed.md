@@ -2,14 +2,14 @@
 id: x01111
 title: "Work deliver prints its answer after the unit worktree is removed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: 09c4ab13-9dc3-4157-be02-6b231a866e66
-last-correlation-id: 09c4ab13-9dc3-4157-be02-6b231a866e66
-last-transition-from: ready
-last-transition-at: 2026-11-21T02:05:45.934Z
+last-transition-id: c09f0920-fc63-48a9-bd9c-2267d48895ba
+last-correlation-id: c09f0920-fc63-48a9-bd9c-2267d48895ba
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T02:13:31.514Z
 ---
 
 # x01111 — Work deliver prints its answer after the unit worktree is removed
@@ -31,13 +31,16 @@ Seen 3 times: the last submit removes the unit worktree, then the CLI lazily imp
 - global_gate: none
 
 ### S1 — Preload the answer sizer before the worktree can go
-- **Status**: pending
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `new:packages/cli/src/contracts/interfaces/loaded-once.interface.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
   - "[<50ms] packages/cli/src/commands/work.command.spec.ts: a sizer preloaded before the removal still sizes the answer after it and never loads again"
   - "[<50ms] packages/cli/src/commands/work.command.spec.ts: an answer without preloading loads once"
+- shipped-in: `3c34536b596a`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
