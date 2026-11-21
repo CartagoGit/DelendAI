@@ -88,6 +88,8 @@ export interface IDuplicateProposalGroup {
 	 * in which case a human has to choose.
 	 */
 	readonly mostAdvanced: IProposalRecord | null;
+	/** The folder of the copy to keep (the most advanced), or `null` when undecidable. */
+	readonly keepFolder: string | null;
 }
 
 export interface IProposalUniquenessResult {
@@ -216,7 +218,13 @@ export const findDuplicateProposals = (
 		const copies = [...bucket].sort((a, b) =>
 			a.relPath.localeCompare(b.relPath),
 		);
-		duplicates.push({ id, copies, mostAdvanced: pickMostAdvanced(copies) });
+		const mostAdvanced = pickMostAdvanced(copies);
+		duplicates.push({
+			id,
+			copies,
+			mostAdvanced,
+			keepFolder: mostAdvanced?.folder ?? null,
+		});
 	}
 	return {
 		scanned: records.length,
@@ -242,7 +250,7 @@ export const formatReport = (result: IProposalUniquenessResult): string => {
 		lines.push(
 			group.mostAdvanced === null
 				? '    most advanced: UNDECIDABLE (tie, or a parked/unknown status) — choose by hand.'
-				: `    most advanced: ${group.mostAdvanced.relPath} (status ${group.mostAdvanced.status ?? 'unknown'})`,
+				: `    most advanced: ${group.mostAdvanced.relPath} (status ${group.mostAdvanced.status ?? 'unknown'}); keep the copy in ${group.keepFolder}/, remove the others`,
 		);
 	}
 	lines.push(

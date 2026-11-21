@@ -246,6 +246,14 @@ export const deliverPortsOf = (
 		readOpenPullRequest: async (branch) =>
 			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
+		dropStaleProposalCopies: async (checkout) => {
+			const { dropStaleProposalCopies } = await import(
+				'../lib/work-deliver-stale-proposal.service'
+			);
+			return dropStaleProposalCopies((gitArgs) =>
+				runGitCommand(checkout ?? ctx.cwd, gitArgs),
+			);
+		},
 		publicationReached: async (publication, checkout) => {
 			const { publicationReachedFrom } = await deliveredRemote.get();
 			return publicationReachedFrom(
