@@ -1,5 +1,5 @@
 import type z from 'zod';
-import { proposalOfCreateUnit } from '@delendai/core/runtime';
+import { foreignUnitOf, proposalOfCreateUnit } from '@delendai/core/runtime';
 import { ownedWorkRefPrefixes } from '@delendai/core/cli';
 import { relative } from 'node:path';
 import type { IToolRegistration } from '@delendai/core/contracts';
@@ -127,6 +127,26 @@ export const buildCreateProposalRegistration = (
 					return toolError(
 						`Refused: the scaffold would write placeholders for ${gaps.join(', ')}, and the proposal hygiene lint refuses a proposal that carries one.`,
 						'Pass a real goal, why, nonGoals and, for every slice, its files and acceptance; then call create_proposal again.',
+					);
+				}
+				// A checkout that is another unit's worktree would take the
+				// document and its commit onto that unit's branch.
+				const foreign =
+					options.developmentPolicy === undefined ||
+					forCheckout.source !== 'request'
+						? undefined
+						: foreignUnitOf(
+								forCheckout.root,
+								options.developmentPolicy,
+								{
+									kind: 'create',
+									proposal: args.id,
+								},
+							);
+				if (foreign !== undefined) {
+					return toolError(
+						`${forCheckout.root} belongs to ${foreign.kind} unit ${foreign.branch} (${foreign.proposal}), not to the proposal being created.`,
+						'Enter your own unit with `delendai work enter --kind=create --proposal=new --slice=all --print-path` and pass that path as `checkout`.',
 					);
 				}
 				// A create unit delivers one proposal; a second would be

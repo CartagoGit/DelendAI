@@ -2,13 +2,16 @@
  * create-proposal.tool.spec.ts — the create_proposal handler: where it
  * writes, what it refuses, and the publication step it names.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createFakeToolServer } from '@delendai/test-kit';
+import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
+
+import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -80,6 +83,42 @@ describe('create_proposal', () => {
 			checkout: join(root, 'not-a-checkout'),
 		});
 		expect(refused.isError).toBe(true);
+	});
+
+	it('[<200ms] create_proposal refuses a checkout owned by another unit, naming it and work enter', async () => {
+		const git = (cwd: string, ...args: string[]) =>
+			execFileSync(
+				'git',
+				['-c', 'user.email=t@t', '-c', 'user.name=t', ...args],
+				{ cwd, stdio: 'ignore' },
+			);
+		git(root, 'init', '-q', '-b', 'develop');
+		writeFileSync(join(root, 'a.txt'), 'a');
+		git(root, 'add', '.');
+		git(root, 'commit', '-qm', 'init');
+		const unit = 'delendai/wip/agent-a/implement/x00001-S1-g1/topic';
+		const tree = join(root, 'unit-tree');
+		git(root, 'worktree', 'add', '-q', '-b', unit, tree);
+		const create = await capture(
+			buildCreateProposalRegistration({
+				...options,
+				developmentPolicy: fakePartial<IResolvedDevelopmentPolicy>({
+					branches: fakePartial<
+						IResolvedDevelopmentPolicy['branches']
+					>({
+						integration: 'develop',
+						namespacePrefix: 'delendai',
+						workRefPrefix: 'delendai/wip/',
+						workRefTemplate:
+							'delendai/wip/${agent}/${kind}/${proposal}-${slice}-g${generation}/${topic}',
+					}),
+				}),
+			}),
+		);
+		const refused = await create({ ...proposal, checkout: tree });
+		expect(refused.isError).toBe(true);
+		expect(refused.content[0]?.text).toContain(unit);
+		expect(refused.content[0]?.text).toContain('work enter');
 	});
 
 	it('[<200ms] refuses a document it cannot write', async () => {

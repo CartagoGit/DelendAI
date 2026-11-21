@@ -17,6 +17,7 @@ import { fakePartial } from '@delendai/test-kit';
 import {
 	adoptProposalId,
 	carryUnitRecords,
+	foreignUnitOf,
 	proposalOfCreateUnit,
 } from '@delendai/core/lib/work-units/unit-adoption.service';
 import {
@@ -292,5 +293,31 @@ describe('proposalOfCreateUnit', () => {
 			'delendai/wip/agent-a/implement/x00001-all-g1/the-topic',
 		);
 		expect(proposalOfCreateUnit(tree, policy)).toBeUndefined();
+	});
+});
+
+describe('foreignUnitOf', () => {
+	const create = { kind: 'create' };
+
+	it('[<200ms] names a unit of another kind', () => {
+		const other = 'delendai/wip/agent-a/implement/x00001-all-g1/the-topic';
+		const { tree } = unitOn(other);
+		expect(foreignUnitOf(tree, policy, create)).toEqual({
+			branch: other,
+			kind: 'implement',
+			proposal: 'x00001',
+		});
+	});
+
+	it('[<200ms] finds nothing in a create unit, made or waiting for its id', () => {
+		expect(foreignUnitOf(unitOn(OLD).tree, policy, create)).toBeUndefined();
+		expect(foreignUnitOf(unitOn(NEW).tree, policy, create)).toBeUndefined();
+	});
+
+	it('[<200ms] names a unit of the same kind for a different proposal', () => {
+		const { tree } = unitOn(NEW);
+		expect(
+			foreignUnitOf(tree, policy, { kind: 'create', proposal: 'x00002' }),
+		).toMatchObject({ branch: NEW, proposal: 'x00001' });
 	});
 });
