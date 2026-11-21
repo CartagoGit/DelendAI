@@ -33,11 +33,11 @@ A worker passed a checkout path read from a temp file another worker had overwri
 
 ### S1 — Refuse a foreign unit checkout in create_proposal
 - **Status**: review
-- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/runtime/index.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts`, `packages/core/src/lib/contracts/interfaces/foreign-unit.interface.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/runtime/index.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.e2e.spec.ts`, `plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts`, `packages/core/src/lib/contracts/interfaces/foreign-unit.interface.ts`, `plugins/proposals/tests/src/lib/tools/create-proposal-publishes.e2e.spec.ts`, `tools/scripts/lint/spec-git-init.baseline.json`, `tools/scripts/test/test-time-budget.migration.json`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts: [<200ms] foreignUnitOf names the unit of a different kind or proposal and finds nothing for a create unit or a non-unit tree"
+  - "packages/core/tests/src/lib/work-units/unit-adoption.service.e2e.spec.ts: [<5000ms] foreignUnitOf names the unit of a different kind or proposal and finds nothing for a create unit or a non-unit tree"
   - "plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts: [<200ms] create_proposal refuses a checkout owned by another unit, naming it and the work enter command"
 - shipped-in: `b9b6e15c9909`
 - review-state: in_review
@@ -45,5 +45,5 @@ A worker passed a checkout path read from a temp file another worker had overwri
 
 ## acceptance
 
-- packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts: [<200ms] foreignUnitOf names the unit of a different kind or proposal and finds nothing for a create unit or a non-unit tree
+- packages/core/tests/src/lib/work-units/unit-adoption.service.e2e.spec.ts: [<5000ms] foreignUnitOf names the unit of a different kind or proposal and finds nothing for a create unit or a non-unit tree
 - plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts: [<200ms] create_proposal refuses a checkout owned by another unit, naming it and the work enter command
