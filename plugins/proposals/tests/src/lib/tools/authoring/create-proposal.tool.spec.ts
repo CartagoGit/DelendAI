@@ -2,7 +2,7 @@
  * create-proposal.tool.spec.ts — the create_proposal handler: where it
  * writes, what it refuses, and the publication step it names.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -120,6 +120,7 @@ describe('create_proposal', () => {
 		expect(refused.isError).toBe(true);
 		expect(refused.content[0]?.text).toContain(unit);
 		expect(refused.content[0]?.text).toContain('work enter');
+		expect(existsSync(join(tree, 'docs/delendai/proposals'))).toBe(false);
 	});
 
 	it('[<200ms] refuses a document it cannot write', async () => {

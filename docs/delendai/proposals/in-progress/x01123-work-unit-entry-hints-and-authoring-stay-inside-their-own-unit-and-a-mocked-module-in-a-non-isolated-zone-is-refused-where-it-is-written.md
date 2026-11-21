@@ -50,11 +50,11 @@ Four workflow defects found on 2026-11-21 are fixed at their roots: the lease hi
 
 ### S3 — proposals create refuses a cwd that is another unit's worktree or targets its own create unit
 - **Status**: pending
-- **Files**: `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts`
+- **Files**: `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts`, `plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "create-proposal.tool.spec.ts: called with a checkout that is the worktree of a non-create unit, the tool refuses naming that unit and writes nothing; called from a create unit it writes there."
+  - "create-proposal.tool.spec.ts: called with a checkout that is the worktree of a non-create unit, the tool refuses naming that unit and writes nothing; create-proposal.tool.e2e.spec.ts: called from a create unit it writes there."
 
 ## acceptance
 
