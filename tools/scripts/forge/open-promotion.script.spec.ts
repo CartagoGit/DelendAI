@@ -141,7 +141,7 @@ const created = (asked: readonly string[][]): readonly string[] | undefined =>
 	asked.find((args) => args[0] === 'pr' && args[1] === 'create');
 
 describe('promotionPlanOf', () => {
-	it('[<580ms] is the branches, the cadence and the checks the project declares', () => {
+	it('[<200ms] is the branches, the cadence and the checks the project declares', () => {
 		expect(promotionPlanOf(configOf({ schedule: '0 6 * * 1' }))).toEqual({
 			integration: 'trunk',
 			release: 'release/2.x',
@@ -165,7 +165,7 @@ describe('promotionPlanOf', () => {
 });
 
 describe('openPromotion', () => {
-	it('[<1590ms] opens the pull request between the project branches when everything is ready', async () => {
+	it('[<200ms] opens the pull request between the project branches when everything is ready', async () => {
 		const { forge, asked } = forgeWith({});
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -193,7 +193,7 @@ describe('openPromotion', () => {
 		]);
 	});
 
-	it('[<270ms] only says what it would open without --apply', async () => {
+	it('[<200ms] only says what it would open without --apply', async () => {
 		const { forge, asked } = forgeWith({});
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -205,7 +205,7 @@ describe('openPromotion', () => {
 		expect(created(asked)).toBeUndefined();
 	});
 
-	it('[<310ms] opens nothing and names each condition when it is not ready', async () => {
+	it('[<200ms] opens nothing and names each condition when it is not ready', async () => {
 		const { forge, asked } = forgeWith({
 			checks: JSON.stringify([
 				{ name: 'validate', conclusion: 'failure', completed_at: 'z' },
@@ -226,7 +226,7 @@ describe('openPromotion', () => {
 		expect(said).toContain('roadmap 2.4.0');
 	});
 
-	it('[<370ms] is held back while the integration branch does not carry its release', async () => {
+	it('[<200ms] is held back while the integration branch does not carry its release', async () => {
 		const { forge, asked } = forgeWith({});
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -244,7 +244,7 @@ describe('openPromotion', () => {
 		expect(said).toContain('release:prepare --write');
 	});
 
-	it('[<390ms] is not held back by a check that never reported, since the promotion runs the full suite', async () => {
+	it('[<200ms] is not held back by a check that never reported, since the promotion runs the full suite', async () => {
 		const { forge } = forgeWith({ checks: '[]' });
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -255,7 +255,7 @@ describe('openPromotion', () => {
 		expect(result.outcome).toBe('opened');
 	});
 
-	it('[<320ms] is held back by a forge that cannot be asked', async () => {
+	it('[<200ms] is held back by a forge that cannot be asked', async () => {
 		const { forge } = forgeWith({
 			alerts: { error: 'HTTP 502: Bad Gateway' },
 		});
@@ -269,7 +269,7 @@ describe('openPromotion', () => {
 		expect(result.lines.join('\n')).toContain('could not be asked');
 	});
 
-	it('[<750ms] takes a code scanning analysis on the head for its check, which reports on pull requests only', async () => {
+	it('[<200ms] takes a code scanning analysis on the head for its check, which reports on pull requests only', async () => {
 		const checks = (head: string) =>
 			JSON.stringify([
 				{
@@ -313,7 +313,7 @@ describe('openPromotion', () => {
 		expect(open.outcome).toBe('would-open');
 	});
 
-	it('[<350ms] is not held back by a project that has no code scanning', async () => {
+	it('[<200ms] is not held back by a project that has no code scanning', async () => {
 		const { forge } = forgeWith({
 			alerts: { error: 'HTTP 404: no analysis found' },
 		});
@@ -339,7 +339,7 @@ describe('openPromotion', () => {
 		expect(created(asked)).toBeUndefined();
 	});
 
-	it('[<260ms] runs everything and opens one urgent repair for the range when it is red', async () => {
+	it('[<200ms] runs everything and opens one urgent repair for the range when it is red', async () => {
 		const sha = 'f'.repeat(40);
 		const { forge, asked } = forgeWith({
 			openPullRequest: '41\n',
@@ -401,7 +401,7 @@ describe('openPromotion', () => {
 		).toBe(false);
 	});
 
-	it('[<270ms] says so when the pull request could not be opened', async () => {
+	it('[<200ms] says so when the pull request could not be opened', async () => {
 		const { forge } = forgeWith({ create: { error: 'no permission' } });
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -458,7 +458,7 @@ describe('openPromotion', () => {
 		.map((alert) => JSON.stringify(alert))
 		.join('\n');
 
-	it('[<260ms] carries the alerts the integration branch fixes into the body and names the rest', async () => {
+	it('[<200ms] carries the alerts the integration branch fixes into the body and names the rest', async () => {
 		const { forge, asked } = forgeWith({ dependabot: ALERTS });
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -476,7 +476,7 @@ describe('openPromotion', () => {
 		);
 	});
 
-	it('[<260ms] says the alerts could not be read instead of dropping them', async () => {
+	it('[<200ms] says the alerts could not be read instead of dropping them', async () => {
 		const { forge } = forgeWith({ dependabot: 'not json' });
 		const result = await openPromotion({
 			root: project('delivered'),
