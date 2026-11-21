@@ -343,10 +343,11 @@ export const withWorkRefHeld = async <T>(
 	}
 	const hold = options.hold ?? holdWorkRef;
 	const pollMs = options.pollMs ?? WORK_PUBLISH_HOLD_POLL_MS;
-	const deadline = Date.now() + (options.waitMs ?? WORK_PUBLISH_HOLD_WAIT_MS);
+	const deadline =
+		performance.now() + (options.waitMs ?? WORK_PUBLISH_HOLD_WAIT_MS);
 	const attempt = () => hold({ gitCommonDir: common.out, ref: workRef });
 	let held = await attempt();
-	while (held.kind === 'busy' && Date.now() < deadline) {
+	while (held.kind === 'busy' && performance.now() < deadline) {
 		await new Promise((resolve) => setTimeout(resolve, pollMs));
 		held = await attempt();
 	}
