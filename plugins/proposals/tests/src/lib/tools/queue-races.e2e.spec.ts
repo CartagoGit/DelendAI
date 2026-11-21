@@ -21,6 +21,7 @@ import { LockContentionError } from '@delendai/core/public';
 
 import { parseQueue } from '@delendai/proposals/lib/agents/persistent-task-queue';
 import {
+	buildAgentNamesRegistration,
 	runAgentNames,
 	type IAgentNamesToolOptions,
 } from '@delendai/proposals/lib/tools/agent-names.tool';
@@ -202,6 +203,44 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		}
 		const queue = await parseQueue(queuePath, closedTasksPath, root);
 		expect(queue.entries).toEqual([]);
+	});
+
+	it('[<500ms] the registered tool runs the same reconcile and assigns around a cooldown', async () => {
+		const registryPath = join(root, 'registry-reg.json');
+		const lockPath = join(root, 'agent-lock-reg.json');
+		const cooling = JSON.parse(zombieRegistry('task-cool')) as {
+			assignments: Array<Record<string, unknown>>;
+		};
+		cooling.assignments[0] = {
+			...cooling.assignments[0],
+			status: 'cooldown',
+			last_seen: new Date().toISOString(),
+			cooldown_until: new Date(Date.now() + 3_600_000).toISOString(),
+		};
+		writeFileSync(registryPath, JSON.stringify(cooling));
+		writeFileSync(lockPath, JSON.stringify({ version: 1, in_flight: [] }));
+		let handler: ToolHandler | undefined;
+		const server = createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as ToolHandler;
+			},
+		});
+		await buildAgentNamesRegistration(
+			namesOptions(registryPath, lockPath),
+		).register(server);
+		if (handler === undefined)
+			throw new Error('agent_names not registered');
+		const assigned = await handler({
+			action: 'assign',
+			task_id: 'task-new',
+			agent_slot: 'implementation_runner',
+		});
+		expect(assigned.content[0]?.text).toContain('task-new');
+		const reconciled = await handler({
+			action: 'reconcile',
+			dry_run: true,
+		});
+		expect(reconciled.content[0]?.text).not.toContain('notEnqueued');
 	});
 
 	it('[<1500ms] the expire sweep racing concurrent enqueues clobbers nothing', async () => {
