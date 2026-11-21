@@ -2,6 +2,10 @@
  * work-deliver.service.spec.ts — one command proves, hands over and
  * publishes, stops at the first refusal, and republishes what is in review.
  */
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -11,10 +15,17 @@ import {
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
 import {
 	answerOf,
-	deliverUnit,
+	deliverUnit as deliverLocked,
 	pullRequestOf,
 	unitFlagsOf,
 } from './work-deliver.service';
+
+// Locks live in this spec's own directory, so no other run shares them.
+const lockDir = mkdtempSync(join(tmpdir(), 'deliver-spec-'));
+const deliverUnit = (
+	value: IWorkDeliverPorts,
+	options: Parameters<typeof deliverLocked>[1] = {},
+) => deliverLocked(value, { dir: lockDir, ...options });
 
 const ports = (
 	answers: {
@@ -638,5 +649,50 @@ describe('deliverUnit, a stale second copy of a moved proposal', () => {
 		expect(result.code).toBe(EXIT_CODE.VALIDATION);
 		expect(result.error).toContain('carry the edits of ready/x1-a.md');
 		expect(calls).toEqual([]);
+	});
+});
+
+describe('deliverUnit, one delivery per unit', () => {
+	const gated = () => {
+		let open: () => void = () => undefined;
+		const gate = new Promise<void>((resolve) => {
+			open = resolve;
+		});
+		return { gate, open };
+	};
+
+	it('[<50ms] lets one of two concurrent deliveries proceed and refuses the other naming the running pid', async () => {
+		const { gate, open } = gated();
+		const first = ports({});
+		const slow: IWorkDeliverPorts = {
+			...first.value,
+			prove: async () => {
+				await gate;
+				return { code: EXIT_CODE.OK, data: { proved: true } };
+			},
+		};
+		const running = deliverUnit(slow, { pid: 4242 });
+		await new Promise((resolve) => setImmediate(resolve));
+		const second = ports({});
+		const refused = await deliverUnit(second.value, {
+			pid: 7,
+			isAlive: () => true,
+		});
+		expect(refused.code).toBe(EXIT_CODE.VALIDATION);
+		expect(refused.error).toContain('pid 4242');
+		expect(second.calls).toEqual([]);
+		open();
+		expect((await running).code).toBe(EXIT_CODE.OK);
+	});
+
+	it('[<50ms] releases the lock when the delivery succeeds and when it fails', async () => {
+		const ok = ports({});
+		expect((await deliverUnit(ok.value)).code).toBe(EXIT_CODE.OK);
+		const failed = ports({}, EXIT_CODE.VALIDATION);
+		expect((await deliverUnit(failed.value)).code).toBe(
+			EXIT_CODE.VALIDATION,
+		);
+		const after = ports({});
+		expect((await deliverUnit(after.value)).code).toBe(EXIT_CODE.OK);
 	});
 });

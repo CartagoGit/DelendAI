@@ -13,6 +13,8 @@ import { EXIT_CODE } from '../contracts/constants/exit-code.constant';
 import type { ICliCommandResult } from '../contracts/interfaces/cli-command.interface';
 import type { IWorkDeliverPorts } from '../contracts/interfaces/work-deliver.interface';
 import { isRecord } from './helpers/cli-command.helper';
+import type { IDeliverLockOptions } from '../contracts/interfaces/deliver-lock.interface';
+import { acquireDeliverLock } from './work-deliver-lock.service';
 
 const textOf = (value: unknown): string | undefined =>
 	typeof value === 'string' && value.length > 0 ? value : undefined;
@@ -237,9 +239,10 @@ const pullRequestWithLookup = async (
 
 export const deliverUnit = async (
 	ports: IWorkDeliverPorts,
+	lockOptions: IDeliverLockOptions = {},
 ): Promise<ICliCommandResult> => {
 	const track = { gate: false };
-	const result = await runDelivery(ports, track);
+	const result = await runDelivery(ports, track, lockOptions);
 	if (result.code !== 0 && ports.recordFailure !== undefined) {
 		try {
 			await ports.recordFailure({
@@ -261,11 +264,38 @@ export const deliverUnit = async (
 const runDelivery = async (
 	ports: IWorkDeliverPorts,
 	track: { gate: boolean },
+	lockOptions: IDeliverLockOptions,
 ): Promise<ICliCommandResult> => {
 	const located = await ports.locate();
 	if (located.code !== 0) return located;
 	const unit = isRecord(located.data) ? located.data : {};
 	const checkout = textOf(unit.worktree);
+	// One delivery per unit at a time: a second one would race the first on
+	// the unit's git index. It is refused at once, naming the running pid.
+	const lock = await acquireDeliverLock(
+		checkout ?? `slice:${ports.slice}`,
+		lockOptions,
+	);
+	if (!lock.held) {
+		return {
+			code: EXIT_CODE.VALIDATION,
+			error: `Another work deliver (pid ${lock.pid}) is already running on this unit; wait for it to end, then deliver again.`,
+		};
+	}
+	try {
+		return await runLockedDelivery(ports, track, checkout, located);
+	} finally {
+		await lock.release();
+	}
+};
+
+const runLockedDelivery = async (
+	ports: IWorkDeliverPorts,
+	track: { gate: boolean },
+	checkout: string | undefined,
+	located: ICliCommandResult,
+): Promise<ICliCommandResult> => {
+	const unit = isRecord(located.data) ? located.data : {};
 	// A proposal moved in this unit and edited at its old place on develop
 	// leaves two copies after the merge: the earlier one goes, before the proof.
 	const stale = await ports.dropStaleProposalCopies(checkout);
