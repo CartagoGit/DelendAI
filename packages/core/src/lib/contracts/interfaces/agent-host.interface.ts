@@ -1,0 +1,137 @@
+/**
+ * agent-host.interface.ts — an editor or agent host delendai writes agents
+ * and instructions for, and an agent written once for all of them.
+ */
+
+/** The agent file formats delendai renders. */
+export type IAgentFileFormat = 'copilot' | 'claude' | 'codex' | 'opencode';
+
+/** One host: where its agents and instructions go, and how it is recognised. */
+export interface IAgentHost {
+	readonly id: string;
+	readonly label: string;
+	/** Where its agent files go, when it reads agent files at all. */
+	readonly agents?: {
+		readonly dir: string;
+		/** File name for an agent named `name`. */
+		readonly suffix: string;
+		readonly format: IAgentFileFormat;
+	};
+	/**
+	 * Where it reads project skills, relative to the project root: one
+	 * folder per skill, each holding a `SKILL.md`. Absent for a host that
+	 * reads none.
+	 */
+	readonly skills?: {
+		readonly dir: string;
+		/**
+		 * It can run a skill in a forked context (`context: fork` in the
+		 * skill's frontmatter), returning only the result to the main thread.
+		 */
+		readonly forkContext?: boolean;
+	};
+	/** The instructions file it reads, relative to the project root. */
+	readonly instructions?: string;
+	/**
+	 * Other files it still reads instructions from, which delendai never
+	 * writes but folds into the project's one canonical document.
+	 */
+	readonly legacyInstructions?: readonly string[];
+	/** Paths in the project, or variables in the environment, that mean it is in use. */
+	/**
+	 * The files the host keeps for the person, outside any project. A host
+	 * with none is reported as not covered by the user-level migration.
+	 */
+	readonly userConfig?: readonly IAgentHostUserConfigFile[];
+	readonly evidence: {
+		readonly paths: readonly string[];
+		readonly env?: readonly string[];
+	};
+	/** How it is recognised as the program an agent runs in, when it is one. */
+	readonly identity?: IAgentHostIdentity;
+	/**
+	 * What it offers natively to compact a session: the environment variable
+	 * that sets its auto-compaction threshold (a percentage of the context)
+	 * and the lifecycle hooks it runs. Absent for a host with neither.
+	 */
+	readonly compaction?: {
+		readonly thresholdEnv?: string;
+		/** Hook events in the order they run: before compaction, at session start. */
+		readonly hooks?: {
+			readonly beforeCompaction?: string;
+			readonly sessionStart?: string;
+		};
+	};
+}
+
+/** The one compaction policy; every host gets it in its own form. */
+export interface ICompactionPolicy {
+	/** Percentage of the context at which a session compacts (1..99). */
+	readonly thresholdPercent: number;
+	/** The command that persists the handover and re-injects its index. */
+	readonly handoverCommand: string;
+}
+
+/** A host's compaction setup: its native setting, or a directive from the server. */
+export type ICompactionRendering =
+	| {
+			readonly kind: 'native';
+			readonly hostId: string;
+			readonly env: Readonly<Record<string, string>>;
+			readonly hooks: readonly {
+				readonly event: string;
+				readonly command: string;
+			}[];
+	  }
+	| {
+			readonly kind: 'directive';
+			readonly hostId: string;
+			readonly directive: string;
+	  };
+
+/**
+ * What a host leaves behind when it runs an agent. Every list that names
+ * hosts by one of these is derived from `AGENT_HOSTS`, never kept beside it.
+ */
+/** One user-level config file of a host. */
+export interface IAgentHostUserConfigFile {
+	/** `home`: under the home directory; `vscode-user`: under VS Code's User directory. */
+	readonly location: 'home' | 'vscode-user';
+	readonly path: string;
+	readonly format: 'json' | 'toml';
+}
+
+export interface IAgentHostIdentity {
+	/** The name a composite agent identity records for it (`vscode-copilot`). */
+	readonly name?: string;
+	/** Its part of a composite branch name, when not `name`. */
+	readonly slug?: string;
+	/** Names its MCP client or process reports: a program, never a model. */
+	readonly applications?: readonly string[];
+	/** Variables it sets in every shell it drives. */
+	readonly markers?: readonly string[];
+	/** Prefixes of variables only it sets. */
+	readonly markerPrefixes?: readonly string[];
+	/** Its user directory names, where its chat state is kept. */
+	readonly chatProducts?: readonly string[];
+}
+
+/** An agent as delendai declares it, before any host's format. */
+export interface IHostNeutralAgent {
+	/** Kebab-case, already prefixed (`delendai-orchestrator`). */
+	readonly name: string;
+	readonly description: string;
+	readonly instructions: string;
+	/** The one agent a person picks; the others are subagents. */
+	readonly entryPoint: boolean;
+	/** The MCP server key its tools come from, for hosts that grant by server. */
+	readonly serverToolSet: string;
+}
+
+/** Why these hosts were chosen. */
+export type IProjectHostsSource = 'declared' | 'detected' | 'none';
+
+export interface IProjectHosts {
+	readonly hosts: readonly IAgentHost[];
+	readonly source: IProjectHostsSource;
+}

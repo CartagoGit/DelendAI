@@ -1,0 +1,26 @@
+import { definePluginManifest } from '@delendai/core/public';
+
+export default definePluginManifest({
+	id: 'memory',
+	package: '@delendai/memory',
+	version: '0.3.0',
+	visibility: 'public',
+	summary: 'Persistent memory store (BM25 + recall, save, search).',
+	tags: ['memory', 'persistence'],
+	maturity: 'stable',
+	permissions: ['filesystem-read', 'filesystem-write'],
+	presets: ['solo', 'team-pr', 'swarm', 'docs-web', 'everything', 'dogfood'],
+	// f00179 S2 — memory exposes 5 tools (save, recall, search,
+	// forget, summarise). The store watcher + BM25 index add a
+	// fixed 1.2 KB registration cost. Measured 2026-08-25.
+	tokenBudget: {
+		staticBytes: 8_202,
+		adaptiveActivationBytes: 720,
+		typicalOutput: 1_100,
+		caps: { hard: 9_440, warning: 8_620 },
+		measuredAt: '2026-11-01',
+		source: 'token-budget-real',
+	},
+	dependencies: ['@delendai/core', '@modelcontextprotocol/sdk', 'zod'],
+	capabilities: ['memory', 'persistence'],
+});
