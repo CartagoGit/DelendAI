@@ -54,8 +54,6 @@ export interface ILandRepairPorts {
 	readonly git: ILandRevertGit;
 	/** Completed CI runs of the integration branch, newest first. */
 	recentRuns(): Promise<readonly ILandCiRun[]>;
-	/** The section a failed check reports, as the project names it. */
-	readonly sectionOfCheck: (name: string) => string | undefined;
 	readonly develop: IDevelopRedPorts;
 	/** Where the repairs' branches live: `<ns>/queue/repair/`. */
 	readonly repairPrefix: string;
