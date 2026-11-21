@@ -23,6 +23,13 @@ export interface IWorkDeliverPorts {
 	) => Promise<boolean>;
 	readonly locate: () => Promise<ICliCommandResult>;
 	/**
+	 * Removes the stale second copy of a moved proposal (and commits it) in
+	 * the unit's checkout; the paths removed, none when there is no stale copy.
+	 */
+	readonly dropStaleProposalCopies: (
+		checkout: string | undefined,
+	) => Promise<readonly string[]>;
+	/**
 	 * The proof's cheap static gates, scoped to the change, run before the
 	 * compute slot is taken (`work prove --only=precheck`).
 	 */

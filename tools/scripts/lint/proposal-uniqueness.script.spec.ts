@@ -269,3 +269,29 @@ describe('checkProposalUniqueness over a real fixture tree', () => {
 		rmSync(nested, { recursive: true, force: true });
 	});
 });
+
+describe('the x01123 case, one id in ready/ and review/', () => {
+	const tree = [
+		proposal('ready/fixes/x01123-a.md', 'x01123', 'ready'),
+		proposal('review/fixes/x01123-a.md', 'x01123', 'review'),
+	];
+
+	it('[<20ms] reports both paths and the folder to keep', () => {
+		const result = findDuplicateProposals(collectProposalRecords(tree));
+		expect(result.duplicates[0]?.keepFolder).toBe('review');
+		const report = formatReport(result);
+		expect(report).toContain('ready/fixes/x01123-a.md');
+		expect(report).toContain('review/fixes/x01123-a.md');
+		expect(report).toContain('keep the copy in review/');
+	});
+
+	it('[<20ms] names no folder when the copies tie', () => {
+		const result = findDuplicateProposals(
+			collectProposalRecords([
+				proposal('ready/a/x00001-a.md', 'x00001', 'ready'),
+				proposal('ready/b/x00001-a.md', 'x00001', 'ready'),
+			]),
+		);
+		expect(result.duplicates[0]?.keepFolder).toBeNull();
+	});
+});
