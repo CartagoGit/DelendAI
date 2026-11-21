@@ -38,9 +38,9 @@ The CLI forwarded only title, kind, goal, track and slices. The scaffold refuses
 - **Decisions**: none
 - acceptance:
   - "packages/cli/src/commands/groups/proposals.spec.ts: proposals create maps --why, --non-goals and --from onto delendai_proposals_create_proposal"
-  - "nice -n 19 delendai lint:cli:i18n passes with the new flags summarised"
+  - "`bun run lint:cli:i18n` passes with the new flags summarised"
 
 ## acceptance
 
 - packages/cli/src/commands/groups/proposals.spec.ts: proposals create maps --why, --non-goals and --from onto delendai_proposals_create_proposal
-- nice -n 19 delendai lint:cli:i18n passes with the new flags summarised
+- `bun run lint:cli:i18n` passes with the new flags summarised

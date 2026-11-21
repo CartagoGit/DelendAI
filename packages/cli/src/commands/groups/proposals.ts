@@ -115,7 +115,8 @@ const createCommand: ICliCommand = {
 		const fromPath = scalarArg(args, 'from');
 		const base = fromPath === undefined ? {} : readCreateFile(fromPath);
 		if (base === undefined) return usage(CREATE_USAGE);
-		const title = scalarArg(args, 'title') ?? base['title'];
+		const { title: fileTitle } = base as { title?: unknown };
+		const title = scalarArg(args, 'title') ?? fileTitle;
 		if (typeof title !== 'string') return usage(CREATE_USAGE);
 		const slices = jsonArg(args, 'slices');
 		const flags = {
