@@ -45,7 +45,9 @@ describe('the rehearsal workflow', () => {
 		);
 		expect(text).toContain("- 'plugins/integration/**'");
 		expect(text).toContain("- '.github/workflows/rehearsal.yml'");
-		expect(text).not.toContain('push:');
+		expect(text).toContain('    push:');
+		expect(text).toContain("- 'packages/core/src/lib/integration/land/**'");
+		expect(text).toContain("- 'plugins/integration/src/**'");
 	});
 
 	it('[<50ms] takes the mode and the scenarios, and keeps the merged report as an artifact', () => {
@@ -59,10 +61,16 @@ describe('the rehearsal workflow', () => {
 		);
 	});
 
-	it('[<50ms] has the three jobs plan, play and report, in that order', () => {
+	it('[<50ms] has the in-process, plan, play, report and cleanup jobs, in that order', () => {
 		const text = render();
-		const jobs = [...text.matchAll(/^ {4}([a-z]+):$/gmu)].map((m) => m[1]);
-		expect(jobs.slice(-3)).toEqual(['plan', 'play', 'report']);
+		const jobs = [...text.matchAll(/^ {4}([a-z-]+):$/gmu)].map((m) => m[1]);
+		expect(jobs.slice(-5)).toEqual([
+			'in-process',
+			'plan',
+			'play',
+			'report',
+			'cleanup',
+		]);
 		expect(text).toContain('needs: plan');
 		expect(text).toMatch(
 			/report:[\s\S]*needs: \[plan, play\][\s\S]*if: always\(\)/u,
@@ -116,5 +124,30 @@ describe('the rehearsal workflow', () => {
 		expect(text).toContain(
 			'GH_TOKEN: ${{ secrets.DELENDAI_INTEGRATOR_TOKEN }}',
 		);
+	});
+
+	it('[<50ms] holds no real forge step in the pull request plan', () => {
+		const text = render();
+		const inProcess =
+			text.split('    in-process:')[1]?.split('    plan:')[0] ?? '';
+		expect(inProcess).toContain("github.event_name == 'pull_request'");
+		expect(inProcess).not.toContain('GH_TOKEN');
+		expect(inProcess).not.toContain('integration rehearse');
+		expect(inProcess).not.toMatch(/\bgh /u);
+		expect(inProcess).not.toContain('create-github-app-token');
+		for (const job of ['plan', 'play', 'report', 'cleanup']) {
+			const body =
+				text.split(`    ${job}:`)[1]?.split(/\n {4}\w/u)[0] ?? '';
+			expect(body).toContain("github.event_name != 'pull_request'");
+		}
+	});
+
+	it('[<50ms] sweeps the run in a cleanup job that runs after a failed or cancelled play', () => {
+		const cleanup = render().split('    cleanup:')[1] ?? '';
+		expect(cleanup).toContain('needs: [play]');
+		expect(cleanup).toContain(
+			"if: always() && github.event_name != 'pull_request'",
+		);
+		expect(cleanup).toContain('integration rehearse --sweep');
 	});
 });

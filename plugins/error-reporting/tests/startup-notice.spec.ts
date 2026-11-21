@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
 	announceErrorReportingStartup,
@@ -7,7 +7,7 @@ import {
 } from '../src/lib/startup-notice.helper';
 
 describe('buildErrorReportingStartupNotice', () => {
-	it('tells an operator it is ON, where reports go, and how to turn it off', () => {
+	it('[<7ms] tells an operator it is ON, where reports go, and how to turn it off', () => {
 		// Reporting that is on by default is only legitimate if the person
 		// it runs for is told in the same breath what leaves the machine
 		// and which line to flip. A notice missing either half turns the
@@ -22,7 +22,7 @@ describe('buildErrorReportingStartupNotice', () => {
 		expect(text).toContain(`${ERROR_REPORTING_ENABLE_CONFIG} = false`);
 	});
 
-	it('states the privacy contract in the notice itself, not behind a link', () => {
+	it('[<7ms] states the privacy contract in the notice itself, not behind a link', () => {
 		const text = buildErrorReportingStartupNotice({
 			enabled: true,
 			targetRepo: 'CartagoGit/delendai',
@@ -31,7 +31,7 @@ describe('buildErrorReportingStartupNotice', () => {
 		expect(text).toContain('delendai-internal errors');
 	});
 
-	it('asks the operator to switch it on when it is OFF', () => {
+	it('[<7ms] asks the operator to switch it on when it is OFF', () => {
 		// A silent opt-out means nobody ever reconsiders; the ask is the
 		// only thing that recovers debuggability for an adopter who
 		// disabled it once and forgot.
@@ -46,7 +46,7 @@ describe('buildErrorReportingStartupNotice', () => {
 });
 
 describe('announceErrorReportingStartup', () => {
-	it('writes every line through the injected writer', () => {
+	it('[<7ms] writes every line through the injected writer', () => {
 		const written: string[] = [];
 		announceErrorReportingStartup(
 			buildErrorReportingStartupNotice({
@@ -59,7 +59,7 @@ describe('announceErrorReportingStartup', () => {
 		expect(written[0]?.endsWith('\n')).toBe(true);
 	});
 
-	it('never throws when the writer does', () => {
+	it('[<7ms] never throws when the writer does', () => {
 		// A boot message must not be able to stop the server it describes.
 		expect(() =>
 			announceErrorReportingStartup(
@@ -72,5 +72,22 @@ describe('announceErrorReportingStartup', () => {
 				},
 			),
 		).not.toThrow();
+	});
+});
+
+describe('announceErrorReportingStartup on the default writer', () => {
+	it('[<7ms] prints once per process tree', () => {
+		const key = 'DELENDAI_ERROR_REPORTING_NOTICE_SHOWN';
+		const before = process.env[key];
+		process.env[key] = '1';
+		const spy = vi.spyOn(process.stderr, 'write');
+		try {
+			announceErrorReportingStartup({ lines: ['x'] });
+			expect(spy).not.toHaveBeenCalled();
+		} finally {
+			spy.mockRestore();
+			if (before === undefined) delete process.env[key];
+			else process.env[key] = before;
+		}
 	});
 });
