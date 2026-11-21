@@ -34,23 +34,23 @@ The alerts are open on develop and block promotion. #493/#494: two copies of a b
 
 ### S1 — Shared linear git diff path parser
 - **Status**: pending
-- **Files**: `plugins/git/src/lib/services/git.ts`, `plugins/git/src/public/index.ts`, `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`, `plugins/git/tests/src/lib/git.spec.ts`
+- **Files**: `plugins/git/src/lib/services/git.ts`, `plugins/git/src/public/index.ts`, `plugins/context-for-change/src/lib/services/context-for-change.service.ts`, `plugins/impact-analysis/src/lib/services/impact-analysis.service.ts`, `new:plugins/git/tests/src/lib/diff-paths.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "parseDiffFilePaths in @delendai/git reads diff --git headers with lastIndexOf and +++ b/ lines, no backtracking regex"
-  - "both plugins use it; alerts 493 and 494 close"
+  - "plugins/git/tests/src/lib/diff-paths.spec.ts: parseDiffFilePaths in @delendai/git reads diff --git headers with lastIndexOf and +++ b/ lines, no backtracking regex"
+  - "plugins/git/tests/src/lib/diff-paths.spec.ts passes with both plugin specs; alerts 493 and 494 close"
   - "spec with adversarial 100k-char header finishes in well under 400ms"
 
 ### S2 — verify-develop-health output path validation
 - **Status**: pending
-- **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `tools/scripts/ci/verify-develop-health.script.spec.ts`
+- **Files**: `tools/scripts/ci/verify-develop-health.script.ts`, `new:tools/tests/ci/verify-develop-health-output.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "--output is resolved and must stay inside the workspace (or be an explicit absolute path accepted deliberately), otherwise exit 2"
+  - "tools/tests/ci/verify-develop-health-output.spec.ts: --output is resolved and must stay inside the workspace (or be an explicit absolute path accepted deliberately), otherwise exit 2"
   - "only the serialised known dashboard shape is written"
-  - "spec covers traversal rejection and valid path; alert 495 closes"
+  - "verify-develop-health-output.spec.ts covers traversal rejection and valid path; alert 495 closes"
 
 ### S3 — Fix no-op replace in work-unit-generation e2e spec
 - **Status**: pending
@@ -58,16 +58,16 @@ The alerts are open on develop and block promotion. #493/#494: two copies of a b
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "done only after PR 3149 is MERGED, on top of it"
-  - "the no-op replace is removed or turned into the intended spelling variant; spec passes; alert 492 closes"
+  - "work-unit-generation.service.e2e.spec.ts after PR 3149 (merged): develop already reads `const scoped = SCOPED;`, so nothing is left to change here"
+  - "work-unit-generation.service.e2e.spec.ts passes; alert 492 closes"
 
 ## acceptance
 
 - parseDiffFilePaths in @delendai/git reads diff --git headers with lastIndexOf and +++ b/ lines, no backtracking regex
-- both plugins use it; alerts 493 and 494 close
+- plugins/git/tests/src/lib/diff-paths.spec.ts passes with both plugin specs; alerts 493 and 494 close
 - spec with adversarial 100k-char header finishes in well under 400ms
-- --output is resolved and must stay inside the workspace (or be an explicit absolute path accepted deliberately), otherwise exit 2
+- tools/tests/ci/verify-develop-health-output.spec.ts: --output is resolved and must stay inside the workspace (or be an explicit absolute path accepted deliberately), otherwise exit 2
 - only the serialised known dashboard shape is written
-- spec covers traversal rejection and valid path; alert 495 closes
-- done only after PR 3149 is MERGED, on top of it
-- the no-op replace is removed or turned into the intended spelling variant; spec passes; alert 492 closes
+- verify-develop-health-output.spec.ts covers traversal rejection and valid path; alert 495 closes
+- work-unit-generation.service.e2e.spec.ts after PR 3149 (merged): develop already reads `const scoped = SCOPED;`, so nothing is left to change here
+- work-unit-generation.service.e2e.spec.ts passes; alert 492 closes
