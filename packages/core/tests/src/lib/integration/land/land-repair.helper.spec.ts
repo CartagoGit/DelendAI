@@ -1,0 +1,240 @@
+import { describe, expect, it } from 'vitest';
+
+import { fakePartial } from '@delendai/test-kit';
+import { repairDevelopRed } from '@delendai/core/lib/integration/land/land-repair.helper';
+import type {
+	ILandCheck,
+	ILandForge,
+	ILandPullRequest,
+} from '@delendai/core/lib/integration/land/land.interface';
+import type {
+	ILandCiRun,
+	ILandRevertBuild,
+} from '@delendai/core/lib/integration/land/land-revert.interface';
+
+const SPEC = 'packages/x/tests/a.spec.ts';
+
+const scene = (input: {
+	runs: ILandCiRun[];
+	tip?: string;
+	build?: ILandRevertBuild;
+	/** The red check names no spec: only its zone is known. */
+	zoneOnly?: boolean;
+}) => {
+	const opened: string[] = [];
+	const pushed: string[] = [];
+	const labels: [number, string][] = [];
+	const forge = fakePartial<ILandForge>({
+		integrationTip: () => Promise.resolve(input.tip ?? 'r'),
+		checks: () =>
+			Promise.resolve<ILandCheck[]>([
+				{
+					name: 'zone-a',
+					conclusion: 'failure',
+					...(input.zoneOnly ? {} : { failingSpecs: [SPEC] }),
+				},
+				{ name: 'lint', conclusion: 'success' },
+			]),
+		openPullRequests: () =>
+			Promise.resolve(
+				opened.map(
+					(head, i): ILandPullRequest => ({
+						number: 900 + i,
+						headRef: head,
+						headSha: 's',
+						draft: false,
+						state: 'open',
+						merged: false,
+						labels: [],
+						body: '',
+						testedBase: 't',
+					}),
+				),
+			),
+		openPullRequest: ({ head }) => {
+			opened.push(head);
+			return Promise.resolve(899 + opened.length);
+		},
+		addLabel: (n, l) => {
+			labels.push([n, l]);
+			return Promise.resolve();
+		},
+		pullRequest: (n) =>
+			Promise.resolve<ILandPullRequest>({
+				number: n,
+				headRef: 'h',
+				headSha: 's',
+				draft: false,
+				state: 'closed',
+				merged: true,
+				labels: [],
+				body: '',
+				testedBase: 't',
+			}),
+		comments: () => Promise.resolve([]),
+		comment: () => Promise.resolve(),
+	});
+	return {
+		opened,
+		pushed,
+		labels,
+		ports: {
+			forge,
+			git: {
+				revertMerge: ({ ref }: { ref: string }) => {
+					const built = input.build ?? { kind: 'built', sha: 'x' };
+					if (built.kind === 'built') pushed.push(ref);
+					return built;
+				},
+			},
+			recentRuns: () => Promise.resolve(input.runs),
+			repairPrefix: 'p/repair/',
+			note: () => undefined,
+			develop: {
+				mergesBetween: () =>
+					Promise.resolve([
+						{ number: 4, sha: 'm4' },
+						{ number: 5, sha: 'm5' },
+					]),
+				footprintOf: (merge: { number: number }) =>
+					Promise.resolve({
+						files: new Set(
+							merge.number === 5
+								? [SPEC]
+								: [`f${String(merge.number)}`],
+						),
+						zones: new Set(merge.number === 5 ? ['a'] : ['b']),
+					}),
+				recordKnownFailing: () => Promise.resolve(),
+			},
+		},
+	};
+};
+
+const RED: ILandCiRun[] = [
+	{ commit: 'r', conclusion: 'failure' },
+	{ commit: 'g', conclusion: 'success' },
+];
+
+describe('repairDevelopRed, known failures', () => {
+	it('[<50ms] writes an empty known-failing set for a green latest run', async () => {
+		const { ports } = scene({
+			runs: [{ commit: 'g', conclusion: 'success' }],
+		});
+		const recorded: [string, readonly string[]][] = [];
+		const out = await repairDevelopRed({
+			...ports,
+			develop: {
+				...ports.develop,
+				recordKnownFailing: (c, specs) => {
+					recorded.push([c, specs]);
+					return Promise.resolve();
+				},
+			},
+		});
+		expect(out.kind).toBe('nothing');
+		expect(recorded).toEqual([['g', []]]);
+	});
+});
+
+describe('repairDevelopRed', () => {
+	it('[<50ms] reverts the culprit of a red tip once, labelled as a repair', async () => {
+		const { ports, opened, labels } = scene({ runs: RED });
+		const out = await repairDevelopRed(ports);
+		expect(out).toEqual({ kind: 'opened', number: 900 });
+		expect(opened).toEqual(['p/repair/revert-5']);
+		expect(labels).toContainEqual([900, 'delendai:repair']);
+		expect(labels).toContainEqual([5, 'delendai:needs-update']);
+	});
+
+	it('[<50ms] run twice, opens no second revert', async () => {
+		const { ports, opened } = scene({ runs: RED });
+		await repairDevelopRed(ports);
+		const again = await repairDevelopRed(ports);
+		expect(again.kind).toBe('exists');
+		expect(opened).toHaveLength(1);
+	});
+
+	it('[<50ms] does nothing when the latest run is green, stale, or has no green baseline', async () => {
+		const green = scene({ runs: [{ commit: 'r', conclusion: 'success' }] });
+		expect((await repairDevelopRed(green.ports)).kind).toBe('nothing');
+		const stale = scene({ runs: RED, tip: 'later' });
+		expect((await repairDevelopRed(stale.ports)).kind).toBe('nothing');
+		const none = scene({ runs: [RED[0] as ILandCiRun] });
+		expect((await repairDevelopRed(none.ports)).kind).toBe('nothing');
+		expect(
+			green.opened.length + stale.opened.length + none.opened.length,
+		).toBe(0);
+	});
+
+	it('[<50ms] reports a conflicting revert as needing a person and pushes nothing', async () => {
+		const { ports, pushed, opened } = scene({
+			runs: RED,
+			build: { kind: 'conflict' },
+		});
+		expect((await repairDevelopRed(ports)).kind).toBe('needs-person');
+		expect(pushed).toHaveLength(0);
+		expect(opened).toHaveLength(0);
+	});
+
+	it('[<50ms] reverts nobody and records the failure when no footprint reaches it', async () => {
+		const { ports, opened, pushed } = scene({
+			runs: [
+				{ commit: '9c7bf7c44', conclusion: 'failure' },
+				{ commit: 'f2bcc09e6', conclusion: 'success' },
+			],
+			tip: '9c7bf7c44',
+		});
+		const recorded: [string, string[]][] = [];
+		const out = await repairDevelopRed({
+			...ports,
+			develop: {
+				...ports.develop,
+				mergesBetween: () =>
+					Promise.resolve([
+						{ number: 3127, sha: '45738a870' },
+						{ number: 3142, sha: '9c7bf7c44' },
+					]),
+				footprintOf: () =>
+					Promise.resolve({
+						files: new Set(['apps/web/x.ts']),
+						zones: new Set(['web']),
+					}),
+				recordKnownFailing: (commit: string, ids: string[]) => {
+					recorded.push([commit, ids]);
+					return Promise.resolve();
+				},
+			},
+		});
+		expect(out).toMatchObject({ kind: 'unowned', failing: [SPEC] });
+		expect(opened).toHaveLength(0);
+		expect(pushed).toHaveLength(0);
+		expect(recorded).toEqual([['9c7bf7c44', [SPEC]]]);
+	});
+});
+
+describe('repairDevelopRed, attribution by failing spec', () => {
+	it('[<50ms] reverts nobody for a red shard on a spec outside every merge footprint', async () => {
+		const { ports, opened } = scene({ runs: RED });
+		const out = await repairDevelopRed({
+			...ports,
+			develop: {
+				...ports.develop,
+				footprintOf: () =>
+					Promise.resolve({
+						files: new Set(['other.ts']),
+						zones: new Set(['a']),
+					}),
+			},
+		});
+		expect(out.kind).toBe('unowned');
+		expect(opened).toHaveLength(0);
+	});
+
+	it('[<50ms] reverts nobody when only the zone of the red check is known', async () => {
+		const { ports, opened } = scene({ runs: RED, zoneOnly: true });
+		const out = await repairDevelopRed(ports);
+		expect(out.kind).toBe('unowned');
+		expect(opened).toHaveLength(0);
+	});
+});
