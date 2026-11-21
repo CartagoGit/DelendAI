@@ -39,6 +39,12 @@ export const OBSERVATION_KINDS = [
 	/** A slice closed, cleanly or not. */
 	'slice-outcome',
 	'failure',
+	/**
+	 * A test ran over its time estimate (x01101 S5). The subject is the
+	 * test id; the detail carries the file, the load-normalized time, the
+	 * estimate and the causes the runner saw (`git`, `timers`).
+	 */
+	'budget-warning',
 ] as const;
 
 export type IObservationKind = (typeof OBSERVATION_KINDS)[number];

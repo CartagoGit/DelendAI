@@ -27,6 +27,7 @@ const ports = (
 	readPullRequest: IWorkDeliverPorts['readOpenPullRequest'] = async () =>
 		undefined,
 	precheckCode: IExitCode = EXIT_CODE.OK,
+	stale: readonly string[] = [],
 ) => {
 	const calls: string[] = [];
 	const reached: string[] = [];
@@ -50,6 +51,11 @@ const ports = (
 			code: EXIT_CODE.OK,
 			data: { worktree: '/unit', publication: 'pr/unit' },
 		}),
+		dropStaleProposalCopies: async (checkout) => {
+			expect(checkout).toBe('/unit');
+			if (stale.length > 0) calls.push('drop-stale');
+			return { dropped: stale };
+		},
 		coveragePrecheck: async () => ({ code: EXIT_CODE.OK }),
 		precheck: async () => {
 			calls.push('precheck');
@@ -187,6 +193,25 @@ describe('deliverUnit', () => {
 			'precheck',
 			'prove',
 		]);
+	});
+
+	it('[<20ms] answers a non-zero code and never data.delivered when the proof fails or a pre-check refuses', async () => {
+		const failedProof = await deliverUnit(
+			ports({}, EXIT_CODE.VALIDATION).value,
+		);
+		const refusedEarly = await deliverUnit(
+			ports(
+				{},
+				EXIT_CODE.OK,
+				'all',
+				async () => undefined,
+				EXIT_CODE.VALIDATION,
+			).value,
+		);
+		for (const result of [failedProof, refusedEarly]) {
+			expect(result.code).not.toBe(EXIT_CODE.OK);
+			expect(result.data ?? {}).not.toHaveProperty('delivered');
+		}
 	});
 
 	it('[<20ms] goes on from a proposal already in progress', async () => {
@@ -572,5 +597,46 @@ describe('deliverUnit, the hand-over must have published', () => {
 		});
 		expect(result.code).toBe(EXIT_CODE.VALIDATION);
 		expect(result.error).toContain('no publication name');
+	});
+});
+
+describe('deliverUnit, a stale second copy of a moved proposal', () => {
+	// The x01123 case: the unit moved it to review/, develop edited ready/.
+	it('[<20ms] drops the stale copy before the proof reads the tree', async () => {
+		const { calls, value } = ports(
+			{},
+			EXIT_CODE.OK,
+			'all',
+			async () => undefined,
+			EXIT_CODE.OK,
+			['docs/delendai/proposals/ready/fixes/x01123-a.md'],
+		);
+		await deliverUnit(value);
+		expect(calls.indexOf('drop-stale')).toBeGreaterThanOrEqual(0);
+		expect(calls.indexOf('drop-stale')).toBeLessThan(
+			calls.indexOf('prove'),
+		);
+	});
+
+	it('[<20ms] with no stale copy changes nothing else in the delivery', async () => {
+		const { calls, value } = ports({});
+		await deliverUnit(value);
+		expect(calls).not.toContain('drop-stale');
+		expect(calls).toContain('prove');
+	});
+
+	it('[<20ms] refuses, before anything moves, when the stale copy holds edits', async () => {
+		const { calls, value } = ports({});
+		const result = await deliverUnit({
+			...value,
+			dropStaleProposalCopies: async () => ({
+				dropped: [],
+				refusal:
+					'ready/x1-a.md holds edits the kept copy lacks: carry the edits of ready/x1-a.md into review/x1-a.md, then deliver again',
+			}),
+		});
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('carry the edits of ready/x1-a.md');
+		expect(calls).toEqual([]);
 	});
 });
