@@ -10,6 +10,8 @@ last-transition-id: 39498a74-f396-4482-a55f-48467687e6b3
 last-correlation-id: 39498a74-f396-4482-a55f-48467687e6b3
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T13:58:24.909Z
+shipped-in:
+  - "98c815d26360fcafa96e64e22288ae3db854134b"
 ---
 
 # x01087 — The hourly land upkeep is green when nothing hangs: it reads code scanning with the workflow token, keeps what it kept, retires into a free slot and reaps machinery copies whose authored commits live elsewhere
@@ -47,7 +49,7 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
 - review-implementer: claude-opus-5-5
 
 ### S2 — An upkeep step can read with the workflow token and the job is granted exactly that read
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/core/src/lib/integration/land/land.interface.ts`, `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `packages/core/tests/src/lib/integration/land/land-workflow.helper.spec.ts`, `tools/scripts/forge/land-workflow.script.ts`, `.github/workflows/land.yml`
 - **Gate**: none
 - acceptance:
@@ -57,8 +59,10 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
   - "The land workflow `--check` passes on the regenerated .github/workflows/land.yml, and its diff touches only the upkeep job"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
 - shipped-in: `98c815d26360`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: approved by mimo-v2.6-flash — verified at 98c815d26360, validate exit 0 and tests 12/12 claimed, no recorded run cited; acceptance 5/5: (1) land.interface.ts:264 declares `readsWithWorkflowToken?: readonly string[]`; land-workflow.helper.ts:126-128 renders `GH_TOKEN: ${{ github.token }}` for such a… (2) the only product-code marker is tools/scripts/forge/land-workflow.script.ts:67 (`readsWithWorkflowToken: ['security-events']` on the "Fail while a code scannin… (3) land-workflow.helper.spec.ts:118-153 has the spec with a reading step (GH_TOKEN the workflow token on the reading step, the identity token on the writing one, … (4) `bun tools/scripts/forge/land-workflow.script.ts --check` exits 0, and the land.yml diff in da9fc969a is two hunks, both inside the `upkeep:` job (the permissi… (5) no on-disk record of the prove run exists to re-read, so this is reported as claimed: the slice's Gate is `none`, and `bun run typecheck` exits 0 across all 80… — Approved at 98c815d26360f, the merge that delivered S2 and an ancestor of develop; no later x01087 delivery touches its five files. Gate is none: `bun run typecheck` exits 0 across all 80 workspaces, land-workflow.helper.spec.ts is 12/12, and `bun tools/scripts/forge/land-workflow.script.ts --check` exits 0 with the regenerated land.yml diff limited to two hunks inside the upkeep job. The full `bun run validate` in this review unit is red only on lint-governance's `closed-with-independent-approval`, a false positive that mis-parses this unit's own work ref (kindOfRef/agentOfRef read the legacy agent-first shape while f00808 S8 made work refs kind-first); every other job passes and that defect is filed separately. S1 and S3 are judged on their own.
 
 ### S3 — The host does not put back a unit the forge retired
 - **Status**: review
