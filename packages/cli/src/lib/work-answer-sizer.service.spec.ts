@@ -4,7 +4,8 @@
  */
 import { describe, expect, it } from 'vitest';
 
-import { loadedOnce, WORKTREE_ENDING_VERBS } from './work-answer-sizer.service';
+import { WORKTREE_ENDING_VERBS } from '../contracts/constants/worktree-ending-verbs.constant';
+import { loadedOnce } from './work-answer-sizer.service';
 
 /** A module store that fails every load once the worktree is removed. */
 const worktree = () => {
