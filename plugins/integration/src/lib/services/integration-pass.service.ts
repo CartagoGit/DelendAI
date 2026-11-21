@@ -131,14 +131,12 @@ export const runIntegrationPass = async (
 		(outcome) => outcome instanceof LandBranchGoneError,
 	);
 	for (const note of notes) log(`land: ${note}`);
-	let acted = 0;
 	const actions: string[] = [];
 	for (const outcome of reports) {
 		if (outcome instanceof LandBranchGoneError) {
 			log(`land: ${outcome.message}; nothing to settle.`);
 			return 0;
 		}
-		acted += outcome.actions.length;
 		actions.push(...outcome.actions);
 		logReport(outcome, log);
 	}

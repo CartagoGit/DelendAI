@@ -17,14 +17,14 @@ export interface IIssueForge {
 }
 
 /** What the upsert did, for the log line. */
-export type UpsertOutcome = 'created' | 'updated' | 'closed' | 'unchanged';
+export type IUpsertOutcome = 'created' | 'updated' | 'closed' | 'unchanged';
 
 /** Writes the issue for a kind while its condition holds. */
 export const upsertIssue = async (
 	forge: IIssueForge,
 	title: string,
 	body: string,
-): Promise<UpsertOutcome> => {
+): Promise<IUpsertOutcome> => {
 	const [first, ...duplicates] = [...(await forge.listOpen(title))].sort(
 		(a, b) => a - b,
 	);
@@ -43,7 +43,7 @@ export const closeClearedIssues = async (
 	forge: IIssueForge,
 	title: string,
 	comment: string,
-): Promise<UpsertOutcome> => {
+): Promise<IUpsertOutcome> => {
 	const open = await forge.listOpen(title);
 	for (const number of open) await forge.close(number, comment);
 	return open.length === 0 ? 'unchanged' : 'closed';

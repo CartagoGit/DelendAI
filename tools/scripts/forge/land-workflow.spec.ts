@@ -167,7 +167,7 @@ describe('the watchdog keeps one issue per missed event', () => {
 		}
 	};
 
-	it('[<500ms] opens one issue naming the run and the evidence when none is open', () => {
+	it('[<100ms] opens one issue naming the run and the evidence when none is open', () => {
 		const [call, ...rest] = keep('1', []);
 		expect(rest).toEqual([]);
 		expect(call).toContain('issue create');
@@ -175,7 +175,7 @@ describe('the watchdog keeps one issue per missed event', () => {
 		expect(call).toContain('#3022 merged');
 	});
 
-	it('[<500ms] refreshes the first open issue and closes its duplicates', () => {
+	it('[<100ms] refreshes the first open issue and closes its duplicates', () => {
 		const calls = keep('1', [2763, 3024]);
 		expect(calls).toHaveLength(2);
 		expect(calls[0]).toContain('issue close 3024');
@@ -183,7 +183,7 @@ describe('the watchdog keeps one issue per missed event', () => {
 		expect(calls[1]).toContain('issue edit 2763');
 	});
 
-	it('[<500ms] closes every open issue once a strict pass finds nothing', () => {
+	it('[<100ms] closes every open issue once a strict pass finds nothing', () => {
 		const calls = keep('0', [2763, 3024]);
 		expect(calls.map((c) => c.slice(0, 16))).toEqual([
 			'issue close 2763',
@@ -191,7 +191,7 @@ describe('the watchdog keeps one issue per missed event', () => {
 		]);
 	});
 
-	it('[<500ms] files nothing for a crashed pass: the failed run is the evidence', () => {
+	it('[<100ms] files nothing for a crashed pass: the failed run is the evidence', () => {
 		expect(keep('5', [2763])).toEqual([]);
 	});
 });
