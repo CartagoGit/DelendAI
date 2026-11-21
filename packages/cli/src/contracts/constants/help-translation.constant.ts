@@ -125,7 +125,7 @@ const ENGLISH_COMMAND_SUMMARIES: Readonly<Record<string, string>> = {
 		'Resolve the next proposal and return a compact action plan.',
 	'proposals continue': 'Resolve / plan / claim the next proposal slice.',
 	'proposals create':
-		'Create a proposal document with a parseable Slices section. --why, --non-goals (JSON array) and --slices (files, acceptance per slice) fill the scaffold; --from=<file.json> takes the whole tool input.',
+		'Create a proposal document with a parseable Slices section.',
 	'proposals close-slice':
 		'Mark a slice done + release its lock atomically, then re-sync. --checkout names the unit worktree; omitted, the live unit that carries the proposal is used.',
 	'proposals transition':

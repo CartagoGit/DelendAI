@@ -7,11 +7,9 @@
  */
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
 import type { ICliCommand } from '../../contracts/interfaces/cli-command.interface';
-import { readFileSync } from 'node:fs';
 import {
 	data,
 	hasFlag,
-	isRecord,
 	listArg,
 	positionalArg,
 	request,
@@ -74,68 +72,28 @@ const continueCommand: ICliCommand = {
 	},
 };
 
-const CREATE_USAGE =
-	'proposals create --title=<t> [--kind=feat] [--goal=<g>] [--track=<t>] [--why=<w>] [--non-goals=<json array>] [--slices=<json>] [--from=<file.json>]';
-
-/**
- * The input file of `--from`: a JSON object in the shape of the tool's own
- * input schema, which the server validates; the CLI keeps no second copy.
- */
-const readCreateFile = (path: string): Record<string, unknown> | undefined => {
-	try {
-		const parsed: unknown = JSON.parse(readFileSync(path, 'utf8'));
-		return isRecord(parsed) ? parsed : undefined;
-	} catch {
-		return undefined;
-	}
-};
-
-/** `--non-goals` as a JSON array of strings, or one plain string. */
-const nonGoalsArg = (args: readonly string[]): unknown => {
-	const raw = scalarArg(args, 'non-goals');
-	if (raw === undefined) return undefined;
-	return jsonArg(args, 'non-goals') ?? [raw];
-};
-
 const createCommand: ICliCommand = {
 	name: 'proposals create',
-	flags: [
-		'title',
-		'kind',
-		'goal',
-		'track',
-		'why',
-		'non-goals',
-		'slices',
-		'from',
-	],
-	summary:
-		'Create a proposal document with a parseable Slices section. --why, --non-goals (JSON array) and --slices (files, acceptance per slice) fill the scaffold; --from=<file.json> takes the whole tool input.',
+	flags: ['title', 'kind', 'goal', 'track', 'slices'],
+	summary: 'Create a proposal document with a parseable Slices section.',
 	async run(args, ctx) {
-		const fromPath = scalarArg(args, 'from');
-		const base = fromPath === undefined ? {} : readCreateFile(fromPath);
-		if (base === undefined) return usage(CREATE_USAGE);
-		const { title: fileTitle } = base as { title?: unknown };
-		const title = scalarArg(args, 'title') ?? fileTitle;
-		if (typeof title !== 'string') return usage(CREATE_USAGE);
+		const title = scalarArg(args, 'title');
+		if (title === undefined) {
+			return usage(
+				'proposals create --title=<t> [--kind=feat] [--goal=<g>] [--track=<t>] [--slices=<json>]',
+			);
+		}
+		const kind = scalarArg(args, 'kind');
+		const goal = scalarArg(args, 'goal');
+		const track = scalarArg(args, 'track');
 		const slices = jsonArg(args, 'slices');
-		const flags = {
-			kind: scalarArg(args, 'kind'),
-			goal: scalarArg(args, 'goal'),
-			track: scalarArg(args, 'track'),
-			why: scalarArg(args, 'why'),
-			nonGoals: nonGoalsArg(args),
-			slices: Array.isArray(slices) ? slices : undefined,
-		};
-		// Flags win over the file, field by field.
-		const overrides = Object.fromEntries(
-			Object.entries(flags).filter(([, value]) => value !== undefined),
-		);
 		return data(
 			await request(ctx, 'delendai_proposals_create_proposal', {
-				...base,
-				...overrides,
 				title,
+				...(kind !== undefined ? { kind } : {}),
+				...(goal !== undefined ? { goal } : {}),
+				...(track !== undefined ? { track } : {}),
+				...(Array.isArray(slices) ? { slices } : {}),
 			}),
 		);
 	},
