@@ -14,6 +14,7 @@ export {
 	parseWorktreeList,
 	gitStatus,
 	gitChanged,
+	parseDiffFilePaths,
 	gitDiffStat,
 	gitLog,
 	gitBlame,

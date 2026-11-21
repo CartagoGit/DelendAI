@@ -128,6 +128,29 @@ export const gitStatus = async (run: IGitRunner): Promise<IGitStatus> =>
 export const gitChanged = async (run: IGitRunner): Promise<readonly string[]> =>
 	(await gitStatus(run)).entries.map((entry) => entry.path);
 
+/**
+ * The destination paths a unified diff touches. Linear in the input: a
+ * `diff --git a/<old> b/<new>` header is split on its LAST ` b/` and a
+ * `+++ b/<path>` line is sliced, so no backtracking pattern runs over
+ * untrusted text.
+ */
+export const parseDiffFilePaths = (diff: string): string[] => {
+	const files = new Set<string>();
+	for (const line of diff.split('\n')) {
+		if (line.startsWith('diff --git a/')) {
+			const split = line.lastIndexOf(' b/');
+			if (split > 'diff --git a/'.length - 1) {
+				const path = line.slice(split + ' b/'.length);
+				if (path.length > 0) files.add(path);
+			}
+		} else if (line.startsWith('+++ b/')) {
+			const path = line.slice('+++ b/'.length);
+			if (path.length > 0) files.add(path);
+		}
+	}
+	return [...files];
+};
+
 export const gitDiffStat = async (
 	run: IGitRunner,
 	options: { staged?: boolean; path?: string } = {},
