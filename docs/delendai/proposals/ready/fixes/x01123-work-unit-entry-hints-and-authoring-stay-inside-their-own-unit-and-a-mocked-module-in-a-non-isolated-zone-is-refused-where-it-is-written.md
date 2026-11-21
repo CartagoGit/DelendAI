@@ -27,14 +27,14 @@ Four workflow defects found on 2026-11-21 are fixed at their roots: the lease hi
 
 - global_gate: none
 
-### S1 — Re-entry: a dead same-agent lease is taken over and a live-lease refusal tells the agent to run from inside the unit's path
+### S1 — A lease refusal names the worktree to run from, and a quiet same-agent lease is released
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-generation.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/work-unit-generation.service.ts`, `packages/core/src/lib/work-units/work-unit-shared.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-generation.service.e2e.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
-  - "work-unit-generation.service.spec.ts: the refusal for a live lease of a different session names the holder's worktree path with 'run it from inside' and no longer asks for --session."
-  - "work-unit-generation.service.spec.ts: entering a slice whose lease is held by a same-agent session with ownerAlive=false takes the lease over; a live holder is still refused."
+  - "work-unit-generation.service.e2e.spec.ts: the refusal for a live lease of a different session names the holder's worktree path with 'run this again from inside' and no longer asks for --session."
+  - "work-unit-generation.service.e2e.spec.ts: a dead same-agent session's lease is released once its heartbeat is quiet for leaseTtlMinutes (no pid exists to key on): chooseGeneration given that ref as quiet takes the generation; without it, the holder is still refused."
 
 ### S2 — vi.mock is refused in zones whose vitest config sets isolate:false
 - **Status**: pending
