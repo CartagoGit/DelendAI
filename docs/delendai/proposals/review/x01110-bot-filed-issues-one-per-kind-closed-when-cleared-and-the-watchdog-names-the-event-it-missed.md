@@ -2,14 +2,14 @@
 id: x01110
 title: "Bot-filed issues: one per kind, closed when cleared, and the watchdog names the event it missed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: trust
 date: 2026-11-21
-last-transition-id: 8c7d0cc8-5d6c-4ee9-b992-906d045fac7a
-last-correlation-id: 8c7d0cc8-5d6c-4ee9-b992-906d045fac7a
-last-transition-from: ready
-last-transition-at: 2026-11-21T01:57:18.687Z
+last-transition-id: 7871053e-d947-4e3b-9962-9dbba290419d
+last-correlation-id: 7871053e-d947-4e3b-9962-9dbba290419d
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T04:41:40.347Z
 ---
 
 # x01110 — Bot-filed issues: one per kind, closed when cleared, and the watchdog names the event it missed
@@ -33,16 +33,19 @@ The slow rebrand spec leaves the unit tier; the land watchdog stops reporting a 
 - global_gate: none
 
 ### S1 — Split the live repo scan out of the unit spec
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/migrate/rebrand-propagate.spec.ts`, `tools/scripts/migrate/rebrand-propagate.live.e2e.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
   - "tools/scripts/migrate/rebrand-propagate.live.e2e.spec.ts: [<10000ms] passes on the real repo (live brand propagation is clean)"
   - "tools/scripts/migrate/rebrand-propagate.spec.ts: the file holds no scan of the real repository, so it stays under 5000 ms"
+- shipped-in: `6e6aacdf9eca`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S2 — One upsert for bot issues
-- **Status**: pending
+- **Status**: review
 - **Files**: `tools/scripts/ci/upsert-issue.ts`, `tools/scripts/ci/upsert-issue.script.ts`, `tools/scripts/ci/upsert-issue.spec.ts`, `.github/workflows/test-budget-calibration.yml`
 - **Gate**: none
 - **Decisions**: none
@@ -51,9 +54,12 @@ The slow rebrand spec leaves the unit tier; the land watchdog stops reporting a 
   - "tools/scripts/ci/upsert-issue.spec.ts: opening with an open issue edits its body and closes duplicates of the same title"
   - "tools/scripts/ci/upsert-issue.spec.ts: clearing closes every open issue of the title with a comment and creates nothing"
   - "tools/scripts/ci/upsert-issue.spec.ts: the calibration workflow writes its issue through the upsert script and never gh issue create"
+- shipped-in: `ca645e61168f`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ### S3 — The watchdog names the missed event and no longer cries wolf
-- **Status**: pending
+- **Status**: review
 - **Files**: `plugins/integration/src/lib/services/integration-pass.service.ts`, `plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts`, `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `packages/core/src/lib/integration/land/land-watchdog-steps.helper.ts`, `packages/core/src/lib/integration/land/land-watchdog.constant.ts`, `plugins/integration/src/lib/contracts/interfaces/integration-pass.interface.ts`, `.github/workflows/land.yml`, `tools/scripts/forge/land-workflow.spec.ts`
 - **Gate**: none
 - **Decisions**: none
@@ -61,6 +67,9 @@ The slow rebrand spec leaves the unit tier; the land watchdog stops reporting a 
   - "plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts: a watchdog pass that acted writes evidence naming the sha, the event and each pull request it merged"
   - "tools/scripts/forge/land-workflow.spec.ts: the watchdog runs strict only when no event-driven land run is in flight, and a crashed pass does not file a missed-event issue"
   - "tools/scripts/forge/land-workflow.spec.ts: the watchdog issue is kept as one open issue (edited, duplicates closed) and closed by a clean scheduled pass"
+- shipped-in: `8e97107cae9c`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
 
 ## acceptance
 
