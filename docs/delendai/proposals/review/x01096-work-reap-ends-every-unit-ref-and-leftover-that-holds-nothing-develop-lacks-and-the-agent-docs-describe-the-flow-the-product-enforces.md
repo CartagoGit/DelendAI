@@ -61,7 +61,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 - review-log: requested_changes by mai-code-2-flash — S2 is stale against current develop: declared stray-refs implementation/spec paths no longer match the current tree (stray-refs moved to stray-refs.service.ts). The review cannot prove the landed patch at f738bc16c502 remains current. Redeliver S2 on current HEAD, revalidate its Files entries, and run the stray-ref patch-equivalence specs.
 
 ### S3 — leftovers outside units: stray files in the worktrees directory and the old test temp directories
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `new:packages/core/src/lib/work-units/test-temp-leftovers.service.ts`, `new:packages/core/src/lib/contracts/constants/test-temp-prefixes.constant.ts`, `new:packages/core/src/lib/contracts/interfaces/test-temp-leftovers.interface.ts`, `new:packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/tests/src/lib/work-units/work-unit-reap.service.e2e.spec.ts`
 - **Gate**: lint
@@ -71,8 +71,10 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "`delendai work reap --apply` removes empty directories directly under os.tmpdir() whose names start with a prefix the test kit used before x01091 (delendai-gh-, state-contract-, unit-index-, tok-report-, state-coordination-, state-sqlite-, tok-) and that are older than one day; a non-empty one is listed, never removed; the prefixes are one constant."
   - "test-temp-leftovers.service.spec.ts drives it over an injected temp root with an old empty match (removed), a fresh one (kept), a non-empty one (listed) and a foreign name (ignored)."
 - shipped-in: `11bf65764571`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S3 is stale against current develop: several declared leftovers paths and a new temp service/spec were later moved/refactored, and current work-unit reaper code is outside the delivery snapshot. The focused test-temp run passes 7/7 but cannot prove the old snapshot or renamed declared files. Redeliver S3 on current HEAD and revalidate all Files entries and temp-prefix/E2E coverage.
 
 ### S4 — the agent documents describe the enforced flow
 - **Status**: review
