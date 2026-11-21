@@ -1,3 +1,4 @@
+import type { IStaleDrop } from './stale-proposal-drop.interface';
 import type { ICliCommandResult } from './cli-command.interface';
 
 /** What delivering needs from the unit engine and the proposals tool. */
@@ -24,11 +25,12 @@ export interface IWorkDeliverPorts {
 	readonly locate: () => Promise<ICliCommandResult>;
 	/**
 	 * Removes the stale second copy of a moved proposal (and commits it) in
-	 * the unit's checkout; the paths removed, none when there is no stale copy.
+	 * the unit's checkout, only when it holds nothing the kept copy lacks;
+	 * otherwise nothing is removed and `refusal` says which edits to carry.
 	 */
 	readonly dropStaleProposalCopies: (
 		checkout: string | undefined,
-	) => Promise<readonly string[]>;
+	) => Promise<IStaleDrop>;
 	/**
 	 * The proof's cheap static gates, scoped to the change, run before the
 	 * compute slot is taken (`work prove --only=precheck`).

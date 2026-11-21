@@ -9,6 +9,7 @@
  * copy furthest along the lifecycle is the one kept.
  */
 import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
+import type { IStaleDrop } from '../contracts/interfaces/stale-proposal-drop.interface';
 
 const PROPOSALS_DIR = 'docs/delendai/proposals';
 /** The forward lifecycle, earliest first (the folder is the status). */
@@ -44,18 +45,68 @@ export const staleProposalCopies = (
 	return stale.sort();
 };
 
+/** The kept copy of a stale one: the same file name in the furthest folder. */
+const keptOf = (stale: string, paths: readonly string[]): string =>
+	paths
+		.filter((path) => baseOf(path) === baseOf(stale))
+		.sort((a, b) => rankOf(b) - rankOf(a))[0] ?? stale;
+
+const blobOf = (git: IGitInCheckout, spec: string): string | undefined => {
+	const parsed = git(['rev-parse', '--verify', '--quiet', spec]);
+	return parsed.ok && parsed.out.length > 0 ? parsed.out : undefined;
+};
+
 /**
- * Remove and commit the stale copies in a checkout; the paths removed.
- * Throws nothing: a git failure leaves the tree as it was.
+ * A stale copy carries nothing the kept one lacks when its content is the
+ * kept copy's, or is what it was at the merge-base with the integration
+ * branch (nobody edited it since the move).
+ */
+const carriesNothingElse = (
+	git: IGitInCheckout,
+	stale: string,
+	kept: string,
+	base: string | undefined,
+): boolean => {
+	const staleBlob = blobOf(git, `HEAD:${stale}`);
+	if (staleBlob === undefined) return false;
+	if (staleBlob === blobOf(git, `HEAD:${kept}`)) return true;
+	return base !== undefined && staleBlob === blobOf(git, `${base}:${stale}`);
+};
+
+/**
+ * Remove and commit the stale copies in a checkout, only when each carries
+ * nothing the kept copy lacks. Otherwise nothing is removed and the refusal
+ * names both paths: edits are never discarded.
  */
 export const dropStaleProposalCopies = (
 	git: IGitInCheckout,
-): readonly string[] => {
+	integrationBranch = 'origin/develop',
+): IStaleDrop => {
 	const listed = git(['ls-files', '--', PROPOSALS_DIR]);
-	if (!listed.ok) return [];
-	const stale = staleProposalCopies(listed.out.split('\n'));
-	if (stale.length === 0) return [];
-	if (!git(['rm', '-q', '--', ...stale]).ok) return [];
+	if (!listed.ok) return { dropped: [] };
+	const paths = listed.out.split('\n');
+	const stale = staleProposalCopies(paths);
+	if (stale.length === 0) return { dropped: [] };
+	const mergeBase = git(['merge-base', 'HEAD', integrationBranch]);
+	const base =
+		mergeBase.ok && mergeBase.out.length > 0 ? mergeBase.out : undefined;
+	const edited = stale.filter(
+		(path) => !carriesNothingElse(git, path, keptOf(path, paths), base),
+	);
+	if (edited.length > 0) {
+		return {
+			dropped: [],
+			refusal: edited
+				.map(
+					(path) =>
+						`${path} holds edits the kept copy lacks: carry the edits of ${path} into ${keptOf(path, paths)}, then deliver again`,
+				)
+				.join('\n'),
+		};
+	}
+	if (!git(['rm', '-q', '--', ...stale]).ok) return { dropped: [] };
 	const subject = `chore(delendai): drop the stale copy of ${stale.map(baseOf).join(', ')}`;
-	return git(['commit', '-q', '-m', subject, '--', ...stale]).ok ? stale : [];
+	return git(['commit', '-q', '-m', subject, '--', ...stale]).ok
+		? { dropped: stale }
+		: { dropped: [] };
 };

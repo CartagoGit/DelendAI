@@ -54,7 +54,7 @@ const ports = (
 		dropStaleProposalCopies: async (checkout) => {
 			expect(checkout).toBe('/unit');
 			if (stale.length > 0) calls.push('drop-stale');
-			return stale;
+			return { dropped: stale };
 		},
 		coveragePrecheck: async () => ({ code: EXIT_CODE.OK }),
 		precheck: async () => {
@@ -604,5 +604,20 @@ describe('deliverUnit, a stale second copy of a moved proposal', () => {
 		await deliverUnit(value);
 		expect(calls).not.toContain('drop-stale');
 		expect(calls).toContain('prove');
+	});
+
+	it('[<20ms] refuses, before anything moves, when the stale copy holds edits', async () => {
+		const { calls, value } = ports({});
+		const result = await deliverUnit({
+			...value,
+			dropStaleProposalCopies: async () => ({
+				dropped: [],
+				refusal:
+					'ready/x1-a.md holds edits the kept copy lacks: carry the edits of ready/x1-a.md into review/x1-a.md, then deliver again',
+			}),
+		});
+		expect(result.code).toBe(EXIT_CODE.VALIDATION);
+		expect(result.error).toContain('carry the edits of ready/x1-a.md');
+		expect(calls).toEqual([]);
 	});
 });

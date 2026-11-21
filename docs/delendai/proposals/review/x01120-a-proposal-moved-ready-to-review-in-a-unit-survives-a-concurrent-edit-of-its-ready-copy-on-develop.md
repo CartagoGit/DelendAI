@@ -32,12 +32,12 @@ PR #3373 (x01114): the unit moved x01114 from ready/ to review/ while develop co
 
 ### S1 — Publishing detects a stale second copy of a moved proposal and re-applies the move
 - **Status**: review
-- **Files**: `tools/scripts/lint/proposal-uniqueness.script.ts`, `tools/scripts/lint/proposal-uniqueness.script.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`, `packages/cli/src/commands/work.command.ts`
+- **Files**: `tools/scripts/lint/proposal-uniqueness.script.ts`, `tools/scripts/lint/proposal-uniqueness.script.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`, `packages/cli/src/contracts/interfaces/stale-proposal-drop.interface.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-deliver-precheck.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep."
-  - "work-deliver.service.spec.ts: after develop is merged into a unit whose proposal moved to review while develop edited the ready/ copy, deliver removes the stale ready/ copy, keeping the edits in the review/ file, before it proves; with no stale copy it changes nothing."
+  - "work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or its merge-base content; if it holds edits it removes nothing and refuses naming both paths (\"carry the edits of <stale> into <kept>, then deliver again\"); with no stale copy it changes nothing."
 - shipped-in: `8d5eeeba3383`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
@@ -45,4 +45,4 @@ PR #3373 (x01114): the unit moved x01114 from ready/ to review/ while develop co
 ## acceptance
 
 - proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep.
-- work-deliver.service.spec.ts: after develop is merged into a unit whose proposal moved to review while develop edited the ready/ copy, deliver removes the stale ready/ copy, keeping the edits in the review/ file, before it proves; with no stale copy it changes nothing.
+- work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or its merge-base content; if it holds edits it removes nothing and refuses naming both paths ("carry the edits of <stale> into <kept>, then deliver again"); with no stale copy it changes nothing.
