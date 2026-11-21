@@ -20,12 +20,10 @@ import {
 	MEASURED_LOAD_NOW_META_KEY,
 	MEASURED_BENCH_META_KEY,
 	MEASURED_LOAD_META_KEY,
-	MIGRATION_ENV,
 	MEASURED_META_KEY,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from '../../contracts/constants/time-budget.constant';
-import type { ITimeBudgetMigration } from '../../contracts/interfaces/time-budget.interface';
 import { measureLoadBenchmark } from './load-benchmark.helper';
 import {
 	isE2eSpec,
@@ -37,11 +35,8 @@ import {
 	budgetFailure,
 	budgetNoise,
 	budgetOverrun,
-	mayGoUnbudgeted,
 	withRemeasuredLoad,
 } from './time-budget.helper';
-
-let migrating: ReadonlySet<string> | undefined;
 
 /**
  * The real clock, taken before any test runs. A test that fakes timers
@@ -49,19 +44,6 @@ let migrating: ReadonlySet<string> | undefined;
  * fake clock a minute measured a minute (59 s on CI for a 5 ms test).
  */
 const realNow = performance.now.bind(performance);
-
-/** The spec files still allowed tests with no budget, read once a worker. */
-const migrationList = (): ReadonlySet<string> => {
-	if (migrating !== undefined) return migrating;
-	const path = process.env[MIGRATION_ENV];
-	migrating = new Set(
-		path === undefined
-			? []
-			: (JSON.parse(readFileSync(path, 'utf8')) as ITimeBudgetMigration)
-					.unbudgeted,
-	);
-	return migrating;
-};
 
 let changed: ReadonlySet<string> | undefined;
 let changedRead = false;
@@ -91,12 +73,6 @@ const fileOf = (test: RunnerTestCase): string | undefined => {
 	return root === undefined
 		? undefined
 		: relative(root, test.file.filepath).split('\\').join('/');
-};
-
-const isMigrating = (test: RunnerTestCase): boolean => {
-	const file = fileOf(test);
-	if (file === undefined) return false;
-	return mayGoUnbudgeted(file, migrationList(), changedList());
 };
 
 const isFresh = (test: RunnerTestCase): boolean =>
@@ -168,7 +144,6 @@ export default class TimeBudgetRunner extends TestRunner {
 				tier: tierOf(test),
 				loadFactor,
 				name: test.name,
-				migrating: isMigrating(test),
 				tookMs,
 			},
 			() => loadFactorNow(loadFactor),
@@ -188,7 +163,6 @@ export default class TimeBudgetRunner extends TestRunner {
 			loadFactorAtStart: judged.loadFactorAtStart,
 			loadFactorNow: judged.loadFactorNow,
 			name: test.name,
-			migrating: isMigrating(test),
 			tookMs,
 			softOverrun:
 				process.env[SOFT_OVERRUN_ENV] === '1' ||

@@ -66,7 +66,6 @@ export {
 	isUntouchedSpec,
 	loadFactorFromEnv,
 	loadFactorOf,
-	mayGoUnbudgeted,
 } from '../lib/time-budget/time-budget.helper';
 export {
 	measureLoadBenchmark,
@@ -81,10 +80,6 @@ export {
 	LOAD_FACTOR_ENV,
 	SOFT_OVERRUN_ENV,
 	UNIT_LIMIT_MS,
-	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 } from '../contracts/constants/time-budget.constant';
-export type {
-	ITimeBudgetCase,
-	ITimeBudgetMigration,
-} from '../contracts/interfaces/time-budget.interface';
+export type { ITimeBudgetCase } from '../contracts/interfaces/time-budget.interface';

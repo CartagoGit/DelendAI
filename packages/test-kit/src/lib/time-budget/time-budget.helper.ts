@@ -27,12 +27,11 @@ export const budgetInName = (name: string): number | undefined => {
 };
 
 /**
- * A unit file on the migration list, or a test no tier is known for, is judged
- * by its name alone, as before tiers. An e2e test with a declared budget is
- * always judged by the e2e rule, so its load factors apply and are reported.
+ * A test no tier is known for is judged by its name alone, as before tiers.
+ * An e2e test with a declared budget is always judged by the e2e rule, so its
+ * load factors apply and are reported.
  */
-const byNameAlone = (test: ITimeBudgetCase): boolean =>
-	test.tier === undefined || (test.migrating && test.tier !== 'e2e');
+const byNameAlone = (test: ITimeBudgetCase): boolean => test.tier === undefined;
 
 /** The two load factors of a re-measured test, for a message; nothing otherwise. */
 const loadWords = (test: ITimeBudgetCase): string => {
@@ -74,10 +73,11 @@ export const budgetFailure = (test: ITimeBudgetCase): string | undefined => {
 	}
 	const budget = budgetInName(test.name);
 	if (budget === undefined) {
-		if (test.migrating) return undefined;
+		// A test with no budget is judged against its estimate from history;
+		// only a malformed one is the author's mistake.
 		return test.name.startsWith(BUDGET_INTENT)
 			? 'malformed time budget: write it at the front of the name as "[<7ms] does X" (a number, then ms, then a space).'
-			: 'no time budget: start the name with its maximum, "[<7ms] does X". Every e2e test has one.';
+			: undefined;
 	}
 	return test.softOverrun === true || test.fresh === true
 		? undefined
@@ -123,7 +123,6 @@ export const budgetNoise = (test: ITimeBudgetCase): string | undefined => {
 	return `e2e tier: took ${test.tookMs.toFixed(1)} ms, over its start budget of ${String(budget)} ms x ${loadWords(test)} = ${stretched.toFixed(1)} ms but within the noise headroom of ${String(E2E_NOISE_HEADROOM)} (fails above ${(stretched * E2E_NOISE_HEADROOM).toFixed(1)} ms).`;
 };
 
-export { mayGoUnbudgeted } from './may-go-unbudgeted.helper';
 export { freshBudgetsOfDiff } from './fresh-budget.helper';
 export {
 	isE2eSpec,

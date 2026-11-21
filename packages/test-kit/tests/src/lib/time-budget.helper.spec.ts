@@ -6,7 +6,6 @@ import {
 	budgetNoise,
 	budgetOverrun,
 	freshBudgetsOfDiff,
-	mayGoUnbudgeted,
 	withRemeasuredLoad,
 } from '../../../src/public/index';
 
@@ -19,42 +18,24 @@ describe('time budget', () => {
 		expect(budgetInName('does [<9ms] later')).toBeUndefined();
 	});
 
-	it('[<20ms] fails a test with no budget, or a malformed one, unless its file is migrating', () => {
-		const bare = { name: 'x', tookMs: 1 };
-		expect(budgetFailure({ ...bare, migrating: false })).toContain(
-			'no time budget',
+	it('[<20ms] never fails a test with no budget, and fails a malformed one', () => {
+		expect(budgetFailure({ name: 'x', tookMs: 1 })).toBeUndefined();
+		expect(budgetFailure({ name: '[<ms] x', tookMs: 1 })).toContain(
+			'malformed time budget',
 		);
-		expect(
-			budgetFailure({ name: '[<ms] x', tookMs: 1, migrating: false }),
-		).toContain('malformed time budget');
-		expect(budgetFailure({ ...bare, migrating: true })).toBeUndefined();
 	});
 
 	it('[<20ms] fails a test over its budget and passes one within it, with no multiplier', () => {
-		const seven = { name: '[<7ms] x', migrating: true };
+		const seven = { name: '[<7ms] x' };
 		expect(budgetFailure({ ...seven, tookMs: 7 })).toBeUndefined();
 		expect(budgetFailure({ ...seven, tookMs: 10 })).toContain(
 			'over its declared budget of 7 ms',
 		);
-		expect(
-			budgetFailure({ ...seven, migrating: false, tookMs: 10 }),
-		).toContain('10.0 ms');
+		expect(budgetFailure({ ...seven, tookMs: 10 })).toContain('10.0 ms');
 	});
 
-	it('[<20ms] lets a file go unbudgeted when it is listed or the change leaves it alone, never when the change is unknown', () => {
-		const listed = new Set(['old.spec.ts']);
-		const changed = new Set(['mine.spec.ts', 'old.spec.ts']);
-		expect(mayGoUnbudgeted('old.spec.ts', listed, changed)).toBe(true);
-		expect(mayGoUnbudgeted('theirs.spec.ts', listed, changed)).toBe(true);
-		expect(mayGoUnbudgeted('mine.spec.ts', listed, changed)).toBe(false);
-		expect(mayGoUnbudgeted('theirs.spec.ts', listed, undefined)).toBe(
-			false,
-		);
-		expect(mayGoUnbudgeted('old.spec.ts', listed, undefined)).toBe(true);
-	});
-
-	it('[<20ms] reports an overrun instead of failing it on a soft run, and still fails a missing budget', () => {
-		const over = { name: '[<7ms] x', migrating: false, tookMs: 10 };
+	it('[<20ms] reports an overrun instead of failing it on a soft run, and never fails a missing budget', () => {
+		const over = { name: '[<7ms] x', tookMs: 10 };
 		expect(budgetFailure(over)).toContain('over its declared budget');
 		expect(budgetFailure({ ...over, softOverrun: true })).toBeUndefined();
 		expect(budgetOverrun({ ...over, softOverrun: true })).toContain(
@@ -63,11 +44,10 @@ describe('time budget', () => {
 		expect(
 			budgetFailure({
 				name: 'x',
-				migrating: false,
 				tookMs: 1,
 				softOverrun: true,
 			}),
-		).toContain('no time budget');
+		).toBeUndefined();
 	});
 
 	it('[<20ms] reads the budgets a diff adds, unescaped, by the file it changes', () => {
@@ -91,28 +71,26 @@ describe('time budget', () => {
 	});
 
 	it('[<20ms] lets a fresh budget overrun pass, and still fails a missing one', () => {
-		const over = { name: '[<5ms] x', migrating: false, tookMs: 9 };
+		const over = { name: '[<5ms] x', tookMs: 9 };
 		expect(budgetFailure(over)).toContain('over its declared budget');
 		expect(budgetFailure({ ...over, fresh: true })).toBeUndefined();
 		expect(budgetOverrun({ ...over, fresh: true })).toContain('9.0 ms');
 		expect(
 			budgetFailure({
 				name: 'x',
-				migrating: false,
 				tookMs: 1,
 				fresh: true,
 			}),
-		).toContain('no time budget');
+		).toBeUndefined();
 	});
 
 	describe('the tiers', () => {
 		const unit = (tookMs: number, name = '[<5ms] x') =>
-			budgetFailure({ name, tookMs, migrating: false, tier: 'unit' });
+			budgetFailure({ name, tookMs, tier: 'unit' });
 		const e2e = (tookMs: number, loadFactor: number, name = '[<100ms] x') =>
 			budgetFailure({
 				name,
 				tookMs,
-				migrating: false,
 				tier: 'e2e',
 				loadFactor,
 			});
@@ -128,7 +106,6 @@ describe('time budget', () => {
 		const e2eCase = (tookMs: number, loadFactor: number) => ({
 			name: '[<100ms] x',
 			tookMs,
-			migrating: false,
 			tier: 'e2e' as const,
 			loadFactor,
 		});
@@ -194,7 +171,7 @@ describe('time budget', () => {
 				expect(measure).not.toHaveBeenCalled();
 				const unitMeasure = vi.fn(() => 4);
 				withRemeasuredLoad(
-					{ name: 'x', tookMs: 500, migrating: false, tier: 'unit' },
+					{ name: 'x', tookMs: 500, tier: 'unit' },
 					unitMeasure,
 				);
 				expect(unitMeasure).not.toHaveBeenCalled();
@@ -212,31 +189,28 @@ describe('time budget', () => {
 				budgetNoise({
 					name: '[<5ms] x',
 					tookMs: 150,
-					migrating: false,
 					tier: 'unit',
 				}),
 			).toBeUndefined();
 		});
 
-		it('[<20ms] still asks an e2e test for its declaration', () => {
-			expect(e2e(1, 1, 'no budget')).toContain('no time budget');
+		it('[<20ms] asks an e2e test for nothing but a well-formed declaration', () => {
+			expect(e2e(1, 1, 'no budget')).toBeUndefined();
 			expect(e2e(1, 1, '[<ms] x')).toContain('malformed time budget');
 		});
 
-		it('[<20ms] judges a migrating file, and a file with no known tier, by its name as before', () => {
+		it('[<20ms] judges a unit file by the unit limit and a file with no known tier by its name', () => {
 			expect(
 				budgetFailure({
 					name: '[<5ms] x',
-					tookMs: 100,
-					migrating: true,
+					tookMs: 300,
 					tier: 'unit',
 				}),
-			).toContain('declared budget of 5 ms');
+			).toContain('over the 200 ms limit');
 			expect(
 				budgetFailure({
 					name: '[<5ms] x',
 					tookMs: 100,
-					migrating: false,
 				}),
 			).toContain('declared budget of 5 ms');
 		});
@@ -245,7 +219,6 @@ describe('time budget', () => {
 			const over = {
 				name: '[<100ms] x',
 				tookMs: 500,
-				migrating: false,
 				tier: 'e2e' as const,
 				loadFactor: 1,
 				loadFactorAtStart: 1,
@@ -262,7 +235,6 @@ describe('time budget', () => {
 				const untouched = {
 					...over,
 					softOverrun: true,
-					migrating: true,
 				};
 				expect(budgetFailure(untouched)).toBeUndefined();
 				const reported = budgetOverrun(untouched);
@@ -284,7 +256,6 @@ describe('time budget', () => {
 				budgetFailure({
 					name: 'x',
 					tookMs: 500,
-					migrating: false,
 					tier: 'unit',
 					softOverrun: true,
 				}),
@@ -293,7 +264,6 @@ describe('time budget', () => {
 				budgetOverrun({
 					name: 'x',
 					tookMs: 500,
-					migrating: false,
 					tier: 'unit',
 				}),
 			).toContain('unit tier');

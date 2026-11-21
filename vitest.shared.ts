@@ -13,7 +13,6 @@ import {
 	LOAD_BENCH_ENV,
 	LOAD_FACTOR_ENV,
 	LOAD_REFERENCE_ENV,
-	MIGRATION_ENV,
 	MIGRATION_ROOT_ENV,
 	SOFT_OVERRUN_ENV,
 } from './packages/test-kit/src/contracts/constants/time-budget.constant.ts';
@@ -145,19 +144,12 @@ export const sharedTestOptions = {
 	] as string[],
 } as const;
 
-/** The spec files still allowed tests with no budget. It only shrinks. */
-export const TIME_BUDGET_MIGRATION_LIST = resolve(
-	dirname(fileURLToPath(import.meta.url)),
-	'tools/scripts/test/test-time-budget.migration.json',
-);
-
-// The workers inherit this: the runner reads the list once per worker.
-process.env[MIGRATION_ENV] ??= TIME_BUDGET_MIGRATION_LIST;
+// The workers inherit this: the runner relativizes spec paths to it.
 process.env[MIGRATION_ROOT_ENV] ??= dirname(fileURLToPath(import.meta.url));
 
 // A budget is enforced where it is calibrated: on CI. Anywhere else the
 // wall time measures that machine, so an over-budget test is only reported
-// (a missing or malformed budget still fails). Follow-up: read this from the
+// (a malformed budget still fails). Follow-up: read this from the
 // shared `isRunningInProjectCi` once i00005 lands.
 if (process.env[SOFT_OVERRUN_ENV] === undefined) {
 	process.env[SOFT_OVERRUN_ENV] =

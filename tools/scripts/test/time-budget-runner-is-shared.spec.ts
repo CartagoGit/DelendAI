@@ -4,7 +4,10 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { timeBudgetRunnerPath } from '../../../packages/test-kit/src/public/index';
+import {
+	budgetFailure,
+	timeBudgetRunnerPath,
+} from '../../../packages/test-kit/src/public/index';
 import { sharedTestOptions } from '../../../vitest.shared';
 import { repoRoot } from '../lib/repo-root';
 
@@ -27,7 +30,7 @@ describe('the time-budget runner is loaded by every vitest project', () => {
 		expect(existsSync(sharedTestOptions.runner)).toBe(true);
 	});
 
-	it('[<500ms] is reached by every project config, through the shared options or the isolation split', () => {
+	it('[<200ms] is reached by every project config, through the shared options or the isolation split', () => {
 		const root = repoRoot();
 		const bypassing = projectConfigs().filter((file) => {
 			// The root config only lists projects; none of them inherits its
@@ -41,11 +44,29 @@ describe('the time-budget runner is loaded by every vitest project', () => {
 		expect(bypassing).toEqual([]);
 	});
 
-	it('[<500ms] is not overridden by a project that sets its own runner', () => {
+	it('[<200ms] is not overridden by a project that sets its own runner', () => {
 		const root = repoRoot();
 		const overriding = projectConfigs().filter((file) =>
 			/\brunner\s*:/u.test(readFileSync(join(root, file), 'utf8')),
 		);
 		expect(overriding).toEqual([]);
+	});
+
+	it('[<100ms] leaves the untouched tests of a spec formerly on the migration list without a budget demand', () => {
+		expect(
+			existsSync(
+				join(
+					repoRoot(),
+					'tools/scripts/test/test-time-budget.migration.json',
+				),
+			),
+		).toBe(false);
+		// A one-line edit to such a spec: its other tests carry no budget.
+		expect(
+			budgetFailure({ name: 'untouched test', tookMs: 5 }),
+		).toBeUndefined();
+		expect(
+			budgetFailure({ name: 'untouched test', tookMs: 5, tier: 'e2e' }),
+		).toBeUndefined();
 	});
 });

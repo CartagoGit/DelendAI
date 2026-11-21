@@ -97,7 +97,6 @@ const SCANNED = [
 const UNSCANNED = new Set([
 	'tools/scripts/forge/land-cutover.e2e.spec.ts',
 	'tools/scripts/ci/zone-reads.generated.json',
-	'tools/scripts/test/test-time-budget.migration.json',
 	'tools/scripts/lint/spec-git-init.baseline.json',
 	// Quote open proposals' slice lines, which may name the removed
 	// mechanism; the proposals themselves are outside the scanned roots.

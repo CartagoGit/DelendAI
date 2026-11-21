@@ -1,12 +1,8 @@
 /**
- * declared-test-budget.ts — the static half of "every test has a maximum
- * time" (the run itself is the other half: the test-kit runner fails a
- * test with no budget, or over it).
- *
- * An e2e spec file that is not on the migration list must start the name of
- * every `it`/`test` with its budget, `[<7ms] does X`. A file on the list may still hold tests with none,
- * and the list only ever shrinks: a file that no longer needs its entry
- * must drop it, so it cannot slide back.
+ * declared-test-budget.ts — the static half of the time budgets: a budget a
+ * unit-tier spec declares may not promise more than the unit limit. A test's
+ * time is judged by its estimate from history; no spec is asked to name a
+ * budget on every test, so editing one line forces nothing on the others.
  */
 
 import { freshBudgetsOfDiff } from '../../../packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts';
@@ -15,7 +11,6 @@ import {
 	BUDGET_PREFIX,
 	UNIT_LIMIT_MS,
 } from '../../../packages/test-kit/src/contracts/constants/time-budget.constant.ts';
-import { mayGoUnbudgeted } from '../../../packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts';
 
 /** A call to `it`/`test` (not `.each`), up to and including its `(`. */
 const PLAIN_CALL =
@@ -48,41 +43,10 @@ const endOfString = (text: string, from: number): number | undefined => {
 	return undefined;
 };
 
-/** What a budget looks like at the front of a test name's content. */
-const BUDGET_NAME = /^\[<\d+(?:\.\d+)?ms\] /u;
-
 /** The content of the string literal that starts at `from`, if one does. */
 const stringAt = (text: string, from: number): string | undefined => {
 	const end = endOfString(text, from);
 	return end === undefined ? undefined : text.slice(from + 1, end - 1);
-};
-
-/** Whether the call whose `(` ends at `afterParen` names itself with a budget. */
-const declares = (text: string, afterParen: number): boolean => {
-	const start = skipSpaces(text, afterParen);
-	const name = stringAt(text, start);
-	// A name that is not a literal (a variable, a call) cannot be read.
-	return name === undefined || BUDGET_NAME.test(name);
-};
-
-/** How many tests in this text declare no budget. */
-export const unbudgetedTests = (text: string): number => {
-	let missing = 0;
-	for (const call of text.matchAll(PLAIN_CALL)) {
-		const modifiers = call[1] ?? '';
-		if (modifiers.includes('.skip') || inString(text, call.index ?? 0)) {
-			continue;
-		}
-		if (!declares(text, (call.index ?? 0) + call[0].length)) missing += 1;
-	}
-	for (const call of text.matchAll(EACH_CALL)) {
-		if (inString(text, call.index ?? 0)) continue;
-		const from = (call.index ?? 0) + call[0].length;
-		// Lenient on purpose: the name sits after a second call's `(`. The run
-		// still fails the test that has no budget.
-		if (!text.slice(from, from + 400).includes('[<')) missing += 1;
-	}
-	return missing;
 };
 
 /**
@@ -120,11 +84,10 @@ export interface IUnitLimitBreach {
 /**
  * The unit-tier files that declare a budget over the unit limit, asked of
  * the files a change writes (with no change known, every file): an e2e file
- * and a file still on the migration list are not asked.
+ * is not asked.
  */
 export const judgeUnitLimit = (
 	over: ReadonlyMap<string, readonly number[]>,
-	listed: ReadonlySet<string>,
 	changed?: ReadonlySet<string>,
 ): readonly IUnitLimitBreach[] =>
 	[...over]
@@ -132,54 +95,10 @@ export const judgeUnitLimit = (
 			([path, budgets]) =>
 				budgets.length > 0 &&
 				!isE2eSpec(path) &&
-				!listed.has(path) &&
 				(changed === undefined || changed.has(path)),
 		)
 		.map(([path, budgets]) => ({ path, budgets }))
 		.sort((a, b) => a.path.localeCompare(b.path));
-
-/** The verdict on one repository against its migration list. */
-export interface IDeclaredBudgetVerdict {
-	/** Spec files off the list that hold tests with no budget. */
-	readonly missing: readonly {
-		readonly path: string;
-		readonly tests: number;
-	}[];
-	/** List entries that no longer need to be there (kept or fixed). */
-	readonly stale: readonly string[];
-	/**
-	 * Spec files the change touches that are still on the list: an edited
-	 * spec complies in full and leaves it.
-	 */
-	readonly touched: readonly string[];
-}
-
-export const judgeDeclaredBudgets = (
-	files: ReadonlyMap<string, number>,
-	listed: ReadonlySet<string>,
-	changed?: ReadonlySet<string>,
-): IDeclaredBudgetVerdict => ({
-	// A budget is asked of the files a change writes (the run holds the same
-	// rule): with no change known, every file off the list is asked.
-	missing: [...files]
-		.filter(
-			([path, tests]) =>
-				// Only the e2e tier is asked to declare: a unit test's limit is fixed.
-				tests > 0 &&
-				isE2eSpec(path) &&
-				!mayGoUnbudgeted(path, listed, changed),
-		)
-		.map(([path, tests]) => ({ path, tests }))
-		.sort((a, b) => a.path.localeCompare(b.path)),
-	stale: [...listed]
-		.filter((path) => (files.get(path) ?? 0) === 0)
-		.sort((a, b) => a.localeCompare(b)),
-	touched: [...listed]
-		.filter(
-			(path) => changed?.has(path) === true && (files.get(path) ?? 0) > 0,
-		)
-		.sort((a, b) => a.localeCompare(b)),
-});
 
 /** The integration branch the prove plan measures a change against. */
 export const INTEGRATION_REF = 'origin/develop';

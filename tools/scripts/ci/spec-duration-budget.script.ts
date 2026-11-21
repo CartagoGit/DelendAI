@@ -4,10 +4,10 @@
  * recorded and fails any spec file over 5 s that is not in the e2e tier
  * by a margin (q00045 S1). Files over 1 s are reported.
  *
- *   bun tools/scripts/ci/spec-duration-budget.script.ts --declared [--update|--init]
- *       every test names its maximum time, "[<7ms] does X" (the other half of the rule the
- *       test-kit runner enforces in the run): a spec file off the migration
- *       list must budget every test, and the list only shrinks
+ *   bun tools/scripts/ci/spec-duration-budget.script.ts --declared
+ *       a unit-tier spec the change edits may not declare a budget over the
+ *       unit limit (a test's time is judged by its estimate from history,
+ *       and no spec is asked to budget every test)
  *   bun tools/scripts/ci/spec-duration-budget.script.ts --timings=<spec-timings.json>
  *   ... --update    drop baseline entries that no longer need it (shrinks only)
  *
@@ -33,9 +33,7 @@ import { isE2eSpec } from '../../../packages/test-kit/src/lib/time-budget/time-b
 import {
 	budgetsOverUnitLimit,
 	changedFiles,
-	judgeDeclaredBudgets,
 	judgeUnitLimit,
-	unbudgetedTests,
 } from './declared-test-budget';
 import {
 	CLEAR_MS,
@@ -58,14 +56,9 @@ const arg = (name: string): string | undefined =>
 const readBaseline = (): readonly string[] =>
 	JSON.parse(readFileSync(BASELINE, 'utf8')) as string[];
 
-const MIGRATION = join(
-	dirname(fileURLToPath(import.meta.url)),
-	'../test/test-time-budget.migration.json',
-);
-
 const declaredMain = (): number => {
 	const root = join(dirname(fileURLToPath(import.meta.url)), '../../..');
-	const files = new Map<string, number>();
+	const files: string[] = [];
 	for (const path of execFileSync('git', ['ls-files', '-z'], {
 		cwd: root,
 		encoding: 'utf8',
@@ -75,38 +68,8 @@ const declaredMain = (): number => {
 		.filter((file) => /\.(?:spec|test)\.ts$/u.test(file))) {
 		// A tracked path gone from the working tree has no tests.
 		if (!existsSync(join(root, path))) continue;
-		files.set(
-			path,
-			unbudgetedTests(readFileSync(join(root, path), 'utf8')),
-		);
+		files.push(path);
 	}
-	const write = (unbudgeted: readonly string[]): void =>
-		writeFileSync(
-			MIGRATION,
-			`${JSON.stringify({ unbudgeted }, null, '\t')}\n`,
-		);
-	if (process.argv.includes('--init')) {
-		if (existsSync(MIGRATION)) {
-			console.error(
-				'test-time-budget: the list exists; it only shrinks.',
-			);
-			return 1;
-		}
-		write(
-			[...files]
-				.filter(([, n]) => n > 0)
-				.map(([p]) => p)
-				.sort(),
-		);
-		return 0;
-	}
-	const listed = new Set(
-		(
-			JSON.parse(readFileSync(MIGRATION, 'utf8')) as {
-				unbudgeted: string[];
-			}
-		).unbudgeted,
-	);
 	// The changed files come from the input the other gates use: a list
 	// file, or the base the change is measured against.
 	const { DELENDAI_COVERAGE_BASE: envBase } = process.env;
@@ -132,9 +95,8 @@ const declaredMain = (): number => {
 							`${given}...HEAD`,
 						]).split('\n'),
 					);
-	const verdict = judgeDeclaredBudgets(files, listed, changed);
 	const over = new Map<string, readonly number[]>();
-	for (const path of files.keys()) {
+	for (const path of files) {
 		if (!isE2eSpec(path) && changed?.has(path) !== false) {
 			over.set(
 				path,
@@ -142,51 +104,18 @@ const declaredMain = (): number => {
 			);
 		}
 	}
-	const breaches = judgeUnitLimit(over, listed, changed);
+	const breaches = judgeUnitLimit(over, changed);
 	for (const { path, budgets } of breaches) {
 		console.error(
 			`✖ ${path}: a unit-tier test is held to ${String(UNIT_LIMIT_MS)} ms and declares ${budgets.map(String).join(', ')} ms. Rename the spec to *.e2e.spec.ts, or make the test pure.`,
 		);
 	}
-	if (process.argv.includes('--update')) {
-		const stale = new Set(verdict.stale);
-		write([...listed].filter((path) => !stale.has(path)).sort());
-		console.log(`test-time-budget: ${String(stale.size)} entries dropped.`);
-		return verdict.missing.length === 0 ? 0 : 1;
-	}
-	for (const { path, tests } of verdict.missing) {
-		console.error(
-			`✖ ${path}: ${String(tests)} test(s) declare no time budget. Start each name with its budget, "[<7ms] does X" — the run fails a test with none, or over it.`,
-		);
-	}
-	for (const path of verdict.touched) {
-		console.error(
-			`✖ ${path}: this change edits it, so every test in it names its budget ("[<7ms] does X") and the file leaves the migration list.`,
-		);
-	}
-	for (const path of verdict.stale) {
-		console.error(
-			`✖ ${path}: no longer needs its migration entry (run --declared --update); the list only shrinks.`,
-		);
-	}
-	if (
-		verdict.missing.length +
-			verdict.stale.length +
-			verdict.touched.length +
-			breaches.length ===
-		0
-	) {
+	if (breaches.length === 0) {
 		console.log(
-			`✓ test-time-budget: every test off the ${String(listed.size)}-file migration list declares a maximum time.`,
+			'✓ test-time-budget: no unit-tier spec this change edits declares a budget over the unit limit.',
 		);
 	}
-	return verdict.missing.length +
-		verdict.stale.length +
-		verdict.touched.length +
-		breaches.length ===
-		0
-		? 0
-		: 1;
+	return breaches.length === 0 ? 0 : 1;
 };
 
 const main = (): number => {
