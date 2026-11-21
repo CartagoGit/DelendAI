@@ -85,6 +85,17 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
   - "bunx vitest run plugins/self-learning/tests/src/lib/store/observation-store.spec.ts proves a budget warning is stored as an observation with the test id, the normalized time and the estimate"
   - "bunx vitest run plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts proves warnings recurring on specs that spawn git or use timers become one lesson proposing a fake instead of real git or timers"
 
+### S6 — The runner records each budget warning in the test journal
+- **Status**: pending
+- **DependsOn**: [S2, S4]
+- **Files**: `packages/test-kit/src/lib/time-budget/time-budget-runner.helper.ts`, `packages/test-kit/src/contracts/constants/time-budget.constant.ts`, `packages/test-kit/src/contracts/interfaces/time-budget.interface.ts`, `packages/test-kit/tests/src/lib/time-budget-runner.helper.spec.ts`, `tools/scripts/test/journal-reporter.ts`, `tools/scripts/test/test-journal.ts`, `tools/scripts/test/journal-reporter.spec.ts`, `tools/scripts/test/journal-reporter.e2e.spec.ts`
+- **Gate**: none
+- **Decisions**: none
+- acceptance:
+  - "bunx vitest run packages/test-kit/tests/src/lib/time-budget-runner.helper.spec.ts proves a test that lands in the warn level gets test.meta.budgetWarning with its file, full name, normalized time, estimate and causes, and a test within its estimate gets none"
+  - "bunx vitest run tools/scripts/test/journal-reporter.spec.ts proves the real reporter, driven with a warned test, appends a journal entry whose budgetWarnings carries that warning"
+  - "bunx vitest run plugins/self-learning/tests/src/lib/store/observation-store.spec.ts proves the self-learning collector reads the same budgetWarnings field name the reporter writes"
+
 ## acceptance
 
 - bunx vitest run tools/scripts/ci/test-budget-calibration.spec.ts proves the estimate is the p95 of the develop runs' load-normalized times, not the max, and that a run measured under a doubled load factor yields the same estimate
@@ -101,3 +112,6 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
 - `bun run test:budgets:check` exits 0 on a change that edits one line of a formerly listed spec
 - bunx vitest run plugins/self-learning/tests/src/lib/store/observation-store.spec.ts proves a budget warning is stored as an observation with the test id, the normalized time and the estimate
 - bunx vitest run plugins/self-learning/tests/src/lib/lessons/derive-lessons.spec.ts proves warnings recurring on specs that spawn git or use timers become one lesson proposing a fake instead of real git or timers
+- bunx vitest run packages/test-kit/tests/src/lib/time-budget-runner.helper.spec.ts proves a test that lands in the warn level gets test.meta.budgetWarning with its file, full name, normalized time, estimate and causes, and a test within its estimate gets none
+- bunx vitest run tools/scripts/test/journal-reporter.spec.ts proves the real reporter, driven with a warned test, appends a journal entry whose budgetWarnings carries that warning
+- bunx vitest run plugins/self-learning/tests/src/lib/store/observation-store.spec.ts proves the self-learning collector reads the same budgetWarnings field name the reporter writes
