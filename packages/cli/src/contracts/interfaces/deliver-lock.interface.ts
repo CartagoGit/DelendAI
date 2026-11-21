@@ -2,7 +2,7 @@
 export interface IDeliverLockOptions {
 	readonly dir?: string;
 	/** The unit's checkout, whose repository holds the lock when `dir` is not given. */
-	readonly checkout?: string;
+	readonly checkout?: string | undefined;
 	readonly pid?: number;
 	readonly isAlive?: (pid: number) => boolean;
 }
