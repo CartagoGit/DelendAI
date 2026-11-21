@@ -5,17 +5,25 @@ import { fakePartial } from '@delendai/test-kit';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { IIntegrationPassInput } from '../../../../src/lib/contracts/interfaces/integration-pass.interface';
-import { runIntegrationPass } from '../../../../src/lib/services/integration-pass.service';
+import {
+	runIntegrationPass,
+	runProjectCommand,
+} from '../../../../src/lib/services/integration-pass.service';
 
 const seen = vi.hoisted(() => ({
 	batches: [] as boolean[],
 	gone: undefined as string | undefined,
 	actions: [] as string[],
+	derived: false,
 }));
 vi.mock('@delendai/core/cli', async (importOriginal) => ({
 	...(await importOriginal<typeof import('@delendai/core/cli')>()),
-	landPass: async (input: { config: { batches: boolean } }) => {
+	landPass: async (input: {
+		config: { batches: boolean };
+		resolveDerived: (pr: { number: number }) => Promise<void>;
+	}) => {
 		seen.batches.push(input.config.batches);
+		if (seen.derived) await input.resolveDerived({ number: 7 });
 		if (seen.gone !== undefined)
 			throw new (
 				await importOriginal<typeof import('@delendai/core/cli')>()
@@ -173,5 +181,41 @@ describe('the watchdog evidence', () => {
 		});
 		expect(code).toBe(0);
 		expect(files.size).toBe(0);
+	});
+});
+
+describe('the pass wiring', () => {
+	it('[<20ms] a derived conflict is dispatched to the land workflow, never solved here', async () => {
+		seen.derived = true;
+		const dispatchWorkflow = vi.fn(() => Promise.resolve());
+		await runIntegrationPass({
+			root: '/repo',
+			policy: resolveDevelopmentPolicy({
+				development: { integration: { engine: 'land' } },
+			}),
+			env: { GITHUB_REPOSITORY: 'o/n' },
+			runGh: () => Promise.reject(new Error('the forge was reached')),
+			log: () => undefined,
+			error: () => undefined,
+			ports: fakePartial<NonNullable<IIntegrationPassInput['ports']>>({
+				forge: fakePartial<ILandForge>({ dispatchWorkflow }),
+				git: fakePartial<ILandGit>({}),
+				bringForward: fakePartial<ILandDeps['bringForward']>({}),
+			}),
+		});
+		seen.derived = false;
+		expect(dispatchWorkflow).toHaveBeenCalledWith(
+			expect.any(String),
+			expect.any(String),
+			{ derived: '7' },
+		);
+	});
+
+	it('[<100ms] a project command reports its exit and its output', () => {
+		expect(runProjectCommand('/', 'echo hi')).toEqual({
+			ok: true,
+			stdout: 'hi\n',
+		});
+		expect(runProjectCommand('/', 'exit 3').ok).toBe(false);
 	});
 });
