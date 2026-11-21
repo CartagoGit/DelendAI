@@ -18,6 +18,10 @@ import type {
 	ILandDeps,
 	ILandPullRequest,
 } from './land.interface';
+import type {
+	IMovedProposalPorts,
+	IMovedProposalRefresh,
+} from './land-moved-proposal.interface';
 import { BRING_NOTES } from './land.constant';
 
 /**
@@ -152,3 +156,43 @@ export const staleCleanReason = async (input: {
 	readonly tip: string;
 }): Promise<string> =>
 	`stale base, clean merge; ${bringForwardReason(await bringForwardUnbuilt(input))}`;
+
+/** The one comment a publication gets when its moved proposal cannot be refreshed. */
+export const movedProposalComment = (
+	generation: number,
+	paths: readonly string[],
+): string =>
+	`The integration branch edited ${paths.join(', ')}, which this publication moved, and the edit does not apply on its own. Re-enter the unit with \`work enter --generation ${String(generation)}\`, run \`git merge\` of the integration branch, resolve the proposal file and republish.`;
+
+/**
+ * A publication whose only conflict is a proposal file it moved while the
+ * tip edited the old copy: the tip's edit is carried onto the moved copy and
+ * the old copy removed. Anything else, or an edit that does not apply,
+ * changes nothing and asks the author once.
+ */
+export const refreshMovedProposal = (input: {
+	readonly ports: IMovedProposalPorts;
+	readonly generation: number;
+}): IMovedProposalRefresh => {
+	const { ports, generation } = input;
+	const ask = (paths: readonly string[]): IMovedProposalRefresh => ({
+		kind: 'asked',
+		comment: movedProposalComment(generation, paths),
+	});
+	if (ports.moves.length === 0 || ports.otherConflicts.length > 0)
+		return ask([
+			...ports.moves.map((move) => move.to),
+			...ports.otherConflicts,
+		]);
+	const writes: { path: string; content: string }[] = [];
+	for (const move of ports.moves) {
+		const content = ports.mergeText(move.base, move.tip, move.moved);
+		if (content === undefined) return ask([move.to]);
+		writes.push({ path: move.to, content });
+	}
+	return {
+		kind: 'carried',
+		writes,
+		removes: ports.moves.map((move) => move.from),
+	};
+};
