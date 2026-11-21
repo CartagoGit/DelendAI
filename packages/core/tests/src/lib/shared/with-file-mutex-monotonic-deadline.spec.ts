@@ -50,47 +50,78 @@ describe('withFileMutex deadline is monotonic', () => {
 		return { release, done };
 	};
 
-	const pump = async (steps: number, advanceMono: number): Promise<void> => {
-		for (let i = 0; i < steps; i++) {
-			await tick();
+	/**
+	 * Real fs round trips sit between two fake sleeps: wait until the
+	 * waiter is parked on its next sleep (or has settled), then advance.
+	 */
+	const pump = async (
+		steps: number,
+		advanceMono: number,
+		settled: () => boolean = () => false,
+	): Promise<void> => {
+		for (let step = 0; step < steps && !settled(); step++) {
+			for (
+				let i = 0;
+				i < 10_000 && !settled() && vi.getTimerCount() === 0;
+				i++
+			) {
+				await tick();
+			}
+			if (settled()) return;
 			mono += advanceMono;
 			await vi.advanceTimersByTimeAsync(25);
 		}
 	};
 
+	/** Track when a promise has settled, whichever way. */
+	const watch = <T>(promise: Promise<T>) => {
+		let done = false;
+		const outcome = promise.then(
+			(value) => {
+				done = true;
+				return value;
+			},
+			(error: unknown) => {
+				done = true;
+				return error;
+			},
+		);
+		return { outcome, settled: () => done };
+	};
+
 	it('[<200ms] a wall-clock step of 5.6 s does not time a waiter out', async () => {
 		const target = join(dir, 'a.json');
 		const holder = await hold(target);
-		const waiter = withFileMutex(target, async () => 'got-it', {
-			timeoutMs: 1_000,
-			pollMs: 25,
-		});
-		await pump(3, 2);
+		const waiter = watch(
+			withFileMutex(target, async () => 'got-it', {
+				timeoutMs: 1_000,
+				pollMs: 25,
+			}),
+		);
+		await pump(3, 2, waiter.settled);
 		wall += WALL_STEP_MS;
-		await pump(3, 2);
+		await pump(3, 2, waiter.settled);
+		expect(waiter.settled()).toBe(false);
 		holder.release();
-		await pump(5, 2);
-		await expect(waiter).resolves.toBe('got-it');
+		await pump(50, 2, waiter.settled);
+		expect(await waiter.outcome).toBe('got-it');
 		await holder.done;
 	});
 
 	it('[<200ms] monotonic time past timeoutMs times the waiter out with the wall clock still', async () => {
 		const target = join(dir, 'b.json');
 		const holder = await hold(target);
-		const waiter = withFileMutex(target, async () => 'never', {
-			timeoutMs: 1_000,
-			pollMs: 25,
-		});
-		const outcome = waiter.then(
-			() => undefined,
-			(error: unknown) => error,
+		const waiter = watch(
+			withFileMutex(target, async () => 'never', {
+				timeoutMs: 1_000,
+				pollMs: 25,
+			}),
 		);
-		await pump(3, 2);
+		await pump(3, 2, waiter.settled);
 		mono += 1_500;
-		await pump(3, 2);
-		expect(await outcome).toBeInstanceOf(LockContentionError);
+		await pump(50, 2, waiter.settled);
+		expect(await waiter.outcome).toBeInstanceOf(LockContentionError);
 		holder.release();
-		await pump(2, 2);
 		await holder.done;
 	});
 });
