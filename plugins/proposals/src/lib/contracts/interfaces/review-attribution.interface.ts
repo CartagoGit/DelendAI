@@ -68,6 +68,8 @@ export interface IWorkRefShape {
 	readonly namespacePrefix?: string;
 	/** Namespaces used before it, still read during a transition. */
 	readonly formerNamespacePrefixes?: readonly string[];
+	/** Whether work refs are `heads/…`; absent reads from the prefix. */
+	readonly workRefVisibility?: 'visible' | 'hidden';
 }
 
 /** A unit of work named in some text, decoded with the project's template. */

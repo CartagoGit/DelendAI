@@ -12,7 +12,7 @@
  * would come back to.
  */
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
-import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
+import { compileOwnedWorkRefParser } from '../development-policy/owned-work-ref-parser';
 import { dirname } from 'node:path';
 
 import {
@@ -32,11 +32,11 @@ export const publicationOnLeavingProgress = (input: {
 }): readonly string[] | undefined => {
 	const { cwd, branch, policy } = input;
 	if (input.inMainWorktree || branch === undefined) return undefined;
-	const unit = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-		{ requireKind: false },
-	)?.parse(`refs/heads/${branch}`);
+	// A unit entered under a former namespace is read too: it publishes
+	// under its own name (f00808).
+	const unit = compileOwnedWorkRefParser(policy.branches, {
+		requireKind: false,
+	})?.parse(`refs/heads/${branch}`);
 	if (unit === undefined) return undefined;
 	// A commit that moves the unit's proposal to another folder ends the
 	// unit's work on it, unless it moved into progress, which starts it.

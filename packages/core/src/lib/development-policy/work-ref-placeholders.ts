@@ -71,10 +71,13 @@ export const workRefTailSegments = (template: string): number => {
 	return firstPlaceholder === -1 ? 0 : segments.length - firstPlaceholder;
 };
 
-/** A proposal id as a scope names it (`x01003`), or the review batch. */
-const PROPOSAL_TOKEN = /^(?:[a-z]\d+|batch)$/u;
-/** A slice id as a scope names it (`S2`, `S9b`). */
-const SLICE_TOKEN = /^S\d+[a-z]*$/u;
+/**
+ * A proposal id as a scope names it (`x01003`), the review batch, or the
+ * proposal a create unit has not been given an id for yet (`new`).
+ */
+const PROPOSAL_TOKEN = /^(?:[a-z]\d+|batch|new)$/u;
+/** A slice id as a scope names it (`S2`, `S9b`), or `all` for the whole proposal. */
+const SLICE_TOKEN = /^(?:S\d+[a-z]*|all)$/u;
 const GENERATION_SUFFIX = /-G(\d+)$/u;
 
 /** Whether `value` is a slice id a scope can carry. */

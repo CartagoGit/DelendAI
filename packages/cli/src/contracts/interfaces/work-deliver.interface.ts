@@ -16,6 +16,11 @@ export interface IWorkDeliverPorts {
 	readonly readOpenPullRequest: (
 		branch: string,
 	) => Promise<string | undefined>;
+	/** Whether the remote holds the publication with the unit's head in it (waits for a detached publication). */
+	readonly publicationReached: (
+		publication: string,
+		checkout: string | undefined,
+	) => Promise<boolean>;
 	readonly locate: () => Promise<ICliCommandResult>;
 	/**
 	 * The proof's cheap static gates, scoped to the change, run before the

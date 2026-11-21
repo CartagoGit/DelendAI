@@ -47,6 +47,7 @@ import {
 	workRefShapeInWords,
 } from './work-ref-shape.service';
 import { renameUnitRef } from './unit-ref-rename.service';
+import { policyForRef } from '../development-policy/owned-work-ref-parser';
 import { identityOf, listWorkRefs } from './work-swarm.service';
 
 export type {
@@ -65,7 +66,9 @@ export const planWorkClaim = (input: {
 	readonly agent: string;
 	readonly policy: IResolvedDevelopmentPolicy;
 }): IWorkClaim | IWorkClaimRefusal => {
-	const { ref, sha, agent, policy } = input;
+	const { ref, sha, agent } = input;
+	// A unit under a former namespace is claimed under its own (f00808).
+	const policy = policyForRef(input.policy, ref);
 	if (agent.length === 0) {
 		return {
 			ref,

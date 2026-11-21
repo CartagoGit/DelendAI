@@ -91,7 +91,7 @@ const enter = (root: string, agent: string, slice: string, ...more: string[]) =>
 	);
 
 describe('work enter on two machines', () => {
-	it('lets one agent into a slice and names it to the other, which saw no ref of it', async () => {
+	it('[<7000ms] lets one agent into a slice and names it to the other, which saw no ref of it', async () => {
 		const { first, second } = twoMachines();
 
 		expect((await enter(first.root, 'glm-5.3-flash', 'S1')).code).toBe(0);
@@ -112,7 +112,7 @@ describe('work enter on two machines', () => {
 		).toBe(0);
 	});
 
-	it('tells an agent refused by its own unit how to go back to it', async () => {
+	it('[<4000ms] tells an agent refused by its own unit how to go back to it', async () => {
 		const { first, second } = twoMachines();
 		expect(
 			(await enter(first.root, 'glm-5.3-flash', 'S1', '--topic=the-work'))
@@ -133,7 +133,7 @@ describe('work enter on two machines', () => {
 		expect(back.error).toContain('--generation=1 --topic=the-work');
 	});
 
-	it('frees the slice when the unit that held it is retired', async () => {
+	it('[<7000ms] frees the slice when the unit that held it is retired', async () => {
 		const { first, second } = twoMachines();
 		const held = (await enter(first.root, 'glm-5.3-flash', 'S1')).data as {
 			branch: string;
@@ -159,7 +159,7 @@ describe('work enter on two machines', () => {
 });
 
 describe('a claimed unit', () => {
-	it('gives back what it reserved under its old name', async () => {
+	it('[<4000ms] gives back what it reserved under its old name', async () => {
 		const { first, second } = twoMachines();
 		const held = (await enter(first.root, 'glm-5.3-flash', 'S1')).data as {
 			branch: string;
@@ -191,7 +191,7 @@ describe('a slice reservation', () => {
 			now,
 		});
 
-	it('is taken over once its unit is neither on the forge nor recent', () => {
+	it('[<2000ms] is taken over once its unit is neither on the forge nor recent', () => {
 		const { first, second } = twoMachines();
 		expect(
 			ask(first.root, 'glm-5.3-flash/implement/x', 'glm-5.3-flash'),
@@ -223,7 +223,7 @@ describe('a slice reservation', () => {
 		).toEqual({ kind: 'reserved' });
 	});
 
-	it('is renewed by its own unit, released by it, and not asked for without a forge', () => {
+	it('[<3000ms] is renewed by its own unit, released by it, and not asked for without a forge', () => {
 		const { first, second } = twoMachines();
 		const mine = 'glm-5.3-flash/implement/x';
 		expect(ask(first.root, mine, 'glm-5.3-flash').kind).toBe('reserved');
@@ -263,7 +263,7 @@ describe('a slice reservation whose unit is gone', () => {
 	const claims = (git: (...args: string[]) => string): string =>
 		git('ls-remote', 'origin', 'refs/delendai/claims/slice/*');
 
-	it('is kept while its unit is on the forge or it is recent, then released', async () => {
+	it('[<7000ms] is kept while its unit is on the forge or it is recent, then released', async () => {
 		const { first } = twoMachines();
 		expect((await enter(first.root, 'glm-5.3-flash', 'S1')).code).toBe(0);
 		expect((await enter(first.root, 'glm-5.3-flash', 'S2')).code).toBe(0);
@@ -301,7 +301,7 @@ describe('a slice reservation whose unit is gone', () => {
 		expect(claims(first.git)).toContain('x00001/s2');
 	});
 
-	it('is released at once when its unit has landed on the integration branch', async () => {
+	it('[<5000ms] is released at once when its unit has landed on the integration branch', async () => {
 		// A unit that published and merged has no branch left, and used to
 		// hold its slice for the whole abandonment window all the same.
 		const { first } = twoMachines();
@@ -337,7 +337,7 @@ describe('a slice reservation whose unit is gone', () => {
 		expect(claims(first.git)).not.toContain('x00001/s3');
 	});
 
-	it('releases a review claim whose unit is gone, which names its branch in full', async () => {
+	it('[<3000ms] releases a review claim whose unit is gone, which names its branch in full', async () => {
 		const { first } = twoMachines();
 		const tree = first.git('rev-parse', 'HEAD^{tree}');
 		const parent = first.git('rev-parse', 'HEAD');
@@ -348,7 +348,7 @@ describe('a slice reservation whose unit is gone', () => {
 			'-p',
 			parent,
 			'-m',
-			'review claim x00001 1\n\nUnit: refs/heads/delendai/wip/agent-c/review/batch-all-g1/verdicts\nAgent: agent-c',
+			'review claim x00001 1\n\nUnit: refs/heads/delendai/wip/review/agent-c/batch-all/verdicts\nAgent: agent-c',
 		);
 		first.git(
 			'push',
@@ -364,7 +364,7 @@ describe('a slice reservation whose unit is gone', () => {
 			{
 				slice: 'review/x00001',
 				ref: 'refs/delendai/claims/review/x00001',
-				unit: 'agent-c/review/batch-all-g1/verdicts',
+				unit: 'review/agent-c/batch-all/verdicts',
 				outcome: 'released',
 			},
 		]);

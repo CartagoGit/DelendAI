@@ -51,6 +51,17 @@ describe('commitToolWrites', () => {
 		]);
 	});
 
+	it('[<20ms] reads a first entry whose leading space the runner trimmed', () => {
+		const git: IGitInCheckout = () => ({
+			ok: true,
+			out: 'D docs/p/review/x1.md\0?? docs/p/in-progress/x1.md\0',
+		});
+		expect([...dirtyPathsOf(git)]).toEqual([
+			'docs/p/review/x1.md',
+			'docs/p/in-progress/x1.md',
+		]);
+	});
+
 	it('[<20ms] commits the path the tool wrote under the tool subject', () => {
 		const { calls, git } = gitWith(['doc.md']);
 		expect(commitToolWrites(git, new Set(), SUBJECT)).toBeUndefined();

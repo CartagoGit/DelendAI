@@ -47,6 +47,12 @@ export const ownedWorkRefShapes = (
 	}));
 };
 
+/** Every owned work template, current first; the declared one when none. */
+export const ownedTemplates = (branches: IShapeBranches): readonly string[] => {
+	const shapes = ownedWorkRefShapes(branches).map((shape) => shape.template);
+	return shapes.length > 0 ? shapes : [branches.workRefTemplate];
+};
+
 /** The owned work shape a branch (short or qualified) lives under. */
 export const ownedWorkRefShapeOf = (
 	branches: IShapeBranches,
@@ -174,3 +180,16 @@ export const unitOfName = (
 	}
 	return undefined;
 };
+
+/**
+ * `policy` with its branch settings as the namespace `ref` lives under has
+ * them (`branchesForRef`): the one call a reader of an existing ref makes
+ * so a unit under a former namespace is read in its own namespace.
+ */
+export const policyForRef = <T extends { readonly branches: IShapeBranches }>(
+	policy: T,
+	ref: string,
+): T => ({
+	...policy,
+	branches: branchesForRef(policy.branches, ref),
+});

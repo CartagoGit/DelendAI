@@ -50,7 +50,7 @@ const readablePolicy = resolveDevelopmentPolicy({
 	},
 });
 
-const NEW = 'refs/heads/wip/agent-a/implement/x00001-S1-g1/topic';
+const NEW = 'refs/heads/wip/implement/agent-a/x00001-S1/topic';
 const ARGS = ['--kind=implement', '--topic=topic'];
 
 const template = createGitRepoTemplate({
@@ -78,7 +78,7 @@ describe('a unit generation, against real refs', () => {
 
 	it('[<400ms] sends a session back to the generation it holds', () => {
 		const root = repo();
-		const second = NEW.replace('-g1/', '-g2/');
+		const second = NEW.replace('x00001-S1/', 'x00001-S1-G2/');
 		git(root, 'update-ref', second, 'HEAD');
 		worktreeOn(root, second, 's2');
 		expect(
@@ -119,7 +119,7 @@ describe('a unit generation, against real refs', () => {
 			'-q',
 			'--no-ff',
 			'-m',
-			'Merge wip/agent-a/implement/x00001-S1-g1/topic',
+			'Merge wip/implement/agent-a/x00001-S1/topic',
 			'side',
 		);
 		expect([...endedGenerations(root, policy, NEW)]).toEqual([1]);
@@ -135,8 +135,7 @@ describe('a unit generation, against real refs', () => {
 
 	it('[<400ms] sends the entrant back to its own open publication, unless alongside', () => {
 		const root = repo();
-		const publication =
-			'refs/heads/pr/agent-a/implement/x00001-S1-g1/topic';
+		const publication = 'refs/heads/pr/implement/agent-a/x00001-S1/topic';
 		git(root, 'update-ref', publication, 'HEAD');
 		const refused = chooseGeneration(
 			root,
@@ -211,7 +210,7 @@ describe('a unit under the scope grammar (f00808)', () => {
 
 	it('[<400ms] chooseGeneration reads -G{n} from the name when the trailer is absent', () => {
 		const root = repo();
-		const scoped = SCOPED.replace('x00001-S1-G2', 'x00001-S1-G2');
+		const scoped = SCOPED;
 		git(root, 'update-ref', scoped, 'HEAD');
 		const dir = `${root}-wt-sg`;
 		git(
@@ -241,7 +240,7 @@ describe('a unit under the scope grammar (f00808)', () => {
 		git(root, 'commit', '-q', '--allow-empty', '-m', 'work');
 		git(root, 'checkout', '-q', 'develop');
 		for (const [index, name] of [
-			'wip/agent-a/implement/x00001-S1-g1/topic',
+			'wip/implement/agent-a/x00001-S1/topic',
 			'wip/implement/agent-a/x00001-S1-G2/topic',
 		].entries()) {
 			git(root, 'checkout', '-q', '-b', `side${index}`, 'side');

@@ -26,7 +26,7 @@ const AGENT = { agentMarker: 'AI_AGENT' } as const;
 const PERSON = { agentMarker: undefined } as const;
 
 describe('no declared policy', () => {
-	it('refuses nothing', () => {
+	it('[<20ms] refuses nothing', () => {
 		for (const operation of [
 			commit('develop'),
 			create('refs/heads/anything'),
@@ -43,7 +43,7 @@ describe('no declared policy', () => {
 describe('shared-checkout-merge — the observed project', () => {
 	const policy = expandProfile('shared-checkout-merge');
 
-	it('refuses a direct commit to the integration branch, and says how to work', () => {
+	it('[<20ms] refuses a direct commit to the integration branch, and says how to work', () => {
 		const verdict = judgeGitOperation(policy, commit('develop'), AGENT);
 		expect(verdict.refused).toBe(true);
 		expect(verdict.reason).toContain('`shared-checkout-merge`');
@@ -51,7 +51,7 @@ describe('shared-checkout-merge — the observed project', () => {
 		expect(verdict.remedy).toContain('Do not create worktrees or branches');
 	});
 
-	it('says how work lands in THIS profile, and it is not a pull request', () => {
+	it('[<20ms] says how work lands in THIS profile, and it is not a pull request', () => {
 		// The refusal the observed agent got said "not here" and nothing
 		// about the route, so it took the one a document described: pull
 		// requests, in a project that merges.
@@ -70,8 +70,8 @@ describe('shared-checkout-merge — the observed project', () => {
 		expect(pr.remedy).not.toContain('MERGING');
 	});
 
-	it('names the landing route when the checkout left the integration branch', () => {
-		const work = 'wip/gpt-5-codex/implement/x00056-S1-g1/tetris-mock';
+	it('[<20ms] names the landing route when the checkout left the integration branch', () => {
+		const work = 'wip/implement/gpt-5-codex/x00056-S1/tetris-mock';
 		const merge = judgeGitOperation(policy, commit(work), AGENT);
 		const pr = judgeGitOperation(
 			expandProfile('shared-checkout-pr'),
@@ -84,13 +84,13 @@ describe('shared-checkout-merge — the observed project', () => {
 		expect(pr.remedy).toContain('opens a pull request into develop');
 	});
 
-	it('allows the merge commit that moves the integration branch', () => {
+	it('[<20ms] allows the merge commit that moves the integration branch', () => {
 		expect(
 			judgeGitOperation(policy, commit('develop', true), AGENT).refused,
 		).toBe(false);
 	});
 
-	it('refuses the hand-made agent branches, created or committed on', () => {
+	it('[<20ms] refuses the hand-made agent branches, created or committed on', () => {
 		const branch =
 			'agent/screens-implementation-runner/x00056-S1-tetris-mock';
 		expect(
@@ -106,8 +106,8 @@ describe('shared-checkout-merge — the observed project', () => {
 		).toBe(true);
 	});
 
-	it('allows delendai work refs and publication refs', () => {
-		const work = 'wip/gpt-5-codex/implement/x00056-S1-g1/tetris-mock';
+	it('[<20ms] allows delendai work refs and publication refs', () => {
+		const work = 'wip/implement/gpt-5-codex/x00056-S1/tetris-mock';
 		expect(
 			judgeGitOperation(policy, create(`refs/heads/${work}`), AGENT)
 				.refused,
@@ -127,14 +127,14 @@ describe('shared-checkout-merge — the observed project', () => {
 		).toBe(false);
 	});
 
-	it('allows pushing the integration branch, since this profile merges locally', () => {
+	it('[<20ms] allows pushing the integration branch, since this profile merges locally', () => {
 		expect(
 			judgeGitOperation(policy, push('refs/heads/develop'), AGENT)
 				.refused,
 		).toBe(false);
 	});
 
-	it('never judges tags, remote-tracking refs or deletes', () => {
+	it('[<20ms] never judges tags, remote-tracking refs or deletes', () => {
 		expect(
 			judgeGitOperation(policy, create('refs/tags/v1.0.0'), AGENT)
 				.refused,
@@ -167,12 +167,12 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		},
 	});
 
-	it('allows the namespaced work and publication branches', () => {
+	it('[<20ms] allows the namespaced work and publication branches', () => {
 		expect(
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/implement/x00549-S1-g1/guard',
+					'refs/heads/delendai/wip/implement/claude-opus-5/x00549-S1/guard',
 				),
 				AGENT,
 			).refused,
@@ -181,14 +181,14 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 			judgeGitOperation(
 				policy,
 				push(
-					'refs/heads/delendai/pr/claude-opus-5/implement/x00549-S1-g1/guard',
+					'refs/heads/delendai/pr/implement/claude-opus-5/x00549-S1/guard',
 				),
 				AGENT,
 			).refused,
 		).toBe(false);
 	});
 
-	it('refuses a work ref without its kind, or with a kind outside the vocabulary (f00644)', () => {
+	it('[<20ms] refuses a work ref without its kind, or with a kind outside the vocabulary (f00644)', () => {
 		for (const name of [
 			'delendai/wip/claude-opus-5/x00549-S1-g1/guard',
 			'delendai/wip/claude-opus-5/bogus/x00549-S1-g1/guard',
@@ -200,11 +200,11 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		}
 	});
 
-	it('refuses an agent id that spells the kind of work (f00644)', () => {
+	it('[<20ms] refuses an agent id that spells the kind of work (f00644)', () => {
 		const verdict = judgeGitOperation(
 			policy,
 			create(
-				'refs/heads/delendai/wip/github-copilot-review-20260926/review/c00528-S1-g1/review',
+				'refs/heads/delendai/wip/review/github-copilot-review-20260926/c00528-S1/review',
 			),
 			AGENT,
 		);
@@ -212,10 +212,10 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		expect(verdict.reason).toContain('spells the kind of work');
 	});
 
-	it('refuses an agent id that names the program it runs in, and accepts a model (x00694)', () => {
+	it('[<20ms] refuses an agent id that names the program it runs in, and accepts a model (x00694)', () => {
 		const verdict = judgeGitOperation(
 			policy,
-			create('refs/heads/delendai/wip/copilot/review/batch-all-g1/close'),
+			create('refs/heads/delendai/wip/review/copilot/x00558/close'),
 			AGENT,
 		);
 		expect(verdict.refused).toBe(true);
@@ -225,7 +225,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 				judgeGitOperation(
 					policy,
 					create(
-						`refs/heads/delendai/wip/${model}/review/batch-all-g1/close`,
+						`refs/heads/delendai/wip/review/${model}/x00558/close`,
 					),
 					AGENT,
 				).refused,
@@ -233,7 +233,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		}
 	});
 
-	it('judges the shape inside delendai namespaces whoever runs git, and nothing outside (f00644)', () => {
+	it('[<20ms] judges the shape inside delendai namespaces whoever runs git, and nothing outside (f00644)', () => {
 		// A host that declares no agent marker is indistinguishable from a
 		// person; the names in delendai's own namespaces are still the
 		// tools', and a person's branches elsewhere stay free.
@@ -259,7 +259,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		).toBe(false);
 	});
 
-	it('keeps a unit written before the kind pushable and publishable (f00644)', () => {
+	it('[<20ms] keeps a unit written before the kind pushable and publishable (f00644)', () => {
 		for (const ref of [
 			'refs/heads/delendai/wip/claude-opus-5-5/f00644-S1-g1/the-work',
 			'refs/heads/delendai/pr/claude-opus-5-5/f00644-S1-g1/the-work',
@@ -280,22 +280,22 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		).toBe(true);
 	});
 
-	it('refuses an agent id not written the way delendai writes it (f00644)', () => {
+	it('[<20ms] refuses an agent id not written the way delendai writes it (f00644)', () => {
 		expect(
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/MiniMax-m3/review/x00553-all-g1/review',
+					'refs/heads/delendai/wip/review/MiniMax-m3/x00553/review',
 				),
 				PERSON,
 			).reason,
 		).toContain('lower case');
 	});
 
-	it('refuses a commit on a delendai branch authored as somebody else (f00644)', () => {
+	it('[<20ms] refuses a commit on a delendai branch authored as somebody else (f00644)', () => {
 		const commit = {
 			kind: 'commit' as const,
-			branch: 'delendai/wip/minimax-m3/review/x00553-all-g1/review',
+			branch: 'delendai/wip/review/minimax-m3/x00553/review',
 			isMerge: false,
 			inMainWorktree: false,
 			author: 'MiniMax-m3-review-20260926 <m@MiniMax-m3.invalid>',
@@ -318,7 +318,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		).toBe(false);
 	});
 
-	it('refuses a publication ref that does not have the shape of its work (f00644)', () => {
+	it('[<20ms] refuses a publication ref that does not have the shape of its work (f00644)', () => {
 		const verdict = judgeGitOperation(
 			policy,
 			push('refs/heads/delendai/pr/proposal-f00643'),
@@ -328,7 +328,7 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		expect(verdict.remedy).toContain('delendai work publish');
 	});
 
-	it('refuses pushing the integration or release branch past pull requests', () => {
+	it('[<20ms] refuses pushing the integration or release branch past pull requests', () => {
 		const develop = judgeGitOperation(
 			policy,
 			push('refs/heads/develop'),
@@ -341,19 +341,18 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 		).toBe(true);
 	});
 
-	it('refuses an un-namespaced work branch', () => {
+	it('[<20ms] refuses an un-namespaced work branch', () => {
 		expect(
 			judgeGitOperation(policy, create('refs/heads/wip/claude/x'), AGENT)
 				.refused,
 		).toBe(true);
 	});
 
-	it('refuses deleting a work branch whose commits nothing else holds (x00687)', () => {
+	it('[<20ms] refuses deleting a work branch whose commits nothing else holds (x00687)', () => {
 		const deletion = (deletedTipKept: boolean | undefined) =>
 			({
 				kind: 'push',
-				remoteRef:
-					'refs/heads/delendai/wip/agent/review/x00001-S1-g1/t',
+				remoteRef: 'refs/heads/delendai/wip/review/agent/x00001-S1/t',
 				deleting: true,
 				deletedTipKept,
 			}) as const;
@@ -391,13 +390,13 @@ describe('shared-checkout-pr with a namespace prefix — this repository', () =>
 describe('shared-direct', () => {
 	const policy = expandProfile('shared-direct');
 
-	it('allows committing to the integration branch it commits to', () => {
+	it('[<20ms] allows committing to the integration branch it commits to', () => {
 		expect(
 			judgeGitOperation(policy, commit('develop'), AGENT).refused,
 		).toBe(false);
 	});
 
-	it('still keeps branches to the ones the profile uses', () => {
+	it('[<20ms] still keeps branches to the ones the profile uses', () => {
 		expect(
 			judgeGitOperation(policy, create('refs/heads/feature/x'), AGENT)
 				.refused,
@@ -408,7 +407,7 @@ describe('shared-direct', () => {
 describe('worktree-pr', () => {
 	const policy = expandProfile('worktree-pr');
 
-	it('lets agents create and push their own branches, whatever they are called', () => {
+	it('[<20ms] lets agents create and push their own branches, whatever they are called', () => {
 		expect(
 			judgeGitOperation(policy, create('refs/heads/agent/a/x-S1'), AGENT)
 				.refused,
@@ -422,7 +421,7 @@ describe('worktree-pr', () => {
 		).toBe(false);
 	});
 
-	it('refuses a direct commit or push to the integration branch', () => {
+	it('[<20ms] refuses a direct commit or push to the integration branch', () => {
 		expect(
 			judgeGitOperation(policy, commit('develop'), AGENT).refused,
 		).toBe(true);
@@ -438,10 +437,10 @@ describe('no commit while the shared checkout holds loose edits (x01003)', () =>
 		resolveDevelopmentPolicy({
 			development: { profile, branches: { namespacePrefix: 'delendai' } },
 		});
-	const work = 'delendai/wip/claude-opus-5-5/implement/x01003-all-g1/clean';
+	const work = 'delendai/wip/implement/claude-opus-5-5/x01003/clean';
 	const loose = { root: '/repo', paths: ['stray.ts'] };
 
-	it("refuses an agent's commit in its own worktree, naming work rescue", () => {
+	it("[<20ms] refuses an agent's commit in its own worktree, naming work rescue", () => {
 		const verdict = judgeGitOperation(
 			policyOf('shared-checkout-pr'),
 			{ ...commitInWorktree(work), sharedCheckout: loose },
@@ -454,7 +453,7 @@ describe('no commit while the shared checkout holds loose edits (x01003)', () =>
 		expect(verdict.remedy).toContain('delendai work rescue');
 	});
 
-	it('allows it once the shared checkout is clean', () => {
+	it('[<20ms] allows it once the shared checkout is clean', () => {
 		expect(
 			judgeGitOperation(
 				policyOf('shared-checkout-pr'),
@@ -467,7 +466,7 @@ describe('no commit while the shared checkout holds loose edits (x01003)', () =>
 		).toBe(false);
 	});
 
-	it('leaves a profile whose main checkout is not pinned alone, and a person', () => {
+	it('[<20ms] leaves a profile whose main checkout is not pinned alone, and a person', () => {
 		expect(
 			judgeGitOperation(
 				policyOf('worktree-pr'),
@@ -494,7 +493,7 @@ describe('the shared checkout may not become a work branch (x00553)', () => {
 	});
 	const work = 'delendai/wip/claude-opus-5/x00553-S1-g1-work-command';
 
-	it('refuses a commit made from a work ref in the shared checkout', () => {
+	it('[<20ms] refuses a commit made from a work ref in the shared checkout', () => {
 		const verdict = judgeGitOperation(policy, commit(work), AGENT);
 		expect(verdict.refused).toBe(true);
 		expect(verdict.reason).toContain(work);
@@ -503,13 +502,13 @@ describe('the shared checkout may not become a work branch (x00553)', () => {
 		expect(verdict.remedy).not.toContain('delendai work checkpoint');
 	});
 
-	it('allows the same commit in the agent own worktree', () => {
+	it('[<20ms] allows the same commit in the agent own worktree', () => {
 		expect(
 			judgeGitOperation(policy, commitInWorktree(work), AGENT).refused,
 		).toBe(false);
 	});
 
-	it('treats an unobserved worktree as the shared one', () => {
+	it('[<20ms] treats an unobserved worktree as the shared one', () => {
 		// Absent evidence must not weaken the rule that protects the
 		// checkout every other agent reads.
 		expect(
@@ -525,13 +524,13 @@ describe('the shared checkout may not become a work branch (x00553)', () => {
 		).toBe(true);
 	});
 
-	it('still allows a merge, which is how the integration branch moves', () => {
+	it('[<20ms] still allows a merge, which is how the integration branch moves', () => {
 		expect(
 			judgeGitOperation(policy, commit('develop', true), AGENT).refused,
 		).toBe(false);
 	});
 
-	it('names the integration branch the project declared, never develop', () => {
+	it('[<20ms] names the integration branch the project declared, never develop', () => {
 		const trunk = resolveDevelopmentPolicy({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -548,7 +547,7 @@ describe('the shared checkout may not become a work branch (x00553)', () => {
 		expect(verdict.remedy).toContain('git switch trunk');
 	});
 
-	it('does not constrain a profile with no pinned checkout', () => {
+	it('[<20ms] does not constrain a profile with no pinned checkout', () => {
 		const free = resolveDevelopmentPolicy({
 			development: { profile: 'worktree-pr' },
 		});
@@ -567,19 +566,19 @@ describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
 		},
 	});
 
-	it('allows the shape the template renders', () => {
+	it('[<20ms] allows the shape the template renders', () => {
 		expect(
 			judgeGitOperation(
 				policy,
 				create(
-					'refs/heads/delendai/wip/claude-opus-5/implement/x00563-S1-g1/the-explanation',
+					'refs/heads/delendai/wip/implement/claude-opus-5/x00563-S1/the-explanation',
 				),
 				AGENT,
 			).refused,
 		).toBe(false);
 	});
 
-	it('refuses a name somebody typed by hand', () => {
+	it('[<20ms] refuses a name somebody typed by hand', () => {
 		// Every one of these reached this repository's graph.
 		for (const name of [
 			'delendai/wip/claude-opus-5/x00563-S2-g1-cli-shape-typed-by-hand',
@@ -597,7 +596,7 @@ describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
 		}
 	});
 
-	it('says nothing about refs outside the work namespace', () => {
+	it('[<20ms] says nothing about refs outside the work namespace', () => {
 		expect(
 			judgeGitOperation(
 				policy,
@@ -611,7 +610,7 @@ describe('a work ref carries the shape the policy declares (x00563 S3)', () => {
 		).toBe(false);
 	});
 
-	it('leaves a worktree profile free to name its own branches', () => {
+	it('[<20ms] leaves a worktree profile free to name its own branches', () => {
 		// `worktree-pr` gives every agent its own worktree and says so:
 		// taking that away would be a different policy, not this rule.
 		const free = resolveDevelopmentPolicy({
@@ -635,7 +634,7 @@ describe('delendai governs agents; a person uses git freely (x00626)', () => {
 		'worktree-pr',
 	] as const;
 
-	it('refuses an agent stash, says why, and names the marker that identified it', () => {
+	it('[<20ms] refuses an agent stash, says why, and names the marker that identified it', () => {
 		for (const profile of profiles) {
 			const verdict = judgeGitOperation(
 				resolveDevelopmentPolicy({ development: { profile } }),
@@ -651,7 +650,7 @@ describe('delendai governs agents; a person uses git freely (x00626)', () => {
 		}
 	});
 
-	it('lets a person stash, branch, commit and push under every profile', () => {
+	it('[<20ms] lets a person stash, branch, commit and push under every profile', () => {
 		for (const profile of profiles) {
 			const policy = resolveDevelopmentPolicy({
 				development: { profile },
@@ -673,7 +672,7 @@ describe('delendai governs agents; a person uses git freely (x00626)', () => {
 describe('a new project under a pull-request profile', () => {
 	const policy = expandProfile('shared-checkout-pr');
 
-	it('makes its founding commit on the integration branch, and no other', () => {
+	it('[<20ms] makes its founding commit on the integration branch, and no other', () => {
 		expect(
 			judgeGitOperation(
 				policy,
@@ -691,7 +690,7 @@ describe('a new project under a pull-request profile', () => {
 		).toBe(true);
 	});
 
-	it('pushes the integration branch to a forge that lacks it, and only then', () => {
+	it('[<20ms] pushes the integration branch to a forge that lacks it, and only then', () => {
 		expect(
 			judgeGitOperation(
 				policy,

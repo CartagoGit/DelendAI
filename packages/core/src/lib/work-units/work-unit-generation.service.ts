@@ -1,5 +1,6 @@
 import { ownedRootsOf } from './namespaced-ref.helper';
 import {
+	ownedTemplates,
 	ownedWorkRefShapes,
 	unitOfName,
 } from '../development-policy/owned-work-ref-parser';
@@ -74,6 +75,38 @@ const generationOfRef = (root: string, ref: string): number => {
 };
 
 /**
+ * The generations of `unit` that `texts` name as ended: a merge subject or
+ * a retired ref, under any owned namespace. Pure: the spelling is read by
+ * the one parser, wherever the text came from.
+ */
+export const generationsEndedIn = (
+	unit: {
+		readonly agent: string;
+		readonly kind?: string | undefined;
+		readonly proposal: string;
+		readonly slice: string;
+	},
+	texts: readonly string[],
+): ReadonlySet<number> => {
+	const ended = new Set<number>();
+	for (const text of texts) {
+		for (const token of text.split(/[\s'"]+/u)) {
+			const found = unitOfName(token);
+			if (
+				found !== undefined &&
+				found.agent === unit.agent &&
+				found.kind === unit.kind &&
+				found.proposal === unit.proposal &&
+				found.slice === unit.slice
+			) {
+				ended.add(found.generation);
+			}
+		}
+	}
+	return ended;
+};
+
+/**
  * The generations of one unit that ended: merged into the integration
  * branch, or kept retired on the remote. Read once per entry. A number a
  * unit used is spent: reused, it gave a new unit the identity of one the
@@ -109,22 +142,7 @@ export const endedGenerations = (
 			integrationRemoteName,
 			...ownedRootsOf(policy.branches, 'retired', '*'),
 		]) ?? '';
-	const ended = new Set<number>();
-	for (const text of [merged, retired]) {
-		for (const token of text.split(/[\s'"]+/u)) {
-			const found = unitOfName(token);
-			if (
-				found !== undefined &&
-				found.agent === unit.agent &&
-				found.kind === unit.kind &&
-				found.proposal === unit.proposal &&
-				found.slice === unit.slice
-			) {
-				ended.add(found.generation);
-			}
-		}
-	}
-	return ended;
+	return generationsEndedIn(unit, [merged, retired]);
 };
 
 /** The generation these arguments name; 1 when they name none. */
@@ -307,7 +325,7 @@ export const existingWorkRef = (
 	// for one kind may be the branch entered for the other, unless another
 	// session works in it.
 	const continued = liveProposalBranch(
-		policy.branches.workRefTemplate,
+		ownedTemplates(policy.branches),
 		ref,
 		readGit(root, ['worktree', 'list', '--porcelain']) ?? '',
 	)?.ref;

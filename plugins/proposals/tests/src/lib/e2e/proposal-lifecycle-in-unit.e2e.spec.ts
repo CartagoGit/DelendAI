@@ -32,7 +32,7 @@ import {
 const ID = 'x99773';
 const FILE = `${ID}-lifecycle-in-the-unit.md`;
 const PROPOSALS = 'docs/delendai/proposals';
-const UNIT_BRANCH = `wip/agent-a/implement/${ID}-S1-g1/lifecycle`;
+const UNIT_BRANCH = `wip/implement/agent-a/${ID}-S1/lifecycle`;
 
 const git = (cwd: string, ...args: readonly string[]): string =>
 	execFileSync('git', [...args], { cwd, encoding: 'utf8' });
@@ -133,7 +133,7 @@ afterEach(async () => {
 });
 
 describe.each(PROFILES)('proposal lifecycle in the unit — %s', (profile) => {
-	it('moves the proposal in the unit that carries it, and commits it there', async () => {
+	it('[<3000ms] moves the proposal in the unit that carries it, and commits it there', async () => {
 		const workspace = repository(profile);
 		const worktree = unitWithProposal(workspace);
 		const { callTool } = await serve(profile, workspace);
@@ -161,7 +161,7 @@ describe.each(PROFILES)('proposal lifecycle in the unit — %s', (profile) => {
 		expect(git(workspace, 'log', '--format=%s')).not.toContain(ID);
 	});
 
-	it('does not guess between two units that carry the proposal', async () => {
+	it('[<3000ms] does not guess between two units that carry the proposal', async () => {
 		const workspace = repository(profile);
 		unitWithProposal(workspace);
 		const second = join(workspace, '..', `${ID}-second`);
@@ -171,7 +171,7 @@ describe.each(PROFILES)('proposal lifecycle in the unit — %s', (profile) => {
 			'add',
 			'-q',
 			'-b',
-			`wip/agent-b/implement/${ID}-S2-g1/other`,
+			`wip/implement/agent-b/${ID}-S2/other`,
 			second,
 		);
 		const { callTool } = await serve(profile, workspace);
@@ -191,7 +191,7 @@ describe.each(PROFILES)('proposal lifecycle in the unit — %s', (profile) => {
 });
 
 describe('proposal lifecycle in a project that commits directly', () => {
-	it('moves the proposal where it is, in the shared checkout', async () => {
+	it('[<3000ms] moves the proposal where it is, in the shared checkout', async () => {
 		const workspace = repository('shared-direct');
 		writeFileSync(
 			join(workspace, PROPOSALS, 'ready/fixes', FILE),

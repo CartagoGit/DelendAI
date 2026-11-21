@@ -44,7 +44,12 @@ import { runLeasePhase } from './phases/reap-leases';
 import { runStateDatabasePhase } from './phases/open-state';
 import { runCheckoutPhase } from './phases/verify-checkout';
 import { runWorkRefPhase } from './phases/rebuild-work-units';
-import { compileWorkRefParser } from './work-ref-identity';
+import { compileOwnedWorkRefParser } from '../development-policy/owned-work-ref-parser';
+import { formerPrefixPairs } from '../integration/decisions/namespaces.helper';
+import {
+	ownedPublicationTips,
+	ownedRetiredTips,
+} from './owned-evidence.helper';
 import type { IReconcileStartupInput } from './reconcile-startup.interface';
 import { answeredBy } from './repair-resolutions';
 
@@ -207,6 +212,7 @@ const reconcileUnderLock = async (args: {
 		integrationBranch: policy.branches.integration,
 		workRefPrefix: policy.branches.workRefPrefix,
 		publicationRefPrefix: policy.branches.publicationRefPrefix,
+		former: formerPrefixPairs(policy.branches),
 	});
 	collect(phases, {
 		phase: 'fetch',
@@ -215,10 +221,8 @@ const reconcileUnderLock = async (args: {
 		findings: fetched.findings,
 	});
 
-	const parser = compileWorkRefParser(
-		policy.branches.workRefTemplate,
-		policy.branches.workRefPrefix,
-	);
+	// Every owned namespace: a unit under a former one parses the same.
+	const parser = compileOwnedWorkRefParser(policy.branches);
 	const work = await runWorkRefPhase({
 		ports,
 		git: input.git,
@@ -270,20 +274,10 @@ const reconcileUnderLock = async (args: {
 		integrationSha: fetched.integrationSha,
 		liveRefs: new Set(fetched.refs.map((ref) => ref.name)),
 		// Every ref that can hold a checkpoint once its work ref is gone.
-		retiredTips:
-			(await input.git.listRetiredTips?.(
-				policy.branches.namespacePrefix,
-				policy.branches.integration,
-			)) ?? [],
+		retiredTips: await ownedRetiredTips(input.git, policy.branches),
 		keptBy: [
 			...fetched.refs.map((ref) => ref.sha),
-			...(policy.branches.publicationRefPrefix.length > 0
-				? (
-						await input.git.listRefs(
-							policy.branches.publicationRefPrefix,
-						)
-					).map((ref) => ref.sha)
-				: []),
+			...(await ownedPublicationTips(input.git, policy.branches)),
 		],
 		answered: answeredBy(resolutions),
 		branches: policy.branches,

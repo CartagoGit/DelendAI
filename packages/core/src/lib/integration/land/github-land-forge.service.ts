@@ -34,6 +34,9 @@ interface IRawPull {
 
 const NOT_FOUND = 404;
 
+/** A land batch's head: `queue/batch-N`, under any namespace or none. */
+const BATCH_HEAD = /(?:^|\/)queue\/batch-/u;
+
 export const createGithubLandForge = (input: {
 	readonly slug: string;
 	readonly integration: string;
@@ -203,7 +206,9 @@ export const createGithubLandForge = (input: {
 		openPullRequests: async () =>
 			Promise.all(
 				(await pulls('state=open'))
-					.filter((pr) => !pr.head.ref.includes('/queue/batch-'))
+					// A batch under any namespace, or none: `queue/batch-` has no
+					// leading slash when the project has no namespace.
+					.filter((pr) => !BATCH_HEAD.test(pr.head.ref))
 					.map(view),
 			),
 		// Every open batch, and the most recently closed ones: a red verdict
@@ -219,7 +224,11 @@ export const createGithubLandForge = (input: {
 				]
 					.filter(
 						(pr, index, list) =>
-							pr.head.ref.startsWith(`${prefix}batch-`) &&
+							[prefix]
+								.flat()
+								.some((each) =>
+									pr.head.ref.startsWith(`${each}batch-`),
+								) &&
 							list.findIndex((o) => o.number === pr.number) ===
 								index,
 					)

@@ -16,7 +16,7 @@ const policy = resolveDevelopmentPolicy({
 	},
 });
 
-const UNIT = 'delendai/wip/claude-sonnet-5-5/create/x00799-all-g1';
+const UNIT = 'delendai/wip/create/claude-sonnet-5-5/x00799';
 const REAL = `${UNIT}/derived-files-merge`;
 const SCRATCH = `${UNIT}/sim-a`;
 const AGENT = { agentMarker: 'CLAUDECODE' } as const;
@@ -33,7 +33,7 @@ const push = (
 });
 
 describe('pushing into a unit', () => {
-	it('refuses a scratch ref while the lease names another, for an agent and a person', () => {
+	it('[<20ms] refuses a scratch ref while the lease names another, for an agent and a person', () => {
 		for (const actor of [AGENT, PERSON]) {
 			const verdict = judgeGitOperation(
 				policy,
@@ -46,7 +46,7 @@ describe('pushing into a unit', () => {
 		}
 	});
 
-	it('refuses a second ref when no lease exists but the unit already has one', () => {
+	it('[<20ms] refuses a second ref when no lease exists but the unit already has one', () => {
 		const verdict = judgeGitOperation(
 			policy,
 			push(SCRATCH, { siblings: [REAL] }),
@@ -55,7 +55,7 @@ describe('pushing into a unit', () => {
 		expect(verdict.refused).toBe(true);
 	});
 
-	it('lets the unit push its own ref, even beside leftover scratch', () => {
+	it('[<20ms] lets the unit push its own ref, even beside leftover scratch', () => {
 		expect(
 			judgeGitOperation(
 				policy,
@@ -65,13 +65,13 @@ describe('pushing into a unit', () => {
 		).toBe(false);
 	});
 
-	it('lets a first push of a unit nobody has facts about through', () => {
+	it('[<20ms] lets a first push of a unit nobody has facts about through', () => {
 		expect(judgeGitOperation(policy, push(REAL), AGENT).refused).toBe(
 			false,
 		);
 	});
 
-	it('judges the shape of a work ref an agent pushes', () => {
+	it('[<20ms] judges the shape of a work ref an agent pushes', () => {
 		const verdict = judgeGitOperation(
 			policy,
 			push('delendai/wip/claude-sonnet-5-5/just-a-name'),
@@ -81,12 +81,12 @@ describe('pushing into a unit', () => {
 		expect(verdict.reason).toContain('does not match the shape');
 	});
 
-	it('names a unit by everything but its topic', () => {
+	it('[<20ms] names a unit by everything but its topic', () => {
 		expect(workUnitKeyOf(policy, REAL)).toBe(
 			workUnitKeyOf(policy, SCRATCH),
 		);
 		expect(workUnitKeyOf(policy, REAL)).not.toBe(
-			workUnitKeyOf(policy, REAL.replace('-g1', '-g2')),
+			workUnitKeyOf(policy, REAL.replace('x00799', 'x00799-G2')),
 		);
 	});
 });

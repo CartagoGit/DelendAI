@@ -12,8 +12,12 @@ import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/develop
 import type { ISpentReservation } from '../contracts/interfaces/slice-reservation.interface';
 import { abandonedAfterSeconds } from './forge-work-refs.service';
 import { readGit } from './work-unit-shared.service';
-import { namespacedRef } from './namespaced-ref.helper';
-import { shortName as bare } from '../integration/decisions/namespaces.helper';
+import { ownedRootsOf } from './namespaced-ref.helper';
+import {
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName as bare,
+} from '../integration/decisions/namespaces.helper';
 
 /**
  * The slice reservations of `remote` whose unit has no branch there and
@@ -40,8 +44,15 @@ export const reapSpentReservations = (input: {
 	// naming the unit that holds them. A review claim whose unit died used
 	// to stay on the forge for good — f00538's outlived the proposal it
 	// claimed — because only slice reservations were looked at.
-	const claimsRoot = `${namespacedRef(policy.branches.namespacePrefix, 'claims')}/`;
-	const prefixes = [`${claimsRoot}slice/`, `${claimsRoot}review/`];
+	// Every owned namespace's claims are read; a unit under a former one
+	// is judged the same way (f00808).
+	const claimsRoots = ownedRootsOf(policy.branches, 'claims').map(
+		(root) => `${root}/`,
+	);
+	const prefixes = claimsRoots.flatMap((claimsRoot) => [
+		`${claimsRoot}slice/`,
+		`${claimsRoot}review/`,
+	]);
 	const listed = readGit(root, [
 		'ls-remote',
 		'--',
@@ -82,8 +93,8 @@ export const reapSpentReservations = (input: {
 		]);
 	}
 	const grace = abandonedAfterSeconds(policy.coordination.leaseTtlMinutes);
-	const work = bare(policy.branches.workRefPrefix);
-	const publication = bare(policy.branches.publicationRefPrefix);
+	const works = ownedWorkRefPrefixes(policy.branches).map(bare);
+	const publications = ownedPublicationRefPrefixes(policy.branches).map(bare);
 	const integration = `refs/remotes/${remote}/${policy.branches.integration}`;
 	readGit(root, [
 		'fetch',
@@ -96,16 +107,26 @@ export const reapSpentReservations = (input: {
 	/** Whether a merge on the integration branch names this unit's publication. */
 	const landed = (unit: string): boolean =>
 		unit.length > 0 &&
-		(
-			readGit(root, [
-				'log',
-				'-1',
-				'--format=%H',
-				'--fixed-strings',
-				`--grep=${publication}${unit}`,
-				integration,
-			]) ?? ''
-		).trim().length > 0;
+		publications.some(
+			(publication) =>
+				(
+					readGit(root, [
+						'log',
+						'-1',
+						'--format=%H',
+						'--fixed-strings',
+						`--grep=${publication}${unit}`,
+						integration,
+					]) ?? ''
+				).trim().length > 0,
+		);
+	const sliceOf = (ref: string): string => {
+		const root = claimsRoots.find((each) => ref.startsWith(each)) ?? '';
+		const slices = `${root}slice/`;
+		return ref.startsWith(slices)
+			? ref.slice(slices.length)
+			: ref.slice(root.length);
+	};
 	const spent = claims.flatMap((claim) => {
 		const shown = readGit(root, [
 			'log',
@@ -123,7 +144,7 @@ export const reapSpentReservations = (input: {
 		)
 			.trim()
 			.replace(/^refs\/heads\//u, '');
-		const unit = [work, publication].reduce(
+		const unit = [...works, ...publications].reduce(
 			(name, prefix) =>
 				prefix.length > 0 && name.startsWith(prefix)
 					? name.slice(prefix.length)
@@ -131,16 +152,16 @@ export const reapSpentReservations = (input: {
 			named,
 		);
 		const held =
-			branches.has(`${work}${unit}`) ||
-			branches.has(`${publication}${unit}`) ||
+			works.some((work) => branches.has(`${work}${unit}`)) ||
+			publications.some((publication) =>
+				branches.has(`${publication}${unit}`),
+			) ||
 			(input.now - Number(stamp) <= grace && !landed(unit));
 		return held
 			? []
 			: [
 					{
-						slice: claim.ref.startsWith(prefixes[0] ?? '')
-							? claim.ref.slice((prefixes[0] ?? '').length)
-							: claim.ref.slice(claimsRoot.length),
+						slice: sliceOf(claim.ref),
 						ref: claim.ref,
 						unit,
 					},

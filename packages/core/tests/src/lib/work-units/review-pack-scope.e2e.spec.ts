@@ -32,27 +32,23 @@ const unit = (agent: string, subject: string, ahead = 1): ISwarmUnit => ({
 });
 
 describe('otherReviewPacks', () => {
-	it("keeps other agents' packs that still hold work, and nothing else", () => {
+	it("[<2000ms] keeps other agents' packs that still hold work, and nothing else", () => {
 		const packs = otherReviewPacks(
 			[
-				unit('gpt-5.4', 'review/batch-all-g1/work'),
-				unit('gemini-3.8-flash', 'review/batch-all-g1/work'),
-				unit('gemini-3.8-flash', 'implement/x1-S1-g1/work'),
-				unit(
-					'minimax-m3.1-flash-preview',
-					'review/batch-all-g1/work',
-					0,
-				),
+				unit('gpt-5.4', 'review/batch-all/work'),
+				unit('gemini-3.8-flash', 'review/batch-all/work'),
+				unit('gemini-3.8-flash', 'implement/x1-S1/work'),
+				unit('minimax-m3.1-flash-preview', 'review/batch-all/work', 0),
 			],
 			'gpt-5.4',
 		);
 		expect(packs.map((pack) => pack.agent)).toEqual(['gemini-3.8-flash']);
-		expect(packs[0]?.subject).toBe('review/batch-all-g1/work');
+		expect(packs[0]?.subject).toBe('review/batch-all/work');
 	});
 });
 
 describe('packsCarried', () => {
-	it('names each pack that holds a commit of this one, most shared first', () => {
+	it('[<2000ms] names each pack that holds a commit of this one, most shared first', () => {
 		expect(
 			packsCarried(
 				['c1', 'c2', 'c3'],
@@ -68,14 +64,14 @@ describe('packsCarried', () => {
 		]);
 	});
 
-	it('finds nothing in a pack of its own commits', () => {
+	it('[<2000ms] finds nothing in a pack of its own commits', () => {
 		expect(
 			packsCarried(['c1'], [{ ref: 'pack-b', commits: ['b1'] }]),
 		).toEqual([]);
 		expect(packsCarried([], [])).toEqual([]);
 	});
 
-	it('says which pack, and where a pack starts', () => {
+	it('[<2000ms] says which pack, and where a pack starts', () => {
 		const text = describeCarriedPacks(
 			[{ ref: 'pack-c', shared: 2 }],
 			'develop',
@@ -152,7 +148,7 @@ describe('work publish of a review pack', () => {
 		};
 	};
 
-	it("is refused when it carries another reviewer's pack, and names it", async () => {
+	it("[<5000ms] is refused when it carries another reviewer's pack, and names it", async () => {
 		const root = repository();
 		const other = await unitOf(root, 'gemini-3.8-flash');
 		other.write(DOC, 'closed\nverdict of b\n');
@@ -170,7 +166,7 @@ describe('work publish of a review pack', () => {
 		expect(result.error).toContain(other.branch);
 	});
 
-	it('is refused when it deletes a document', async () => {
+	it('[<3000ms] is refused when it deletes a document', async () => {
 		const root = repository();
 		const mine = await unitOf(root, 'gpt-5.4');
 		mine.git('rm', '-q', DOC);
@@ -182,7 +178,7 @@ describe('work publish of a review pack', () => {
 		expect(result.error).toContain(DOC);
 	});
 
-	it('is refused when it holds a claim and no verdict', async () => {
+	it('[<3000ms] is refused when it holds a claim and no verdict', async () => {
 		const root = repository();
 		const mine = await unitOf(root, 'gpt-5.4');
 		mine.git(

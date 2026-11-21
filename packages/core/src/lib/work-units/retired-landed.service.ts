@@ -10,7 +10,7 @@
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import type { ILandedRetired } from '../contracts/interfaces/work-retire.interface';
 import { integrationBase, readGit } from './work-unit-shared.service';
-import { namespacedRef } from './namespaced-ref.helper';
+import { ownedRootsOf } from './namespaced-ref.helper';
 
 /**
  * Whether `commit` changes no file against where it left the integration
@@ -41,16 +41,27 @@ export const reapLandedRetired = (input: {
 	readonly apply: boolean;
 }): readonly ILandedRetired[] => {
 	const { root, remote } = input;
-	const prefix = `${namespacedRef(input.policy.branches.namespacePrefix, 'retired')}/`;
-	const listed = readGit(root, ['ls-remote', '--', remote, `${prefix}*`]);
+	// Every owned namespace's retired tips are judged (f00808).
+	const prefixes = ownedRootsOf(input.policy.branches, 'retired').map(
+		(root) => `${root}/`,
+	);
+	const listed = readGit(root, [
+		'ls-remote',
+		'--',
+		remote,
+		...prefixes.map((prefix) => `${prefix}*`),
+	]);
 	if (listed === undefined || listed.length === 0) return [];
 	const retired = listed
 		.split('\n')
 		.map((line) => {
 			const [commit = '', ref = ''] = line.split('\t');
+			const prefix = prefixes.find((each) => ref.startsWith(each)) ?? '';
 			return { unit: ref.slice(prefix.length), ref, commit };
 		})
-		.filter((each) => each.ref.startsWith(prefix));
+		.filter((each) =>
+			prefixes.some((prefix) => each.ref.startsWith(prefix)),
+		);
 	const base = integrationBase(root, input.policy);
 	if (base === undefined) return [];
 	const unknown = retired.filter(

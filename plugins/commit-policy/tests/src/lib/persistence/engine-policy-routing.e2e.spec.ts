@@ -158,7 +158,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		return { h, submit, persistence };
 	};
 
-	it('does not commit or push to develop, publishes the WIP ref, and never touches .git/index', async () => {
+	it('[<3000ms] does not commit or push to develop, publishes the WIP ref, and never touches .git/index', async () => {
 		const { h, submit, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'src.ts'), 'export const a = 1;\n');
 		const headBefore = await h.repo.readHead();
@@ -192,7 +192,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		// literal `refs/wip/` stopped matching once work refs became visible.
 		expect(
 			ref.startsWith(
-				`refs/${expandProfile('shared-checkout-pr').branches.workRefPrefix}agent-a/`,
+				`refs/${expandProfile('shared-checkout-pr').branches.workRefPrefix}implement/agent-a/`,
 			),
 		).toBe(true);
 		expect(await h.repo.git('rev-parse', ref)).toBe(
@@ -205,7 +205,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(submit).toHaveBeenCalledTimes(1);
 	});
 
-	it('is not refused for sitting on the protected integration branch', async () => {
+	it('[<2000ms] is not refused for sitting on the protected integration branch', async () => {
 		const { h, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'src.ts'), 'export const a = 1;\n');
 		const engine = createCommitPolicyEngine({
@@ -217,7 +217,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(result.ack).toBe('OK');
 	});
 
-	it('an interval trigger is durability and is NEVER handed to integration', async () => {
+	it('[<3000ms] an interval trigger is durability and is NEVER handed to integration', async () => {
 		const { h, submit, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'src.ts'), 'export const a = 1;\n');
 		const engine = createCommitPolicyEngine({
@@ -242,7 +242,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		).toBe(result.checkpoint?.commit);
 	});
 
-	it('a RED durability checkpoint still persists and still is not merged', async () => {
+	it('[<3000ms] a RED durability checkpoint still persists and still is not merged', async () => {
 		const { h, submit, persistence } = await wipHarness();
 		// Deliberately broken, mid-edit content — the exact thing a
 		// durability checkpoint exists to preserve and must not merge.
@@ -271,7 +271,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(await h.repo.logCount()).toBe(1);
 	});
 
-	it('a slice boundary IS handed to the integration engine as a candidate', async () => {
+	it('[<2000ms] a slice boundary IS handed to the integration engine as a candidate', async () => {
 		const { h, submit, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'src.ts'), 'export const a = 1;\n');
 		const engine = createCommitPolicyEngine({
@@ -295,7 +295,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(candidate.fileScope).toEqual(['src.ts']);
 	});
 
-	it('refuses, with a structured code, an operation that would move HEAD', async () => {
+	it('[<2000ms] refuses, with a structured code, an operation that would move HEAD', async () => {
 		const h = await harness('develop');
 		const base = expandProfile('shared-checkout-pr');
 		const persistence = createPolicyPersistence({
@@ -336,7 +336,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		expect(await h.repo.readHead()).toBe(headBefore);
 	});
 
-	it('settles a checkpoint left in the shared checkout as final, so the event is not replayed (x01003)', async () => {
+	it('[<2000ms] settles a checkpoint left in the shared checkout as final, so the event is not replayed (x01003)', async () => {
 		const h = await harness('develop');
 		const engine = createCommitPolicyEngine({
 			driver: driverFor(h),
@@ -365,7 +365,7 @@ describe('commit-policy engine — shared-checkout-pr routes to a work ref', () 
 		);
 	});
 
-	it('surfaces scope-narrowed rather than silencing it with the opt-in flag', async () => {
+	it('[<3000ms] surfaces scope-narrowed rather than silencing it with the opt-in flag', async () => {
 		const { h, persistence } = await wipHarness();
 		await writeFile(join(h.repo.cwd, 'a.ts'), 'export const a = 1;\n');
 		await writeFile(join(h.repo.cwd, 'b.ts'), 'export const b = 2;\n');

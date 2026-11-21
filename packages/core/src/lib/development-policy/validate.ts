@@ -209,7 +209,11 @@ const validateBranches = (
 				// each ref is about. The profiles state the shape once.
 				remedy: 'Set `development.branches.workRefTemplate`, or adopt a profile that declares one.',
 			});
-		} else if (!workRefTemplate.includes('${generation}')) {
+		} else if (
+			!workRefTemplate.includes('${generation}') &&
+			// `${scope}` carries the generation from the second on (f00808).
+			!workRefTemplate.includes('${scope}')
+		) {
 			out.push({
 				rule: 'work-ref-template-needs-generation',
 				path: 'branches.workRefTemplate',

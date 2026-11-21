@@ -266,7 +266,8 @@ export const createFakeWorld = (
 			[...pulls.values()]
 				.filter(
 					(pr) =>
-						pr.batch !== undefined && pr.headRef.startsWith(prefix),
+						pr.batch !== undefined &&
+						[prefix].flat().some((p) => pr.headRef.startsWith(p)),
 				)
 				.map(view),
 		pullRequest: async (number) => view(get(number)),

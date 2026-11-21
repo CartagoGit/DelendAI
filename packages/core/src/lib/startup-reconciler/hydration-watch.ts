@@ -39,6 +39,7 @@ import type {
 	IHydrationWatchInput,
 } from './hydration-watch.interface';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
+import { formerPrefixPairs } from '../integration/decisions/namespaces.helper';
 import type { IStartupClock, IStartupGitSeam } from './seams.interface';
 
 export type {
@@ -85,6 +86,7 @@ export const hydrateOnce = async (input: {
 		integrationBranch: expected,
 		workRefPrefix: input.policy.branches.workRefPrefix,
 		publicationRefPrefix: input.policy.branches.publicationRefPrefix,
+		former: formerPrefixPairs(input.policy.branches),
 	});
 
 	// A failed fetch means the remote-tracking ref did not move, so

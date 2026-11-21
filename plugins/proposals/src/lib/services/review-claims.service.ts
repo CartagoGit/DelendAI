@@ -13,7 +13,6 @@
  * 2026-09-26 two reviewers collided entering `f00394-close`, and one of
  * them waited on the other's lock on the same proposal file.
  */
-import { compileWorkRefParser } from '@delendai/core/public';
 
 import {
 	REVIEW_BATCH_ID,
@@ -22,7 +21,12 @@ import {
 import type { IReviewClaimHolder } from '../contracts/interfaces/review-claim-holder.interface';
 import type { IWorkRefShape } from '../contracts/interfaces/review-attribution.interface';
 import type { IGitRunner } from '../shared/git-runner';
-import { shortName } from '@delendai/core/cli';
+import {
+	compileOwnedWorkRefParser,
+	ownedPublicationRefPrefixes,
+	ownedWorkRefPrefixes,
+	shortName,
+} from '@delendai/core/cli';
 
 /** `value` without slashes at either end; a loop, not a backtracking regex. */
 const trimSlashes = (value: string): string => {
@@ -60,18 +64,63 @@ export const workRefFor = (
 };
 
 /**
+ * The branch settings of a shape in the form core's owned-namespace readers
+ * take: a shape that names no namespaces owns only its current prefixes.
+ */
+export const ownedBranchesOf = (shape: IWorkRefShape) => ({
+	namespacePrefix: shape.namespacePrefix ?? '',
+	formerNamespacePrefixes: shape.formerNamespacePrefixes ?? [],
+	workRefTemplate: shape.workRefTemplate,
+	workRefPrefix: shape.workRefPrefix,
+	publicationRefPrefix: shape.publicationRefPrefix,
+	workRefVisibility:
+		shape.workRefVisibility ??
+		(/^(?:refs\/)?heads\//u.test(shape.workRefPrefix)
+			? ('visible' as const)
+			: ('hidden' as const)),
+});
+
+/** A parser over every namespace the shape owns, current and former. */
+export const ownedParserOf = (
+	shape: IWorkRefShape,
+	options?: Parameters<typeof compileOwnedWorkRefParser>[1],
+) => compileOwnedWorkRefParser(ownedBranchesOf(shape), options);
+
+/** The work and publication prefix of each owned namespace, in step. */
+export const ownedPrefixPairs = (
+	shape: IWorkRefShape,
+): readonly { readonly work: string; readonly publication: string }[] => {
+	const branches = ownedBranchesOf(shape);
+	const publications = ownedPublicationRefPrefixes(branches);
+	return ownedWorkRefPrefixes(branches).map((work, at) => ({
+		work: bare(work),
+		publication: bare(publications[at] ?? ''),
+	}));
+};
+
+/**
+ * The work ref a listed ref stands for in whichever owned namespace holds
+ * it: a unit under a former namespace is read like a current one (f00808).
+ */
+export const ownedWorkRefFor = (
+	refName: string,
+	shape: IWorkRefShape,
+): string | undefined => {
+	for (const { work, publication } of ownedPrefixPairs(shape)) {
+		const found = workRefFor(refName, work, publication);
+		if (found !== undefined) return found;
+	}
+	return undefined;
+};
+
+/**
  * The unit a ref names, `refs/heads/<work ref>`, whether it is read as a
  * local branch, a remote one or its publication: one identity per unit.
  */
 export const unitOfRef = (
 	refName: string,
 	shape: IWorkRefShape,
-): string | undefined =>
-	workRefFor(
-		refName,
-		bare(shape.workRefPrefix),
-		bare(shape.publicationRefPrefix),
-	);
+): string | undefined => ownedWorkRefFor(refName, shape);
 
 /**
  * The refs whose work the integration branch already holds. A review
@@ -113,10 +162,7 @@ export const reviewClaims = async (
 	holding?: (ref: string) => boolean,
 ): Promise<ReadonlyMap<string, readonly IReviewClaimHolder[]>> => {
 	const claims = new Map<string, IReviewClaimHolder[]>();
-	const parser = compileWorkRefParser(
-		shape.workRefTemplate,
-		shape.workRefPrefix,
-	);
+	const parser = ownedParserOf(shape);
 	const work = bare(shape.workRefPrefix);
 	if (parser === undefined || work.length === 0) return claims;
 	const listed = await run([
@@ -127,7 +173,6 @@ export const reviewClaims = async (
 	]);
 	if (!listed.ok) return claims;
 	const ended = await endedRefs(run, integration);
-	const publication = bare(shape.publicationRefPrefix);
 	for (const line of listed.output.split('\n')) {
 		// A ref name holds no space; a worktree path may, so split once.
 		const trimmed = line.trim();
@@ -141,11 +186,14 @@ export const reviewClaims = async (
 		// A published review the integration branch does not hold yet is not
 		// a lease but pending work: a second reviewer would redo its verdicts.
 		const published =
-			publication.length > 0 &&
 			name.startsWith('refs/remotes/') &&
-			name.split('/').slice(3).join('/').startsWith(publication);
+			ownedPrefixPairs(shape).some(
+				({ publication }) =>
+					publication.length > 0 &&
+					name.split('/').slice(3).join('/').startsWith(publication),
+			);
 		if (!published && holding !== undefined && !holding(name)) continue;
-		const ref = workRefFor(name, work, publication);
+		const ref = ownedWorkRefFor(name, shape);
 		if (ref === undefined) continue;
 		const identity = parser.parse(ref);
 		if (

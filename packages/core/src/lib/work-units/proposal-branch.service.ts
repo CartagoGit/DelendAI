@@ -4,20 +4,46 @@
  */
 import type { ILiveProposalUnit } from '../contracts/interfaces/live-proposal-unit.interface';
 
-import { parseWorkSubject } from './work-ref-shape.service';
+import { compileWorkRefParser } from '../startup-reconciler/work-ref-identity';
 import { shortName as withoutRefsHeads } from '../integration/decisions/namespaces.helper';
 
-/** The agent and subject of `ref` under `template`, when it has that shape. */
+/** One template, or every owned namespace's, current first (f00808). */
+type ITemplates = string | readonly string[];
+
+const templatesOf = (templates: ITemplates): readonly string[] =>
+	typeof templates === 'string' ? [templates] : templates;
+
+/**
+ * The agent and subject of `ref` under `template`, when it has that
+ * shape. Read by the one parser, so the default shape and the one it
+ * replaced both read, whatever segment order the template declares.
+ */
 const partsOf = (template: string, ref: string) => {
-	const prefix = template.slice(0, template.indexOf('${agent}/'));
-	if (prefix === '' || !ref.startsWith(prefix)) return undefined;
-	const rest = ref.slice(prefix.length);
-	const slash = rest.indexOf('/');
-	if (slash === -1) return undefined;
-	const parts = parseWorkSubject(template, rest.slice(slash + 1));
-	return parts === undefined
-		? undefined
-		: { agent: rest.slice(0, slash), ...parts };
+	const parser = compileWorkRefParser(template, '', {
+		strict: true,
+		requireKind: false,
+	});
+	const identity = parser?.parse(`refs/${ref}`);
+	if (identity === undefined || identity.topic === undefined) {
+		return undefined;
+	}
+	return {
+		agent: identity.agent,
+		kind: identity.kind,
+		proposal: identity.proposal,
+		slice: identity.slice,
+		generation: String(identity.generation),
+		topic: identity.topic,
+	};
+};
+
+/** `ref` read under the first template of `templates` that fits it. */
+const partsUnderAny = (templates: ITemplates, ref: string) => {
+	for (const template of templatesOf(templates)) {
+		const found = partsOf(withoutRefsHeads(template), ref);
+		if (found !== undefined) return found;
+	}
+	return undefined;
 };
 
 /** The kinds of unit that write a proposal's own document. */
@@ -37,15 +63,15 @@ const PROPOSAL_WRITING_KINDS: ReadonlySet<string> = new Set([
  * review round is not implementation work and never joins one.
  */
 export const liveProposalBranch = (
-	template: string,
+	template: ITemplates,
 	ref: string,
 	worktreeListing: string,
 ): { readonly ref: string; readonly path: string } | undefined => {
 	// The template may be spelled `heads/…` and the refs `refs/heads/…`:
 	// compared as written, no branch ever matched, and every entry opened
 	// a second branch for a proposal that already had one.
-	const shape = withoutRefsHeads(template);
-	const wanted = partsOf(shape, withoutRefsHeads(ref));
+	const [current = ''] = templatesOf(template);
+	const wanted = partsOf(withoutRefsHeads(current), withoutRefsHeads(ref));
 	// Only the work that writes the proposal continues on its branch:
 	// creating it and implementing it are one branch. A review round, an
 	// audit or any other kind of work is its own unit.
@@ -61,7 +87,7 @@ export const liveProposalBranch = (
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
 		if (branch === undefined || path === undefined) continue;
-		const found = partsOf(shape, withoutRefsHeads(branch));
+		const found = partsUnderAny(template, withoutRefsHeads(branch));
 		if (
 			found !== undefined &&
 			found.agent === wanted.agent &&
@@ -87,7 +113,7 @@ export const liveProposalBranch = (
  * implementation is the one that has the proposal's work.
  */
 export const liveUnitsOfProposal = (
-	template: string,
+	template: ITemplates,
 	worktreeListing: string,
 	wanted: { readonly proposal: string; readonly agent?: string | undefined },
 ): readonly ILiveProposalUnit[] => {
@@ -101,10 +127,7 @@ export const liveUnitsOfProposal = (
 			.find((line) => line.startsWith('worktree '))
 			?.slice('worktree '.length);
 		if (ref === undefined || path === undefined) continue;
-		const found = partsOf(
-			withoutRefsHeads(template),
-			withoutRefsHeads(ref),
-		);
+		const found = partsUnderAny(template, withoutRefsHeads(ref));
 		if (
 			found === undefined ||
 			found.proposal !== wanted.proposal ||

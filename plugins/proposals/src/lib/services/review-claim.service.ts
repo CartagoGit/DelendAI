@@ -12,7 +12,6 @@
  * with `--only` and no paths, so nothing a call had staged rides along in
  * it; the verdict's own writes are committed after the call.
  */
-import { compileWorkRefParser } from '@delendai/core/public';
 import { isRevalidationIdentity } from '@delendai/core/cli';
 
 import {
@@ -31,6 +30,7 @@ import type { IGitRunner } from '../shared/git-runner';
 import {
 	heldFromTrailers,
 	reviewClaims,
+	ownedParserOf,
 	unitOfRef,
 } from './review-claims.service';
 import { earlierPackWithVerdicts } from './review-earlier-pack.service';
@@ -64,10 +64,7 @@ const currentUnit = async (
 	if (!branch.ok) return { review: false };
 	const unit = unitOfRef(branch.output.trim(), shape);
 	if (unit === undefined) return { review: false };
-	const identity = compileWorkRefParser(
-		shape.workRefTemplate,
-		shape.workRefPrefix,
-	)?.parse(unit);
+	const identity = ownedParserOf(shape)?.parse(unit);
 	return {
 		unit,
 		review:
@@ -213,11 +210,7 @@ export const claimForReview = async (
 		if (unit !== undefined) {
 			const reservation = await reserveReview(run, proposalId, {
 				unit,
-				agent:
-					compileWorkRefParser(
-						shape.workRefTemplate,
-						shape.workRefPrefix,
-					)?.parse(unit)?.agent ?? '',
+				agent: ownedParserOf(shape)?.parse(unit)?.agent ?? '',
 			});
 			if (reservation.kind === 'taken') {
 				return {
@@ -377,11 +370,7 @@ export const releaseClaim = async (
 	}
 	await releaseReview(run, proposalId, {
 		unit,
-		agent:
-			compileWorkRefParser(
-				shape.workRefTemplate,
-				shape.workRefPrefix,
-			)?.parse(unit)?.agent ?? '',
+		agent: ownedParserOf(shape)?.parse(unit)?.agent ?? '',
 	});
 	const head = await run(['rev-parse', 'HEAD']);
 	return {

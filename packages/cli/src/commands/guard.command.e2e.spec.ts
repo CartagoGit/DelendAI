@@ -98,14 +98,14 @@ describe('guard through real git hooks', () => {
 	const git = (root: string, ...args: string[]) =>
 		spawnSync('git', args, { cwd: root, encoding: 'utf8' });
 
-	it('refuses deleting a unit branch a worktree still works on', () => {
+	it('[<11105ms] refuses deleting a unit branch a worktree still works on', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
 				branches: { namespacePrefix: 'delendai' },
 			},
 		});
-		const branch = 'delendai/wip/glm-5/implement/x00001-S1-g1/the-work';
+		const branch = 'delendai/wip/implement/glm-5/x00001-S1/the-work';
 		const worktree = join(
 			root,
 			'..',
@@ -129,7 +129,7 @@ describe('guard through real git hooks', () => {
 		).toBe(0);
 	});
 
-	it('refuses an empty commit on the integration branch where pre-commit never runs', () => {
+	it('[<5000ms] refuses an empty commit on the integration branch where pre-commit never runs', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -161,7 +161,7 @@ describe('guard through real git hooks', () => {
 		);
 	});
 
-	it('warns but never blocks when the shared checkout moves (x00553)', () => {
+	it('[<5000ms] warns but never blocks when the shared checkout moves (x00553)', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -173,7 +173,7 @@ describe('guard through real git hooks', () => {
 			root,
 			'switch',
 			'-c',
-			'delendai/wip/claude/implement/x00553-S1-g1/topic',
+			'delendai/wip/implement/claude/x00553-S1/topic',
 		);
 		expect(moved.status).toBe(0);
 		expect(moved.stderr).toContain('post-checkout');
@@ -189,7 +189,7 @@ describe('guard through real git hooks', () => {
 		expect(committed.stderr).not.toContain('delendai work checkpoint');
 	});
 
-	it('lets git pack an existing ref it would refuse to create (x00703)', () => {
+	it('[<5000ms] lets git pack an existing ref it would refuse to create (x00703)', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -203,7 +203,7 @@ describe('guard through real git hooks', () => {
 				'-c',
 				'core.hooksPath=/dev/null',
 				'branch',
-				'delendai/wip/copilot/review/batch-all-g1/t',
+				'delendai/wip/review/copilot/batch-all/t',
 			).status,
 		).toBe(0);
 		const packed = git(root, 'pack-refs', '--all');
@@ -211,12 +211,12 @@ describe('guard through real git hooks', () => {
 		expect(packed.status).toBe(0);
 		// Creating one is still refused.
 		expect(
-			git(root, 'branch', 'delendai/wip/copilot/review/batch-all-g1/u')
+			git(root, 'branch', 'delendai/wip/review/copilot/batch-all/u')
 				.status,
 		).not.toBe(0);
 	});
 
-	it('refuses an identity an agent wrote into the repository config (x00698)', () => {
+	it('[<9066ms] refuses an identity an agent wrote into the repository config (x00698)', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -232,7 +232,7 @@ describe('guard through real git hooks', () => {
 				'add',
 				'-q',
 				'-b',
-				'delendai/wip/minimax-m3/review/batch-all-g1/t',
+				'delendai/wip/review/minimax-m3/batch-all/t',
 				unit,
 			).status,
 		).toBe(0);
@@ -247,7 +247,7 @@ describe('guard through real git hooks', () => {
 	});
 
 	it(
-		'refuses a borrowed author on a delendai branch, however it was borrowed (f00644)',
+		'[<300000ms] refuses a borrowed author on a delendai branch, however it was borrowed (f00644)',
 		() => {
 			const root = repoWith({
 				development: {
@@ -264,7 +264,7 @@ describe('guard through real git hooks', () => {
 					'add',
 					'-q',
 					'-b',
-					'delendai/wip/gpt-5-codex/implement/x00056-S1-g1/t',
+					'delendai/wip/implement/gpt-5-codex/x00056-S1/t',
 					unit,
 				).status,
 			).toBe(0);
@@ -299,7 +299,7 @@ describe('guard through real git hooks', () => {
 	);
 
 	it(
-		'under shared-checkout-merge, blocks the hand-made branch and the direct commit',
+		'[<300000ms] under shared-checkout-merge, blocks the hand-made branch and the direct commit',
 		() => {
 			const root = repoWith({
 				development: { profile: 'shared-checkout-merge' },
@@ -344,7 +344,7 @@ describe('guard through real git hooks', () => {
 					'switch',
 					'-q',
 					'-c',
-					'wip/gpt-5-codex/implement/x00056-S1-g1/t',
+					'wip/implement/gpt-5-codex/x00056-S1/t',
 				).status,
 			).toBe(0);
 			const onWorkBranch = git(
@@ -378,7 +378,7 @@ describe('guard through real git hooks', () => {
 			);
 			plumb(
 				'update-ref',
-				'refs/heads/wip/gpt-5-codex/implement/x00056-S1-g1/t',
+				'refs/heads/wip/implement/gpt-5-codex/x00056-S1/t',
 				commit,
 			);
 			// HEAD never moved: the shared checkout is still on develop.
@@ -391,7 +391,7 @@ describe('guard through real git hooks', () => {
 					'--no-ff',
 					'-m',
 					'merge work',
-					'wip/gpt-5-codex/implement/x00056-S1-g1/t',
+					'wip/implement/gpt-5-codex/x00056-S1/t',
 				).status,
 			).toBe(0);
 		},
@@ -399,7 +399,7 @@ describe('guard through real git hooks', () => {
 	);
 
 	it(
-		'without a declared policy, the adopted default judges an agent',
+		'[<300000ms] without a declared policy, the adopted default judges an agent',
 		() => {
 			const root = repoWith(undefined);
 			const created = git(root, 'switch', '-q', '-c', 'agent/runner/x');

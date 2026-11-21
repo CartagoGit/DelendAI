@@ -6,7 +6,10 @@
  * runs `delendai work …` lives for a few hundred milliseconds, so a pid
  * would make every unit look abandoned the moment its command returned.
  */
-import { shortName } from '../integration/decisions/namespaces.helper';
+import {
+	ownedWorkRefPrefixes,
+	shortName,
+} from '../integration/decisions/namespaces.helper';
 import type { IResolvedDevelopmentPolicy } from '../contracts/interfaces/development-policy.interface';
 import { readUnitLease, updateUnitLease } from './unit-lease.store';
 import type {
@@ -114,12 +117,15 @@ export const touchUnitOfCheckout = async (
 	policy: Pick<IResolvedDevelopmentPolicy, 'branches'>,
 	now?: number,
 ): Promise<IUnitLease | undefined> => {
-	const prefix = shortName(policy.branches.workRefPrefix);
-	if (prefix.length === 0) return undefined;
+	// Every owned namespace: a unit under a former one still beats (f00808).
+	const prefixes = ownedWorkRefPrefixes(policy.branches)
+		.map(shortName)
+		.filter((prefix) => prefix.length > 0);
+	if (prefixes.length === 0) return undefined;
 	const head = readGit(cwd, ['symbolic-ref', '--quiet', 'HEAD']);
 	if (head === undefined) return undefined;
 	const ref = shortRef(head);
-	if (!ref.startsWith(prefix)) return undefined;
+	if (!prefixes.some((prefix) => ref.startsWith(prefix))) return undefined;
 	const top = readGit(cwd, ['rev-parse', '--show-toplevel']);
 	if (top === undefined) return undefined;
 	const agent = worktreeAgent(top);

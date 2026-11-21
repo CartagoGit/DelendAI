@@ -19,7 +19,7 @@ const update = (remoteRef: string, localSha = 'a'.repeat(40)) => ({
 });
 
 describe('publicationsAmong', () => {
-	it('recognises a publication push by the policy prefix', () => {
+	it('[<20ms] recognises a publication push by the policy prefix', () => {
 		expect(
 			publicationsAmong(
 				[update('refs/heads/delendai/pr/some-slice')],
@@ -28,7 +28,19 @@ describe('publicationsAmong', () => {
 		).toEqual(['delendai/pr/some-slice']);
 	});
 
-	it('ignores a push that publishes nothing', () => {
+	it('[<20ms] proves a publication of a former namespace like a current one', () => {
+		expect(
+			publicationsAmong(
+				[
+					update('refs/heads/pr/some-slice'),
+					update('refs/heads/delendai/pr/older-slice'),
+				],
+				['pr/', 'delendai/pr/'],
+			),
+		).toEqual(['pr/some-slice', 'delendai/pr/older-slice']);
+	});
+
+	it('[<20ms] ignores a push that publishes nothing', () => {
 		// The gate runs on every push. A developer pushing a personal
 		// branch must not pay ninety seconds of typecheck for it.
 		expect(
@@ -36,7 +48,7 @@ describe('publicationsAmong', () => {
 		).toEqual([]);
 	});
 
-	it('does not treat a ref deletion as a publication', () => {
+	it('[<20ms] does not treat a ref deletion as a publication', () => {
 		// Deleting a spent ref publishes no code, so there is nothing to
 		// prove — and the tree it pointed at may not even be checked out.
 		expect(
@@ -47,7 +59,7 @@ describe('publicationsAmong', () => {
 		).toEqual([]);
 	});
 
-	it('claims nothing when the policy has no publication namespace', () => {
+	it('[<20ms] claims nothing when the policy has no publication namespace', () => {
 		// Under the direct-merge model there are no publication refs at
 		// all, and a prefix of `''` would otherwise match every ref in
 		// the repository.
@@ -58,7 +70,7 @@ describe('publicationsAmong', () => {
 });
 
 describe('decideProofGate', () => {
-	it('runs nothing at all when the push publishes nothing', () => {
+	it('[<20ms] runs nothing at all when the push publishes nothing', () => {
 		const ran: string[] = [];
 		const decision = decideProofGate([], (script) => {
 			ran.push(script);
@@ -68,7 +80,7 @@ describe('decideProofGate', () => {
 		expect(decision.ok).toBe(true);
 	});
 
-	it('reports every failing check, not just the first', () => {
+	it('[<20ms] reports every failing check, not just the first', () => {
 		// Stopping at the first failure would hand the author one
 		// problem, cost them a second push to find the next, and defeat
 		// the point of paying for the pre-flight once.
@@ -79,13 +91,13 @@ describe('decideProofGate', () => {
 		expect(decision.failed).toEqual(['lint', 'typecheck']);
 	});
 
-	it('puts the slowest check last', () => {
+	it('[<20ms] puts the slowest check last', () => {
 		// A candidate that fails a four-second lint should not wait for
 		// a ninety-second typecheck to be told.
 		expect(PROOF_STEPS.at(-1)?.script).toBe('typecheck');
 	});
 
-	it('gives every step a reason it earned its place', () => {
+	it('[<20ms] gives every step a reason it earned its place', () => {
 		// A pre-flight grows by accretion unless each entry has to
 		// justify the seconds it costs.
 		for (const step of PROOF_STEPS) {

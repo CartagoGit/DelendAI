@@ -39,6 +39,9 @@ import type {
 	IWorkRefHoldOptions,
 } from '../contracts/interfaces/work-publish.interface';
 import { shortName as barePrefix } from '../integration/decisions/namespaces.helper';
+import { publicationRefFromWorkRef } from './publication-ref-from-work-ref.service';
+
+export { publicationRefFromWorkRef };
 
 export type {
 	IWorkRefHoldOptions,
@@ -58,37 +61,6 @@ export const publicationRefFor = (
 	const prefix = barePrefix(policy.branches.publicationRefPrefix);
 	const tail = name.startsWith(prefix) ? name : `${prefix}${name}`;
 	return `refs/heads/${tail}`;
-};
-
-/**
- * The publication ref for a work ref.
- *
- * A publication is not a new thing with a new name: it is the same unit of
- * work, published. So it keeps the name it already had, and only the
- * segment that says *in progress* becomes the one that says *proposed*.
- *
- * Deriving it is the whole point. `WORK_REF_SHAPE` states the shape once;
- * anything that asks a caller to spell the publication name invites a
- * second shape, and the second shape always wins in practice, because the
- * caller is whatever agent happens to be publishing. Every `pr/` ref in
- * this repository's namespace was flat for exactly that reason.
- *
- * Returns `undefined` when the ref is not under the policy's work-ref
- * prefix — there is then no name to keep, and guessing one is the
- * behaviour this function exists to remove.
- */
-export const publicationRefFromWorkRef = (
-	policy: IResolvedDevelopmentPolicy,
-	workRef: string,
-): string | undefined => {
-	const work = barePrefix(workRef.replace(/^refs\//u, ''));
-	const workPrefix = barePrefix(policy.branches.workRefPrefix);
-	if (workPrefix.length === 0 || !work.startsWith(workPrefix)) {
-		return undefined;
-	}
-	const tail = work.slice(workPrefix.length);
-	if (tail.length === 0) return undefined;
-	return `refs/heads/${barePrefix(policy.branches.publicationRefPrefix)}${tail}`;
 };
 
 /** The worktree that has this ref checked out, if any. */

@@ -29,13 +29,34 @@ const HIGH_OVERLAP_RATIO = 0.6;
 const LISTED_OVERLAPS = 10;
 
 /**
+ * The unit a subject (a name without its agent) names: read as it is, or
+ * with a placeholder agent put back where a shape can hold one (f00808).
+ */
+export const unitOfSubject = (
+	subject: string,
+): ReturnType<typeof unitOfName> => {
+	const direct = unitOfName(subject);
+	if (direct !== undefined) return direct;
+	const segments = subject.split('/');
+	for (let at = 0; at <= segments.length; at += 1) {
+		const unit = unitOfName(
+			[...segments.slice(0, at), 'agent', ...segments.slice(at)].join(
+				'/',
+			),
+		);
+		if (unit !== undefined) return unit;
+	}
+	return undefined;
+};
+
+/**
  * The proposal slice and generation a unit's subject names, when it
  * follows either spelling of a unit's name.
  */
 export const unitKeyOf = (
 	subject: string,
 ): { readonly slice: string; readonly generation: string } | undefined => {
-	const unit = unitOfName(subject);
+	const unit = unitOfSubject(subject);
 	if (unit === undefined) return undefined;
 	const slice =
 		unit.slice === '' ? unit.proposal : `${unit.proposal}-${unit.slice}`;

@@ -8,11 +8,13 @@ import { describe, expect, it } from 'vitest';
 
 import { createGitRepoTemplate } from '@delendai/test-kit';
 
+import { unitOfName } from '@delendai/core/lib/development-policy/owned-work-ref-parser';
+import { ownedRootsOf } from '@delendai/core/lib/work-units/namespaced-ref.helper';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
 import {
 	ambiguousUnit,
 	chooseGeneration,
-	endedGenerations,
+	generationsEndedIn,
 	existingWorkRef,
 	sessionHolding,
 	unitGeneration,
@@ -39,8 +41,8 @@ const policy = resolveDevelopmentPolicy({
 	},
 });
 
-const OLD = 'refs/heads/delendai/wip/agent-a/implement/x00001-S1-g1/topic';
-const NEW = 'refs/heads/wip/agent-a/implement/x00001-S1-g1/topic';
+const OLD = 'refs/heads/delendai/wip/implement/agent-a/x00001-S1/topic';
+const NEW = 'refs/heads/wip/implement/agent-a/x00001-S1/topic';
 const ARGS = ['--kind=implement', '--topic=topic'];
 
 const template = createGitRepoTemplate({
@@ -70,18 +72,22 @@ describe('a unit under a former namespace', () => {
 	});
 
 	it('[<200ms] keeps a generation retired under the former root spent', () => {
-		const root = repo();
-		git(
-			root,
-			'update-ref',
-			'refs/delendai/retired/agent-a/implement/x00001-S1-g1/topic',
-			'HEAD',
+		// The remote answers for the former root too, and a ref retired
+		// there names the unit the same way: pure, no repository needed.
+		expect(ownedRootsOf(policy.branches, 'retired', '*')).toContain(
+			'refs/delendai/retired/*',
 		);
-		git(root, 'remote', 'add', 'origin', root);
-		expect([...endedGenerations(root, policy, NEW)]).toEqual([1]);
-		expect(
-			chooseGeneration(root, ARGS, policy, 'agent-a', 'x00001', 'S1'),
-		).toEqual({ generation: 2 });
+		const unit = unitOfName(NEW);
+		if (unit === undefined) throw new Error('the unit name did not parse');
+		const listing =
+			'abc123\trefs/delendai/retired/agent-a/implement/x00001-S1-g1/topic';
+		expect([...generationsEndedIn(unit, [listing])]).toEqual([1]);
+		// Another unit's retirement does not spend this one's generation.
+		expect([
+			...generationsEndedIn(unit, [
+				'abc123\trefs/delendai/retired/agent-a/implement/x00002-S1-g1/t',
+			]),
+		]).toEqual([]);
 	});
 
 	it('[<200ms] is ambiguous when two names answer for one unit', () => {

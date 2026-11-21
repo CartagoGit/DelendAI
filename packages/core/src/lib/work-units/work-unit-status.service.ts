@@ -52,7 +52,7 @@ import {
 } from './work-unit-shared.service';
 import { computeSlotPath } from '../shared/compute-slot.service';
 import { readComputeSlotLane } from '../shared/compute-slot-lane.service';
-import { namespacedRef } from './namespaced-ref.helper';
+import { ownedRootsOf } from './namespaced-ref.helper';
 
 /** How many units whose publication moved ahead `work status` names. */
 /** How many retired refs status names. */
@@ -188,7 +188,9 @@ export const statusOf = async (
 				'--sort=-committerdate',
 				`--count=${String(RETIRED_LINES)}`,
 				'--format=%(refname)',
-				`${namespacedRef(policy.branches.namespacePrefix, 'retired')}/`,
+				...ownedRootsOf(policy.branches, 'retired').map(
+					(root) => `${root}/`,
+				),
 			]) ?? ''
 		)
 			.split('\n')
