@@ -1,0 +1,121 @@
+/**
+ * preset-metadata.generated.ts — GENERATED, do not edit by hand.
+ *
+ * Regenerate: bun tools/scripts/generate/preset-metadata.script.ts
+ * (r00024 / PRESET-001). `check:generated` fails the build if this
+ * file drifts from a fresh measurement — the same measurement
+ * `tools/scripts/report/token-budget-dashboard.script.ts` uses
+ * (`measurePresetDashboard`, native surface). `measurementSurface` is
+ * deliberately separate from the managed runtime default: these values
+ * are the comparable full-surface budget baseline. `runtimeSurface`
+ * records the normal host surface and is not a runtime cache directive.
+ */
+import { TOKEN_BUDGETS } from './token-budgets.constant';
+import type { IPresetMetadataEntry } from '../interfaces/preset-budget-profile.interface';
+
+export const PRESET_METADATA = {
+	minimal: {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 42,
+			schemaBytes: 48425,
+			coldStartTokens: 12107,
+		},
+	},
+	solo: {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 79,
+			schemaBytes: 77352,
+			coldStartTokens: 19338,
+		},
+	},
+	'team-pr': {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 118,
+			schemaBytes: 104725,
+			coldStartTokens: 26182,
+		},
+	},
+	swarm: {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 129,
+			schemaBytes: 111136,
+			coldStartTokens: 27784,
+		},
+	},
+	audit: {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 89,
+			schemaBytes: 89027,
+			coldStartTokens: 22257,
+		},
+	},
+	'docs-web': {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 61,
+			schemaBytes: 63991,
+			coldStartTokens: 15998,
+		},
+	},
+	everything: {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 238,
+			schemaBytes: 238656,
+			coldStartTokens: 59664,
+		},
+	},
+	dogfood: {
+		measurementSurface: 'native',
+		runtimeSurface: 'managed',
+		source: 'generated-runtime-measurement',
+		measuredAt: '2026-11-18T20:57:49.271Z',
+		estimator: 'heuristic-4-bytes-per-token',
+		bytesPerEstimatedToken: TOKEN_BUDGETS.bytesPerEstimatedToken,
+		budgetBaseline: {
+			toolCount: 241,
+			schemaBytes: 267338,
+			coldStartTokens: 66835,
+		},
+	},
+} satisfies Record<string, IPresetMetadataEntry>;

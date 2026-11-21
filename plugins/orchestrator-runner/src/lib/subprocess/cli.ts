@@ -1,0 +1,266 @@
+/**
+ * cli.ts — spawn a CLI provider + parse its stream-json output (S6).
+ *
+ * A `cli` provider (e.g. `claude -p --output-format=stream-json`, `codex
+ * exec`, `aider --message`) is spawned per invocation. Its stdout is a
+ * JSONL stream of `{type, ...}` events; we accumulate assistant text and the
+ * final usage record.
+ *
+ * The subprocess is reached through an INJECTED spawner seam so tests never
+ * fork a real process. The default seam wraps `node:child_process.spawn`.
+ *
+ * Cancellation (CRITICAL I8): `cancel()` runs the ladder — SIGTERM now, then
+ * SIGKILL after `sigkillGraceMs` (default 5000) if the process has not
+ * exited. Both the grace timer is `unref()`'d and cleared on exit, so a
+ * cancelled invocation never leaks a handle.
+ */
+import { rewriteUnicodeForAgent } from '@delendai/core/public';
+import { knownClientOf, type IKnownClient } from '@delendai/core/contracts';
+
+import type { IAccountEnvironment } from '../contracts/interfaces/account-environment.interface';
+import type {
+	IActiveInvocation,
+	IInvokeRequest,
+	IInvokeResult,
+	IInvokeUsage,
+	IKindInvoker,
+} from '../invoke/types';
+
+/** The slice of a child process the CLI invoker actually uses. */
+export interface ICliChildProcess {
+	on(event: 'exit', listener: (code: number | null) => void): void;
+	onStdout(listener: (chunk: string) => void): void;
+	onStderr(listener: (chunk: string) => void): void;
+	kill(signal: 'SIGTERM' | 'SIGKILL'): void;
+}
+
+/**
+ * Spawns a CLI process. Injected so tests never fork a real one. `env`,
+ * when given, is the WHOLE environment the process sees.
+ */
+export type CliSpawner = (
+	command: string,
+	args: readonly string[],
+	env?: Readonly<Record<string, string>>,
+) => ICliChildProcess;
+
+export interface ICliInvokerOptions {
+	readonly spawner: CliSpawner;
+	/** The workspace whose declared clients a command is matched to. */
+	readonly workspaceRoot: string;
+	/** ms between SIGTERM and the escalating SIGKILL. Default 5000. */
+	readonly sigkillGraceMs?: number;
+	/** Injectable timer (tests). Default real `setTimeout` (unref'd). */
+	readonly setTimer?: (fn: () => void, ms: number) => { clear(): void };
+	/** The environment of the account an invocation runs on. Default: inherit. */
+	readonly environmentFor?: (
+		request: IInvokeRequest,
+		args: readonly string[],
+	) => IAccountEnvironment;
+}
+
+const defaultSetTimer = (fn: () => void, ms: number): { clear(): void } => {
+	const handle = setTimeout(fn, ms);
+	handle.unref?.();
+	return { clear: () => clearTimeout(handle) };
+};
+
+/** Whether a line of output is a JSON value (a stream-json event). */
+const isJsonLine = (line: string): boolean => {
+	const trimmed = line.trim();
+	if (!trimmed.startsWith('{') && !trimmed.startsWith('[')) return false;
+	try {
+		JSON.parse(trimmed);
+		return true;
+	} catch {
+		return false;
+	}
+};
+
+/**
+ * Parse one stream-json line into a text delta + optional usage. Unknown or
+ * malformed lines are ignored (a provider may emit keep-alive noise).
+ */
+export const parseStreamJsonLine = (
+	line: string,
+): { readonly text?: string; readonly usage?: IInvokeUsage } => {
+	const trimmed = line.trim();
+	if (trimmed.length === 0) return {};
+	let obj: Record<string, unknown>;
+	try {
+		obj = JSON.parse(trimmed) as Record<string, unknown>;
+	} catch {
+		return {};
+	}
+	const out: { text?: string; usage?: IInvokeUsage } = {};
+	// Text can arrive as {type:'assistant'|'text', text} or {delta:{text}}.
+	const text =
+		typeof obj.text === 'string'
+			? obj.text
+			: typeof (obj.delta as { text?: unknown } | undefined)?.text ===
+					'string'
+				? (obj.delta as { text: string }).text
+				: undefined;
+	if (text !== undefined) out.text = text;
+	const usageRaw = obj.usage as Record<string, unknown> | undefined;
+	if (usageRaw !== undefined) {
+		const input = Number(
+			usageRaw.input_tokens ?? usageRaw.inputTokens ?? 0,
+		);
+		const output = Number(
+			usageRaw.output_tokens ?? usageRaw.outputTokens ?? 0,
+		);
+		out.usage = {
+			inputTokens: Number.isFinite(input) ? input : 0,
+			outputTokens: Number.isFinite(output) ? output : 0,
+			totalTokens:
+				(Number.isFinite(input) ? input : 0) +
+				(Number.isFinite(output) ? output : 0),
+		};
+	}
+	return out;
+};
+
+/**
+ * Build the argv for a cli decision. A hop scoped to its tools tells a
+ * known client in that client's own flags, and leaves out what the hop
+ * never uses (skills; MCP servers when no tool it may use is one): a
+ * client loads every tool, skill and server into each hop otherwise. A
+ * known client with no way to scope its tools is told nothing it would
+ * reject; an unknown command gets `--allowedTools`, as it always did.
+ */
+export const buildCliArgs = (
+	baseArgs: readonly string[],
+	prompt: string,
+	toolsAllow?: readonly string[],
+	client?: IKnownClient,
+): readonly string[] => {
+	const args = [...baseArgs, rewriteUnicodeForAgent(prompt)];
+	if (toolsAllow === undefined || toolsAllow.length === 0) return args;
+	const tools = toolsAllow.join(',');
+	if (client === undefined) {
+		args.push('--allowedTools', tools);
+		return args;
+	}
+	const scope = client.toolScope;
+	if (scope === undefined) return args;
+	args.push(scope.restrict, tools);
+	if (scope.approve !== undefined) args.push(scope.approve, tools);
+	args.push(...(client.scopedHopArgs ?? []));
+	const prefix = client.mcpToolPrefix;
+	const namesMcp =
+		prefix !== undefined &&
+		toolsAllow.some((tool) => tool.startsWith(prefix));
+	if (!namesMcp) args.push(...(client.noMcpArgs ?? []));
+	return args;
+};
+
+export const createCliInvoker = (options: ICliInvokerOptions): IKindInvoker => {
+	const graceMs = options.sigkillGraceMs ?? 5000;
+	const setTimer = options.setTimer ?? defaultSetTimer;
+
+	return {
+		start(request: IInvokeRequest): IActiveInvocation {
+			if (request.invoke.kind !== 'cli') {
+				return {
+					promise: Promise.reject(
+						new Error(
+							`cli invoker got a ${request.invoke.kind} decision`,
+						),
+					),
+					cancel: () => undefined,
+				};
+			}
+			const args = buildCliArgs(
+				request.invoke.args ?? [],
+				request.prompt,
+				request.toolsAllow,
+				knownClientOf(request.invoke.command, options.workspaceRoot),
+			);
+			const environment = options.environmentFor?.(request, args) ?? {
+				kind: 'inherit',
+			};
+			if (environment.kind === 'refused')
+				return {
+					promise: Promise.reject(new Error(environment.reason)),
+					cancel: () => undefined,
+				};
+			const child =
+				environment.kind === 'isolated'
+					? options.spawner(
+							request.invoke.command,
+							args,
+							environment.env,
+						)
+					: options.spawner(request.invoke.command, args);
+
+			let killTimer: { clear(): void } | undefined;
+			let cancelled = false;
+			let exited = false;
+			let text = '';
+			let usage: IInvokeUsage | undefined;
+			let buffer = '';
+			// Lines that are not stream-json: the answer of a CLI that writes
+			// plain text, which read as an empty success.
+			const plain: string[] = [];
+
+			const promise = new Promise<IInvokeResult>((resolve, reject) => {
+				const drainLine = (line: string): void => {
+					if (!isJsonLine(line)) {
+						if (line.trim().length > 0) plain.push(line);
+						return;
+					}
+					const parsed = parseStreamJsonLine(line);
+					if (parsed.text !== undefined) text += parsed.text;
+					if (parsed.usage !== undefined) usage = parsed.usage;
+				};
+				child.onStdout((chunk) => {
+					buffer += chunk;
+					let idx = buffer.indexOf('\n');
+					while (idx !== -1) {
+						drainLine(buffer.slice(0, idx));
+						buffer = buffer.slice(idx + 1);
+						idx = buffer.indexOf('\n');
+					}
+				});
+				child.onStderr(() => undefined);
+				child.on('exit', (code) => {
+					exited = true;
+					killTimer?.clear();
+					if (buffer.length > 0) drainLine(buffer);
+					if (cancelled) {
+						reject(new Error('invocation-cancelled'));
+						return;
+					}
+					if (code === null) {
+						// No exit code: it never started (not installed) or a
+						// signal ended it. Either way it did no work; an empty
+						// answer resolved here read as a hop that succeeded.
+						reject(new Error('cli ended without an exit code'));
+						return;
+					}
+					if (code !== 0) {
+						reject(new Error(`cli exited with code ${code}`));
+						return;
+					}
+					resolve({
+						text: text.length > 0 ? text : plain.join('\n').trim(),
+						...(usage !== undefined ? { usage } : {}),
+					});
+				});
+			});
+
+			return {
+				promise,
+				cancel: () => {
+					if (cancelled || exited) return;
+					cancelled = true;
+					child.kill('SIGTERM');
+					killTimer = setTimer(() => {
+						if (!exited) child.kill('SIGKILL');
+					}, graceMs);
+				},
+			};
+		},
+	};
+};
