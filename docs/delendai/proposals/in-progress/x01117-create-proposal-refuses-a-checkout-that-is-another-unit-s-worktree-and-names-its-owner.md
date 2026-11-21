@@ -33,7 +33,7 @@ A worker passed a checkout path read from a temp file another worker had overwri
 
 ### S1 — Refuse a foreign unit checkout in create_proposal
 - **Status**: pending
-- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/runtime/index.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`
+- **Files**: `packages/core/src/lib/work-units/unit-adoption.service.ts`, `packages/core/src/runtime/index.ts`, `plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts`, `packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts`, `plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts`, `packages/core/src/lib/contracts/interfaces/foreign-unit.interface.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
