@@ -2,13 +2,16 @@
  * create-proposal.tool.e2e.spec.ts — the create_proposal handler: where it
  * writes, what it refuses, and the publication step it names.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createFakeToolServer } from '@delendai/test-kit';
+import {
+	createFakeToolServer,
+	createGitRepoTemplate,
+} from '@delendai/test-kit';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 import { resolveDevelopmentPolicy } from '@delendai/core/lib/development-policy/resolve';
@@ -94,5 +97,47 @@ describe('create_proposal', () => {
 		const created = parse(await create(proposal));
 		expect(created.id).toBe('f00001');
 		expect(String(created.nextAction)).not.toContain('delendai/pr/');
+	});
+
+	it('[<1500ms] create_proposal called from a create unit writes the proposal there', async () => {
+		const { root: repo, worktrees } = createGitRepoTemplate({
+			files: { 'a.txt': 'a' },
+			trunk: 'develop',
+			worktrees: {
+				'create-tree': 'delendai/wip/agent-a/create/new-all-g1/topic',
+			},
+		}).copy();
+		const tree = worktrees['create-tree'] ?? '';
+		const create = await capture(
+			buildCreateProposalRegistration({
+				...options,
+				workspaceRoot: repo,
+				proposalsDirAbs: join(repo, 'docs/delendai/proposals'),
+				indexPathAbs: join(
+					repo,
+					'.cache/delendai/proposals/index.json',
+				),
+				developmentPolicy: resolveDevelopmentPolicy({
+					development: { profile: 'shared-checkout-pr' },
+				}),
+			}),
+		);
+		const made = await create({
+			id: 'f00001',
+			title: 'Create me',
+			goal: 'A goal.',
+			why: 'A reason.',
+			nonGoals: ['Nothing else.'],
+			slices: [
+				{
+					sliceId: 'S1',
+					files: ['src/a.ts'],
+					acceptance: ['It works'],
+				},
+			],
+			checkout: tree,
+		});
+		expect(made.content[0]?.text).not.toContain('belongs to');
+		expect(existsSync(join(tree, 'docs/delendai/proposals'))).toBe(true);
 	});
 });
