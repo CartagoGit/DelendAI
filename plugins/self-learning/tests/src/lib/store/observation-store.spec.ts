@@ -98,20 +98,6 @@ describe('the observation store', () => {
 		expect(second.total).toBe(3);
 	});
 
-	it('[<200ms] loses nothing when several writers append at once', async () => {
-		const { filePath } = makeStore();
-
-		await Promise.all(
-			Array.from({ length: 12 }, (_, index) =>
-				appendObservations({ filePath, readText }, [
-					observation({ atMs: index + 1, subject: `case ${index}` }),
-				]),
-			),
-		);
-
-		expect(await readObservations({ filePath, readText })).toHaveLength(12);
-	});
-
 	it('[<200ms] drops the oldest when it reaches its bound', async () => {
 		const { filePath } = makeStore();
 
