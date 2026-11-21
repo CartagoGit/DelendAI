@@ -77,7 +77,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 - review-log: requested_changes by mai-code-2-flash — S3 is stale against current develop: several declared leftovers paths and a new temp service/spec were later moved/refactored, and current work-unit reaper code is outside the delivery snapshot. The focused test-temp run passes 7/7 but cannot prove the old snapshot or renamed declared files. Redeliver S3 on current HEAD and revalidate all Files entries and temp-prefix/E2E coverage.
 
 ### S4 — the agent documents describe the enforced flow
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`
 - **Gate**: lint
@@ -87,8 +87,10 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "The proposals workflow playbook states the readiness rules a new proposal must meet (new: for files a slice creates, each acceptance line names a command, a .spec.ts or a Scenario, Decisions closed), checked by `bun tools/scripts/lint/proposal-readiness.script.ts`."
   - "`bun run lint:check-skills` and the bootstrap size check (AGENT-BOOTSTRAP.md under 32,000 bytes) pass; no agent rule is stated in two documents."
 - shipped-in: `9e2a6bc39f22`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S4 was changed after delivery: the work-unit playbook gained later enforced-flow edits after 9e2a6bc39f22. lint:check-skills passes 33/33 and AGENT-BOOTSTRAP is 22936 bytes, but the review still needs a fresh delivery snapshot that includes current text. Redeliver S4 on current HEAD and verify both bootstraps/playbooks in one batch.
 
 ## acceptance
 
