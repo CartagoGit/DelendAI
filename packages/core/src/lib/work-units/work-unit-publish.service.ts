@@ -12,6 +12,7 @@ import {
 	publicationRefFromWorkRef,
 	publishWorkUnitExclusively,
 } from './work-publish.service';
+import { joinOpenPublication } from './publication-join.service';
 import { proposalInProgress } from './publication-target.service';
 import { resolvePublicationTarget } from './open-pull-request-republication.service';
 import { openUnitPullRequest } from './publication-pull-request.service';
@@ -194,6 +195,20 @@ export const published = async (
 			'Publish from a work ref under the policy prefix.',
 		);
 	}
+	// The publication may already carry other slices of this proposal (or the
+	// queue's refresh): the unit merges it before pushing, as a person would.
+	const joined = await joinOpenPublication({
+		root,
+		workRef,
+		remote,
+		publicationRef: target.publicationRef,
+	});
+	if (joined.refusal !== undefined) {
+		return refused(
+			joined.refusal,
+			'Resolve the conflict in the unit (merge the publication, fix the files, commit), then publish again. The unit was left unchanged.',
+		);
+	}
 	// A unit whose commits the integration branch already holds (merges of
 	// it, or work that landed through another pull request) has nothing to
 	// publish. Republishing such a unit after its pull request merged opened
@@ -266,10 +281,9 @@ export const published = async (
 		ref: target.publicationRef,
 		...(target.notes.length === 0 ? {} : { notes: target.notes }),
 		// A publication moves only by fast-forward; nothing is forced over
-		// work already proposed. It moves on without this work when it
-		// carries the proposal's earlier slices, or when the queue brought
-		// an open pull request level with the integration branch.
-		...(!outcome.published && (target.unit === 'proposal' || keepWorkRef)
+		// work already proposed. The unit joins it before pushing, so only
+		// a kept unit whose publication moved during the push is told to.
+		...(!outcome.published && keepWorkRef
 			? {
 					nextAction: `If ${remote}/${target.publicationRef.replace(/^refs\/heads\//u, '')} has commits this work lacks (the proposal's earlier slices, or the queue's refresh of its open pull request), merge it into this work, then publish again.`,
 				}

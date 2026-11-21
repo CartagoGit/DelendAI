@@ -29,13 +29,13 @@ Two defects found on 2026-11-21 are fixed: `work deliver` reports its verdict in
 
 ### S1 — A failed or refused delivery exits non-zero, proved by running the CLI as a process
 - **Status**: pending
-- **Files**: `packages/cli/src/lib/work-deliver.service.spec.ts`, `new:packages/cli/src/lib/work-deliver-exit-code.e2e.spec.ts`, `packages/cli/src/index.ts`, `packages/cli/src/commands/work.command.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.spec.ts`, `new:packages/cli/src/lib/work-deliver-exit-code.e2e.spec.ts`, `packages/core/src/lib/work-units/work-unit-prove.service.ts`, `packages/core/tests/src/lib/work-units/work-unit-prove.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
   - "work-deliver.service.spec.ts: deliverUnit returns a non-zero code when ports.prove returns code VALIDATION and when precheckDelivery refuses, and never a data.delivered."
-  - "work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run with a pre-check refusal exits 4."
-  - "work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed, and its output names baseFailures."
+  - "work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run refused for its arguments exits 4 (a pre-check refusal needs the proposals plugin, which a temp repo lacks), and `work prove` there fails non-zero, and passes with baseFailures only for a failure develop's note names."
+  - "work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed (a compiler error printing such a spec path is not), and `work prove --json` names baseFailures."
   - "nice -n 19 bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts passes."
 
 ### S2 — Publishing a slice into the proposal's open publication merges it into the unit first
@@ -52,8 +52,8 @@ Two defects found on 2026-11-21 are fixed: `work deliver` reports its verdict in
 ## acceptance
 
 - work-deliver.service.spec.ts: deliverUnit returns a non-zero code when ports.prove returns code VALIDATION and when precheckDelivery refuses, and never a data.delivered.
-- work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run with a pre-check refusal exits 4.
-- work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed, and its output names baseFailures.
+- work-deliver-exit-code.e2e.spec.ts: `bun packages/cli/src/index.ts work deliver` run as a child process in a temp git repo whose prove script fails exits with a code other than 0 and prints no 'delivered'; the same run refused for its arguments exits 4 (a pre-check refusal needs the proposals plugin, which a temp repo lacks), and `work prove` there fails non-zero, and passes with baseFailures only for a failure develop's note names.
+- work-deliver-exit-code.e2e.spec.ts: a failing proof whose failing specs are in the known-failing set and untouched by the unit is the only proof failure reported as passed (a compiler error printing such a spec path is not), and `work prove --json` names baseFailures.
 - nice -n 19 bunx vitest run packages/cli/src/lib/work-deliver.service.spec.ts passes.
 - publication-join.service.e2e.spec.ts: two units of one proposal with a whole-proposal publication target; the first publishes, the second publishes after it with no agent-side merge, and the publication ref holds both units' commits.
 - publication-join.service.e2e.spec.ts: when the second unit conflicts with the publication, publish is refused with VALIDATION naming the conflicting files and the unit is left unchanged.

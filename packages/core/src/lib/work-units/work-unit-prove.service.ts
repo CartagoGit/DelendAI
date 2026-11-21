@@ -35,6 +35,8 @@ import {
 
 /** The spec files a failed step names in its output tail. */
 const HAS_SPEC = /\.spec\.[cm]?[jt]sx?/u;
+/** A compiler diagnostic: the unit's own failure, even when it prints a spec path. */
+const COMPILER_ERROR = /\berror TS\d+/u;
 const SPEC_PATH = /[\w./@-]+\.spec\.[cm]?[jt]sx?/gu;
 
 export const failingSpecsOf = (report: IUnitProofReport): readonly string[] => [
@@ -68,7 +70,8 @@ export const subtractBaseFailures = (input: {
 		(step) =>
 			!('passed' in step) ||
 			step.passed ||
-			HAS_SPEC.test(step.outputTail ?? ''),
+			(HAS_SPEC.test(step.outputTail ?? '') &&
+				!COMPILER_ERROR.test(step.outputTail ?? '')),
 	);
 	return {
 		own,
