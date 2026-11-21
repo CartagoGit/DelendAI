@@ -2,14 +2,14 @@
 id: x01119
 title: "Two work deliver runs on one unit cannot overlap: deliver takes a per-unit lock and names the running deliver"
 kind: fix
-status: review
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: d8c836a8-609f-41ec-985b-fba20b1b538d
-last-correlation-id: d8c836a8-609f-41ec-985b-fba20b1b538d
-last-transition-from: in-progress
-last-transition-at: 2026-11-21T11:11:58.294Z
+last-transition-id: 4d9caa3d-dbd5-4e97-b0bc-cd54ec1130c0
+last-correlation-id: 4d9caa3d-dbd5-4e97-b0bc-cd54ec1130c0
+last-transition-from: review
+last-transition-at: 2026-11-21T11:17:35.125Z
 ---
 
 # x01119 — Two work deliver runs on one unit cannot overlap: deliver takes a per-unit lock and names the running deliver
