@@ -35,8 +35,8 @@ Develop CI run 44847077923 (commit 4f6a215fe, merge of #3276, CLI-only) went red
 - **Decisions**: none
 - acceptance:
   - "packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: a red whose failing zone and specs no merge since the last green reaches opens no revert, records the failures as known-failing for that commit and returns kind 'unowned'"
-  - "same spec: a red that one merge's footprint reaches still reverts that merge"
-  - "diagnoseDevelopRed gives no revertFirst when no footprint reaches the failure (already so; a spec pins it)"
+  - "packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: a red that one merge's footprint reaches still reverts that merge"
+  - "packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: with no footprint reaching the failure, diagnoseDevelopRed names no revertFirst, so nothing is reverted"
 
 ### S2 — Perf flame-graph e2e budget from a measurement
 - **Status**: pending
@@ -45,12 +45,12 @@ Develop CI run 44847077923 (commit 4f6a215fe, merge of #3276, CLI-only) went red
 - **Decisions**: none
 - acceptance:
   - "plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts: the budget in the test name exceeds the profiler deadline, so a slow run fails with the deadline message rather than at the boundary"
-  - "The measured time of the profiling run and of --prof-process is recorded in the spec comment"
+  - "plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts: the measured time of the profiling run and of --prof-process is recorded in the spec comment"
 
 ## acceptance
 
 - packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: a red whose failing zone and specs no merge since the last green reaches opens no revert, records the failures as known-failing for that commit and returns kind 'unowned'
-- same spec: a red that one merge's footprint reaches still reverts that merge
-- diagnoseDevelopRed gives no revertFirst when no footprint reaches the failure (already so; a spec pins it)
+- packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: a red that one merge's footprint reaches still reverts that merge
+- packages/core/tests/src/lib/integration/land/land-repair.helper.spec.ts: with no footprint reaching the failure, diagnoseDevelopRed names no revertFirst, so nothing is reverted
 - plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts: the budget in the test name exceeds the profiler deadline, so a slow run fails with the deadline message rather than at the boundary
-- The measured time of the profiling run and of --prof-process is recorded in the spec comment
+- plugins/perf/tests/src/lib/profile/real-perf-profile-deps.e2e.spec.ts: the measured time of the profiling run and of --prof-process is recorded in the spec comment
