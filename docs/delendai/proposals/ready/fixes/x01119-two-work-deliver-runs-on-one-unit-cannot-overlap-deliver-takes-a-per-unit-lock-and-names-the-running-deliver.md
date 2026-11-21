@@ -29,7 +29,7 @@ Seen on x01117: two concurrent `work deliver` runs on the same unit overlapped a
 
 ### S1 — Deliver holds a per-unit lock and refuses a second run naming the first
 - **Status**: pending
-- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver-lock.service.ts`, `packages/cli/src/lib/work-deliver-lock.service.spec.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
+- **Files**: `packages/cli/src/lib/work-deliver.service.ts`, `new:packages/cli/src/lib/work-deliver-lock.service.ts`, `new:packages/cli/src/lib/work-deliver-lock.service.spec.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`
 - **Gate**: type
 - **Decisions**: none
 - acceptance:
