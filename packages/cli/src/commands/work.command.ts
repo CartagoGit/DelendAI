@@ -49,6 +49,8 @@ import {
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
 import { runWorkProgress } from '../lib/work-progress.service';
+import { WORKTREE_ENDING_VERBS } from '../contracts/constants/worktree-ending-verbs.constant';
+import { loadedOnce } from '../lib/work-answer-sizer.service';
 
 /**
  * Where an agent that just entered a unit reads what its slice asks for.
@@ -149,6 +151,11 @@ const runRenameNamespace = async (
 		: { code: EXIT_CODE.VALIDATION, error: report.message };
 };
 
+/** Read after the transition to review, when the worktree may be gone: preloaded by the verbs that end a unit. */
+const deliveredRemote = loadedOnce(
+	() => import('../lib/work-deliver-remote.service'),
+);
+
 /** The ports `deliverUnit` runs on, wired to the unit engine and the proposals tool. */
 export const deliverPortsOf = (
 	ctx: ICliCommandContext,
@@ -172,10 +179,7 @@ export const deliverPortsOf = (
 			readOpenPullRequestUrl(ctx.cwd, branch),
 		locate: () => runWorkUnit(['prove', ...unitFlags, '--locate'], ctx),
 		publicationReached: async (publication, checkout) => {
-			// Loaded when asked for: only a delivery needs it (startup budget).
-			const { publicationReachedFrom } = await import(
-				'../lib/work-deliver-remote.service'
-			);
+			const { publicationReachedFrom } = await deliveredRemote.get();
 			return publicationReachedFrom(
 				checkout ?? ctx.cwd,
 				ctx.cwd,
@@ -360,11 +364,20 @@ export const createWorkCommand = (): ICliCommand => ({
 	run: async (rawArgs, ctx) => {
 		const verbose = rawArgs.includes('--verbose');
 		const args = rawArgs.filter((arg) => arg !== '--verbose');
-		// Loaded when an answer is sized: only these verbs need it (startup budget).
+		// Loaded for the verbs that size an answer (startup budget). Those that
+		// can end the unit load it now: after the last submit removes the
+		// worktree, an import from it fails with ENOENT.
+		const answerSize = loadedOnce(
+			() => import('../lib/work-answer-size.service'),
+		);
+		if (WORKTREE_ENDING_VERBS.includes(args[0] ?? '')) {
+			answerSize.preload();
+			deliveredRemote.preload();
+		}
 		const sized = async (
 			result: ICliCommandResult,
 		): Promise<ICliCommandResult> =>
-			(await import('../lib/work-answer-size.service')).sizedAnswer({
+			(await answerSize.get()).sizedAnswer({
 				verb: args[0] ?? '',
 				result,
 				verbose,
