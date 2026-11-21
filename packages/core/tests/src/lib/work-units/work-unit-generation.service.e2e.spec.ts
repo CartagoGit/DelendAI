@@ -108,6 +108,24 @@ describe('a unit generation, against real refs', () => {
 		expect('refusal' in chosen).toBe(true);
 	});
 
+	it("[<400ms] tells the refused agent to run from inside the holder's worktree, not to pass a session it never saw", () => {
+		const root = repo();
+		git(root, 'update-ref', NEW, 'HEAD');
+		const dir = worktreeOn(root, NEW, 'theirs');
+		const chosen = chooseGeneration(
+			root,
+			[...ARGS, '--session=mine'],
+			policy,
+			'agent-a',
+			'x00001',
+			'S1',
+		);
+		const how = JSON.stringify('refusal' in chosen ? chosen.refusal : {});
+		expect(how).toContain('run this again from inside');
+		expect(how).toContain(dir);
+		expect(how).not.toContain('--session it gave you');
+	});
+
 	it('[<400ms] counts a generation merged into the integration branch as spent', () => {
 		const root = repo();
 		git(root, 'checkout', '-q', '-b', 'side');
