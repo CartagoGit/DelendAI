@@ -62,15 +62,17 @@ This follows the product principles (bootstrap section 0): efficient, fast and t
 - review-implementer: claude-sonnet-5-5
 
 ### S3 — Few jobs, each worth its setup
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/test-zones.script.ts`
 - **Gate**: none
 - note: part is delivered (test shards split by measured time 4f0372008, the static checks share one job and one setup 5fd8698ed, no job runs on every change without a reason 3b520d853). What is left is the measurement: report a typical pull request with `bun run ci:cost` against the 5 minutes wall and 10 runner-minutes bound, and close the gap that report shows (cache restore of dependencies and builds, one job for a small selection).
 - acceptance:
   - "The number of test jobs follows the selected work: a small selection runs in one job; dependencies and builds are restored from cache; a typical pull request finishes in under 5 minutes wall and 10 runner-minutes."
 - shipped-in: `1746a11f384b`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-sonnet-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S3 cannot be approved from the stated acceptance: it requires a typical pull request to finish under 5 minutes wall and 10 runner-minutes, plus cache restoration evidence and the remaining setup gap. The delivery and review record contain no ci:cost run or timing report, and the 91 focused tests prove job selection, not wall/runner cost. Reproduce with bun run ci:cost on a representative PR, publish timing data, and implement cache/setup improvements if the bounds fail.
 
 ### S4 — Small work ships together
 - **Status**: retired
