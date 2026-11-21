@@ -7,15 +7,41 @@
  * naming it. A lock left by a dead pid is taken over. Nothing waits, so no
  * clock is involved.
  */
+import { execFile } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { promisify } from 'node:util';
 
 import type {
 	IDeliverLock,
 	IDeliverLockOptions,
 } from '../contracts/interfaces/deliver-lock.interface';
+
+const run = promisify(execFile);
+
+/**
+ * The directory every worktree of the repository shares for these locks:
+ * inside its git common dir, never a world-writable temporary directory.
+ */
+const lockDirOf = async (
+	checkout: string | undefined,
+): Promise<string | undefined> => {
+	if (checkout === undefined) return undefined;
+	try {
+		const { stdout } = await run(
+			'git',
+			['rev-parse', '--path-format=absolute', '--git-common-dir'],
+			{ cwd: checkout },
+		);
+		const common = stdout.trim();
+		return common === ''
+			? undefined
+			: join(common, 'delendai-deliver-locks');
+	} catch {
+		return undefined;
+	}
+};
 
 const processIsAlive = (pid: number): boolean => {
 	try {
@@ -51,7 +77,10 @@ export const acquireDeliverLock = async (
 	unitKey: string,
 	options: IDeliverLockOptions = {},
 ): Promise<IDeliverLock> => {
-	const dir = options.dir ?? join(tmpdir(), 'delendai-deliver-locks');
+	const dir = options.dir ?? (await lockDirOf(options.checkout));
+	// Without a repository to hold it there is nothing to collide on.
+	if (dir === undefined)
+		return { held: true, release: async () => undefined };
 	const pid = options.pid ?? process.pid;
 	const alive = options.isAlive ?? processIsAlive;
 	const path = join(

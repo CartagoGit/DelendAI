@@ -1,4 +1,5 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -84,5 +85,44 @@ describe('acquireDeliverLock', () => {
 			isAlive: () => true,
 		});
 		expect(third).toEqual({ held: false, pid: 222 });
+	});
+});
+
+describe('acquireDeliverLock, where the lock lives', () => {
+	it('keeps the lock inside the repository of the checkout, shared by its worktrees', async () => {
+		const repo = mkdtempSync(join(tmpdir(), 'deliver-repo-'));
+		try {
+			execFileSync('git', ['init', '-q', repo]);
+			const alive = () => true;
+			const first = await acquireDeliverLock('k', {
+				checkout: repo,
+				pid: 11,
+				isAlive: alive,
+			});
+			const second = await acquireDeliverLock('k', {
+				checkout: repo,
+				pid: 22,
+				isAlive: alive,
+			});
+			expect(first.held).toBe(true);
+			expect(second).toEqual({ held: false, pid: 11 });
+			expect(
+				existsSync(join(repo, '.git', 'delendai-deliver-locks')),
+			).toBe(true);
+		} finally {
+			rmSync(repo, { recursive: true, force: true });
+		}
+	});
+
+	it('holds nothing when there is no repository to hold it', async () => {
+		const bare = mkdtempSync(join(tmpdir(), 'deliver-none-'));
+		try {
+			expect(
+				(await acquireDeliverLock('k', { checkout: bare })).held,
+			).toBe(true);
+			expect((await acquireDeliverLock('k', {})).held).toBe(true);
+		} finally {
+			rmSync(bare, { recursive: true, force: true });
+		}
 	});
 });

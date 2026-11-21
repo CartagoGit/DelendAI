@@ -273,10 +273,10 @@ const runDelivery = async (
 	// the unit's git index. It is refused at once, naming the running pid.
 	// Loaded on use: the work command's startup graph stays within its budget.
 	const { acquireDeliverLock } = await import('./work-deliver-lock.service');
-	const lock = await acquireDeliverLock(
-		checkout ?? `slice:${ports.slice}`,
-		lockOptions,
-	);
+	const lock = await acquireDeliverLock(checkout ?? `slice:${ports.slice}`, {
+		checkout,
+		...lockOptions,
+	});
 	if (!lock.held) {
 		return {
 			code: EXIT_CODE.VALIDATION,
