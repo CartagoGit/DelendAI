@@ -1817,7 +1817,6 @@
 		"plugins/proposals/tests/src/lib/tools/proposal-work-events.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/quarantine-list.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/quarantine-repair.tool.spec.ts",
-		"plugins/proposals/tests/src/lib/tools/queue-races.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/recovery-tools.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/resurrect.tool.spec.ts",
 		"plugins/proposals/tests/src/lib/tools/review-claim.tool.spec.ts",

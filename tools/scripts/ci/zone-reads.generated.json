@@ -14871,7 +14871,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/queue-races.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/queue-races.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
@@ -16675,7 +16675,7 @@
 					],
 					"listed": []
 				},
-				"plugins/proposals/tests/src/lib/tools/queue-races.spec.ts": {
+				"plugins/proposals/tests/src/lib/tools/queue-races.e2e.spec.ts": {
 					"read": [
 						"delendai.config.json"
 					],
