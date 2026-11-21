@@ -664,15 +664,20 @@ describe('deliverUnit, one delivery per unit', () => {
 	it('[<50ms] lets one of two concurrent deliveries proceed and refuses the other naming the running pid', async () => {
 		const { gate, open } = gated();
 		const first = ports({});
+		let proving: () => void = () => undefined;
+		const reached = new Promise<void>((resolve) => {
+			proving = resolve;
+		});
 		const slow: IWorkDeliverPorts = {
 			...first.value,
 			prove: async () => {
+				proving();
 				await gate;
 				return { code: EXIT_CODE.OK, data: { proved: true } };
 			},
 		};
 		const running = deliverUnit(slow, { pid: 4242 });
-		await new Promise((resolve) => setImmediate(resolve));
+		await reached;
 		const second = ports({});
 		const refused = await deliverUnit(second.value, {
 			pid: 7,
