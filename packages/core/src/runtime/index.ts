@@ -171,3 +171,17 @@ export {
 	markForgeEventDelivered,
 	readForgeEventCursor,
 } from '../lib/forge-events/forge-event-cursor.service';
+
+export {
+	affectedFiles,
+	affectedFilesIn,
+	buildImportGraph,
+	createResolver,
+	factsOf,
+	runsCodeWhenLoaded,
+	topLevelStatements,
+} from '../lib/import-graph/import-graph.service';
+export type {
+	IAffectedSpecsInput,
+	IModuleFacts,
+} from '../lib/contracts/interfaces/import-graph.interface';
