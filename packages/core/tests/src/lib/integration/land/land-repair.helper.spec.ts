@@ -167,37 +167,38 @@ describe('repairDevelopRed', () => {
 		expect(opened).toHaveLength(0);
 	});
 
-	it('[<50ms] reverts the earliest merge since the last success when two red runs follow it and no footprint reaches the failure', async () => {
-		const { ports, opened } = scene({
+	it('[<50ms] reverts nobody and records the failure when no footprint reaches it', async () => {
+		const { ports, opened, pushed } = scene({
 			runs: [
 				{ commit: '9c7bf7c44', conclusion: 'failure' },
-				{ commit: '45738a870', conclusion: 'failure' },
-				{ commit: 'cancelled', conclusion: 'cancelled' },
 				{ commit: 'f2bcc09e6', conclusion: 'success' },
 			],
 			tip: '9c7bf7c44',
 		});
-		const asked: string[] = [];
+		const recorded: [string, string[]][] = [];
 		const out = await repairDevelopRed({
 			...ports,
 			develop: {
 				...ports.develop,
-				mergesBetween: (green: string, red: string) => {
-					asked.push(`${green}..${red}`);
-					return Promise.resolve([
+				mergesBetween: () =>
+					Promise.resolve([
 						{ number: 3127, sha: '45738a870' },
 						{ number: 3142, sha: '9c7bf7c44' },
-					]);
-				},
+					]),
 				footprintOf: () =>
 					Promise.resolve({
 						files: new Set(['apps/web/x.ts']),
 						zones: new Set(['web']),
 					}),
+				recordKnownFailing: (commit: string, ids: string[]) => {
+					recorded.push([commit, ids]);
+					return Promise.resolve();
+				},
 			},
 		});
-		expect(out.kind).toBe('opened');
-		expect(opened).toEqual(['p/repair/revert-3127']);
-		expect(asked[0]).toBe('f2bcc09e6..9c7bf7c44');
+		expect(out).toMatchObject({ kind: 'unowned', failing: ['zone-a'] });
+		expect(opened).toHaveLength(0);
+		expect(pushed).toHaveLength(0);
+		expect(recorded).toEqual([['9c7bf7c44', ['zone-a']]]);
 	});
 });
