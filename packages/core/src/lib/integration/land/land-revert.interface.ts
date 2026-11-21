@@ -65,4 +65,10 @@ export interface ILandRepairPorts {
 /** What the repair pass came to. */
 export type ILandRepairResult =
 	| ILandRepairOutcome
-	| { readonly kind: 'nothing'; readonly why: string };
+	| { readonly kind: 'nothing'; readonly why: string }
+	/** A red no merge since the last green reaches: nobody is reverted. */
+	| {
+			readonly kind: 'unowned';
+			readonly why: string;
+			readonly failing: readonly string[];
+	  };

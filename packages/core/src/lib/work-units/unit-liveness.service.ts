@@ -35,6 +35,7 @@ import type {
 import { UNIT_SESSION_VARIABLE as SESSION_VARIABLE } from '../contracts/constants/agent-environment.constant';
 import { gitCommonDirOf } from './unit-lease.service';
 import { readUnitLease } from './unit-lease.store';
+import { isBeating } from './unit-heartbeat.service';
 import { leaseWindowSeconds } from './unit-verdict.service';
 
 const PROC = '/proc';
@@ -80,22 +81,11 @@ export const readMachineLife = async (): Promise<IMachineLife> => {
 const inside = (cwd: string, dir: string): boolean =>
 	cwd === dir || cwd.startsWith(dir.endsWith(sep) ? dir : `${dir}${sep}`);
 
-const freshBeat = (
-	lease: IUnitLease | undefined,
-	now: number,
-	windowSeconds: number,
-): boolean => {
-	if (lease === undefined) return false;
-	const quota = lease.outOfQuotaAt;
-	if (quota !== undefined && quota >= lease.heartbeatAt) return false;
-	return Math.max(0, now - lease.heartbeatAt) <= windowSeconds;
-};
-
 /** The verdict, from evidence already read. Pure. */
 export const judgeUnitLife = (evidence: IUnitLifeEvidence): IUnitLife => {
 	const session = evidence.lease?.owner.session ?? null;
 	const signs: IUnitLifeSign[] = [];
-	if (freshBeat(evidence.lease, evidence.now, evidence.windowSeconds))
+	if (isBeating(evidence.lease, evidence.now, evidence.windowSeconds))
 		signs.push('heartbeat');
 	if (session !== null && evidence.machine.sessions.has(session))
 		signs.push('owner-session');

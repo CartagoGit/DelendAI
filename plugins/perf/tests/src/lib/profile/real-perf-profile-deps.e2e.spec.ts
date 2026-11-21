@@ -7,12 +7,19 @@ import { describe, expect, it } from 'vitest';
 
 import { realPerfProfileDeps } from '../../../../src/lib/profile/real-perf-profile-deps';
 
-/** The profiler's own deadline, stretched by the same load factor as the e2e test budget. */
+/**
+ * The profiler's own deadline, stretched by the same load factor as the e2e
+ * test budget. Measured here: the profiling run takes about 0.1 s and
+ * `--prof-process` about 1.0 s (it runs `nm` over every shared library),
+ * so each step has a 20x margin inside its deadline. The budget below is
+ * twice the deadline: two steps can each use theirs, and a slow CI host then
+ * fails with the profiler's deadline message, not at the budget's boundary.
+ */
 const PROFILER_DEADLINE_MS =
 	20_000 * loadFactorFromEnv(process.env[LOAD_FACTOR_ENV]);
 
 describe('a flame-graph capture on a real Node process', () => {
-	it('[<20000ms] keeps the CPU profile it recorded and returns its path', async () => {
+	it('[<40000ms] keeps the CPU profile it recorded and returns its path', async () => {
 		const root = await mkdtemp(join(tmpdir(), 'perf-flamegraph-'));
 		try {
 			const deps = realPerfProfileDeps(root, {

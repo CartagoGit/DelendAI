@@ -50,6 +50,11 @@ export interface IIntegrationPassInput {
 	readonly error: (line: string) => void;
 	/** Specs replace what would touch a real forge or clone. */
 	readonly ports?: {
+		/** Where the watchdog's evidence goes; specs keep it off the disk. */
+		readonly writeEvidence?: (
+			path: string,
+			text: string,
+		) => void | Promise<void>;
 		readonly forge?: ILandForge;
 		readonly git?: ILandGit;
 		readonly bringForward?: ILandDeps['bringForward'];

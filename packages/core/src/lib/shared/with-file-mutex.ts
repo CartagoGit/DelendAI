@@ -54,13 +54,14 @@ const lockStack = new AsyncLocalStorage<Set<string>>();
  *   mtime every `heartbeatMs`, so a live-but-slow holder is never mistaken
  *   for a crashed one. A waiter steals only when the lock is older than
  *   `staleMs` (the holder's process died and stopped refreshing) or, as a
- *   last-resort anti-deadlock net, after waiting longer than `timeoutMs`.
+ *   last-resort anti-deadlock net, after one live holder kept it longer than
+ *   `timeoutMs` (the wait restarts when the lock changes hands).
  *
  * In the common single-process case there is no contention: the first
  * `open` succeeds immediately, so the wrapper is transparent.
  */
 export interface IFileMutexOptions {
-	/** Wait at most this long before stealing the lock as a last resort (ms). Default 5000. */
+	/** Wait at most this long behind one live holder before giving up or stealing (ms); restarts when the lock changes hands. Default 5000. */
 	readonly timeoutMs?: number;
 	/** A held lock not refreshed within this is treated as abandoned (ms). Default 30000. */
 	readonly staleMs?: number;
@@ -493,7 +494,12 @@ export const withFileMutex = async <T>(
 	// never get past the first acquire.
 	await mkdir(dirname(lockPath), { recursive: true });
 
-	const deadline = Date.now() + timeoutMs;
+	// The budget is time behind ONE holder, not time in the queue: it restarts
+	// each time the lock changes hands. A waiter behind N short, healthy
+	// holders otherwise fails once their summed hold time (multiplied by
+	// coverage or load) passes `timeoutMs`, though nobody is stuck.
+	let deadline = Date.now() + timeoutMs;
+	let lastHolderToken: string | undefined;
 	// The directory can go between that `mkdir` and the `open` below — a
 	// start-up migration or eviction tidying an empty one. That ENOENT
 	// lost the first event of a day; the directory is made again, a
@@ -541,6 +547,13 @@ export const withFileMutex = async <T>(
 				if (observedLease === undefined) {
 					continue;
 				}
+				if (
+					lastHolderToken !== undefined &&
+					lastHolderToken !== observedLease.token
+				) {
+					deadline = Date.now() + timeoutMs;
+				}
+				lastHolderToken = observedLease.token;
 				// a silent heartbeat is not proof of death.
 				// `setInterval` does not fire while the event loop is
 				// busy, and the critical section is exactly where the

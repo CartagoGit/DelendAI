@@ -1,7 +1,8 @@
 /**
  * land-repair.helper.ts — the repair pass: when the integration branch's
  * latest completed CI run is red and still the tip, name the culprit merge
- * (`diagnoseDevelopRed`) and open its one revert (`openRepair`). Anything
+ * (`diagnoseDevelopRed`) and open its one revert (`openRepair`). A red no
+ * merge reaches reverts nobody and is reported `unowned`. Anything
  * else is a no-op, so running it again, or on every completed run, is safe.
  */
 import { diagnoseDevelopRed } from './develop-red.helper';
@@ -46,18 +47,16 @@ export const repairDevelopRed = async (
 			failingZones: zones,
 		},
 	});
-	// Nobody's footprint reaches a failure known only by its check's name:
-	// the earliest merge since the last green is then tried first, as the
-	// suspects of an unowned failure always are.
-	const [earliest] =
-		diagnosis.revertFirst === undefined
-			? await ports.develop.mergesBetween(green.commit, latest.commit)
-			: [];
-	const merge = diagnosis.revertFirst ?? earliest;
+	// A failure no merge's footprint reaches belongs to nobody in this
+	// range (a flaky or slow spec, an outage): reverting anyone would punish
+	// unrelated work, so it stays an unowned failure, already recorded as
+	// the known-failing set of its commit by `diagnoseDevelopRed`.
+	const merge = diagnosis.revertFirst;
 	if (merge === undefined)
 		return {
-			kind: 'nothing',
-			why: 'no merge between the last green run and the red one',
+			kind: 'unowned',
+			why: 'no merge since the last green run reaches the failure',
+			failing,
 		};
 	return openRepair({
 		forge,
