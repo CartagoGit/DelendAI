@@ -1,0 +1,124 @@
+{
+	"file": "docs/delendai/ROADMAP.md",
+	"horizons": [
+		{
+			"version": "0.2.0",
+			"bumpHint": "minor",
+			"counts": {
+				"total": 6,
+				"delivered": 0,
+				"withdrawn": 0,
+				"open": 6
+			},
+			"entries": [
+				{
+					"id": "roadmap",
+					"title": "A versioned roadmap that says what a version promised",
+					"kind": "feature",
+					"state": "in-progress"
+				},
+				{
+					"id": "state-shadow",
+					"title": "The SQLite state driver runs as a shadow, its parity sampled",
+					"kind": "feature",
+					"state": "in-progress"
+				},
+				{
+					"id": "style-surface",
+					"title": "Who may define a selector, and what breaks when it changes",
+					"kind": "feature",
+					"state": "proposed"
+				},
+				{
+					"id": "capability-contract",
+					"title": "The project's contract between an agent and every external capability",
+					"kind": "feature",
+					"state": "proposed"
+				},
+				{
+					"id": "docker-tools",
+					"title": "Docker as a tool, autodetected and safe by default",
+					"kind": "feature",
+					"state": "proposed"
+				},
+				{
+					"id": "batuta",
+					"title": "Multi-account orchestration through the existing plugin and MCP",
+					"kind": "feature",
+					"state": "proposed"
+				}
+			],
+			"declared": [
+				"roadmap",
+				"state-shadow",
+				"style-surface",
+				"capability-contract",
+				"docker-tools",
+				"batuta"
+			],
+			"delivered": [],
+			"bump": {
+				"kind": "minor",
+				"authority": "@delendai/changelog::inferBump",
+				"declared": "minor",
+				"coherent": true
+			}
+		},
+		{
+			"version": "0.3.0",
+			"bumpHint": "minor",
+			"counts": {
+				"total": 5,
+				"delivered": 0,
+				"withdrawn": 0,
+				"open": 5
+			},
+			"entries": [
+				{
+					"id": "fast-flow",
+					"title": "A pull request is proved locally and checks only what its change reaches",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "any-host-follows-the-flow",
+					"title": "Every agent, whatever its host or model, is held to its unit, its slice and its name",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "plugins-connect",
+					"title": "Every plugin a project loads connects, or says why it cannot",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "audit-settled",
+					"title": "Every finding of the joint audit is fixed, merged into another, or rejected with its reason",
+					"kind": "feature",
+					"state": "committed"
+				},
+				{
+					"id": "batuta-works",
+					"title": "Batuta delegates real work across hosts and BYOK models within the quota it can see",
+					"kind": "feature",
+					"state": "committed"
+				}
+			],
+			"declared": [
+				"fast-flow",
+				"any-host-follows-the-flow",
+				"plugins-connect",
+				"audit-settled",
+				"batuta-works"
+			],
+			"delivered": [],
+			"bump": {
+				"kind": "minor",
+				"authority": "@delendai/changelog::inferBump",
+				"declared": "minor",
+				"coherent": true
+			}
+		}
+	]
+}

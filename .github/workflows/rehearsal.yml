@@ -1,0 +1,167 @@
+name: rehearsal
+
+# GENERATED from the integration plugin's rehearsal template
+# (renderRehearsalWorkflow); edit the template, not this file.
+on:
+    workflow_dispatch:
+        inputs:
+            mode:
+                description: 'fast stand-ins, or the project CI and scan workflows'
+                type: choice
+                options: [fast, real]
+                default: fast
+            scenarios:
+                description: 'scenario ids separated by commas, or all'
+                type: string
+                default: all
+    pull_request:
+        types: [opened, synchronize, reopened, ready_for_review]
+        branches: ['develop']
+        paths:
+            - 'plugins/integration/**'
+            - '.github/workflows/rehearsal.yml'
+    push:
+        branches: ['develop']
+        paths:
+            - 'packages/core/src/lib/integration/land/**'
+            - 'plugins/integration/src/**'
+
+# One real-forge rehearsal at a time: a second run would read the first one's branches.
+# A pull request plays in process and never waits for it.
+concurrency:
+    group: rehearsal-${{ github.event_name == 'pull_request' && github.ref || 'real' }}
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    pull-requests: write
+    issues: write
+    actions: read
+
+jobs:
+    in-process:
+        name: in-process
+        if: github.event_name == 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Play the land specs against the fake forge
+              run: bunx vitest run --maxWorkers=2 plugins/integration/tests/src/lib/services/rehearsal packages/core/tests/src/lib/integration/land
+
+    plan:
+        name: plan
+        if: github.event_name != 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        outputs:
+            matrix: ${{ steps.plan.outputs.matrix }}
+            total: ${{ steps.plan.outputs.total }}
+            parallel: ${{ steps.plan.outputs.parallel }}
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Cut the catalogue into groups
+              id: plan
+              env:
+                  REHEARSAL_MODE: ${{ inputs.mode || 'fast' }}
+                  REHEARSAL_SCENARIOS: ${{ inputs.scenarios || 'all' }}
+              run: bun run cli -- integration rehearse --plan --mode="$REHEARSAL_MODE" --scenarios="$REHEARSAL_SCENARIOS" | grep -E '^(matrix|total|parallel)=' >> "$GITHUB_OUTPUT"
+
+    play:
+        name: play ${{ matrix.group }}/${{ needs.plan.outputs.total }}
+        needs: plan
+        if: github.event_name != 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 45
+        strategy:
+            fail-fast: false
+            max-parallel: ${{ fromJSON(needs.plan.outputs.parallel) }}
+            matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+        steps:
+            - name: Mint the integrator identity token
+              id: identity
+              uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+              with:
+                  app-id: ${{ vars.DELENDAI_APP_ID }}
+                  private-key: ${{ secrets.DELENDAI_APP_PRIVATE_KEY }}
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Rehearse this group on the real forge
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+                  REHEARSAL_MODE: ${{ inputs.mode || 'fast' }}
+                  REHEARSAL_SCENARIOS: ${{ inputs.scenarios || 'all' }}
+                  REHEARSAL_GROUP: ${{ matrix.group }}/${{ needs.plan.outputs.total }}
+              run: bun run cli -- integration rehearse --mode="$REHEARSAL_MODE" --scenarios="$REHEARSAL_SCENARIOS" --group="$REHEARSAL_GROUP"
+
+            - name: Remove what this group left on the forge
+              if: always()
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+                  REHEARSAL_GROUP: ${{ matrix.group }}/${{ needs.plan.outputs.total }}
+              run: bun run cli -- integration rehearse --sweep --group="$REHEARSAL_GROUP"
+
+            - name: Keep the partial report for the merge
+              if: always()
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+              with:
+                  name: rehearsal-report-${{ inputs.mode || 'fast' }}-${{ matrix.group }}
+                  path: .cache/delendai/rehearsal/report-${{ inputs.mode || 'fast' }}-${{ matrix.group }}.json
+                  if-no-files-found: ignore
+                  retention-days: 30
+
+    report:
+        name: report
+        needs: [plan, play]
+        if: always() && github.event_name != 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Fetch the partial reports
+              continue-on-error: true
+              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+              with:
+                  pattern: rehearsal-report-${{ inputs.mode || 'fast' }}-*
+                  path: .cache/delendai/rehearsal/groups
+                  merge-multiple: true
+
+            - name: Merge the groups into the report of the mode
+              env:
+                  REHEARSAL_MODE: ${{ inputs.mode || 'fast' }}
+                  REHEARSAL_SCENARIOS: ${{ inputs.scenarios || 'all' }}
+              run: bun run cli -- integration rehearse --merge --mode="$REHEARSAL_MODE" --scenarios="$REHEARSAL_SCENARIOS"
+
+            - name: Keep the report as evidence for this commit
+              if: always()
+              uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+              with:
+                  name: rehearsal-report-${{ inputs.mode || 'fast' }}
+                  path: .cache/delendai/rehearsal/report-${{ inputs.mode || 'fast' }}.json
+                  if-no-files-found: ignore
+                  retention-days: 30
+
+    cleanup:
+        name: cleanup
+        needs: [play]
+        if: always() && github.event_name != 'pull_request'
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Mint the integrator identity token
+              id: identity
+              uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+              with:
+                  app-id: ${{ vars.DELENDAI_APP_ID }}
+                  private-key: ${{ secrets.DELENDAI_APP_PRIVATE_KEY }}
+
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+            - uses: ./.github/actions/setup-bun-repo
+            - name: Close the pull requests and delete the refs of the run
+              env:
+                  GH_TOKEN: ${{ steps.identity.outputs.token }}
+              run: bun run cli -- integration rehearse --sweep
