@@ -15,7 +15,9 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { LockContentionError } from '@delendai/core/public';
 
 import { parseQueue } from '@delendai/proposals/lib/agents/persistent-task-queue';
 import {
@@ -27,6 +29,28 @@ import {
 	type IStateToolOptions,
 } from '@delendai/proposals/lib/tools/state-tools.tool';
 import { createFakeToolServer } from '@delendai/test-kit/public';
+
+const mutexFault = vi.hoisted(() => ({ contend: false }));
+
+vi.mock('@delendai/core/runtime', async (importOriginal) => {
+	const actual = await importOriginal<Record<string, unknown>>();
+	const real = actual['withFileMutex'] as (
+		path: string,
+		fn: () => Promise<unknown>,
+		options?: unknown,
+	) => Promise<unknown>;
+	return {
+		...actual,
+		withFileMutex: (
+			path: string,
+			fn: () => Promise<unknown>,
+			options?: unknown,
+		) =>
+			mutexFault.contend && path.endsWith('queue.json')
+				? Promise.reject(new LockContentionError(path, 1))
+				: real(path, fn, options),
+	};
+});
 
 const STALE_LAST_SEEN = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
@@ -161,6 +185,21 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 				(_, i) => `zombie-gc-event-task-${i}`,
 			).sort(),
 		);
+	});
+
+	it('names the entries not enqueued when the queue mutex cannot be taken', async () => {
+		mutexFault.contend = true;
+		try {
+			const result = await reconcileZombie(0);
+			const report = JSON.parse(result.content[0]?.text ?? '{}') as {
+				notEnqueued?: string[];
+			};
+			expect(report.notEnqueued).toEqual(['zombie-gc-event-task-0']);
+		} finally {
+			mutexFault.contend = false;
+		}
+		const queue = await parseQueue(queuePath, closedTasksPath, root);
+		expect(queue.entries).toEqual([]);
 	});
 
 	it('the expire sweep racing concurrent enqueues clobbers nothing', async () => {

@@ -7,7 +7,11 @@ import type {
 	IResolvedHostIdentity,
 	IToolRegistration,
 } from '@delendai/core/contracts';
-import { CorruptFileError, toolJson } from '@delendai/core/public';
+import {
+	CorruptFileError,
+	LockContentionError,
+	toolJson,
+} from '@delendai/core/public';
 import { withFileMutex } from '@delendai/core/runtime';
 
 import {
@@ -109,6 +113,7 @@ const AGENT_NAMES_OUTPUT_SCHEMA = z
 		agent_slot: z.string().optional(),
 		summary: z.unknown().optional(),
 		released: z.array(z.string()).optional(),
+		notEnqueued: z.array(z.string()).optional(),
 		assignments: z.unknown().optional(),
 		tree: z.unknown().optional(),
 		adopted: z.unknown().optional(),
@@ -182,6 +187,9 @@ const runAgentNamesImpl = async (
 	const poolNames = new Set(pool);
 	const at = args.now ?? new Date().toISOString();
 
+	// A watchdog enqueue lost to queue-mutex contention is reported on the
+	// reconcile result (`notEnqueued`), never dropped silently (x01116 S2).
+	const notEnqueued: string[] = [];
 	const emitQueueEvent = async (taskId: string, priority: number) => {
 		try {
 			// x00097 S2 (audit a00052 #13): the whole read-modify-write is one
@@ -208,8 +216,9 @@ const runAgentNamesImpl = async (
 				});
 				await persistQueueUnlocked(updated, options.queuePathAbs);
 			});
-		} catch {
+		} catch (error) {
 			// Queue is optional coordination; never fail the registry op.
+			if (error instanceof LockContentionError) notEnqueued.push(taskId);
 		}
 	};
 
@@ -401,7 +410,9 @@ const runAgentNamesImpl = async (
 					queueEmitter: emitQueueEvent,
 				},
 			);
-			return json(report);
+			return json(
+				notEnqueued.length > 0 ? { ...report, notEnqueued } : report,
+			);
 		}
 
 		case 'assign': {
