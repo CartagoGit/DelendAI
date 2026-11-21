@@ -42,7 +42,19 @@ Seen 3 times: the last submit removes the unit worktree, then the CLI lazily imp
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
 
+### S2 — Leave the unit worktree before it can be removed
+- **Status**: ready
+- **Files**: `packages/cli/src/commands/work.command.ts`, `new:packages/cli/src/contracts/interfaces/leave-worktree-ports.interface.ts`, `packages/cli/src/commands/work.command.spec.ts`
+- **Gate**: none
+- **Decisions**: none
+- **DependsOn**: S1
+- acceptance:
+  - "[<20ms] packages/cli/src/commands/work.command.spec.ts: a deliver or publish run from a unit worktree continues from the shared checkout root"
+  - "[<20ms] packages/cli/src/commands/work.command.spec.ts: a run outside a linked worktree keeps its directory"
+
 ## acceptance
 
 - [<50ms] packages/cli/src/commands/work.command.spec.ts: a sizer preloaded before the removal still sizes the answer after it and never loads again
 - [<50ms] packages/cli/src/commands/work.command.spec.ts: an answer without preloading loads once
+- [<20ms] packages/cli/src/commands/work.command.spec.ts: a deliver or publish run from a unit worktree continues from the shared checkout root
+- [<20ms] packages/cli/src/commands/work.command.spec.ts: a run outside a linked worktree keeps its directory

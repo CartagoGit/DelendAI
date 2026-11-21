@@ -4,6 +4,7 @@
  * `progress` view of the work, which is the CLI's own.
  */
 import { spawnSync } from 'node:child_process';
+import { basename, dirname } from 'node:path';
 
 import {
 	compileOwnedWorkRefParser,
@@ -48,6 +49,7 @@ import {
 	flagsOfLiveUnit,
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
+import type { ILeaveWorktreePorts } from '../contracts/interfaces/leave-worktree-ports.interface';
 import type { ILoadedOnce } from '../contracts/interfaces/loaded-once.interface';
 import { runWorkProgress } from '../lib/work-progress.service';
 
@@ -180,6 +182,41 @@ export const loadedOnce = <T>(load: () => Promise<T>): ILoadedOnce<T> => {
 		},
 		get,
 	};
+};
+
+const gitLocate: ILeaveWorktreePorts['locate'] = (cwd) => {
+	const read = spawnSync(
+		'git',
+		[
+			'rev-parse',
+			'--path-format=absolute',
+			'--show-toplevel',
+			'--git-common-dir',
+		],
+		{ cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+	);
+	const [top, commonDir] = read.stdout?.trim().split('\n') ?? [];
+	return read.status === 0 && top && commonDir
+		? { top, commonDir }
+		: undefined;
+};
+
+/**
+ * The context moved to the shared checkout's root when it runs in a linked
+ * worktree. The last submit removes the unit worktree: anything resolved from
+ * that directory afterwards (the repository, the forge, the answer size)
+ * fails, so the run stands on a directory that outlives the unit.
+ */
+export const leaveWorktree = (
+	ctx: ICliCommandContext,
+	ports: ILeaveWorktreePorts = { locate: gitLocate, chdir: process.chdir },
+): ICliCommandContext => {
+	const found = ports.locate(ctx.cwd);
+	if (found === undefined || basename(found.commonDir) !== '.git') return ctx;
+	const root = dirname(found.commonDir);
+	if (root === found.top) return ctx;
+	ports.chdir(root);
+	return { ...ctx, cwd: root };
 };
 
 /** Read after the transition to review, when the worktree may be gone: preloaded by the verbs that end a unit. */
@@ -392,7 +429,8 @@ export const withUnitHere = async (
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
-	run: async (rawArgs, ctx) => {
+	run: async (rawArgs, startCtx) => {
+		let ctx = startCtx;
 		const verbose = rawArgs.includes('--verbose');
 		const args = rawArgs.filter((arg) => arg !== '--verbose');
 		// Loaded for the verbs that size an answer (startup budget). Those that
@@ -458,6 +496,7 @@ export const createWorkCommand = (): ICliCommand => ({
 				if ('refusal' in found) return found.refusal;
 				withSlice = [...here, ...found.flags];
 			}
+			ctx = leaveWorktree(ctx);
 			return await sized(
 				await deliverUnit(
 					deliverPortsOf(ctx, {
@@ -482,6 +521,7 @@ export const createWorkCommand = (): ICliCommand => ({
 			args[0] === 'prove' || args[0] === 'publish'
 				? [args[0], ...(await withUnitHere(args.slice(1), ctx.cwd))]
 				: args;
+		if (args[0] === 'publish') ctx = leaveWorktree(ctx);
 		const result = await runWorkUnit(unitArgs, ctx);
 		return args[0] === 'enter'
 			? withSlicesView(result, ctx)

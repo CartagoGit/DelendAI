@@ -13,6 +13,7 @@ import {
 	createWorkCommand,
 	deliverPortsOf,
 	endsWorktree,
+	leaveWorktree,
 	loadedOnce,
 	printPathOnly,
 	withSlicesView,
@@ -370,5 +371,36 @@ describe('endsWorktree', () => {
 	it('[<20ms] is true for the verbs that can end a unit only', () => {
 		expect(['deliver', 'publish', 'prove'].every(endsWorktree)).toBe(true);
 		expect(['enter', 'status'].some(endsWorktree)).toBe(false);
+	});
+});
+
+describe('leaveWorktree', () => {
+	const ctx = createNoopContext('/shared/.cache/wt/unit', globals(true));
+
+	it('[<20ms] a deliver or publish run from a unit worktree continues from the shared checkout root', () => {
+		const moves: string[] = [];
+		const left = leaveWorktree(ctx, {
+			locate: () => ({
+				top: '/shared/.cache/wt/unit',
+				commonDir: '/shared/.git',
+			}),
+			chdir: (path) => moves.push(path),
+		});
+		expect(left.cwd).toBe('/shared');
+		expect(moves).toEqual(['/shared']);
+	});
+
+	it('[<20ms] a run outside a linked worktree keeps its directory', () => {
+		const moves: string[] = [];
+		const ports = (top: string | undefined) => ({
+			locate: () =>
+				top === undefined
+					? undefined
+					: { top, commonDir: '/shared/.git' },
+			chdir: (path: string) => moves.push(path),
+		});
+		expect(leaveWorktree(ctx, ports('/shared'))).toBe(ctx);
+		expect(leaveWorktree(ctx, ports(undefined))).toBe(ctx);
+		expect(moves).toEqual([]);
 	});
 });
