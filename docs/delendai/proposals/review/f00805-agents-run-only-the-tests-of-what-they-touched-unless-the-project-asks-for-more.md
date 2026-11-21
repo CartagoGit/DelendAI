@@ -32,15 +32,17 @@ The owner's rule, product-wide: by default delendai runs only the tests of what 
 - global_gate: none
 
 ### S1 — The setting and the proof follow it
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/plugins/config-file-schema.ts`, `packages/core/schema/delendai.config.schema.json`, `tools/scripts/ci/test-scope.ts`, `tools/scripts/ci/test-scope.spec.ts`, `tools/scripts/ci/near-specs.ts`, `packages/core/tests/src/lib/plugins/config-file-schema.spec.ts`
 - **Gate**: none
 - acceptance:
   - "testing.scope is touched, reach or all and defaults to touched; work prove and work deliver (prove-plan --fast, near-specs) run the changed specs, the mirror spec and the direct importers only, and a spec that reaches the change through another module does not run unless the scope is reach or all, shown on a fixture diff."
 - shipped-in: `fae717645a14`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
 - review-log: requested_changes by gpt-5.3-codex — shipped-in fae717645a14 is stale: S1 files changed afterward (e.g. 047d74500, d43290f9b). Redeliver S1 on current HEAD and resubmit with fresh shipped-in and fixture evidence.
+- review-log: requested_changes by mai-code-2-flash — S1 cannot be approved from its recorded delivery: fae717645a14 is stale and later changes altered the declared S1 files, as the prior reviewer noted. I ran the 3 focused specs against the current worktree and they pass 28/28, but that is post-shipping code and not an independent proof of the recorded delivery. Reproduce with git log fae717645a14..develop -- paths and compare. Redeliver S1 on current HEAD with a fresh shipped-in commit and fixture evidence for touched/reach/all scope.
 
 ### S2 — The advisory tests-for-change tool follows the setting
 - **Status**: review
