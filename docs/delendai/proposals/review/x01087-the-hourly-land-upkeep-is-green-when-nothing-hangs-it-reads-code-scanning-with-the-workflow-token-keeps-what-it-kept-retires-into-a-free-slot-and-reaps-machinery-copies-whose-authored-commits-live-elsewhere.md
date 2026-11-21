@@ -34,7 +34,7 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
 - global_gate: none
 
 ### S1 — The reap step judges each ref once, retires into a free slot and reaps machinery copies by authored commits
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/lint/ref-lifecycle-guard.script.ts`, `tools/scripts/lint/ref-lifecycle-guard.script.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -46,8 +46,18 @@ Measured 2026-11-17 on develop 6c4c43f6f from run 44157320092 and a local `lint:
   - "A spec with a fake runner expects `--no-merges` in the rev-list arguments of holdsNothingOfItsOwn and returns true when the fake answers 0 [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-biome,lint-architecture,changed-file-coverage` passes before the slice is handed over"
 - shipped-in: `5aec6a44d6fb`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: requested_changes by mimo-v2.6-flash — S1 is sent back. Its three required specs exist and pass (36/36 in ref-lifecycle-guard.script.spec.ts) and decisions 2 and 3 are implemented exactly as written: retireOnForge keeps an ancestor tip with one non-forced PATCH and otherwise writes `<retiredRef>-<first 12 hex>`; holdsNothingOfItsOwn runs `rev-list --count --no-merges <sha> --not <holders>`.
+
+Decision 1 is no longer true of the code as it stands. It requires that a ref printed as kept, or retired in this pass (closed publication or silent work ref), is removed from `outstanding`, and that the set is built once from those three results. The delivery did build it that way — 0fb244ac1 added `resolved.add(...)` for the retirable, the silent and the deleted results. A later change, eeba10c8d (2026-11-18, "refactor(ref-reconciler): … the guard only reports"), deleted all three adds together with the `--reap` path. On develop `resolved` therefore holds only `kept` — `grep -n "resolved.add" tools/scripts/lint/ref-lifecycle-guard.script.ts` finds nothing — and `reapVerdict(result.needsAttention, resolved, result.reapable, …)` keeps everything else.
+
+Concretely: `silentWorkRefs` filters `!ref.published`, so a ref the guard prints at line 805 as `retirable … the reconciler keeps its tip at …` has role `work-abandoned` (reconcile.service.ts:176-180), which IS in `needsAttention` (:280) and is NOT in `reapable` (:267-271). It stays in `outstanding`, and under `REF_LIFECYCLE_SCOPE=repository` — the hourly upkeep job's own scope — `failingFor` returns it as failing. The guard prints two verdicts for one ref, which is exactly what `why` (1) and (2) say must stop.
+
+What must hold: every ref the guard prints as kept or as retirable is absent from `outstanding` and from `failing`, decided by one set built once from those results; and a spec feeds `reapVerdict` a silent, never-published ref that the guard printed as retirable and expects it out of the failing list with `ok` true, next to the existing kept-and-published-copy case.
+
+This is a regression introduced by eeba10c8d, not by the delivery, but the acceptance describes the code as it stands, so S1 cannot be approved while it is false.
 
 ### S2 — An upkeep step can read with the workflow token and the job is granted exactly that read
 - **Status**: done
