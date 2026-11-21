@@ -1,0 +1,44 @@
+---
+id: auto-agent-selector
+package: @delendai/auto-agent-selector
+version: 0.3.0
+maturity: stable
+generated: 2026-11-03T01:24:49.458Z
+---
+
+# Auto Agent Selector
+
+> Auto-generated. Do not edit. Regenerate with bun run generate:from-manifests.
+
+## Summary
+
+Zero-config multi-agent routing (cost↔quality dial, auto_recommend, escalation).
+
+## Tags
+
+- routing
+- agents
+
+## Presets
+
+- swarm
+- everything
+- dogfood
+
+## Permissions
+
+- filesystem-read
+- process
+- network
+- env-read
+
+## Dependencies
+
+- @delendai/core
+- @modelcontextprotocol/sdk
+- zod
+
+## Capabilities
+
+- routing
+- agents
