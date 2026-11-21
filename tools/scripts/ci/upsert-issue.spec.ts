@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../lib/repo-root';
 import {
 	closeClearedIssues,
+	createGhIssueForge,
 	type IIssueForge,
 	upsertIssue,
 } from './upsert-issue';
