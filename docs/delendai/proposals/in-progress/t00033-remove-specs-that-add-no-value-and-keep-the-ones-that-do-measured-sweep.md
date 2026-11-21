@@ -38,8 +38,8 @@ Owner asked to drop tests with no value. Measurement (scratch classifier, per-fi
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Reason class (c) duplicate: cases with the same subject call and the same expected value appear in two of these files; keep one copy per case (about 20 removed), merge the survivors into the file named for the subject"
-  - "Changed-file coverage for plugins/issues stays at or above the gate"
+  - "Reason class (c) duplicate: `grep -cE '^\s*it\(' plugins/issues/tests/src/lib/github-client-security-dependabot-code-scanning.spec.ts plugins/issues/tests/src/lib/github-client-security-secret-scanning-advisories.spec.ts plugins/issues/tests/src/lib/github-client-security.spec.ts` totals 40 before and at most 25 after, `git ls-files 'plugins/issues/tests/src/lib/github-client-security-*.spec.ts'` prints nothing once the survivors are merged into github-client-security.spec.ts, and `bunx vitest run plugins/issues/tests/src/lib/github-client-security.spec.ts` exits 0"
+  - "`bun tools/scripts/ci/changed-file-coverage.script.ts` exits 0 for the plugins/issues files this slice changes"
 
 ### S2 — Per-plugin availability and plugin-options duplicates become one shared parameterised spec
 - **Status**: pending
@@ -47,8 +47,8 @@ Owner asked to drop tests with no value. Measurement (scratch classifier, per-fi
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Reason class (c) duplicate: identical case bodies across plugins merge into a shared helper driven by each plugin's own registration; each plugin keeps only its plugin-specific cases"
-  - "These are contract-style specs: every plugin must still be exercised, so the merge must not reduce the plugins covered (verify by case count per plugin)"
+  - "Reason class (c) duplicate: the nine S2 specs share one helper driven by each plugin's own registration, and `bunx vitest run plugins/git/tests/src/plugin-options.spec.ts plugins/deps/tests/src/lib/plugin-options.spec.ts plugins/browser/tests/src/availability.spec.ts` exits 0; each plugin keeps its plugin-specific cases in its own spec"
+  - "Every plugin is still exercised: `bunx vitest run plugins/agent-orchestrator/tests/src/availability.spec.ts plugins/audit-orchestrator/tests/src/availability.spec.ts plugins/browser/tests/src/availability.spec.ts plugins/roadmap/tests/src/availability.spec.ts plugins/style-convention/tests/src/availability.spec.ts plugins/execution-env/tests/src/availability.spec.ts plugins/remote-provider-core/tests/availability.spec.ts plugins/deps/tests/src/lib/plugin-options.spec.ts plugins/git/tests/src/plugin-options.spec.ts` reports 9 test files passed and 0 skipped"
 
 ### S3 — plugins/execution-env adapters: drop repeated teardown and no-tools cases
 - **Status**: pending
@@ -64,7 +64,7 @@ Owner asked to drop tests with no value. Measurement (scratch classifier, per-fi
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Reason class (c) duplicate: remove the repeated case only; these are guard specs, so keep any case that is the only assertion of a guard"
+  - "Reason class (c) duplicate: `bunx vitest run tools/scripts/lint/publication-proof-gate.script.spec.ts tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts` exits 0, and only a case repeated verbatim is removed, so every guard keeps at least one case that asserts it"
 
 ### S5 — Tautological and dead skipped cases
 - **Status**: pending
@@ -72,8 +72,8 @@ Owner asked to drop tests with no value. Measurement (scratch classifier, per-fi
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Reason class (a): remove 'budgets conversion rounds kB to bytes deterministically' (asserts only literals the case built); replace with a call to the tool's real conversion if it has none"
-  - "Reason class (b): remove the unconditional it.skip historical-repro case in threshold-tracker (or un-skip it if it passes); in shim-invocation keep only skips that are conditional on a missing toolchain, delete unconditional ones"
+  - "Reason class (a): `grep -c 'budgets conversion rounds kB to bytes deterministically' plugins/perf/src/lib/tools/perf-bundle.tool.spec.ts` prints 0, and `bunx vitest run plugins/perf/src/lib/tools/perf-bundle.tool.spec.ts` exits 0; a replacement case, if the tool has a real conversion, calls it"
+  - "Reason class (b): `grep -nE 'it\.(skip|todo|only)|xit\(' plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.spec.ts` prints nothing, and `grep -n 'it.skip' tools/scripts/shim-invocation.spec.ts` lists only skips guarded by a missing-toolchain condition, with `bunx vitest run tools/scripts/shim-invocation.spec.ts` exiting 0"
   - "Not flagged by design: type-shape specs under packages/contracts, packages/core/tests/src/lib/contracts, packages/state and plugins/quality/tests/src/lib/scope-type.spec.ts are compile-time contract checks and are kept"
 
 ### S6 — Snapshot-only generated text
@@ -82,7 +82,7 @@ Owner asked to drop tests with no value. Measurement (scratch classifier, per-fi
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Reason class (e): snapshot of generated CSS with no assertion on meaning; replace the snapshot by assertions on the tokens that matter, or delete it if the style gate already covers them"
+  - "Reason class (e): `grep -c 'toMatchInlineSnapshot' packages/ui-extension/tests/styles/component-css.spec.ts` prints 0 (or the file is deleted), and if the file remains `bunx vitest run packages/ui-extension/tests/styles/component-css.spec.ts` exits 0 with at least one assertion on a named token"
 
 ### S7 — Owner decision: subject without a consumer
 - **Status**: pending
@@ -90,33 +90,33 @@ Owner asked to drop tests with no value. Measurement (scratch classifier, per-fi
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Reason class (d): session-handover.service has no non-spec consumer; f00816 (review) still plans it. Do not delete; record the decision in this proposal, and delete the module with its spec only if f00816 is retired"
+  - "Reason class (d): while f00816 is not retired, `git ls-files packages/core/tests/src/lib/work-units/session-handover.service.spec.ts` still prints that path (the spec is not deleted) and this proposal records the decision; the module and spec are deleted together only once f00816 is retired"
 
 ### S8 — Lint: flag new tautological and skipped specs
 - **Status**: pending
-- **Files**: `tools/scripts/lint/spec-no-value.script.ts`, `tools/scripts/lint/spec-no-value.script.spec.ts`, `tools/scripts/lint/spec-no-value.baseline.json`, `package.json`
+- **Files**: `new:tools/scripts/lint/spec-no-value.script.ts`, `new:tools/scripts/lint/spec-no-value.script.spec.ts`, `new:tools/scripts/lint/spec-no-value.baseline.json`, `package.json`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "Flags in NEW or changed spec files: class (a) a case whose expect arguments are only values built in the case, with no call to any imported or file-level symbol; class (b) unconditional it.skip, it.todo, it.only and xit; baseline file lists the existing instances so only new ones fail"
+  - "Flags in new or changed spec files: tools/scripts/lint/spec-no-value.script.spec.ts holds one fixture per class, (a) a case whose expect arguments are only values built in the case, (b) each of unconditional it.skip, it.todo, it.only and xit, and `bun tools/scripts/lint/spec-no-value.script.ts` exits 0 on the repository because spec-no-value.baseline.json lists the existing instances"
   - "Exempts type-shape contract specs (files under contracts/ or named *.interface.spec.ts)"
-  - "Wired into validate:run and CI (lint scripts must reach CI), with a lint:cli:i18n-compatible help summary if exposed as a CLI"
-  - "The lint spec uses real fixtures for each class and a false-positive fixture (case that calls the subject through a local helper) that must pass"
+  - "Wired into validate:run and CI: `grep -c 'spec-no-value' package.json` prints at least 2 (the lint script and its call from validate:run), and `bun run lint:cli:i18n` exits 0"
+  - "`bunx vitest run tools/scripts/lint/spec-no-value.script.spec.ts` exits 0 with a real fixture per class and a false-positive fixture (a case that calls the subject through a local helper) reported with no finding"
 
 ## acceptance
 
-- Reason class (c) duplicate: cases with the same subject call and the same expected value appear in two of these files; keep one copy per case (about 20 removed), merge the survivors into the file named for the subject
-- Changed-file coverage for plugins/issues stays at or above the gate
-- Reason class (c) duplicate: identical case bodies across plugins merge into a shared helper driven by each plugin's own registration; each plugin keeps only its plugin-specific cases
-- These are contract-style specs: every plugin must still be exercised, so the merge must not reduce the plugins covered (verify by case count per plugin)
+- Reason class (c) duplicate: `grep -cE '^\s*it\(' plugins/issues/tests/src/lib/github-client-security-dependabot-code-scanning.spec.ts plugins/issues/tests/src/lib/github-client-security-secret-scanning-advisories.spec.ts plugins/issues/tests/src/lib/github-client-security.spec.ts` totals 40 before and at most 25 after, `git ls-files 'plugins/issues/tests/src/lib/github-client-security-*.spec.ts'` prints nothing once the survivors are merged into github-client-security.spec.ts, and `bunx vitest run plugins/issues/tests/src/lib/github-client-security.spec.ts` exits 0
+- `bun tools/scripts/ci/changed-file-coverage.script.ts` exits 0 for the plugins/issues files this slice changes
+- Reason class (c) duplicate: the nine S2 specs share one helper driven by each plugin's own registration, and `bunx vitest run plugins/git/tests/src/plugin-options.spec.ts plugins/deps/tests/src/lib/plugin-options.spec.ts plugins/browser/tests/src/availability.spec.ts` exits 0; each plugin keeps its plugin-specific cases in its own spec
+- Every plugin is still exercised: `bunx vitest run plugins/agent-orchestrator/tests/src/availability.spec.ts plugins/audit-orchestrator/tests/src/availability.spec.ts plugins/browser/tests/src/availability.spec.ts plugins/roadmap/tests/src/availability.spec.ts plugins/style-convention/tests/src/availability.spec.ts plugins/execution-env/tests/src/availability.spec.ts plugins/remote-provider-core/tests/availability.spec.ts plugins/deps/tests/src/lib/plugin-options.spec.ts plugins/git/tests/src/plugin-options.spec.ts` reports 9 test files passed and 0 skipped
 - Reason class (c) duplicate: one case each repeated verbatim with availability.spec.ts or its sibling; keep the copy next to the subject
-- Reason class (c) duplicate: remove the repeated case only; these are guard specs, so keep any case that is the only assertion of a guard
-- Reason class (a): remove 'budgets conversion rounds kB to bytes deterministically' (asserts only literals the case built); replace with a call to the tool's real conversion if it has none
-- Reason class (b): remove the unconditional it.skip historical-repro case in threshold-tracker (or un-skip it if it passes); in shim-invocation keep only skips that are conditional on a missing toolchain, delete unconditional ones
+- Reason class (c) duplicate: `bunx vitest run tools/scripts/lint/publication-proof-gate.script.spec.ts tools/tests/lint/pre-flight-and-ci-cannot-drift.spec.ts` exits 0, and only a case repeated verbatim is removed, so every guard keeps at least one case that asserts it
+- Reason class (a): `grep -c 'budgets conversion rounds kB to bytes deterministically' plugins/perf/src/lib/tools/perf-bundle.tool.spec.ts` prints 0, and `bunx vitest run plugins/perf/src/lib/tools/perf-bundle.tool.spec.ts` exits 0; a replacement case, if the tool has a real conversion, calls it
+- Reason class (b): `grep -nE 'it\.(skip|todo|only)|xit\(' plugins/commit-policy/tests/src/lib/triggers/threshold-tracker.spec.ts` prints nothing, and `grep -n 'it.skip' tools/scripts/shim-invocation.spec.ts` lists only skips guarded by a missing-toolchain condition, with `bunx vitest run tools/scripts/shim-invocation.spec.ts` exiting 0
 - Not flagged by design: type-shape specs under packages/contracts, packages/core/tests/src/lib/contracts, packages/state and plugins/quality/tests/src/lib/scope-type.spec.ts are compile-time contract checks and are kept
-- Reason class (e): snapshot of generated CSS with no assertion on meaning; replace the snapshot by assertions on the tokens that matter, or delete it if the style gate already covers them
-- Reason class (d): session-handover.service has no non-spec consumer; f00816 (review) still plans it. Do not delete; record the decision in this proposal, and delete the module with its spec only if f00816 is retired
-- Flags in NEW or changed spec files: class (a) a case whose expect arguments are only values built in the case, with no call to any imported or file-level symbol; class (b) unconditional it.skip, it.todo, it.only and xit; baseline file lists the existing instances so only new ones fail
+- Reason class (e): `grep -c 'toMatchInlineSnapshot' packages/ui-extension/tests/styles/component-css.spec.ts` prints 0 (or the file is deleted), and if the file remains `bunx vitest run packages/ui-extension/tests/styles/component-css.spec.ts` exits 0 with at least one assertion on a named token
+- Reason class (d): while f00816 is not retired, `git ls-files packages/core/tests/src/lib/work-units/session-handover.service.spec.ts` still prints that path (the spec is not deleted) and this proposal records the decision; the module and spec are deleted together only once f00816 is retired
+- Flags in new or changed spec files: tools/scripts/lint/spec-no-value.script.spec.ts holds one fixture per class, (a) a case whose expect arguments are only values built in the case, (b) each of unconditional it.skip, it.todo, it.only and xit, and `bun tools/scripts/lint/spec-no-value.script.ts` exits 0 on the repository because spec-no-value.baseline.json lists the existing instances
 - Exempts type-shape contract specs (files under contracts/ or named *.interface.spec.ts)
-- Wired into validate:run and CI (lint scripts must reach CI), with a lint:cli:i18n-compatible help summary if exposed as a CLI
-- The lint spec uses real fixtures for each class and a false-positive fixture (case that calls the subject through a local helper) that must pass
+- Wired into validate:run and CI: `grep -c 'spec-no-value' package.json` prints at least 2 (the lint script and its call from validate:run), and `bun run lint:cli:i18n` exits 0
+- `bunx vitest run tools/scripts/lint/spec-no-value.script.spec.ts` exits 0 with a real fixture per class and a false-positive fixture (a case that calls the subject through a local helper) reported with no finding
