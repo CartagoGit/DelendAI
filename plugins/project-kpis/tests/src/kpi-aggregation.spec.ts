@@ -254,8 +254,9 @@ describe('computeTokensPerAcceptedUnit', () => {
 		outcome: 'success',
 		fallbackFrom: null,
 		error: null,
+		autoBypassed: false,
 	};
-	const row = (extra: object): IInvocationRecord => ({
+	const row = (extra: object) => ({
 		...base,
 		correlation: { id: 'unit-1', source: 'args' },
 		...extra,
