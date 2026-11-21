@@ -2,10 +2,14 @@
 id: x01116
 title: "A lock wait budget counts time without progress, not queue length"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 61367beb-bfa7-4b2d-9665-4b9deda6d82a
+last-correlation-id: 61367beb-bfa7-4b2d-9665-4b9deda6d82a
+last-transition-from: ready
+last-transition-at: 2026-11-21T05:46:04.560Z
 ---
 
 # x01116 — A lock wait budget counts time without progress, not queue length
