@@ -47,7 +47,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 - review-log: requested_changes by mai-code-2-flash — S1 is stale against current develop: its declared reaper implementation/spec paths no longer exist and work-unit reaper code moved across later commits. A review recorded against 2ab5ed987be8 cannot prove the current behavior. Redeliver S1 on current HEAD, update renamed/deleted Files entries through revalidate, and run unit-reaper/Landed e2e specs plus work reap gates.
 
 ### S2 — stranded and rescued refs whose patches are on develop are removed
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `new:packages/core/tests/src/lib/work-units/stray-refs-reap-kept.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
@@ -55,8 +55,10 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "`delendai work reap --apply` removes a refs/delendai/stranded or refs/delendai/rescued ref when every commit it holds beyond its merge base has an equivalent patch on the integration branch (`git cherry` reports only '-'), and lists the others with their age and changed files."
   - "stray-refs-reap.service.spec.ts covers a ref whose patch landed under another hash (removed), one with a unique patch (listed), and an empty ref (removed)."
 - shipped-in: `f738bc16c502`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S2 is stale against current develop: declared stray-refs implementation/spec paths no longer match the current tree (stray-refs moved to stray-refs.service.ts). The review cannot prove the landed patch at f738bc16c502 remains current. Redeliver S2 on current HEAD, revalidate its Files entries, and run the stray-ref patch-equivalence specs.
 
 ### S3 — leftovers outside units: stray files in the worktrees directory and the old test temp directories
 - **Status**: review
