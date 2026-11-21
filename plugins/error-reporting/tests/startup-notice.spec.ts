@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
 	announceErrorReportingStartup,
@@ -72,5 +72,22 @@ describe('announceErrorReportingStartup', () => {
 				},
 			),
 		).not.toThrow();
+	});
+});
+
+describe('announceErrorReportingStartup on the default writer', () => {
+	it('[<50ms] prints once per process tree', () => {
+		const key = 'DELENDAI_ERROR_REPORTING_NOTICE_SHOWN';
+		const before = process.env[key];
+		process.env[key] = '1';
+		const spy = vi.spyOn(process.stderr, 'write');
+		try {
+			announceErrorReportingStartup({ lines: ['x'] });
+			expect(spy).not.toHaveBeenCalled();
+		} finally {
+			spy.mockRestore();
+			if (before === undefined) delete process.env[key];
+			else process.env[key] = before;
+		}
 	});
 });

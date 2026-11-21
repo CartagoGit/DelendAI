@@ -34,6 +34,8 @@ import {
 	unitFlagsOf,
 } from '../lib/work-deliver.service';
 import { runGitCommand } from '@delendai/core/runtime';
+import { VERBOSE_FLAG } from '../contracts/constants/work-answer-size.constant';
+import { sizedAnswer } from '../lib/work-answer-size.service';
 import {
 	answerCommittingWrites,
 	toolCommitSubject,
@@ -350,7 +352,17 @@ export const withUnitHere = async (
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
-	run: async (args, ctx) => {
+	run: async (rawArgs, ctx) => {
+		const verbose = rawArgs.includes(VERBOSE_FLAG);
+		const args = rawArgs.filter((arg) => arg !== VERBOSE_FLAG);
+		const sized = (result: ICliCommandResult): ICliCommandResult =>
+			sizedAnswer({
+				verb: args[0] ?? '',
+				result,
+				verbose,
+				json: ctx.globals.json === true,
+				cwd: ctx.cwd,
+			});
 		if (args[0] === 'enter') await briefOnEntering();
 		if (args[0] === 'rename-namespace')
 			return runRenameNamespace(args.slice(1), ctx);
@@ -394,14 +406,16 @@ export const createWorkCommand = (): ICliCommand => ({
 				if ('refusal' in found) return found.refusal;
 				withSlice = [...here, ...found.flags];
 			}
-			return deliverUnit(
-				deliverPortsOf(ctx, {
-					id,
-					reason,
-					agent,
-					urgent: scalarArg(unit, 'urgent'),
-					unitFlags: withSlice,
-				}),
+			return sized(
+				await deliverUnit(
+					deliverPortsOf(ctx, {
+						id,
+						reason,
+						agent,
+						urgent: scalarArg(unit, 'urgent'),
+						unitFlags: withSlice,
+					}),
+				),
 			);
 		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {
@@ -417,7 +431,9 @@ export const createWorkCommand = (): ICliCommand => ({
 				? [args[0], ...(await withUnitHere(args.slice(1), ctx.cwd))]
 				: args;
 		const result = await runWorkUnit(unitArgs, ctx);
-		return args[0] === 'enter' ? withSlicesView(result, ctx) : result;
+		return args[0] === 'enter'
+			? withSlicesView(result, ctx)
+			: sized(result);
 	},
 });
 
