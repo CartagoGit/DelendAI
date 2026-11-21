@@ -1290,7 +1290,6 @@
 		"plugins/error-reporting/tests/self-test.service.spec.ts",
 		"plugins/error-reporting/tests/src/lib/intake/server-log-reader.spec.ts",
 		"plugins/error-reporting/tests/stale-circuit-reevaluation.spec.ts",
-		"plugins/error-reporting/tests/startup-notice.spec.ts",
 		"plugins/error-reporting/tests/synthetic-example.builder.spec.ts",
 		"plugins/error-reporting/tests/tool-permissions.spec.ts",
 		"plugins/execution-env/tests/src/availability.spec.ts",

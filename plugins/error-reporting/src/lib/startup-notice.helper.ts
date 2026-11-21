@@ -49,6 +49,7 @@ export const buildErrorReportingStartupNotice = (input: {
  * Write the notice. Never throws: a boot message must not be able to
  * stop the server it is describing.
  */
+// permissions-declared-authorized: a process-tree marker the notice sets and reads, never configuration or a secret.
 /** Set once the notice was printed, so child processes stay quiet. */
 const NOTICE_SHOWN_ENV = 'DELENDAI_ERROR_REPORTING_NOTICE_SHOWN';
 
