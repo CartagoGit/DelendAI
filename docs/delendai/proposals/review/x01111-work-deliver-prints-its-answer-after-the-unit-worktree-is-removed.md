@@ -2,14 +2,14 @@
 id: x01111
 title: "Work deliver prints its answer after the unit worktree is removed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: dd87ee71-2e66-4078-a484-b8cfeae16418
-last-correlation-id: dd87ee71-2e66-4078-a484-b8cfeae16418
-last-transition-from: review
-last-transition-at: 2026-11-21T04:57:17.381Z
+last-transition-id: a198a48d-c1a5-4ed6-9b41-d78f5cb828e8
+last-correlation-id: a198a48d-c1a5-4ed6-9b41-d78f5cb828e8
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T04:58:38.756Z
 ---
 
 # x01111 — Work deliver prints its answer after the unit worktree is removed
