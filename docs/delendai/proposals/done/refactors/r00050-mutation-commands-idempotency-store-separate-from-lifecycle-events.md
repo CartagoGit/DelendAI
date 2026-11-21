@@ -1,0 +1,87 @@
+---
+id: r00050
+title: "mutation_commands idempotency store separate from lifecycle_events"
+kind: refactor
+status: done
+type: proposal
+track: architecture
+date: 2026-09-07
+shipped-in:
+  - "2f2c6216a"
+  - "bf8006c5a"
+priority: P0
+related:
+  - q00022
+  - r00047
+  - f00514
+  - f00518
+closed-by: evidence pass 2026-09-15
+closed-evidence:
+  - 578148ae1 (#110) proposal, plan and slice lifecycle writes claim, replay, conflict and complete mutation_commands receipts through one receipt implementation
+  - mutation-commands-idempotency e2e and the r00050 S2 repository specs, 24/24 under bun test on 2026-09-15: same key and fingerprint replays after restart, a changed fingerprint is rejected as an idempotency conflict, for proposals, plans and slices
+  - bf8006c5a db doctor command_receipts check lists orphaned or inconsistent receipts read-only (db-doctor.spec); 8acc13f5c (#111) makes the cutover gate verify r00050
+---
+
+# r00050 — mutation_commands idempotency store separate from lifecycle_events
+
+## Goal
+
+Introduce a first-class `mutation_commands` store so lifecycle command
+retries, deduplication, and response replay live outside
+`lifecycle_events`, while `lifecycle_events` remains an immutable facts
+ledger.
+
+## why
+
+The active SQLite migration set models idempotent lifecycle verbs, but
+the duplicate-command path is still routed conceptually through
+`lifecycle_events`. That couples command receipts to lifecycle facts,
+makes same-key same-payload replay ambiguous, and risks polluting the
+audit trail with retry attempts.
+
+## non-goals
+
+- Do NOT redefine the lifecycle state machine; `r00047` still owns the
+  public close outcomes.
+- Do NOT replace the outbox processor; `f00514` still owns external
+  side-effects and delivery semantics.
+- Do NOT broaden this into full event sourcing; entity rows remain the
+  operational truth.
+
+## Slices
+
+- global_gate: type
+
+### S1 — Schema + repository for `mutation_commands`
+- **Status**: done
+- **Files**: `packages/proposals-sqlite/src/lib/schema.ts`, `packages/proposals-sqlite/src/lib/sqlite-driver.spec.ts`, `packages/proposals-sqlite/src/lib/migrations/0006_mutation_commands.sql`, `packages/proposals-sqlite/src/lib/repository/mutation-commands-repo.ts`, `packages/proposals-sqlite/tests/src/lib/repository/mutation-commands-repo.spec.ts`
+- **Gate**: type
+- review-state: done
+- review-implementer: github-copilot
+- review-reviewer: github-copilot-review-20260911
+- review-log: approved by github-copilot-review-20260911 — Revisión independiente sobre develop c29fffc74; repository/schema introducidos en 2c02d9c27 y claim atómico corregido en 2ed7a4c3a.
+### S2 — Integrate lifecycle writes with command receipts
+- **Status**: done — `578148ae1` (#110). Verified 2026-09-15 by an evidence pass, because the `in_review` state below was never followed by a recorded review: the proposal, plan and slice repositories claim, replay, conflict and complete receipts through `receiptGate`, and `mutation-commands-idempotency.spec.ts` plus the repository specs marked for this slice pass 24/24 under `bun test` (replay after restart, rejection of a changed fingerprint, for each entity type).
+- **Files**: `packages/proposals-sqlite/src/lib/repository/proposals-repo.ts`, `packages/proposals-sqlite/src/lib/repository/plans-repo.ts`, `packages/proposals-sqlite/src/lib/repository/slices-repo.ts`, `plugins/proposals/src/lib/services/close-plan.service.ts`, `plugins/proposals/src/lib/services/close-slice.service.ts`
+- **Gate**: type
+- review-state: in_review
+- review-implementer: github-copilot-20260911
+### S3 — Recovery suite + doctor checks for orphaned or inconsistent receipts
+- **Status**: done — `2f2c6216a`, `bf8006c5a`. the e2e suite replays a repeated key with the same fingerprint without a new lifecycle event and rejects a different fingerprint as an idempotency conflict; `db doctor` lists orphaned or inconsistent command receipts without mutating the database. 6 passing specs. Verified 2026-09-15.
+- **Files**: `packages/proposals-sqlite/tests/e2e/mutation-commands-idempotency.spec.ts`, `plugins/proposals/src/lib/services/db-doctor/checks/command-receipts.ts`, `plugins/proposals/tests/src/lib/services/db-doctor.spec.ts`
+- **Gate**: type
+
+## acceptance
+
+- Same key plus same fingerprint replays the previously persisted
+  outcome without creating a new lifecycle event.
+- Same key plus different fingerprint is rejected explicitly as an
+  idempotency conflict.
+- `db doctor` can list orphaned or inconsistent command receipts without
+  mutating the DB.
+
+## notes
+
+- This proposal is the missing storage primitive that lets `r00047`
+  keep lifecycle semantics clean while `f00514` keeps side-effects
+  separated.
