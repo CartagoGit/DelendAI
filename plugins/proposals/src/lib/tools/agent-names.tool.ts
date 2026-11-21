@@ -43,6 +43,9 @@ export interface IAgentNamesToolOptions {
 	readonly closedTasksPathAbs: string;
 	/** Absolute workspace root — anchors `waitFor.file` resolution. */
 	readonly workspaceRoot: string;
+	/** The queue-file mutex (defaults to `withFileMutex`); a seam so a spec
+	 *  can make the lock unobtainable without waiting out its timeout. */
+	readonly queueMutex?: typeof withFileMutex;
 	/** Symbolic name pool (defaults to the constellation pool). */
 	readonly pool?: readonly string[];
 	/**
@@ -195,27 +198,30 @@ const runAgentNamesImpl = async (
 			// x00097 S2 (audit a00052 #13): the whole read-modify-write is one
 			// transaction under the queue-file mutex — a concurrent writer
 			// between parse and persist used to lose entries silently.
-			await withFileMutex(options.queuePathAbs, async () => {
-				const queue = await parseQueue(
-					options.queuePathAbs,
-					options.closedTasksPathAbs,
-					options.workspaceRoot,
-				);
-				const updated = enqueue(queue, {
-					taskId,
-					enqueuedAt: at,
-					priority: priority as 1 | 2 | 3 | 4 | 5,
-					waitFor: [],
-					owner: {
+			await (options.queueMutex ?? withFileMutex)(
+				options.queuePathAbs,
+				async () => {
+					const queue = await parseQueue(
+						options.queuePathAbs,
+						options.closedTasksPathAbs,
+						options.workspaceRoot,
+					);
+					const updated = enqueue(queue, {
 						taskId,
-						agentName: 'watchdog',
-						agentSlot: 'orchestrator',
-					},
-					observe: [],
-					status: 'queued',
-				});
-				await persistQueueUnlocked(updated, options.queuePathAbs);
-			});
+						enqueuedAt: at,
+						priority: priority as 1 | 2 | 3 | 4 | 5,
+						waitFor: [],
+						owner: {
+							taskId,
+							agentName: 'watchdog',
+							agentSlot: 'orchestrator',
+						},
+						observe: [],
+						status: 'queued',
+					});
+					await persistQueueUnlocked(updated, options.queuePathAbs);
+				},
+			);
 		} catch (error) {
 			// Queue is optional coordination; never fail the registry op.
 			if (error instanceof LockContentionError) notEnqueued.push(taskId);

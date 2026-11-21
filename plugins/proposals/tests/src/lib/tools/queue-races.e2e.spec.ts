@@ -15,7 +15,7 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { LockContentionError } from '@delendai/core/public';
 
@@ -30,30 +30,6 @@ import {
 	type IStateToolOptions,
 } from '@delendai/proposals/lib/tools/state-tools.tool';
 import { createFakeToolServer } from '@delendai/test-kit/public';
-
-const mutexFault = vi.hoisted(() => ({ contend: false }));
-
-vi.mock('@delendai/core/runtime', async (importOriginal) => {
-	const actual = await importOriginal<{
-		withFileMutex: (
-			path: string,
-			fn: () => Promise<unknown>,
-			options?: unknown,
-		) => Promise<unknown>;
-	}>();
-	const real = actual.withFileMutex;
-	return {
-		...actual,
-		withFileMutex: (
-			path: string,
-			fn: () => Promise<unknown>,
-			options?: unknown,
-		) =>
-			mutexFault.contend && path.endsWith('queue.json')
-				? Promise.reject(new LockContentionError(path, 1))
-				: real(path, fn, options),
-	};
-});
 
 const STALE_LAST_SEEN = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
@@ -191,16 +167,27 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 	});
 
 	it('[<500ms] names the entries not enqueued when the queue mutex cannot be taken', async () => {
-		mutexFault.contend = true;
-		try {
-			const result = await reconcileZombie(0);
-			const report = JSON.parse(result.content[0]?.text ?? '{}') as {
-				notEnqueued?: string[];
-			};
-			expect(report.notEnqueued).toEqual(['zombie-gc-event-task-0']);
-		} finally {
-			mutexFault.contend = false;
-		}
+		const registryPath = join(root, 'registry-0.json');
+		const lockPath = join(root, 'agent-lock-0.json');
+		writeFileSync(registryPath, zombieRegistry('task-0'));
+		writeFileSync(lockPath, zombieLock('task-0'));
+		const result = await runAgentNames(
+			{
+				action: 'reconcile',
+				dry_run: false,
+				stale_after_minutes: 10,
+				now: new Date().toISOString(),
+			},
+			{
+				...namesOptions(registryPath, lockPath),
+				queueMutex: (path) =>
+					Promise.reject(new LockContentionError(path, 1)),
+			},
+		);
+		const report = JSON.parse(result.content[0]?.text ?? '{}') as {
+			notEnqueued?: string[];
+		};
+		expect(report.notEnqueued).toEqual(['zombie-gc-event-task-0']);
 		const queue = await parseQueue(queuePath, closedTasksPath, root);
 		expect(queue.entries).toEqual([]);
 	});
