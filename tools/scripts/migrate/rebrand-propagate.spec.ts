@@ -207,22 +207,6 @@ describe('rebrand-propagate.script.ts', () => {
 		}
 	});
 
-	it('passes on the real repo (live brand propagation is clean)', () => {
-		// This test only runs when the script can read ROOT directly,
-		// which is always the case inside the workspace.
-		if (!existsSync(SCRIPT)) {
-			throw new Error(`rebrand-propagate.script.ts missing at ${SCRIPT}`);
-		}
-		const result = run(['--check'], ROOT);
-		expect(result.stdout).toContain('Rebrand propagation clean');
-		expect(result.stdout).toContain(
-			'0 repo-owned LIVE hit(s) after historical/fixture filters',
-		);
-		expect(result.stdout).toContain('Brand contract:');
-		expect(result.stdout).toContain('brand contract green');
-		expect(result.status).toBe(0);
-	});
-
 	it('brand contract: BRAND.md exists with the required tokens', () => {
 		const brandDoc = resolve(ROOT, 'docs/delendai/BRAND.md');
 		if (!existsSync(brandDoc)) {

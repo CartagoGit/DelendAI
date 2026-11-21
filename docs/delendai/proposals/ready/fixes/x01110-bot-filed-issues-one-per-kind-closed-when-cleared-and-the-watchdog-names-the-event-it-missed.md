@@ -50,13 +50,13 @@ The slow rebrand spec leaves the unit tier; the land watchdog stops reporting a 
 
 ### S3 — The watchdog names the missed event and no longer cries wolf
 - **Status**: pending
-- **Files**: `plugins/integration/src/lib/services/integration-pass.service.ts`, `plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts`, `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `.github/workflows/land.yml`, `tools/scripts/forge/land-workflow.spec.ts`
+- **Files**: `plugins/integration/src/lib/services/integration-pass.service.ts`, `plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts`, `packages/core/src/lib/integration/land/land-workflow.helper.ts`, `packages/core/src/lib/integration/land/land-watchdog-steps.helper.ts`, `packages/core/src/lib/integration/land/land-watchdog.constant.ts`, `plugins/integration/src/lib/contracts/interfaces/integration-pass.interface.ts`, `.github/workflows/land.yml`, `tools/scripts/forge/land-workflow.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
   - "plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts: a watchdog pass that acted writes evidence naming the sha, the event and each pull request it merged"
   - "tools/scripts/forge/land-workflow.spec.ts: the watchdog runs strict only when no event-driven land run is in flight, and a crashed pass does not file a missed-event issue"
-  - "tools/scripts/forge/land-workflow.spec.ts: the watchdog issue is written through the upsert script and closed by a clean scheduled pass"
+  - "tools/scripts/forge/land-workflow.spec.ts: the watchdog issue is kept as one open issue (edited, duplicates closed) and closed by a clean scheduled pass"
 
 ## acceptance
 
@@ -68,4 +68,4 @@ The slow rebrand spec leaves the unit tier; the land watchdog stops reporting a 
 - tools/scripts/ci/upsert-issue.spec.ts: the calibration workflow writes its issue through the upsert script and never gh issue create
 - plugins/integration/tests/src/lib/services/integration-pass.service.spec.ts: a watchdog pass that acted writes evidence naming the sha, the event and each pull request it merged
 - tools/scripts/forge/land-workflow.spec.ts: the watchdog runs strict only when no event-driven land run is in flight, and a crashed pass does not file a missed-event issue
-- tools/scripts/forge/land-workflow.spec.ts: the watchdog issue is written through the upsert script and closed by a clean scheduled pass
+- tools/scripts/forge/land-workflow.spec.ts: the watchdog issue is kept as one open issue (edited, duplicates closed) and closed by a clean scheduled pass
