@@ -33,7 +33,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 - global_gate: lint
 
 ### S1 — reap ends a landed unit of an idle owner
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper-landed.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
@@ -41,11 +41,13 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "`delendai work reap` lists, and `--apply` ends (worktree removed, local branch deleted, no ref kept because nothing is unique), a unit whose every commit is an ancestor of the integration branch and whose owner is past the idle window, whatever agent id owns it; a live owner's unit is never touched."
   - "unit-reaper.service.spec.ts covers: landed and idle (ended), landed and live (kept), one unlanded commit and idle (kept and listed), and a unit with uncommitted edits (kept, edits named)."
 - shipped-in: `2ab5ed987be8`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S1 is stale against current develop: its declared reaper implementation/spec paths no longer exist and work-unit reaper code moved across later commits. A review recorded against 2ab5ed987be8 cannot prove the current behavior. Redeliver S1 on current HEAD, update renamed/deleted Files entries through revalidate, and run unit-reaper/Landed e2e specs plus work reap gates.
 
 ### S2 — stranded and rescued refs whose patches are on develop are removed
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/stray-refs-reap.service.ts`, `packages/core/src/lib/work-units/stray-refs-reap.interface.ts`, `packages/core/tests/src/lib/work-units/stray-refs-reap.service.spec.ts`, `new:packages/core/tests/src/lib/work-units/stray-refs-reap-kept.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
@@ -53,11 +55,13 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "`delendai work reap --apply` removes a refs/delendai/stranded or refs/delendai/rescued ref when every commit it holds beyond its merge base has an equivalent patch on the integration branch (`git cherry` reports only '-'), and lists the others with their age and changed files."
   - "stray-refs-reap.service.spec.ts covers a ref whose patch landed under another hash (removed), one with a unique patch (listed), and an empty ref (removed)."
 - shipped-in: `f738bc16c502`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S2 is stale against current develop: declared stray-refs implementation/spec paths no longer match the current tree (stray-refs moved to stray-refs.service.ts). The review cannot prove the landed patch at f738bc16c502 remains current. Redeliver S2 on current HEAD, revalidate its Files entries, and run the stray-ref patch-equivalence specs.
 
 ### S3 — leftovers outside units: stray files in the worktrees directory and the old test temp directories
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/work-units/worktree-husks.service.ts`, `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/contracts/interfaces/worktree-husks.interface.ts`, `new:packages/core/src/lib/work-units/test-temp-leftovers.service.ts`, `new:packages/core/src/lib/contracts/constants/test-temp-prefixes.constant.ts`, `new:packages/core/src/lib/contracts/interfaces/test-temp-leftovers.interface.ts`, `new:packages/core/tests/src/lib/work-units/test-temp-leftovers.service.spec.ts`, `new:packages/core/tests/src/lib/work-units/work-unit-reap.service.e2e.spec.ts`
 - **Gate**: lint
@@ -67,11 +71,13 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "`delendai work reap --apply` removes empty directories directly under os.tmpdir() whose names start with a prefix the test kit used before x01091 (delendai-gh-, state-contract-, unit-index-, tok-report-, state-coordination-, state-sqlite-, tok-) and that are older than one day; a non-empty one is listed, never removed; the prefixes are one constant."
   - "test-temp-leftovers.service.spec.ts drives it over an injected temp root with an old empty match (removed), a fresh one (kept), a non-empty one (listed) and a foreign name (ignored)."
 - shipped-in: `11bf65764571`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S3 is stale against current develop: several declared leftovers paths and a new temp service/spec were later moved/refactored, and current work-unit reaper code is outside the delivery snapshot. The focused test-temp run passes 7/7 but cannot prove the old snapshot or renamed declared files. Redeliver S3 on current HEAD and revalidate all Files entries and temp-prefix/E2E coverage.
 
 ### S4 — the agent documents describe the enforced flow
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `docs/delendai/AGENT-BOOTSTRAP.md`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`, `plugins/proposals/skills/proposals-workflow-playbook/SKILL.md`
 - **Gate**: lint
@@ -81,8 +87,10 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "The proposals workflow playbook states the readiness rules a new proposal must meet (new: for files a slice creates, each acceptance line names a command, a .spec.ts or a Scenario, Decisions closed), checked by `bun tools/scripts/lint/proposal-readiness.script.ts`."
   - "`bun run lint:check-skills` and the bootstrap size check (AGENT-BOOTSTRAP.md under 32,000 bytes) pass; no agent rule is stated in two documents."
 - shipped-in: `9e2a6bc39f22`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S4 was changed after delivery: the work-unit playbook gained later enforced-flow edits after 9e2a6bc39f22. lint:check-skills passes 33/33 and AGENT-BOOTSTRAP is 22936 bytes, but the review still needs a fresh delivery snapshot that includes current text. Redeliver S4 on current HEAD and verify both bootstraps/playbooks in one batch.
 
 ## acceptance
 
