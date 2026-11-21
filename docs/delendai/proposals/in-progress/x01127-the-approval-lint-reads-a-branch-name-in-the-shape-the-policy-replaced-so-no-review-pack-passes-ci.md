@@ -38,16 +38,16 @@ Since f00808 S8 landed (014e23ff50ec, 2026-11-18) this repository's template is 
 - **Gate**: lint
 - **Decisions**: none
 - acceptance:
-  - "On this repository's policy (namespacePrefix empty, template `{wip|pr}/{action}/{agent}/{scope}/{topic}`) the head `pr/review/mimo-v2.6-flash/batch-all/review-batch-mimo` classifies as kind `review` and agent `mimo-v2.6-flash`, and a `pr/implement/<agent>/...` head classifies as `implement` - the kind is no longer read from the second segment."
-  - "A ref under the former prefix, `delendai/pr/review/<agent>/...`, classifies the same way, so the transition keeps working and a legacy name does not become an unrecognised ref."
-  - "`isRevalidationRef` recognises `pr/revalidation/<agent>/...` under the current shape."
-  - "Spec: a fixture whose head is `pr/review/<agent>/...` and whose diff adds an approval by `<agent>` fails with the message naming an approval entering through a review unit; the same fixture with an `implement` head and the same approval passes, so the test pins both directions."
+  - "`bun tools/scripts/lint/closed-with-independent-approval.script.spec.ts` pins classification: on this repository's policy (namespacePrefix empty, template `{wip|pr}/{action}/{agent}/{scope}/{topic}`) the head `pr/review/mimo-v2.6-flash/batch-all/review-batch-mimo` reads as kind `review` and agent `mimo-v2.6-flash`, and a `pr/implement/<agent>/...` head reads as `implement` - the kind is no longer read from the second segment."
+  - "The same `closed-with-independent-approval.script.spec.ts` pins the transition: a ref under the former prefix, `delendai/pr/review/<agent>/...`, classifies the same way, so a legacy name does not become an unrecognised ref."
+  - "The same `closed-with-independent-approval.script.spec.ts` pins `isRevalidationRef` recognising `pr/revalidation/<agent>/...` under the current shape."
+  - "In `closed-with-independent-approval.script.spec.ts` a fixture whose head is `pr/review/<agent>/...` and whose diff adds an approval by `<agent>` fails with the message naming an approval entering through a review unit; the same fixture with an `implement` head and the same approval passes, so the test pins both directions."
   - "`bun tools/scripts/lint/closed-with-independent-approval.script.ts` exits 0 on the pull request this repository has open with head `pr/review/mimo-v2.6-flash/batch-all/review-batch-mimo`, and `lint:job:governance` reports 32/32."
 
 ## acceptance
 
-- On this repository's policy (namespacePrefix empty, template `{wip|pr}/{action}/{agent}/{scope}/{topic}`) the head `pr/review/mimo-v2.6-flash/batch-all/review-batch-mimo` classifies as kind `review` and agent `mimo-v2.6-flash`, and a `pr/implement/<agent>/...` head classifies as `implement` - the kind is no longer read from the second segment.
-- A ref under the former prefix, `delendai/pr/review/<agent>/...`, classifies the same way, so the transition keeps working and a legacy name does not become an unrecognised ref.
-- `isRevalidationRef` recognises `pr/revalidation/<agent>/...` under the current shape.
-- Spec: a fixture whose head is `pr/review/<agent>/...` and whose diff adds an approval by `<agent>` fails with the message naming an approval entering through a review unit; the same fixture with an `implement` head and the same approval passes, so the test pins both directions.
+- `bun tools/scripts/lint/closed-with-independent-approval.script.spec.ts` pins classification: on this repository's policy (namespacePrefix empty, template `{wip|pr}/{action}/{agent}/{scope}/{topic}`) the head `pr/review/mimo-v2.6-flash/batch-all/review-batch-mimo` reads as kind `review` and agent `mimo-v2.6-flash`, and a `pr/implement/<agent>/...` head reads as `implement` - the kind is no longer read from the second segment.
+- The same `closed-with-independent-approval.script.spec.ts` pins the transition: a ref under the former prefix, `delendai/pr/review/<agent>/...`, classifies the same way, so a legacy name does not become an unrecognised ref.
+- The same `closed-with-independent-approval.script.spec.ts` pins `isRevalidationRef` recognising `pr/revalidation/<agent>/...` under the current shape.
+- In `closed-with-independent-approval.script.spec.ts` a fixture whose head is `pr/review/<agent>/...` and whose diff adds an approval by `<agent>` fails with the message naming an approval entering through a review unit; the same fixture with an `implement` head and the same approval passes, so the test pins both directions.
 - `bun tools/scripts/lint/closed-with-independent-approval.script.ts` exits 0 on the pull request this repository has open with head `pr/review/mimo-v2.6-flash/batch-all/review-batch-mimo`, and `lint:job:governance` reports 32/32.
