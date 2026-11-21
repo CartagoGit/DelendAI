@@ -2,10 +2,14 @@
 id: x01109
 title: "The promotion to the release branch is always declared under land, and it carries the dependency alerts the integration branch already fixes"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 079aa459-e7bb-4bb1-85cc-43d597308b16
+last-correlation-id: 079aa459-e7bb-4bb1-85cc-43d597308b16
+last-transition-from: ready
+last-transition-at: 2026-11-21T02:02:04.957Z
 ---
 
 # x01109 — The promotion to the release branch is always declared under land, and it carries the dependency alerts the integration branch already fixes
