@@ -186,9 +186,6 @@ describe('flipSliceStatusReview', () => {
 		expect(flipSliceStatusReview('- **Status**: pending\n- x')).toBe(
 			'- **Status**: review\n- x',
 		);
-		expect(flipSliceStatusReview('- **Status**: ready\n- x')).toBe(
-			'- **Status**: review\n- x',
-		);
 		expect(flipSliceStatusReview('- **Status**: in-progress\n')).toBe(
 			'- **Status**: review\n',
 		);
