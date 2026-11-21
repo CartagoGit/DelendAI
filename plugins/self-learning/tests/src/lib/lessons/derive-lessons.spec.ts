@@ -149,6 +149,41 @@ describe('what a history does support', () => {
 	});
 });
 
+describe('recurring budget warnings', () => {
+	const warning = (index: number, causes: string): IObservation =>
+		observation({
+			kind: 'budget-warning',
+			subject: `spec ${String(index)} > case`,
+			detail: `s${String(index)}.spec.ts normalizedMs=300 estimateMs=100 causes=${causes}`,
+		});
+
+	it('become one lesson proposing a fake instead of real git or timers', () => {
+		const lessons = deriveLessons(
+			[
+				...repeat(3, (index) => warning(index, 'git')),
+				...repeat(3, (index) => warning(index + 10, 'timers')),
+			],
+			{ nowMs: NOW },
+		);
+
+		const git = lessons.filter((each) => each.subject.endsWith(':git'));
+		expect(git).toHaveLength(1);
+		expect(git[0]?.claim).toContain('a fake instead of real git');
+		expect(
+			lessons.find((each) => each.subject.endsWith(':timers'))?.claim,
+		).toContain('fake timers instead of real timers');
+	});
+
+	it('are not a lesson below the support threshold', () => {
+		expect(
+			deriveLessons(
+				repeat(2, (index) => warning(index, 'git')),
+				{ nowMs: NOW },
+			),
+		).toEqual([]);
+	});
+});
+
 describe('a lesson that stops reproducing', () => {
 	it('degrades when the project contradicts it', () => {
 		const contradicted = scoreConfidence({

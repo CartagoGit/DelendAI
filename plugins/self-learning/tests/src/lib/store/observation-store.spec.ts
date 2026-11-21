@@ -238,6 +238,40 @@ describe('collecting from the test journal', () => {
 		expect(observations[0]?.outcome).toBe('ok');
 	});
 
+	it('stores a budget warning with the test id, the normalized time and the estimate', async () => {
+		const { filePath } = makeStore();
+		const observations = observationsFromJournalLine(
+			entry({
+				result: 'pass',
+				failures: [],
+				budgetWarnings: [
+					{
+						file: 'a.spec.ts',
+						fullName: 'suite > slow case',
+						normalizedMs: 320.4,
+						estimateMs: 200,
+						causes: ['git'],
+					},
+					{ fullName: 'no numbers' },
+				],
+			}),
+		);
+
+		const warnings = observations.filter(
+			(each) => each.kind === 'budget-warning',
+		);
+		expect(warnings).toHaveLength(1);
+		await appendObservations(
+			{ filePath, readText, workspaceRoot: dirs[0] as string },
+			warnings,
+		);
+		const stored = await readObservations({ filePath, readText });
+		expect(stored).toHaveLength(1);
+		expect(stored[0]?.subject).toBe('suite > slow case');
+		expect(stored[0]?.detail).toContain('normalizedMs=320');
+		expect(stored[0]?.detail).toContain('estimateMs=200');
+	});
+
 	it('drops an entry whose time cannot be read', () => {
 		// A wrong timestamp is worse than a missing observation: recency
 		// is half of what makes a lesson true.

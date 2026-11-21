@@ -36,6 +36,23 @@ import {
 } from '../contracts/constants/lesson.constant';
 import { scoreConfidence } from './confidence.helper';
 
+/**
+ * The causes a recurring budget warning is grouped by, and the fix each
+ * one proposes (x01101 S5). A warning is a symptom; the cause the runner
+ * saw on the spec is what a lesson can name the root-cause fix for.
+ */
+const BUDGET_FIXES: Readonly<Record<string, string>> = {
+	git: 'a fake instead of real git',
+	timers: 'fake timers instead of real timers',
+};
+
+const causesOf = (observation: IObservation): readonly string[] => {
+	const match = /causes=(\S+)/.exec(observation.detail ?? '');
+	return (match?.[1] ?? '')
+		.split(',')
+		.filter((cause) => cause in BUDGET_FIXES);
+};
+
 /** Evidence entries kept per lesson: enough to check, not a log. */
 const DEFAULT_MAX_EVIDENCE = 5;
 
@@ -134,6 +151,29 @@ export const deriveLessons = (
 	);
 
 	const lessons: ILesson[] = [];
+
+	// Budget warnings recurring on specs that share a cause become ONE
+	// lesson per cause, proposing the fix, not one per slow test.
+	const warnings = observations.filter(
+		(observation) => observation.kind === 'budget-warning',
+	);
+	for (const cause of Object.keys(BUDGET_FIXES)) {
+		const caused = warnings.filter((warning) =>
+			causesOf(warning).includes(cause),
+		);
+		const lesson = lessonFrom(
+			'fragile-test',
+			{
+				subject: `budget-warning:${cause}`,
+				supporting: caused,
+				contradicting: [],
+			},
+			(each) =>
+				`${String(each.supporting.length)} time budget warning(s) recur on specs that use ${cause}; use ${BUDGET_FIXES[cause] ?? 'a fake'} rather than raising the estimate.`,
+			resolved,
+		);
+		if (lesson !== null) lessons.push(lesson);
+	}
 
 	// A command that mostly FAILS here is the actionable direction: an
 	// agent about to run it should know before it spends the minutes.
