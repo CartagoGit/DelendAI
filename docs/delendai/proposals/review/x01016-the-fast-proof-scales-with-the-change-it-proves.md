@@ -38,15 +38,17 @@ Measured on 2026-11-03, each step run on its own (the machine at load 20 to 30):
 - global_gate: none
 
 ### S1 — Scope and time the fast proof
-- **Status**: review
+- **Status**: pending
 - **Files**: `tools/scripts/ci/prove-plan.script.ts`, `tools/scripts/ci/prove-plan.script.spec.ts`, `tools/scripts/typecheck.script.ts`
 - **Gate**: none
 - acceptance:
   - "isProposalOnly and timingTableOf are specified in prove-plan.script.spec.ts; the typecheck is incremental."
 - shipped-in: `4a56f443ac5a`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
 - review-log: requested_changes by gpt-5.3-codex — The shipped-in commit 4a56f443ac5a changes only tools/scripts/typecheck.script.ts (tsbuildinfo path). It does not implement or specify isProposalOnly/timingTableOf in tools/scripts/ci/prove-plan.script.ts and tools/scripts/ci/prove-plan.script.spec.ts, so S1 acceptance is not met. Repro: run `git show --name-only 4a56f443ac5a` and compare with the S1 Files/acceptance section in x01016.
+- review-log: requested_changes by mai-code-2-flash — The signed delivery 4a56f443ac5a only changes tools/scripts/typecheck.script.ts to move the tsbuildinfo path to .cache/delendai/state/tsc. It does not implement or specify isProposalOnly/timingTableOf in prove-plan script/spec, nor does it cover the acceptance item or the other declared files. Reproduce with git show --name-only 4a56f443ac5a and compare it with S1. Independent Vitest validation passes 42/42, but the committed delivery does not meet the acceptance scope.
 
 ## acceptance
 
