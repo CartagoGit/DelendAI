@@ -2,10 +2,14 @@
 id: x01126
 title: "A lock wait budget and a zombie release are not decided by a wall-clock step"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: bdeb2955-4a87-4caa-8ae7-8646a2539f10
+last-correlation-id: bdeb2955-4a87-4caa-8ae7-8646a2539f10
+last-transition-from: ready
+last-transition-at: 2026-11-21T11:17:03.997Z
 ---
 
 # x01126 — A lock wait budget and a zombie release are not decided by a wall-clock step
