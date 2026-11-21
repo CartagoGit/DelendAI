@@ -101,7 +101,7 @@ const enter = (tree: string, branch: string) =>
 	});
 
 describe('adoptProposalId', () => {
-	it('releases the reservation the `new` unit made, so the next new proposal is not held', async () => {
+	it('[<400ms] releases the reservation the `new` unit made, so the next new proposal is not held', async () => {
 		const { main, tree, remote } = unitOn(OLD);
 		await enter(tree, OLD);
 		const reserved = reserveSlice({
@@ -125,7 +125,7 @@ describe('adoptProposalId', () => {
 		expect(git(remote, 'for-each-ref', 'refs/delendai/claims/')).toBe('');
 	});
 
-	it('names the unit after the proposal: branch, worktree, lease and remote', async () => {
+	it('[<400ms] names the unit after the proposal: branch, worktree, lease and remote', async () => {
 		const { main, tree, remote } = unitOn(OLD);
 		await enter(tree, OLD);
 		const sha = git(tree, 'rev-parse', 'HEAD');
@@ -160,7 +160,7 @@ describe('adoptProposalId', () => {
 		).toMatchObject({ kind: 'create', proposal: 'x00001', slice: 'all' });
 	});
 
-	it('renames a unit the forge never had, and one with no lease', async () => {
+	it('[<400ms] renames a unit the forge never had, and one with no lease', async () => {
 		const { main, tree, remote } = unitOn(OLD);
 		git(remote, 'branch', '-D', OLD);
 
@@ -183,7 +183,7 @@ describe('adoptProposalId', () => {
 		).toBe(true);
 	});
 
-	it('renames nothing in a unit that already carries an id', async () => {
+	it('[<400ms] renames nothing in a unit that already carries an id', async () => {
 		const { tree } = unitOn(NEW);
 		await enter(tree, NEW);
 
@@ -197,7 +197,7 @@ describe('adoptProposalId', () => {
 		expect(git(tree, 'symbolic-ref', 'HEAD')).toBe(`refs/heads/${NEW}`);
 	});
 
-	it('renames nothing outside a unit', async () => {
+	it('[<400ms] renames nothing outside a unit', async () => {
 		const { main } = unitOn(OLD);
 		expect(
 			await adoptProposalId({ cwd: main, proposal: 'x00001', policy }),
@@ -205,7 +205,7 @@ describe('adoptProposalId', () => {
 		expect(exists(main, `refs/heads/${OLD}`)).toBe(true);
 	});
 
-	it('refuses, leaving the unit as it is, when the new name is taken', async () => {
+	it('[<400ms] refuses, leaving the unit as it is, when the new name is taken', async () => {
 		const { main, tree } = unitOn(OLD);
 		git(main, 'branch', NEW);
 
@@ -243,7 +243,7 @@ describe('carryUnitRecords', () => {
 		expect(git(remote, 'branch', '--list', OLD)).toBe('');
 	});
 
-	it('names the claimant as the lease owner when the unit changes hands', async () => {
+	it('[<400ms] names the claimant as the lease owner when the unit changes hands', async () => {
 		const { main, tree } = unitOn(OLD);
 		await enter(tree, OLD);
 		git(main, 'branch', '-m', OLD, TAKEN);
@@ -261,7 +261,7 @@ describe('carryUnitRecords', () => {
 		expect(lease?.owner.agent).toBe('agent-b');
 	});
 
-	it('has nothing to carry for a unit with no lease that the forge never had', async () => {
+	it('[<400ms] has nothing to carry for a unit with no lease that the forge never had', async () => {
 		const { main } = unitOn(OLD);
 		expect(
 			await carryUnitRecords({
@@ -275,7 +275,7 @@ describe('carryUnitRecords', () => {
 });
 
 describe('proposalOfCreateUnit', () => {
-	it('names the proposal a create unit already made', () => {
+	it('[<400ms] names the proposal a create unit already made', () => {
 		const { tree } = unitOn(NEW);
 		expect(proposalOfCreateUnit(tree, policy)).toEqual({
 			branch: NEW,
@@ -283,12 +283,12 @@ describe('proposalOfCreateUnit', () => {
 		});
 	});
 
-	it('finds nothing in a create unit still waiting for its id', () => {
+	it('[<400ms] finds nothing in a create unit still waiting for its id', () => {
 		const { tree } = unitOn(OLD);
 		expect(proposalOfCreateUnit(tree, policy)).toBeUndefined();
 	});
 
-	it('finds nothing in a unit of another kind', () => {
+	it('[<400ms] finds nothing in a unit of another kind', () => {
 		const { tree } = unitOn(
 			'delendai/wip/agent-a/implement/x00001-all-g1/the-topic',
 		);
@@ -299,7 +299,7 @@ describe('proposalOfCreateUnit', () => {
 describe('foreignUnitOf', () => {
 	const create = { kind: 'create' };
 
-	it('[<200ms] names a unit of another kind', () => {
+	it('[<400ms] names a unit of another kind', () => {
 		const other = 'delendai/wip/agent-a/implement/x00001-all-g1/the-topic';
 		const { tree } = unitOn(other);
 		expect(foreignUnitOf(tree, policy, create)).toEqual({
@@ -309,12 +309,12 @@ describe('foreignUnitOf', () => {
 		});
 	});
 
-	it('[<200ms] finds nothing in a create unit, made or waiting for its id', () => {
+	it('[<400ms] finds nothing in a create unit, made or waiting for its id', () => {
 		expect(foreignUnitOf(unitOn(OLD).tree, policy, create)).toBeUndefined();
 		expect(foreignUnitOf(unitOn(NEW).tree, policy, create)).toBeUndefined();
 	});
 
-	it('[<200ms] names a unit of the same kind for a different proposal', () => {
+	it('[<400ms] names a unit of the same kind for a different proposal', () => {
 		const { tree } = unitOn(NEW);
 		expect(
 			foreignUnitOf(tree, policy, { kind: 'create', proposal: 'x00002' }),

@@ -2,14 +2,17 @@
  * create-proposal.tool.spec.ts — the create_proposal handler: where it
  * writes, what it refuses, and the publication step it names.
  */
-import { execFileSync } from 'node:child_process';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-import { createFakeToolServer, fakePartial } from '@delendai/test-kit';
+import {
+	createFakeToolServer,
+	createGitRepoTemplate,
+	fakePartial,
+} from '@delendai/test-kit';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
 
@@ -44,6 +47,13 @@ const _parse = (result: { content: Array<{ text: string }> }) =>
 	JSON.parse(result.content[0]?.text ?? '{}') as Record<string, unknown>;
 
 describe('create_proposal', () => {
+	const unitRepo = createGitRepoTemplate({
+		files: { 'a.txt': 'a' },
+		trunk: 'develop',
+		worktrees: {
+			'unit-tree': 'delendai/wip/agent-a/implement/x00001-S1-g1/topic',
+		},
+	});
 	let root = '';
 	let options: IAuthoringToolOptions;
 	beforeEach(() => {
@@ -86,22 +96,13 @@ describe('create_proposal', () => {
 	});
 
 	it('[<200ms] create_proposal refuses a checkout owned by another unit, naming it and work enter', async () => {
-		const git = (cwd: string, ...args: string[]) =>
-			execFileSync(
-				'git',
-				['-c', 'user.email=t@t', '-c', 'user.name=t', ...args],
-				{ cwd, stdio: 'ignore' },
-			);
-		git(root, 'init', '-q', '-b', 'develop');
-		writeFileSync(join(root, 'a.txt'), 'a');
-		git(root, 'add', '.');
-		git(root, 'commit', '-qm', 'init');
 		const unit = 'delendai/wip/agent-a/implement/x00001-S1-g1/topic';
-		const tree = join(root, 'unit-tree');
-		git(root, 'worktree', 'add', '-q', '-b', unit, tree);
+		const { root: repo, worktrees } = unitRepo.copy();
+		const tree = worktrees['unit-tree'] ?? '';
 		const create = await capture(
 			buildCreateProposalRegistration({
 				...options,
+				workspaceRoot: repo,
 				developmentPolicy: fakePartial<IResolvedDevelopmentPolicy>({
 					branches: fakePartial<
 						IResolvedDevelopmentPolicy['branches']
