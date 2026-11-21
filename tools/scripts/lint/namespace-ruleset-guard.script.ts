@@ -153,16 +153,19 @@ const main = (): number => {
 	}
 	if (missing.length > 0) {
 		problems.push(
-			`  the forge allows namespaces the policy does not: it is MISSING these exclusions, so it would refuse them: ${missing.join(', ')}`,
+			`  the forge is MISSING exclusions for namespaces the policy allows, so it refuses branches the policy permits: ${missing.join(', ')}`,
 		);
 	}
+	// An extra exclusion only allows more than the policy does, and
+	// ref-lifecycle still refuses any branch outside the policy's namespaces,
+	// so it warns: the forge can be widened before a namespace change lands.
 	if (extra.length > 0) {
-		problems.push(
-			`  the forge excludes namespaces the policy does not name: ${extra.join(', ')}`,
+		console.warn(
+			`⚠ namespace-ruleset-guard: the forge also allows namespaces the policy does not name: ${extra.join(', ')}`,
 		);
 	}
 
-	if (problems.length === 0) {
+	if (problems.length === 0 && !(SYNC && extra.length > 0)) {
 		console.log(
 			`✓ namespace-ruleset-guard: the live \`${RULESET_NAME}\` ruleset matches the policy (${String(wantExclude.length)} allowed namespaces, creation refused elsewhere).`,
 		);
