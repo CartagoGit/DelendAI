@@ -9,6 +9,7 @@
  */
 // effect-boundary-authorized: the integrator's git adapter; a moved file is merged by git in a throwaway worktree
 import { execFileSync } from 'node:child_process';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 
 import {
@@ -21,7 +22,7 @@ import { BATCH_COMMIT_IDENTITY as IDENTITY } from '../contracts/constants/integr
 
 import { landGitArgs } from './land-git-process.helper';
 import { identityFetchEnv, pushAsIdentity } from './land-identity-push.helper';
-import { discardTrain, runGit } from './land-train-assembly.helper';
+import { runGit } from './land-train-assembly.helper';
 
 /** Git's stdout in `cwd`, byte for byte (a file's content keeps its last newline). */
 /** Similarity git needs to call a rewritten file a rename. */
@@ -34,33 +35,22 @@ const read = (cwd: string, args: readonly string[]): string =>
 		stdio: ['ignore', 'pipe', 'pipe'],
 	});
 
-/** A throwaway directory, made and removed the way the train's scratch is. */
-const scratchDir = (): string =>
-	execFileSync('mktemp', ['-d', '-t', 'delendai-moved.XXXXXX'], {
-		encoding: 'utf8',
-	}).trim();
+/** Where throwaway directories live: inside the repository's own git directory, never /tmp. */
+const SCRATCH_DIR = 'delendai-land-scratch';
 
-const removeDir = (dir: string): void => {
-	try {
-		execFileSync('rm', ['-rf', '--', dir]);
-	} catch {
-		// Nothing more to remove.
-	}
+/** A fresh, unique directory under `<git common dir>/delendai-land-scratch`. */
+const scratchDir = async (root: string): Promise<string> => {
+	const base = join(
+		read(root, [
+			'rev-parse',
+			'--path-format=absolute',
+			'--git-common-dir',
+		]).trim(),
+		SCRATCH_DIR,
+	);
+	await mkdir(base, { recursive: true });
+	return mkdtemp(join(base, 'moved-'));
 };
-
-/** `content` through the stdin of `command`, its stdout back. */
-const pipe = (
-	command: string,
-	args: readonly string[],
-	content: string,
-	cwd?: string,
-): string =>
-	execFileSync(command, [...args], {
-		cwd,
-		input: content,
-		encoding: 'utf8',
-		stdio: ['pipe', 'pipe', 'pipe'],
-	});
 
 const attempt = (cwd: string, args: readonly string[]): boolean => {
 	try {
@@ -126,20 +116,20 @@ const movesOf = (
 };
 
 /** The tip's edit applied to the moved copy by a three-way text merge; undefined when it conflicts. */
-const mergeText = (
+const mergeText = async (
 	root: string,
 	base: string,
 	tip: string,
 	moved: string,
-): string | undefined => {
-	const dir = scratchDir();
+): Promise<string | undefined> => {
+	const dir = await scratchDir(root);
 	try {
 		for (const [name, content] of [
 			['moved', moved],
 			['base', base],
 			['tip', tip],
 		] as const)
-			pipe('tee', [join(dir, name)], content);
+			await writeFile(join(dir, name), content);
 		return read(root, [
 			'merge-file',
 			'-p',
@@ -150,7 +140,7 @@ const mergeText = (
 	} catch {
 		return undefined;
 	} finally {
-		removeDir(dir);
+		await rm(dir, { recursive: true, force: true });
 	}
 };
 
@@ -184,7 +174,7 @@ export const createRefreshMoved =
 			return { kind: 'none' };
 		}
 		if (moves.length === 0) return { kind: 'none' };
-		const scratch = scratchDir();
+		const scratch = await scratchDir(root);
 		try {
 			if (
 				!attempt(root, [
@@ -216,23 +206,32 @@ export const createRefreshMoved =
 						(move) => move.from === path || move.to === path,
 					),
 			);
+			// Merged up front: the core's port is a plain lookup.
+			const merged = await Promise.all(
+				moves.map((move) =>
+					mergeText(root, move.base, move.tip, move.moved),
+				),
+			);
 			const refresh = refreshMovedProposal({
 				ports: {
 					moves,
 					otherConflicts: others,
 					mergeText: (base, edited, moved) =>
-						mergeText(root, base, edited, moved),
+						merged[
+							moves.findIndex(
+								(move) =>
+									move.base === base &&
+									move.tip === edited &&
+									move.moved === moved,
+							)
+						],
 				},
 			});
 			if (refresh.kind === 'asked')
 				return { kind: 'asked', comment: refresh.comment };
 			for (const { path, content } of refresh.writes) {
-				execFileSync('mkdir', [
-					'-p',
-					'--',
-					dirname(join(scratch, path)),
-				]);
-				pipe('tee', [join(scratch, path)], content);
+				await mkdir(dirname(join(scratch, path)), { recursive: true });
+				await writeFile(join(scratch, path), content);
 				attempt(scratch, ['add', '--', path]);
 			}
 			for (const path of refresh.removes)
@@ -264,6 +263,8 @@ export const createRefreshMoved =
 				: { kind: 'moved' };
 		} finally {
 			attempt(scratch, ['merge', '--abort']);
-			discardTrain(root, scratch);
+			attempt(root, ['worktree', 'remove', '--force', scratch]);
+			attempt(root, ['worktree', 'prune']);
+			await rm(scratch, { recursive: true, force: true });
 		}
 	};
