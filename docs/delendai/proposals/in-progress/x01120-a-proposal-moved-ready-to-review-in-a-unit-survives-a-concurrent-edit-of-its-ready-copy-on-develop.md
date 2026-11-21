@@ -2,10 +2,14 @@
 id: x01120
 title: "A proposal moved ready to review in a unit survives a concurrent edit of its ready copy on develop"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 9f89137f-b902-4888-a0fa-6c916d541798
+last-correlation-id: 9f89137f-b902-4888-a0fa-6c916d541798
+last-transition-from: ready
+last-transition-at: 2026-11-21T10:09:03.187Z
 ---
 
 # x01120 — A proposal moved ready to review in a unit survives a concurrent edit of its ready copy on develop
