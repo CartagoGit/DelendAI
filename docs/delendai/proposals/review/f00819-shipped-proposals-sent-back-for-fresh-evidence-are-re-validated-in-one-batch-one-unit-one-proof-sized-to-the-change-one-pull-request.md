@@ -10,6 +10,8 @@ last-transition-id: f5e80b6b-42f4-455d-93e5-2286849cdaf8
 last-correlation-id: f5e80b6b-42f4-455d-93e5-2286849cdaf8
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T08:23:19.409Z
+shipped-in:
+  - "569fa373862fb1fa57d6c4671fe8150cecb414f3"
 ---
 
 # f00819 — Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request
@@ -33,7 +35,7 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
 - global_gate: none
 
 ### S1 — `delendai work revalidate` selects the proposals and prints the list it chose
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -44,8 +46,10 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "A proposal named in --proposals that does not satisfy the predicate is reported by id with the reason and left out, and the other ids are still selected [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-governance` passes before the slice is handed over"
 - shipped-in: `a206adf9d929`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: approved by mimo-v2.6-flash — verified at 569fa373862f, validate exit 0 and tests 57/57 claimed, no recorded run cited; acceptance 6/6: (1) work.command.ts line 378 `if (args[0] === 'revalidate')` sits beside `deliver` (line 395) and only calls scalarArg(flags,'agent') / scalarArg(flags,'proposals'… (2) selectRevalidation is a pure function over the parsed proposals: it keeps stage === 'ready' whose every isLive slice has shippedIn and reviewState === 'changes… (3) revalidateBatch prints the refusal lines, then `for (const id of selection.chosen) ports.print(id)` and only afterwards enters the unit and transitions; an emp… (4) FIXTURE in work-revalidate.service.spec.ts has one proposal per case: f1 (all live slices shipped + changes_requested) and f5 (the unshipped slice is retired) … (5) the named-id spec calls selectRevalidation(FIXTURE, ['f1','f2','f4','zz']) and expects result.chosen === ['f1'], result.refused ids ['f2','f4','zz'] each with … (6) `bun run typecheck` exits 0 across all 80 workspaces; `work prove --only=...` runs lint-docs (ok, 29s) and lint-security (ok, 6s); lint-governance reports `31/… — Approved at 569fa373862fb, the newest first-parent delivery of f00819 that touches work.command.ts/.spec.ts and an ancestor of develop (it supersedes shipped-in a206adf9d929). Gate: `bun run typecheck` exits 0 across all 80 workspaces. Tests: 57/57 in work-revalidate.service.spec.ts and work.command.spec.ts. Pre-check `work prove --only=typecheck,lint-governance`: lint-docs ok (29s), lint-security ok (6s), lint-governance 31/32 jobs — the one failing job is closed-with-independent-approval, a false positive that mis-parses this review unit's own work ref (kindOfRef/agentOfRef still read the legacy agent-first shape while f00808 S8 made work refs kind-first), unrelated to this slice and filed separately. S2 and S3 are judged on their own and do not ride on this verdict.
 
 ### S2 — The batch is one unit and applies each proposal's transitions through the transition service
 - **Status**: review
