@@ -2,10 +2,14 @@
 id: x01110
 title: "Bot-filed issues: one per kind, closed when cleared, and the watchdog names the event it missed"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-21
+last-transition-id: 8c7d0cc8-5d6c-4ee9-b992-906d045fac7a
+last-correlation-id: 8c7d0cc8-5d6c-4ee9-b992-906d045fac7a
+last-transition-from: ready
+last-transition-at: 2026-11-21T01:57:18.687Z
 ---
 
 # x01110 — Bot-filed issues: one per kind, closed when cleared, and the watchdog names the event it missed
