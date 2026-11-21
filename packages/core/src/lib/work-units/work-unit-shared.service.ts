@@ -348,7 +348,7 @@ export const heldByAnother = (
 	if (quiet || held === undefined || held === session) return undefined;
 	return refused(
 		`${path} is held by a live lease of a different session: the unit has one editor at a time, even under the same agent id.`,
-		'If this is your unit, pass the --session you were given when you entered it (or set DELENDAI_SESSION_ID). Otherwise enter your own unit: a different --topic, or --generation=<next>.',
+		`If this is your unit, run this again from inside ${path}. Otherwise enter your own unit: a different --topic, or --generation=<next>.`,
 	);
 };
 

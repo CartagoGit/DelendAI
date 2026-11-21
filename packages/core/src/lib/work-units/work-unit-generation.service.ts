@@ -25,18 +25,26 @@ import { undeclaredSlice } from './declared-slice.service';
 import { integrationMergeSubjects } from './integration-merges.helper';
 import { takenProposalId } from './taken-proposal-id.service';
 
-/** The session holding the worktree `ref` is checked out in, if any. */
-export const sessionHolding = (
+/** The worktree `ref` is checked out in, if any. */
+export const worktreeHolding = (
 	root: string,
 	ref: string,
 ): string | undefined => {
 	const block = (readGit(root, ['worktree', 'list', '--porcelain']) ?? '')
 		.split('\n\n')
 		.find((each) => each.includes(`branch ${ref}`));
-	const path = block
+	return block
 		?.split('\n')
 		.find((line) => line.startsWith('worktree '))
 		?.slice('worktree '.length);
+};
+
+/** The session holding the worktree `ref` is checked out in, if any. */
+export const sessionHolding = (
+	root: string,
+	ref: string,
+): string | undefined => {
+	const path = worktreeHolding(root, ref);
 	return path === undefined ? undefined : worktreeSession(path);
 };
 
@@ -257,7 +265,7 @@ export const chooseGeneration = (
 			return {
 				refusal: refused(
 					`${proposal} ${slice} has a live lease held by a different session of \`${agent}\` (\`${other}\`): two instances on one slice would do the same work twice.`,
-					'If it is your own unit, enter it from inside its worktree, or pass the --session it gave you when you first entered. Otherwise take other work, or pass --generation=<n> to start a deliberate second attempt at it.',
+					`If it is your own unit, run this again from inside ${worktreeHolding(root, other) ?? 'its worktree'}. Otherwise take other work, or pass --generation=<n> to start a deliberate second attempt at it.`,
 				),
 			};
 		}
