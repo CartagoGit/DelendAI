@@ -67,7 +67,7 @@ On 2026-11-19 PRs failed only on budgets: init-render (twice), review.tool, auth
 ### S4 — Retire the migration-list trap: editing a spec forces no budgets on its other tests
 - **Status**: pending
 - **DependsOn**: [S2]
-- **Files**: `packages/test-kit/src/lib/time-budget/may-go-unbudgeted.helper.ts`, `packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts`, `tools/scripts/test/test-time-budget.migration.json`, `tools/scripts/test/time-budget-runner-is-shared.spec.ts`, `tools/scripts/ci/spec-duration-budget.script.ts`, `packages/test-kit/README.md`
+- **Files**: `packages/test-kit/src/lib/time-budget/fresh-budget.helper.ts`, `tools/scripts/test/time-budget-runner-is-shared.spec.ts`, `tools/scripts/ci/spec-duration-budget.script.ts`, `packages/test-kit/README.md`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:

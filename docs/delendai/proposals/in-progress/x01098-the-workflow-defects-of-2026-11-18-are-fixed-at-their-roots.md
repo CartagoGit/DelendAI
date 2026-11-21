@@ -101,7 +101,7 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 
 ### S9 — Two specs that failed only under load are deterministic
 - **Status**: pending
-- **Files**: `plugins/quality/tests/src/lib/run-all.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Files**: `plugins/quality/tests/src/lib/run-all.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.spec.ts`, `plugins/proposals/tests/src/lib/proposals/proposals-db-on-node.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: No retry and no larger timeout. The concurrency spec holds every started scope on a deferred promise the test releases, so the peak is reached by construction. The proposals-db unit case reads a small fixture proposals tree instead of the whole repository.
 - acceptance:
@@ -111,7 +111,7 @@ Eight defects the 2026-11-18 session met in land, the shared-checkout guard, the
 ### S10 — close-slice-gate spec is deterministic
 - **Status**: pending
 - **DependsOn**: [S9]
-- **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `new: plugins/proposals/tests/src/lib/_fixtures/fake-gate-runner.ts`, `new: plugins/proposals/tests/src/lib/tools/close-slice-gate.e2e.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Files**: `plugins/proposals/tests/src/lib/tools/close-slice-gate.spec.ts`, `new: plugins/proposals/tests/src/lib/_fixtures/fake-gate-runner.ts`, `new: plugins/proposals/tests/src/lib/tools/close-slice-gate.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: No retry and no larger timeout. The unit spec injects a fake process port and a fake clock through the deps the gate already accepts, so each test drives the runner's states (held, finished green, finished red, gone) by construction instead of racing a spawned process and the wall clock under load.
 - acceptance:

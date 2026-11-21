@@ -86,7 +86,7 @@ External audit (ChatGPT, 2026-11-04, against develop f7f53bf8d), finding 8. Clai
 
 ### S7 — Our own answers are small
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-answer-size.service.ts`, `packages/cli/src/lib/work-answer-size.service.spec.ts`,  `packages/cli/src/contracts/constants/work-answer-size.constant.ts`, `packages/cli/src/contracts/interfaces/work-answer-size.interface.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `plugins/error-reporting/src/lib/startup-notice.helper.ts`, `plugins/error-reporting/tests/startup-notice.spec.ts`, `tools/scripts/test/test-time-budget.migration.json`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-answer-size.service.ts`, `packages/cli/src/lib/work-answer-size.service.spec.ts`,  `packages/cli/src/contracts/constants/work-answer-size.constant.ts`, `packages/cli/src/contracts/interfaces/work-answer-size.interface.ts`, `packages/cli/src/contracts/constants/work-command.constant.ts`, `plugins/error-reporting/src/lib/startup-notice.helper.ts`, `plugins/error-reporting/tests/startup-notice.spec.ts`
 - **Gate**: none
 - acceptance:
   - "work enter, prove, deliver and publish answer agents in a few lines by default (the PR, the failing lines), with the full record behind a flag; measured before and after."

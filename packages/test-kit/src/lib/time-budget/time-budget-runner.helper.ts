@@ -6,7 +6,6 @@
  * of the file are not counted, and nothing is added per test beyond one
  * clock read before and one after.
  */
-import { readFileSync } from 'node:fs';
 import { relative } from 'node:path';
 
 import { type RunnerTestCase, TestRunner } from 'vitest';

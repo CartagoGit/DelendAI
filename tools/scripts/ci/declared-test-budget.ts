@@ -16,9 +16,6 @@ import {
 const PLAIN_CALL =
 	/\b(?:it|test)((?:\.(?:only|skip|fails|concurrent|sequential))*)\s*\(/gu;
 
-/** `it.each(table)(` and its kin, whose name sits after a second `(`. */
-const EACH_CALL = /\b(?:it|test)(?:\.[a-z]+)*\.each\b/gu;
-
 /** A call written inside a string (a fixture) is not a test. */
 const inString = (text: string, at: number): boolean =>
 	/["'`]/u.test(text.charAt(at - 1));
