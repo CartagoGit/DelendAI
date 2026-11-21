@@ -2,10 +2,14 @@
 id: x01104
 title: "The namespace ruleset guard tolerates exclusions the policy does not name yet"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: 0cc1333e-ae26-4d06-beae-7d7b05ec555d
+last-correlation-id: 0cc1333e-ae26-4d06-beae-7d7b05ec555d
+last-transition-from: ready
+last-transition-at: 2026-11-21T00:19:20.559Z
 ---
 
 # x01104 — The namespace ruleset guard tolerates exclusions the policy does not name yet
