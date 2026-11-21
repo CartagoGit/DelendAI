@@ -37,7 +37,7 @@ PR #3373 (x01114): the unit moved x01114 from ready/ to review/ while develop co
 - **Decisions**: none
 - acceptance:
   - "proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep."
-  - "work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or its merge-base content; if it holds edits it removes nothing and refuses naming both paths (\"carry the edits of <stale> into <kept>, then deliver again\"); with no stale copy it changes nothing."
+  - "work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or the content the unit itself moved away (its blob in the parent of the commit that deleted or renamed it); if it holds edits it removes nothing and refuses naming both paths (\"carry the edits of <stale> into <kept>, then deliver again\"); with no stale copy it changes nothing."
 - shipped-in: `8d5eeeba3383`
 - review-state: in_review
 - review-implementer: claude-sonnet-5-5
@@ -45,4 +45,4 @@ PR #3373 (x01114): the unit moved x01114 from ready/ to review/ while develop co
 ## acceptance
 
 - proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep.
-- work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or its merge-base content; if it holds edits it removes nothing and refuses naming both paths ("carry the edits of <stale> into <kept>, then deliver again"); with no stale copy it changes nothing.
+- work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or the content the unit itself moved away (its blob in the parent of the commit that deleted or renamed it); if it holds edits it removes nothing and refuses naming both paths ("carry the edits of <stale> into <kept>, then deliver again"); with no stale copy it changes nothing.

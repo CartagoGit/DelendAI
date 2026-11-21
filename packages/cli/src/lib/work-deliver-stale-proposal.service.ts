@@ -57,20 +57,40 @@ const blobOf = (git: IGitInCheckout, spec: string): string | undefined => {
 };
 
 /**
+ * The blob the unit itself moved away: the stale path's content in the
+ * parent of the commit in HEAD's history that deleted or renamed it.
+ */
+const movedAwayBlob = (
+	git: IGitInCheckout,
+	stale: string,
+): string | undefined => {
+	const moved = git([
+		'log',
+		'-1',
+		'--format=%H',
+		'--diff-filter=DR',
+		'--',
+		stale,
+	]);
+	return moved.ok && moved.out.length > 0
+		? blobOf(git, `${moved.out}^:${stale}`)
+		: undefined;
+};
+
+/**
  * A stale copy carries nothing the kept one lacks when its content is the
- * kept copy's, or is what it was at the merge-base with the integration
- * branch (nobody edited it since the move).
+ * kept copy's, or is exactly what the unit moved away (nobody edited it
+ * since, as develop does after the move).
  */
 const carriesNothingElse = (
 	git: IGitInCheckout,
 	stale: string,
 	kept: string,
-	base: string | undefined,
 ): boolean => {
 	const staleBlob = blobOf(git, `HEAD:${stale}`);
 	if (staleBlob === undefined) return false;
 	if (staleBlob === blobOf(git, `HEAD:${kept}`)) return true;
-	return base !== undefined && staleBlob === blobOf(git, `${base}:${stale}`);
+	return staleBlob === movedAwayBlob(git, stale);
 };
 
 /**
@@ -78,20 +98,14 @@ const carriesNothingElse = (
  * nothing the kept copy lacks. Otherwise nothing is removed and the refusal
  * names both paths: edits are never discarded.
  */
-export const dropStaleProposalCopies = (
-	git: IGitInCheckout,
-	integrationBranch = 'origin/develop',
-): IStaleDrop => {
+export const dropStaleProposalCopies = (git: IGitInCheckout): IStaleDrop => {
 	const listed = git(['ls-files', '--', PROPOSALS_DIR]);
 	if (!listed.ok) return { dropped: [] };
 	const paths = listed.out.split('\n');
 	const stale = staleProposalCopies(paths);
 	if (stale.length === 0) return { dropped: [] };
-	const mergeBase = git(['merge-base', 'HEAD', integrationBranch]);
-	const base =
-		mergeBase.ok && mergeBase.out.length > 0 ? mergeBase.out : undefined;
 	const edited = stale.filter(
-		(path) => !carriesNothingElse(git, path, keptOf(path, paths), base),
+		(path) => !carriesNothingElse(git, path, keptOf(path, paths)),
 	);
 	if (edited.length > 0) {
 		return {

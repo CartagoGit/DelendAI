@@ -39,8 +39,8 @@ describe('dropStaleProposalCopies', () => {
 			const out =
 				args[0] === 'ls-files'
 					? tracked.join('\n')
-					: args[0] === 'merge-base'
-						? 'base'
+					: args[0] === 'log'
+						? (blobs.movedBy ?? '')
 						: args[0] === 'rev-parse'
 							? (blobs[args[args.length - 1] ?? ''] ?? '')
 							: '';
@@ -53,11 +53,12 @@ describe('dropStaleProposalCopies', () => {
 	};
 	const verbs = (ran: string[][]) => ran.map((args) => args[0]);
 
-	it('[<20ms] removes and commits a copy unchanged since the merge-base', () => {
+	it('[<20ms] removes and commits a copy equal to what the unit moved away', () => {
 		const { git, ran } = gitOf({
 			[`HEAD:${stale}`]: 'a',
 			[`HEAD:${kept}`]: 'b',
-			[`base:${stale}`]: 'a',
+			movedBy: 'mv',
+			[`mv^:${stale}`]: 'a',
 		});
 		expect(dropStaleProposalCopies(git)).toEqual({ dropped: [stale] });
 		expect(verbs(ran)).toContain('commit');
@@ -75,7 +76,8 @@ describe('dropStaleProposalCopies', () => {
 		const { git, ran } = gitOf({
 			[`HEAD:${stale}`]: 'edited',
 			[`HEAD:${kept}`]: 'b',
-			[`base:${stale}`]: 'a',
+			movedBy: 'mv',
+			[`mv^:${stale}`]: 'a',
 		});
 		const outcome = dropStaleProposalCopies(git);
 		expect(outcome.dropped).toEqual([]);
@@ -90,5 +92,20 @@ describe('dropStaleProposalCopies', () => {
 		const { git, ran } = gitOf({}, [kept]);
 		expect(dropStaleProposalCopies(git)).toEqual({ dropped: [] });
 		expect(verbs(ran)).toEqual(['ls-files']);
+	});
+
+	it('[<20ms] refuses the #3409 sequence: moved, develop edits the old copy, merged back', () => {
+		// HEAD holds develop's edit ('dev'); the unit moved away 'a'; the
+		// kept copy is the unit's 'b': the edit never reached it.
+		const { git, ran } = gitOf({
+			[`HEAD:${stale}`]: 'dev',
+			[`HEAD:${kept}`]: 'b',
+			movedBy: 'mv',
+			[`mv^:${stale}`]: 'a',
+		});
+		const outcome = dropStaleProposalCopies(git);
+		expect(outcome.dropped).toEqual([]);
+		expect(outcome.refusal).toContain('carry the edits of');
+		expect(verbs(ran)).not.toContain('rm');
 	});
 });
