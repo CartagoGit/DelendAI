@@ -27,7 +27,7 @@ const proposal = (
 });
 
 describe('readFrontmatterField', () => {
-	it('reads a scalar from the leading block', () => {
+	it('[<20ms] reads a scalar from the leading block', () => {
 		expect(
 			readFrontmatterField(
 				proposal('ready/f00284-a.md', 'f00284', 'ready').text,
@@ -36,25 +36,25 @@ describe('readFrontmatterField', () => {
 		).toBe('f00284');
 	});
 
-	it('ignores an id that only appears in the body', () => {
+	it('[<20ms] ignores an id that only appears in the body', () => {
 		const text = '---\nstatus: ready\n---\n\n```yaml\nid: f00284\n```\n';
 		expect(readFrontmatterField(text, 'id')).toBeUndefined();
 	});
 
-	it('returns undefined for a file with no frontmatter at all', () => {
+	it('[<20ms] returns undefined for a file with no frontmatter at all', () => {
 		expect(readFrontmatterField('# just a readme\n', 'id')).toBeUndefined();
 	});
 });
 
 describe('lifecycleRank', () => {
-	it('orders the forward lifecycle ready < in-progress < review < done', () => {
+	it('[<20ms] orders the forward lifecycle ready < in-progress < review < done', () => {
 		const ranks = ['ready', 'in-progress', 'review', 'done'].map((s) =>
 			lifecycleRank(s),
 		);
 		expect(ranks).toEqual([0, 1, 2, 3]);
 	});
 
-	it('treats parked states as not comparable rather than as rank zero', () => {
+	it('[<20ms] treats parked states as not comparable rather than as rank zero', () => {
 		expect(lifecycleRank('paused')).toBeNull();
 		expect(lifecycleRank('blocked')).toBeNull();
 		expect(lifecycleRank('retired')).toBeNull();
@@ -63,7 +63,7 @@ describe('lifecycleRank', () => {
 });
 
 describe('folderOf', () => {
-	it('names the status folder, and (root) for a bare file', () => {
+	it('[<20ms] names the status folder, and (root) for a bare file', () => {
 		expect(folderOf('done/feats/f00284-a.md')).toBe('done');
 		expect(folderOf('ready/f00284-a.md')).toBe('ready');
 		expect(folderOf('README.md')).toBe('(root)');
@@ -71,7 +71,7 @@ describe('folderOf', () => {
 });
 
 describe('collectProposalRecords', () => {
-	it('keeps only files carrying a well-formed proposal id', () => {
+	it('[<20ms] keeps only files carrying a well-formed proposal id', () => {
 		const records = collectProposalRecords([
 			proposal('ready/feats/f00284-a.md', 'f00284', 'ready'),
 			{ relPath: 'README.md', text: '# index\n' },
@@ -80,7 +80,7 @@ describe('collectProposalRecords', () => {
 		expect(records.map((r) => r.id)).toEqual(['f00284']);
 	});
 
-	it('excludes legacy/, the historical archive', () => {
+	it('[<20ms] excludes legacy/, the historical archive', () => {
 		const records = collectProposalRecords([
 			proposal('done/feats/f00284-a.md', 'f00284', 'done'),
 			proposal('legacy/closed/feats/f00284-a.md', 'f00284', 'done'),
@@ -93,7 +93,7 @@ describe('collectProposalRecords', () => {
 });
 
 describe('findDuplicateProposals', () => {
-	it('is ok when every id lives in exactly one place', () => {
+	it('[<20ms] is ok when every id lives in exactly one place', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('ready/feats/f00284-a.md', 'f00284', 'ready'),
@@ -105,7 +105,7 @@ describe('findDuplicateProposals', () => {
 		expect(result.duplicates).toEqual([]);
 	});
 
-	it('flags the exact pair that froze sync_proposals, with both paths', () => {
+	it('[<20ms] flags the exact pair that froze sync_proposals, with both paths', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('ready/feats/f00284-a.md', 'f00284', 'ready'),
@@ -122,7 +122,7 @@ describe('findDuplicateProposals', () => {
 		]);
 	});
 
-	it('names the more advanced copy so the operator knows which to keep', () => {
+	it('[<20ms] names the more advanced copy so the operator knows which to keep', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('ready/feats/f00284-a.md', 'f00284', 'ready'),
@@ -134,7 +134,7 @@ describe('findDuplicateProposals', () => {
 		);
 	});
 
-	it('handles the three-folder case (x00323) and picks the furthest along', () => {
+	it('[<20ms] handles the three-folder case (x00323) and picks the furthest along', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('ready/fixes/x00323-a.md', 'x00323', 'ready'),
@@ -148,7 +148,7 @@ describe('findDuplicateProposals', () => {
 		);
 	});
 
-	it('refuses to name a winner when the copies tie', () => {
+	it('[<20ms] refuses to name a winner when the copies tie', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('ready/feats/f00284-a.md', 'f00284', 'ready'),
@@ -158,7 +158,7 @@ describe('findDuplicateProposals', () => {
 		expect(result.duplicates[0]?.mostAdvanced).toBeNull();
 	});
 
-	it('refuses to name a winner when one copy is parked', () => {
+	it('[<20ms] refuses to name a winner when one copy is parked', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('paused/f00284-a.md', 'f00284', 'paused'),
@@ -168,7 +168,7 @@ describe('findDuplicateProposals', () => {
 		expect(result.duplicates[0]?.mostAdvanced).toBeNull();
 	});
 
-	it('does not report a legacy archive copy as a duplicate of the active one', () => {
+	it('[<20ms] does not report a legacy archive copy as a duplicate of the active one', () => {
 		const result = findDuplicateProposals(
 			collectProposalRecords([
 				proposal('done/feats/f00284-a.md', 'f00284', 'done'),
@@ -180,13 +180,13 @@ describe('findDuplicateProposals', () => {
 });
 
 describe('formatReport', () => {
-	it('reports a clean tree with the count', () => {
+	it('[<20ms] reports a clean tree with the count', () => {
 		const report = formatReport({ scanned: 709, duplicates: [], ok: true });
 		expect(report).toContain('709 proposals');
 		expect(report).toContain('legacy/ excluded');
 	});
 
-	it('lists every path and the copy to keep', () => {
+	it('[<20ms] lists every path and the copy to keep', () => {
 		const report = formatReport(
 			findDuplicateProposals(
 				collectProposalRecords([
@@ -201,7 +201,7 @@ describe('formatReport', () => {
 		expect(report).toContain('sync_proposals');
 	});
 
-	it('says UNDECIDABLE rather than guessing on a tie', () => {
+	it('[<20ms] says UNDECIDABLE rather than guessing on a tie', () => {
 		const report = formatReport(
 			findDuplicateProposals(
 				collectProposalRecords([
@@ -231,7 +231,7 @@ describe('checkProposalUniqueness over a real fixture tree', () => {
 
 	afterEach(() => rmSync(root, { recursive: true, force: true }));
 
-	it('exits 0 on a clean fixture tree', () => {
+	it('[<20ms] exits 0 on a clean fixture tree', () => {
 		write('ready/feats/f00284-a.md', 'f00284', 'ready');
 		write('done/feats/f00500-b.md', 'f00500', 'done');
 		write('legacy/closed/feats/f00001-old.md', 'f00001', 'done');
@@ -240,7 +240,7 @@ describe('checkProposalUniqueness over a real fixture tree', () => {
 		expect(result.scanned).toBe(2);
 	});
 
-	it('catches a duplicate written to disk, and main() exits 1', () => {
+	it('[<20ms] catches a duplicate written to disk, and main() exits 1', () => {
 		write('ready/feats/f00284-a.md', 'f00284', 'ready');
 		write('done/feats/f00284-a.md', 'f00284', 'done');
 		const result = checkProposalUniqueness(root);
