@@ -36,6 +36,7 @@
  *   2  config / input error.
  */
 import { writeFile } from 'node:fs/promises';
+import { extname, isAbsolute, relative, resolve } from 'node:path';
 
 import z from 'zod';
 
@@ -617,6 +618,47 @@ export const isHealthy = (branches: readonly IBranchHealth[]): boolean => {
 	return verified.every(isBranchHealthy);
 };
 
+/**
+ * Where `--output` may write. A relative path must stay inside the
+ * workspace (`cwd`); an absolute path is an explicit choice and is taken
+ * as given. Either way it must be a `.json` file name without NUL bytes.
+ * Returns `undefined` when the path is refused.
+ */
+export const resolveOutputPath = (
+	raw: string,
+	cwd: string = process.cwd(),
+): string | undefined => {
+	if (raw.length === 0 || raw.includes('\0')) return undefined;
+	if (extname(raw).toLowerCase() !== '.json') return undefined;
+	const resolved = resolve(cwd, raw);
+	if (isAbsolute(raw)) return resolved;
+	const rel = relative(cwd, resolved);
+	return rel.startsWith('..') || isAbsolute(rel) ? undefined : resolved;
+};
+
+/** The dashboard's known shape, serialised field by field. */
+export const serialiseDashboard = (
+	dashboard: IDevelopHealthDashboard,
+): string => {
+	const known: IDevelopHealthDashboard = {
+		$schema: String(dashboard.$schema),
+		lastVerifiedAt: dashboard.lastVerifiedAt,
+		ciStatus: dashboard.ciStatus,
+		generatedAt: String(dashboard.generatedAt),
+		sourceSha: dashboard.sourceSha,
+		freshness: dashboard.freshness,
+		source: dashboard.source,
+		protectedBranches: {
+			main: dashboard.protectedBranches.main,
+			develop: dashboard.protectedBranches.develop,
+		},
+		requiredChecks: dashboard.requiredChecks.map(String),
+		discrepancies: dashboard.discrepancies.map(String),
+		note: String(dashboard.note),
+	};
+	return `${JSON.stringify(known, null, 2)}\n`;
+};
+
 export const main = async (argv: readonly string[]): Promise<number> => {
 	const repo = flag(argv, 'repo');
 	const dryRun = hasFlag(argv, 'dry-run');
@@ -625,7 +667,15 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 	const tokenExplicit =
 		explicitToken !== undefined && explicitToken.length > 0;
 	const token = explicitToken ?? process.env.GITHUB_TOKEN;
-	const output = flag(argv, 'output');
+	const outputFlag = flag(argv, 'output');
+	const output =
+		outputFlag === undefined ? undefined : resolveOutputPath(outputFlag);
+	if (outputFlag !== undefined && output === undefined) {
+		err(
+			`verify-develop-health: --output must be a .json path (relative paths stay inside the workspace): ${JSON.stringify(outputFlag)}`,
+		);
+		return 2;
+	}
 
 	if (repo === undefined) {
 		err('verify-develop-health: --repo <owner/repo> is required');
@@ -721,11 +771,7 @@ export const main = async (argv: readonly string[]): Promise<number> => {
 
 	const json = JSON.stringify(report, null, 2);
 	if (output !== undefined) {
-		await writeFile(
-			output,
-			`${JSON.stringify(dashboard, null, 2)}\n`,
-			'utf8',
-		);
+		await writeFile(output, serialiseDashboard(dashboard), 'utf8');
 	}
 	out(json);
 
