@@ -36,7 +36,7 @@ During autonomous review, retiring a review unit left x01016 held by the same ag
 - acceptance:
   - "A Scenario in review-claim.tool.spec.ts proves retiring or reaping a review unit releases its proposal assignment."
   - "A Scenario in review-claim-timeout.spec.ts proves an expired or abandoned claim is not held by a former unit."
-  - "A stale claim refusal names the owner and the exact next action instead of leaving the queue item silently blocked."
+  - "A Scenario in review-claim.tool.spec.ts proves a stale refusal names the former owner and the exact next action instead of leaving the queue item silently blocked."
 
 ### S2 — Reject stale delivery snapshots in review
 - **Status**: pending
@@ -46,13 +46,13 @@ During autonomous review, retiring a review unit left x01016 held by the same ag
 - acceptance:
   - "A Scenario in review-verdict-evidence.spec.ts proves stale Files or commit drift returns verifiable=false and blocks approval."
   - "A Scenario in review-verdict-lifecycle.spec.ts proves a needs-verdict slice with stale delivery is sent back instead of accepted by green evidence."
-  - "Vitest or equivalent specs cover declared-path renames/deletions and effective re-delivery commit selection."
+  - "A Scenario in review-verdict-evidence.spec.ts proves declared-path renames/deletions and effective re-delivery commit selection block stale approval."
 
 ## acceptance
 
 - A Scenario in review-claim.tool.spec.ts proves retiring or reaping a review unit releases its proposal assignment.
 - A Scenario in review-claim-timeout.spec.ts proves an expired or abandoned claim is not held by a former unit.
-- A stale claim refusal names the owner and the exact next action instead of leaving the queue item silently blocked.
+- A stale claim refusal names the former owner and the exact next action instead of leaving the queue item silently blocked.
 - A Scenario in review-verdict-evidence.spec.ts proves stale Files or commit drift returns verifiable=false and blocks approval.
 - A Scenario in review-verdict-lifecycle.spec.ts proves a needs-verdict slice with stale delivery is sent back instead of accepted by green evidence.
-- Vitest or equivalent specs cover declared-path renames/deletions and effective re-delivery commit selection.
+- A Scenario in review-verdict-evidence.spec.ts proves declared-path renames/deletions and effective re-delivery commit selection block stale approval.
