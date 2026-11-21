@@ -128,7 +128,6 @@
 		"packages/cli/src/commands/groups/notification.spec.ts",
 		"packages/cli/src/commands/groups/plugin-new.spec.ts",
 		"packages/cli/src/commands/groups/plugins.spec.ts",
-		"packages/cli/src/commands/groups/proposals.spec.ts",
 		"packages/cli/src/commands/groups/quality.spec.ts",
 		"packages/cli/src/commands/groups/release.spec.ts",
 		"packages/cli/src/commands/groups/router-dashboard.spec.ts",
