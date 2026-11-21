@@ -252,6 +252,19 @@ describe('deliverUnit, a proposal already in review', () => {
 		]);
 	});
 
+	it('[<20ms] reopens the proposal before the proof and ends handing it to review, writing no status itself', async () => {
+		const { calls, value } = ports({ review: inReview });
+		await deliverUnit(value);
+		const transitions = calls.filter(
+			(call) => call === 'in-progress' || call === 'review',
+		);
+		expect(transitions).toEqual(['in-progress', 'review']);
+		expect(calls.indexOf('in-progress')).toBeLessThan(
+			calls.indexOf('prove'),
+		);
+		expect(calls.indexOf('prove')).toBeLessThan(calls.indexOf('review'));
+	});
+
 	it('[<20ms] reports the pull request the publication answered with', async () => {
 		const { value } = ports({ review: inReview });
 		const result = await deliverUnit({

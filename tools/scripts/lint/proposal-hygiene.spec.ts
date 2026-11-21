@@ -215,6 +215,14 @@ describe('delivered but still in progress', () => {
 		expect(
 			unitProposalOf('delendai/wip/a/implement/x00001-all-g2/the-fix'),
 		).toBe('x00001');
+		expect(
+			unitProposalOf('wip/implement/claude-sonnet-5-5/x00001-S1/the-fix'),
+		).toBe('x00001');
+		expect(
+			unitProposalOf(
+				'wip/implement/claude-sonnet-5-5/x00001-S1-G2/the-fix',
+			),
+		).toBe('x00001');
 		expect(unitProposalOf('develop')).toBeUndefined();
 	});
 

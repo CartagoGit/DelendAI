@@ -191,9 +191,13 @@ export const checkProposal = (
 	return findings;
 };
 
-/** The proposal a unit branch works on, if the branch is a unit's. */
+/**
+ * The proposal a unit branch works on, if the branch is a unit's. A unit's
+ * branch is `wip/<kind>/<agent>/<id>-<slice>[-G<n>]/<topic>`, the
+ * generation present only from the second attempt, in either case.
+ */
 export const unitProposalOf = (branch: string): string | undefined =>
-	/\/([a-z]\d{5})-[^/]+-g\d+\//u.exec(branch)?.[1];
+	/\/([a-z]\d{5})-[^/]+(?:-g\d+)?\//iu.exec(branch)?.[1];
 
 const currentBranch = (): string =>
 	readGit(process.cwd(), ['rev-parse', '--abbrev-ref', 'HEAD']) ?? '';
