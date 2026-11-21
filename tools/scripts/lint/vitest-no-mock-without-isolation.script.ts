@@ -119,9 +119,9 @@ const main = (): number => {
 		);
 		return 0;
 	}
-	const growth = Object.keys(current).filter(
-		(file) => current[file] > (baseline[file] ?? 0),
-	);
+	const growth = Object.entries(current)
+		.filter(([file, count]) => count > (baseline[file] ?? 0))
+		.map(([file]) => file);
 	if (growth.length > 0) {
 		const report = growth.flatMap((file) =>
 			(where[file] ?? []).map((line) => `  ${file}:${String(line)}`),
