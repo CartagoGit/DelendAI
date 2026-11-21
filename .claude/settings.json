@@ -1,0 +1,64 @@
+{
+	"$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+	"permissions": {
+		"allow": [
+			"Read",
+			"Edit",
+			"Write",
+			"NotebookEdit",
+			"WebFetch(domain:*)",
+			"WebSearch",
+			"Bash",
+			"Bash(gh api:*)",
+			"Bash(gh pr:*)",
+			"Bash(gh release:*)",
+			"Bash(git push:*)",
+			"Bash(git tag:*)",
+			"Bash(git fetch:*)",
+			"TaskOutput",
+			"TaskStop",
+			"KillShell",
+			"Glob",
+			"Agent",
+			"Grep",
+			"TodoWrite",
+			"Skill",
+			"Skill(code-review)",
+			"Skill(code-review:*)",
+			"Skill(code-review *)"
+		],
+		"deny": [],
+		"defaultMode": "acceptEdits",
+		"additionalDirectories": []
+	},
+
+	"skipDangerousModePermissionPrompt": true,
+
+	"defaultMode": "bypassPermissions",
+
+	"env": {
+		"BUN_NO_PROMPT": "1",
+		"CI": "1",
+		"CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
+	},
+	"autoCompactEnabled": true,
+	"autoCompactWindow": 300000,
+	"idleCompaction": true,
+	"autoMemoryEnabled": true,
+	"bashOutputMaxChars": 8000,
+	"hooks": {
+		"PreCompact": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "printf '%s\\n' 'Preserva todas las instrucciones y correcciones vigentes del usuario, decisiones, sus motivos, alternativas descartadas, restricciones, invariantes y criterios de aceptacion de esta conversacion.' 'Conserva el estado de tareas, agentes, dependencias, ramas, commits, PR, evidencias, bloqueos y siguientes pasos. Distingue decisiones confirmadas de propuestas e hipotesis.' 'Incluye referencias a las fuentes originales para recuperar detalles que no quepan en el resumen. No cambies decisiones por simplificar.'"
+					}
+				]
+			}
+		]
+	},
+
+	"mcpServers": {}
+}

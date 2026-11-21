@@ -1,0 +1,157 @@
+import { formatToolName } from '@delendai/client';
+import { ProposalsSnapshotSource } from '../lib/proposals-snapshot';
+import { renderProposalDetailHtml } from '../views/proposal-detail-webview';
+import { resolveViewLang, viewCopyFor } from '../i18n/view-copy.strings';
+import type { ICommandDeps } from './types';
+import { renderJsonHtml, showCommandError } from './types';
+
+export const OPEN_PROPOSAL_COMMAND = 'delendai.openProposal';
+
+/**
+ * f00079 S5 (closes a00040 H6): proposal id format. The canonical repo
+ * id is a single lowercase letter (the track prefix, e.g. `f`/`a`/`r`)
+ * followed by five digits — the same shape the proposals linter
+ * enforces (`tools/scripts/lint/proposals.script.ts`). The proposal
+ * text spelled this `^\d{5}$`, but that predates the prefix scheme and
+ * does not match the ids the board actually emits (`f00079`), so we
+ * align with the linter instead.
+ */
+export const PROPOSAL_ID_REGEX = /^[a-z]\d{5}$/;
+
+export const isProposalId = (value: unknown): value is string =>
+	typeof value === 'string' && PROPOSAL_ID_REGEX.test(value);
+
+interface IProposalBoardEntry {
+	readonly id: string;
+	readonly status: string;
+	readonly slices: ReadonlyArray<{
+		readonly sliceId: string;
+		readonly status: string;
+		readonly owner: string | null;
+	}>;
+	readonly claimableSliceIds?: readonly string[];
+}
+
+interface IProposalBoardOutput {
+	readonly proposals: readonly IProposalBoardEntry[];
+}
+
+/**
+ * Validate the optional `proposalId` argument the command receives.
+ * Returns the validated id, or a typed reason when it is missing /
+ * malformed. `undefined` id is NOT an error — it is the legacy
+ * "open the whole board" entry point (e.g. the command palette).
+ */
+export type ProposalIdCheck =
+	| { readonly kind: 'absent' }
+	| { readonly kind: 'valid'; readonly proposalId: string }
+	| { readonly kind: 'malformed'; readonly proposalId: string };
+
+export const checkProposalId = (raw: unknown): ProposalIdCheck => {
+	if (raw === undefined || raw === null || raw === '') {
+		return { kind: 'absent' };
+	}
+	if (!isProposalId(raw)) {
+		return { kind: 'malformed', proposalId: String(raw) };
+	}
+	return { kind: 'valid', proposalId: raw };
+};
+
+export const registerOpenProposalCommand = (deps: ICommandDeps) =>
+	deps.vscode.commands.registerCommand(
+		OPEN_PROPOSAL_COMMAND,
+		// f00079 S5 (a00040 H6): the board's TreeDataProvider nodes invoke
+		// this command with `arguments: [proposal.id]`. The previous
+		// handler took no argument and always rendered the global board,
+		// ignoring which proposal the user clicked. We now read and
+		// validate the id, and scope the rendered view to it.
+		async (rawProposalId?: unknown) => {
+			const check = checkProposalId(rawProposalId);
+			if (check.kind === 'malformed') {
+				await deps.vscode.window.showErrorMessage?.(
+					`delendai: malformed proposal id "${check.proposalId}".`,
+				);
+				return;
+			}
+			try {
+				if (check.kind === 'valid') {
+					// f00097 S3: render the rich read-only detail webview
+					// (Header / Slices / Diagnose / Logs) instead of a raw
+					// JSON dump. Reuse the shared snapshot source when the
+					// host provides one so the detail draws from the same
+					// TTL cache as the sidebar board.
+					const source =
+						deps.proposalsSource ??
+						new ProposalsSnapshotSource({
+							client: deps.client,
+							...(deps.namespacePrefix === undefined
+								? {}
+								: { namespacePrefix: deps.namespacePrefix }),
+							...(deps.workspaceRoot === undefined
+								? {}
+								: { workspaceRoot: deps.workspaceRoot }),
+						});
+					const detail = await source.fetchProposalDetail(
+						check.proposalId,
+					);
+					// Not found ⟺ it is neither on the actionable board nor
+					// known to `proposal_diagnose` (absent bag, or an explicit
+					// `ok:false`). A done/retired proposal is off the board but
+					// still diagnosable, so it renders.
+					if (
+						detail.summary === undefined &&
+						(detail.diagnose === undefined ||
+							detail.diagnose.ok === false)
+					) {
+						await deps.vscode.window.showErrorMessage?.(
+							`delendai: proposal "${check.proposalId}" not found.`,
+						);
+						return;
+					}
+					const sinkHandled =
+						(await deps.detailSink?.('proposal', detail)) === true;
+					if (sinkHandled) return;
+					const panel = deps.vscode.window.createWebviewPanel(
+						'delendaiProposals',
+						`delendai Proposal ${check.proposalId}`,
+						deps.vscode.ViewColumn.One,
+						{ enableScripts: false },
+					);
+					panel.webview.html = renderProposalDetailHtml(
+						detail,
+						viewCopyFor(
+							resolveViewLang(
+								deps.globalState?.get<unknown>('delendai:lang'),
+							),
+						),
+					);
+					return;
+				}
+
+				// Absent id (command palette) → the whole board, still a
+				// script-free JSON dump. The sidebar tree is the rich board.
+				const board = await deps.client.request<
+					Record<string, never>,
+					IProposalBoardOutput
+				>(
+					formatToolName(
+						deps.namespacePrefix,
+						'proposals_proposal_board',
+					),
+					{},
+				);
+				const panel = deps.vscode.window.createWebviewPanel(
+					'delendaiProposals',
+					'delendai Proposals',
+					deps.vscode.ViewColumn.One,
+					{ enableScripts: false },
+				);
+				panel.webview.html = renderJsonHtml(
+					'delendai Proposals',
+					board,
+				);
+			} catch (err) {
+				await showCommandError(deps.vscode, 'open proposals', err);
+			}
+		},
+	);
