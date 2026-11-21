@@ -1,0 +1,33 @@
+---
+/**
+ * pages/[lang]/tools.astro — translated `/<lang>/tools` index (f00057).
+ *
+ * One entry in the i18n matrix: the English copy lives at the root
+ * `/tools.astro`, every other locale at `/<lang>/tools.astro`. The
+ * `<PageShell>` helper owns the lang guard, the lang-prefixed base
+ * path, the page title and the breadcrumb; this file just wires the
+ * shell to the body (`ToolsSection`).
+ *
+ * Adding a new translated page follows the same recipe: copy this file,
+ * swap `t.<pageKey>` and the Section component, and add the
+ * corresponding translations to each `src/i18n/langs/*.ts` file.
+ */
+import ToolsSection from '#COMPONENTS/ToolsSection.astro';
+import PageShell from '#COMPONENTS/PageShell.astro';
+import { langStaticPaths, resolveLang, localePath } from '#LIB/page';
+import { useTranslations } from '#I18N/ui';
+
+export const getStaticPaths = langStaticPaths;
+
+const lang = resolveLang(Astro.params.lang);
+const t = useTranslations(lang);
+---
+
+<PageShell
+	lang={lang}
+	title={t.tools.title}
+	base={import.meta.env.BASE_URL.replace(/\/$/, '')}
+	crumbs={[{ label: t.nav.tools, href: localePath(lang, 'tools') }]}
+>
+	<ToolsSection lang={lang} heading={t.tools.title} />
+</PageShell>
