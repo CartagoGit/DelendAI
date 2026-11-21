@@ -17,8 +17,11 @@ import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { LockContentionError } from '@delendai/core/public';
+
 import { parseQueue } from '@delendai/proposals/lib/agents/persistent-task-queue';
 import {
+	buildAgentNamesRegistration,
 	runAgentNames,
 	type IAgentNamesToolOptions,
 } from '@delendai/proposals/lib/tools/agent-names.tool';
@@ -145,7 +148,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		);
 	};
 
-	it('N concurrent watchdog enqueues land N entries — none lost (barrier)', async () => {
+	it('[<1500ms] N concurrent watchdog enqueues land N entries — none lost (barrier)', async () => {
 		const N = 8;
 		// Barrier: all transactions launched in the same tick, racing the
 		// same queue file. Pre-mutex, most persists overwrote each other.
@@ -163,7 +166,71 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		);
 	});
 
-	it('the expire sweep racing concurrent enqueues clobbers nothing', async () => {
+	it('[<500ms] names the entries not enqueued when the queue mutex cannot be taken', async () => {
+		const registryPath = join(root, 'registry-0.json');
+		const lockPath = join(root, 'agent-lock-0.json');
+		writeFileSync(registryPath, zombieRegistry('task-0'));
+		writeFileSync(lockPath, zombieLock('task-0'));
+		const result = await runAgentNames(
+			{
+				action: 'reconcile',
+				dry_run: false,
+				stale_after_minutes: 10,
+				now: new Date().toISOString(),
+			},
+			{
+				...namesOptions(registryPath, lockPath),
+				queueMutex: (path) =>
+					Promise.reject(new LockContentionError(path, 1)),
+			},
+		);
+		const report = JSON.parse(result.content[0]?.text ?? '{}') as {
+			notEnqueued?: string[];
+		};
+		expect(report.notEnqueued).toEqual(['zombie-gc-event-task-0']);
+		const queue = await parseQueue(queuePath, closedTasksPath, root);
+		expect(queue.entries).toEqual([]);
+	});
+
+	it('[<500ms] the registered tool runs the same reconcile and assigns around a cooldown', async () => {
+		const registryPath = join(root, 'registry-reg.json');
+		const lockPath = join(root, 'agent-lock-reg.json');
+		const cooling = JSON.parse(zombieRegistry('task-cool')) as {
+			assignments: Array<Record<string, unknown>>;
+		};
+		cooling.assignments[0] = {
+			...cooling.assignments[0],
+			status: 'cooldown',
+			last_seen: new Date().toISOString(),
+			cooldown_until: new Date(Date.now() + 3_600_000).toISOString(),
+		};
+		writeFileSync(registryPath, JSON.stringify(cooling));
+		writeFileSync(lockPath, JSON.stringify({ version: 1, in_flight: [] }));
+		let handler: ToolHandler | undefined;
+		const server = createFakeToolServer({
+			onRegisterTool: (call) => {
+				handler = call.handler as ToolHandler;
+			},
+		});
+		await buildAgentNamesRegistration(
+			namesOptions(registryPath, lockPath),
+		).register(server);
+		if (handler === undefined)
+			throw new Error('agent_names not registered');
+		const assigned = await handler({
+			action: 'assign',
+			task_id: 'task-new',
+			agent_slot: 'implementation_runner',
+		});
+		expect(assigned.content[0]?.text).toContain('task-new');
+		const reconciled = await handler({
+			action: 'reconcile',
+			dry_run: true,
+		});
+		expect(reconciled.content[0]?.text).not.toContain('notEnqueued');
+	});
+
+	it('[<1500ms] the expire sweep racing concurrent enqueues clobbers nothing', async () => {
 		const N = 6;
 		const repair = await captureRepairHandler({
 			namespacePrefix: 'proposals',
@@ -188,7 +255,7 @@ describe('task-queue concurrent RMW (x00097 S2)', () => {
 		}
 	});
 
-	it('serialized transactions keep the one-entry-per-taskId parser invariant', async () => {
+	it('[<500ms] serialized transactions keep the one-entry-per-taskId parser invariant', async () => {
 		// The same zombie reconciled twice concurrently must not append a
 		// duplicate taskId (parseQueue hard-fails on duplicates). Both
 		// reconciles must share the same lock file so each one releases

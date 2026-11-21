@@ -98,6 +98,7 @@ export interface DelendaiProposalsAgentNamesOutput {
 	agent_slot?: string;
 	summary?: unknown;
 	released?: string[];
+	notEnqueued?: string[];
 	assignments?: unknown;
 	tree?: unknown;
 	adopted?: unknown;
