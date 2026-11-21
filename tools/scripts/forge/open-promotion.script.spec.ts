@@ -86,6 +86,7 @@ const forgeWith = (answers: {
 	readonly openPullRequest?: string;
 	readonly knownRepair?: string;
 	readonly create?: string | { readonly error: string };
+	readonly dependabot?: string;
 }) => {
 	const asked: string[][] = [];
 	const forge: IForge = (args) => {
@@ -118,6 +119,9 @@ const forgeWith = (answers: {
 			return typeof alerts === 'string'
 				? { ok: true, out: alerts }
 				: { ok: false, error: alerts.error };
+		}
+		if (call.includes('/dependabot/alerts')) {
+			return { ok: true, out: answers.dependabot ?? '' };
 		}
 		if (call.startsWith('issue list')) {
 			return { ok: true, out: answers.knownRepair ?? '' };
@@ -409,7 +413,7 @@ describe('openPromotion', () => {
 		expect(result.lines[0]).toContain('no permission');
 	});
 
-	it('[<50ms] asks the forge nothing and says nothing when no cadence is declared', async () => {
+	it('[<50ms] asks the forge nothing and says why when no cadence is declared', async () => {
 		const { forge, asked } = forgeWith({});
 		const result = await openPromotion({
 			root: project('delivered'),
@@ -417,7 +421,70 @@ describe('openPromotion', () => {
 			forge,
 			apply: true,
 		});
-		expect(result).toEqual({ outcome: 'nothing-declared', lines: [] });
+		expect(result.outcome).toBe('nothing-declared');
+		expect(result.lines).toEqual([
+			expect.stringContaining('promotion.schedule is not declared'),
+		]);
 		expect(asked).toEqual([]);
+	});
+
+	it.each([
+		[undefined, 'there is no delendai.config.json'],
+		['{ not json', 'does not parse'],
+		[
+			configOf(
+				{ schedule: 'on-ready' },
+				{ integration: 'main', release: 'main' },
+			),
+			'same',
+		],
+	])('[<50ms] names why %#: nothing is declared', async (configText, why) => {
+		const { forge } = forgeWith({});
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText,
+			forge,
+			apply: true,
+		});
+		expect(result.outcome).toBe('nothing-declared');
+		expect(result.lines[0]).toContain(why);
+	});
+
+	const LOCK = '{ "packages": { "astro": ["astro@5.2.0", "", {}, "x"] } }';
+	const ALERTS = [
+		{ number: 84, package: 'astro', patched: '5.1.0', severity: 'high' },
+		{ number: 85, package: 'astro', patched: '5.9.0', severity: 'low' },
+	]
+		.map((alert) => JSON.stringify(alert))
+		.join('\n');
+
+	it('[<260ms] carries the alerts the integration branch fixes into the body and names the rest', async () => {
+		const { forge, asked } = forgeWith({ dependabot: ALERTS });
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText: configOf({ schedule: 'on-ready' }),
+			forge,
+			apply: true,
+			integrationLock: () => LOCK,
+		});
+		const body = created(asked)?.[created(asked)!.indexOf('--body') + 1];
+		expect(result.outcome).toBe('opened');
+		expect(body).toContain('closes Dependabot alert #84 astro (high)');
+		expect(body).not.toContain('#85');
+		expect(result.lines.join('\n')).toContain(
+			'#85 astro (low) stays open: the integration branch is below 5.9.0',
+		);
+	});
+
+	it('[<260ms] says the alerts could not be read instead of dropping them', async () => {
+		const { forge } = forgeWith({ dependabot: 'not json' });
+		const result = await openPromotion({
+			root: project('delivered'),
+			configText: configOf({ schedule: 'on-ready' }),
+			forge,
+			apply: false,
+			integrationLock: () => LOCK,
+		});
+		expect(result.lines.join('\n')).toContain('could not be read');
 	});
 });

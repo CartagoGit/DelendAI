@@ -24,7 +24,8 @@
  *
  * Branch names, the cadence and the blocking gates come from the
  * project's configuration. A project with one branch, or that declares
- * no cadence, has nothing to do here and is told nothing.
+ * no cadence, has nothing to do here and is told why (a land project must
+ * declare one: promotion-declared.spec.ts).
  *
  *   bun tools/scripts/forge/open-promotion.script.ts [--apply]
  */
@@ -47,6 +48,12 @@ import {
 import { declaredRoadmap } from '../gen/roadmap-projection.lib';
 import { repoRoot } from '../lib/repo-root';
 import { RELEASE_FIX, releaseGaps } from '../release/release-pr-check.script';
+import {
+	alertsOfForgeOutput,
+	classifyAlerts,
+	fixedAlertLines,
+	unfixedAlertLines,
+} from './dependabot-fixes.lib';
 import {
 	failedZonesOf,
 	REPAIR_TITLE_PREFIX,
@@ -80,15 +87,34 @@ export type IPromotionOutcome =
 /** What the forge says when a project has no code scanning at all. */
 const NO_CODE_SCANNING = /no analysis found|not enabled|\b404\b|Not Found/iu;
 
-/** The promotion a configuration declares, or nothing. */
-export const promotionPlanOf = (
+/** Why a configuration declares no promotion, in words a person can act on. */
+export type INothingDeclared =
+	| 'no-config'
+	| 'no-schedule'
+	| 'unparsable-config'
+	| 'one-branch';
+
+const NOTHING_DECLARED_REASON: Readonly<Record<INothingDeclared, string>> = {
+	'no-config': 'there is no delendai.config.json',
+	'no-schedule':
+		'plugins.roadmap.options.promotion.schedule is not declared (declare "on-ready")',
+	'unparsable-config': 'delendai.config.json does not parse',
+	'one-branch':
+		'the integration and release branches are the same, so there is nowhere to promote to',
+};
+
+/** The promotion a configuration declares, or why it declares none. */
+export const promotionDeclaration = (
 	configText: string | undefined,
-): IPromotionPlan | undefined => {
-	const schedule = declaredRoadmap(configText)?.promotion?.schedule;
-	if (configText === undefined || schedule === undefined) return undefined;
+):
+	| { readonly plan: IPromotionPlan }
+	| { readonly nothing: INothingDeclared } => {
+	if (configText === undefined) return { nothing: 'no-config' };
 	const { value, errors } = parseJsonc(configText);
 	// A config that does not parse declares no promotion.
-	if (errors.length > 0) return undefined;
+	if (errors.length > 0) return { nothing: 'unparsable-config' };
+	const schedule = declaredRoadmap(configText)?.promotion?.schedule;
+	if (schedule === undefined) return { nothing: 'no-schedule' };
 	const config = value as {
 		development?: Record<string, unknown>;
 	};
@@ -98,13 +124,23 @@ export const promotionPlanOf = (
 			: { development: config.development },
 	);
 	const { integration, release } = policy.branches;
-	if (release === integration) return undefined;
+	if (release === integration) return { nothing: 'one-branch' };
 	return {
-		integration,
-		release,
-		schedule,
-		requiredChecks: policy.integration.requiredChecks,
+		plan: {
+			integration,
+			release,
+			schedule,
+			requiredChecks: policy.integration.requiredChecks,
+		},
 	};
+};
+
+/** The promotion a configuration declares, or nothing. */
+export const promotionPlanOf = (
+	configText: string | undefined,
+): IPromotionPlan | undefined => {
+	const declaration = promotionDeclaration(configText);
+	return 'plan' in declaration ? declaration.plan : undefined;
 };
 
 /**
@@ -256,12 +292,14 @@ export const roadmapVerdict = async (
 export const promotionPullRequest = (
 	plan: IPromotionPlan,
 	readiness: IPromotionReadiness,
+	alertLines: readonly string[] = [],
 ): { readonly title: string; readonly body: string } => ({
 	title: `release: promote ${plan.integration} into ${plan.release}${readiness.version === undefined ? '' : ` (${readiness.version})`}`,
 	body: [
 		`Opened on the cadence the project declares (\`${plan.schedule}\`), because the promotion is ready:`,
 		'',
 		...readiness.evidence.map((line) => `- ${line}`),
+		...alertLines.map((line) => `- ${line}`),
 		'',
 		`This pull request was only opened. Nothing was merged, bumped or tagged; the gate of \`${plan.release}\` decides.`,
 	].join('\n'),
@@ -335,6 +373,45 @@ const fileRepair = (
 			};
 };
 
+/** The Dependabot alerts a promotion closes (for its body) and those it cannot (for the output). */
+const dependabotReport = (
+	plan: IPromotionPlan,
+	forge: IForge,
+	integrationLock: ((plan: IPromotionPlan) => string | undefined) | undefined,
+): { readonly body: readonly string[]; readonly output: readonly string[] } => {
+	const lock = integrationLock?.(plan);
+	if (lock === undefined) return { body: [], output: [] };
+	const answer = forge([
+		'api',
+		'--paginate',
+		'repos/{owner}/{repo}/dependabot/alerts?state=open&per_page=100',
+		'--jq',
+		'.[] | {number, package: .security_vulnerability.package.name, patched: .security_vulnerability.first_patched_version.identifier, severity: .security_vulnerability.severity}',
+	]);
+	if (!answer.ok) {
+		return {
+			body: [],
+			output: [
+				`  - Dependabot alerts could not be read: ${answer.error}`,
+			],
+		};
+	}
+	try {
+		const fixes = classifyAlerts(alertsOfForgeOutput(answer.out), lock);
+		return {
+			body: fixedAlertLines(fixes),
+			output: unfixedAlertLines(fixes).map((line) => `  - ${line}`),
+		};
+	} catch {
+		return {
+			body: [],
+			output: [
+				'  - Dependabot alerts could not be read: unparsable answer',
+			],
+		};
+	}
+};
+
 export const openPromotion = async (input: {
 	readonly root: string;
 	readonly configText: string | undefined;
@@ -342,14 +419,24 @@ export const openPromotion = async (input: {
 	readonly apply: boolean;
 	/** What the integration branch lacks to be a release; omitted, nothing is asked. */
 	readonly releaseGaps?: (plan: IPromotionPlan) => readonly string[];
+	/** The integration branch's `bun.lock`; omitted, no alert is judged. */
+	readonly integrationLock?: (plan: IPromotionPlan) => string | undefined;
 }): Promise<{
 	readonly outcome: IPromotionOutcome;
 	readonly lines: readonly string[];
 }> => {
-	const plan = promotionPlanOf(input.configText);
-	if (plan === undefined || input.configText === undefined) {
-		return { outcome: 'nothing-declared', lines: [] };
+	const declaration = promotionDeclaration(input.configText);
+	if ('nothing' in declaration || input.configText === undefined) {
+		const reason =
+			'nothing' in declaration
+				? NOTHING_DECLARED_REASON[declaration.nothing]
+				: NOTHING_DECLARED_REASON['no-config'];
+		return {
+			outcome: 'nothing-declared',
+			lines: [`open-promotion: nothing to do, ${reason}.`],
+		};
 	}
+	const { plan } = declaration;
 	const route = `${plan.integration} into ${plan.release}`;
 	const runs = headCheckRuns(plan, input.forge);
 	const checks = checkConclusions(plan, input.forge, runs);
@@ -407,6 +494,7 @@ export const openPromotion = async (input: {
 		openAlerts: openAlertCount(plan, input.forge),
 		roadmap: await roadmapVerdict(input.root, input.configText),
 	});
+	const alerts = dependabotReport(plan, input.forge, input.integrationLock);
 	const notReleased = (input.releaseGaps?.(plan) ?? []).map(
 		(gap) => `${gap} — ${RELEASE_FIX}`,
 	);
@@ -418,16 +506,18 @@ export const openPromotion = async (input: {
 				...[...readiness.heldBackBy, ...notReleased].map(
 					(line) => `  - ${line}`,
 				),
+				...alerts.output,
 			],
 		};
 	}
-	const pullRequest = promotionPullRequest(plan, readiness);
+	const pullRequest = promotionPullRequest(plan, readiness, alerts.body);
 	if (!input.apply) {
 		return {
 			outcome: 'would-open',
 			lines: [
 				`open-promotion: ${route} is ready; --apply would open "${pullRequest.title}".`,
 				...readiness.evidence.map((line) => `  - ${line}`),
+				...alerts.output,
 			],
 		};
 	}
@@ -448,6 +538,7 @@ export const openPromotion = async (input: {
 				outcome: 'opened',
 				lines: [
 					`open-promotion: opened ${opened.out.trim()} — ${route}.`,
+					...alerts.output,
 				],
 			}
 		: {
@@ -482,6 +573,24 @@ const gh: IForge = (args) => {
 	}
 };
 
+/** A file at a ref, or nothing when the ref does not hold it. */
+const gitShow = (
+	root: string,
+	ref: string,
+	path: string,
+): string | undefined => {
+	try {
+		return execFileSync('git', ['show', `${ref}:${path}`], {
+			cwd: root,
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+			maxBuffer: 64 * 1024 * 1024,
+		});
+	} catch {
+		return undefined;
+	}
+};
+
 const main = async (): Promise<number> => {
 	const root = repoRoot();
 	let configText: string | undefined;
@@ -496,6 +605,8 @@ const main = async (): Promise<number> => {
 		forge: gh,
 		apply: process.argv.includes('--apply'),
 		releaseGaps: (plan) => releaseGaps(root, `origin/${plan.release}`),
+		integrationLock: (plan) =>
+			gitShow(root, `origin/${plan.integration}`, 'bun.lock'),
 	});
 	for (const line of result.lines) console.log(line);
 	// Held back is an answer, not a failure of the run; only a pull request

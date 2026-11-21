@@ -365,6 +365,7 @@
 				"file": "docs/delendai/ROADMAP.md",
 				"versionFile": "packages/core/package.json",
 				"promotion": {
+					"schedule": "on-ready",
 					"blockingGates": ["proposal-done"]
 				}
 			}
