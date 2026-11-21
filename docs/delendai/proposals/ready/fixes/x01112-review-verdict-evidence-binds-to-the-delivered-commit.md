@@ -30,16 +30,14 @@ While reviewing x01016, a 42-test pass was observed in the current review worktr
 
 ### S1 — Bind review evidence to the exact delivery
 - **Status**: pending
-- **Files**: `packages/core/src/lib/reviews/**`, `packages/core/tests/src/lib/reviews/**`, `plugins/proposals/**`
+- **Files**: `plugins/proposals/src/lib/tools/authoring/proposal-review.tool.ts`, `plugins/proposals/src/lib/tools/authoring/review-verdict-support.tool.ts`, `plugins/proposals/src/lib/services/review-procedure.ts`, `plugins/proposals/tests/src/lib/tools/review-verdict-evidence.spec.ts`
 - **Gate**: type
 - **Decisions**: Define a delivery snapshot that verifies commitHash exists, resolves to the exact delivered diff, and pins test execution to that snapshot.
 - acceptance:
-  - "A review cannot record approve or request_changes with test evidence unless the evidence records the exact delivery commit and test runner validates that snapshot."
-  - "A stale worktree or post-delivery drift produces a blocked/verifiable=false result instead of a green verdict."
-  - "Vitest or equivalent specs cover exact commit binding and stale-drift refusal."
+  - "A stale worktree or post-delivery drift makes review-verdict-evidence.spec.ts return verifiable=false instead of recording approval or request_changes evidence."
+  - "A Scenario in review-verdict-evidence.spec.ts proves that a verdict is rejected when commitHash and test evidence do not resolve to the same delivering commit."
 
 ## acceptance
 
-- A review cannot record approve or request_changes with test evidence unless the evidence records the exact delivery commit and test runner validates that snapshot.
-- A stale worktree or post-delivery drift produces a blocked/verifiable=false result instead of a green verdict.
-- Vitest or equivalent specs cover exact commit binding and stale-drift refusal.
+- A stale worktree or post-delivery drift makes review-verdict-evidence.spec.ts return verifiable=false instead of recording approval or request_changes evidence.
+- proposal-review.tool.ts and review-verdict-support.tool.ts reject a verdict when commitHash and test evidence do not resolve to the same delivering commit.
