@@ -32,14 +32,14 @@ Seen 3 times: the last submit removes the unit worktree, then the CLI lazily imp
 
 ### S1 — Preload the answer sizer before the worktree can go
 - **Status**: pending
-- **Files**: `packages/cli/src/commands/work.command.ts`, `new:packages/cli/src/lib/work-answer-sizer.service.ts`, `new:packages/cli/src/lib/work-answer-sizer.service.spec.ts`
+- **Files**: `packages/cli/src/commands/work.command.ts`, `new:packages/cli/src/contracts/interfaces/loaded-once.interface.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "[<50ms] packages/cli/src/lib/work-answer-sizer.service.spec.ts: a sizer preloaded before the removal still sizes the answer after it and never loads again"
-  - "[<50ms] packages/cli/src/lib/work-answer-sizer.service.spec.ts: an answer without preloading loads once"
+  - "[<50ms] packages/cli/src/commands/work.command.spec.ts: a sizer preloaded before the removal still sizes the answer after it and never loads again"
+  - "[<50ms] packages/cli/src/commands/work.command.spec.ts: an answer without preloading loads once"
 
 ## acceptance
 
-- [<50ms] packages/cli/src/lib/work-answer-sizer.service.spec.ts: a sizer preloaded before the removal still sizes the answer after it and never loads again
-- [<50ms] packages/cli/src/lib/work-answer-sizer.service.spec.ts: an answer without preloading loads once
+- [<50ms] packages/cli/src/commands/work.command.spec.ts: a sizer preloaded before the removal still sizes the answer after it and never loads again
+- [<50ms] packages/cli/src/commands/work.command.spec.ts: an answer without preloading loads once

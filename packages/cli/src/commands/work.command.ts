@@ -48,9 +48,8 @@ import {
 	flagsOfLiveUnit,
 	liveUnitsOf,
 } from '../lib/work-live-unit.service';
+import type { ILoadedOnce } from '../contracts/interfaces/loaded-once.interface';
 import { runWorkProgress } from '../lib/work-progress.service';
-import { WORKTREE_ENDING_VERBS } from '../contracts/constants/worktree-ending-verbs.constant';
-import { loadedOnce } from '../lib/work-answer-sizer.service';
 
 /**
  * Where an agent that just entered a unit reads what its slice asks for.
@@ -149,6 +148,38 @@ const runRenameNamespace = async (
 	return report.refused === undefined
 		? { code: 0, data: report }
 		: { code: EXIT_CODE.VALIDATION, error: report.message };
+};
+
+/**
+ * The last submit removes the unit worktree, and a module imported lazily
+ * from it afterwards fails with ENOENT, losing the end-of-run answer. The
+ * verbs that can end a unit start these loads up front; every later use
+ * awaits the same promise.
+ */
+const WORKTREE_ENDING_VERBS: ReadonlySet<string> = new Set([
+	'deliver',
+	'publish',
+	'prove',
+]);
+
+/** Whether a run of `verb` can remove the unit worktree it was started in. */
+export const endsWorktree = (verb: string): boolean =>
+	WORKTREE_ENDING_VERBS.has(verb);
+
+/** Loads `load` at most once, on `preload()` rather than on first use. */
+export const loadedOnce = <T>(load: () => Promise<T>): ILoadedOnce<T> => {
+	let pending: Promise<T> | undefined;
+	const get = (): Promise<T> => {
+		pending ??= load();
+		return pending;
+	};
+	return {
+		preload: () => {
+			// An unused failed load must not become an unhandled rejection.
+			get().catch(() => undefined);
+		},
+		get,
+	};
 };
 
 /** Read after the transition to review, when the worktree may be gone: preloaded by the verbs that end a unit. */
@@ -370,7 +401,7 @@ export const createWorkCommand = (): ICliCommand => ({
 		const answerSize = loadedOnce(
 			() => import('../lib/work-answer-size.service'),
 		);
-		if (WORKTREE_ENDING_VERBS.includes(args[0] ?? '')) {
+		if (endsWorktree(args[0] ?? '')) {
 			answerSize.preload();
 			deliveredRemote.preload();
 		}

@@ -12,6 +12,8 @@ import { createNoopContext } from '../lib/noop-context.factory';
 import {
 	createWorkCommand,
 	deliverPortsOf,
+	endsWorktree,
+	loadedOnce,
 	printPathOnly,
 	withSlicesView,
 } from './work.command';
@@ -307,5 +309,66 @@ describe('revalidatePortsOf', () => {
 			'tool',
 		);
 		await expect(ports.enter()).rejects.toThrow();
+	});
+});
+
+/** A module store that fails every load once the worktree is removed. */
+const worktree = () => {
+	const events: string[] = [];
+	let removed = false;
+	return {
+		events,
+		remove: () => {
+			removed = true;
+			events.push('removed');
+		},
+		load: async () => {
+			events.push('load');
+			if (removed) throw new Error('ENOENT');
+			return { sized: 'answer' };
+		},
+	};
+};
+
+describe('loadedOnce', () => {
+	it('[<20ms] a sizer preloaded before the removal still sizes the answer after it and never loads again', async () => {
+		const unit = worktree();
+		const loaded = loadedOnce(unit.load);
+		loaded.preload();
+		unit.remove();
+		expect((await loaded.get()).sized).toBe('answer');
+		expect(unit.events).toEqual(['load', 'removed']);
+	});
+
+	it('[<20ms] an answer without preloading loads once', async () => {
+		const unit = worktree();
+		const loaded = loadedOnce(unit.load);
+		loaded.preload();
+		await loaded.get();
+		await loaded.get();
+		expect(unit.events).toEqual(['load']);
+	});
+
+	it('[<20ms] loads on first use without a preload', async () => {
+		const unit = worktree();
+		const loaded = loadedOnce(unit.load);
+		expect(unit.events).toEqual([]);
+		await loaded.get();
+		expect(unit.events).toEqual(['load']);
+	});
+
+	it('[<20ms] a failed preload surfaces on use, not as an unhandled rejection', async () => {
+		const loaded = loadedOnce(async () => {
+			throw new Error('boom');
+		});
+		loaded.preload();
+		await expect(loaded.get()).rejects.toThrow('boom');
+	});
+});
+
+describe('endsWorktree', () => {
+	it('[<20ms] is true for the verbs that can end a unit only', () => {
+		expect(['deliver', 'publish', 'prove'].every(endsWorktree)).toBe(true);
+		expect(['enter', 'status'].some(endsWorktree)).toBe(false);
 	});
 });
