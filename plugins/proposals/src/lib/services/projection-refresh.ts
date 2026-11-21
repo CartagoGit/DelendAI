@@ -1,0 +1,157 @@
+/**
+ * projection-refresh.ts — the second projection, refreshed by the same
+ * act as the first.
+ *
+ * ## The divergence was structural
+ *
+ * There are two projections of the proposal markdown: the registry at
+ * `<cacheDir>/proposals/index.json`, and the SQLite database. The reader
+ * prefers SQLite and falls back to the registry whenever the two
+ * disagree.
+ *
+ * Only one of them was ever refreshed. `sync:proposals` runs from the
+ * pre-commit hook on every commit that touches a proposal and rebuilds
+ * the registry; the database was refreshed only by an MCP tool nobody
+ * invokes by hand. So every proposal added between one manual reconcile
+ * and the next made the database staler, and the reader fell back.
+ *
+ * Measured on this repository, before this change:
+ *
+ * ```
+ * stats: {"reads":1,"fallbacks":1,"last":"fallback-divergence","lastDivergence":12}
+ * notices: SQLite projection diverges … serving JSON instead
+ *          (x00583, x00585, x00587, x00589, x00590, x00591, x00592,
+ *           x00593, x00594, x00595, x00596, x00598)
+ * ```
+ *
+ * Twelve proposals — every one written that day. The shadow could never
+ * reach parity, so the cutover it exists to justify could never happen,
+ * and "prefer SQLite" was a preference that never once applied.
+ *
+ * One act refreshes both. The markdown is the source; the registry and
+ * the database are both views of it, taken at the same moment from the
+ * same tree, at the same commit.
+ *
+ * ## Why a failure here does not fail the commit
+ *
+ * The registry is written first and is correct on its own — the reader
+ * falls back to it, which is exactly the behaviour this removes the NEED
+ * for without removing the ability. A database that could not be
+ * reconciled is a stale cache, not a lost proposal, so it is reported
+ * and the commit proceeds. Failing the commit would trade a recoverable
+ * staleness for an unrecoverable interruption.
+ */
+import { join } from 'node:path';
+
+import type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+import { projectionParity } from '../proposals/index-reader-parity';
+import { reconcileProposalsDb } from '../tools/db-reconcile.tool';
+
+export type { IProjectionRefresh } from '../contracts/interfaces/projection-refresh.interface';
+
+/**
+ * Bring the SQLite projection up to the same markdown the registry was
+ * just built from. Never throws.
+ */
+export const reconcileProjection = (input: {
+	readonly root: string;
+	/** Repository-relative proposals directory, from the path layout. */
+	readonly proposalsDir: string;
+	/** Injected in tests; the real reconciler by default. */
+	readonly reconcile?: typeof reconcileProposalsDb;
+}): IProjectionRefresh => {
+	const reconcile = input.reconcile ?? reconcileProposalsDb;
+	try {
+		const output = reconcile({
+			workspaceRoot: input.root,
+			proposalsDirAbs: join(input.root, input.proposalsDir),
+		});
+		// A reconcile that ran and refused to promote is not a refresh.
+		// It used to be reported as one, so a projection the reader would
+		// keep rejecting was announced as brought level.
+		if (output.status !== 'ok') {
+			return {
+				status: 'failed',
+				lines: [
+					`sync:proposals  the sqlite projection was NOT refreshed: ${output.reason ?? 'the reconciler rejected the candidate'}`,
+					'                The registry is written and correct; the reader falls back to it.',
+				],
+			};
+		}
+		return {
+			status: 'refreshed',
+			lines: [
+				`sync:proposals  sqlite projection: ${String(output.filesReconciled)} of ${String(output.filesScanned)} file(s) at ${output.sourceCommit.slice(0, 9)}`,
+				...(output.excluded.length === 0
+					? []
+					: [
+							`                ${String(output.excluded.length)} excluded: ${output.excluded
+								.slice(0, 3)
+								.map((entry) => entry.path)
+								.join(
+									', ',
+								)}${output.excluded.length > 3 ? ' …' : ''}`,
+						]),
+			],
+		};
+	} catch (error) {
+		return {
+			status: 'failed',
+			lines: [
+				`sync:proposals  the sqlite projection was NOT refreshed: ${error instanceof Error ? error.message : String(error)}`,
+				'                The registry is written and correct; the reader falls back to it.',
+				'                Fix with: bun run sync:proposals',
+			],
+		};
+	}
+};
+
+/**
+ * Bring the SQLite projection level with the registry just written, and
+ * only when it is not.
+ *
+ * This is what every writer of the registry calls, through
+ * `syncProposalRegistry`, so no path that changes a proposal can leave
+ * the database behind. It used to be called from two places with two
+ * rules — the MCP tool refreshed when the registry changed, the commit
+ * hook refreshed whenever there were no errors — while the seven tools
+ * that transition, create or close a proposal refreshed the registry
+ * alone. A transition made over MCP therefore always left the reader
+ * falling back to JSON until the next commit, and in a project with no
+ * commit hook, until someone ran the sync by hand.
+ *
+ * "Level" is the reader's own verdict (`projectionParity`), so the
+ * writer refreshes in exactly the cases the reader would otherwise fall
+ * back. A full reconcile costs seconds whether or not anything changed,
+ * which is why asking first matters: the question is a pair of reads.
+ */
+export const levelProjection = async (input: {
+	readonly root: string;
+	readonly indexPathAbs: string;
+	/** Repository-relative proposals directory, from the path layout. */
+	readonly proposalsDir: string;
+	/** Injected in tests; the reader's own verdict by default. */
+	readonly parity?: typeof projectionParity;
+	/** Injected in tests; the real reconciler by default. */
+	readonly reconcile?: typeof reconcileProposalsDb;
+}): Promise<IProjectionRefresh> => {
+	const parity = input.parity ?? projectionParity;
+	let verdict: Awaited<ReturnType<typeof projectionParity>>;
+	try {
+		verdict = await parity(input.indexPathAbs, {
+			workspaceRoot: input.root,
+		});
+	} catch {
+		// A parity question that cannot be answered is not an answer of
+		// "level": refresh, which never throws, and let it say what failed.
+		verdict = 'unavailable';
+	}
+	if (verdict === 'parity') return { status: 'skipped', lines: [] };
+	return reconcileProjection({
+		root: input.root,
+		proposalsDir: input.proposalsDir,
+		...(input.reconcile === undefined
+			? {}
+			: { reconcile: input.reconcile }),
+	});
+};

@@ -1,0 +1,4 @@
+{
+	"$comment": "Lockfile entries that are not registry-sourced with a hash, or are younger than the bunfig.toml cooldown, and are accepted anyway. Each names its package (and optionally its version), its reason and the date it is looked at again; an expired one fails lint:lockfile-provenance.",
+	"exceptions": []
+}

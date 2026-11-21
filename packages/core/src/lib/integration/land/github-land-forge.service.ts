@@ -1,0 +1,384 @@
+/**
+ * github-land-forge.service.ts — `ILandForge` on GitHub, through the `gh` CLI the
+ * forge seam already runs. Each method is one REST call; a refusal that
+ * the contract names (409 head moved, 405/422 not mergeable) is an answer,
+ * any other failure throws so the pass ends and the next one reads again.
+ *
+ * GitLab maps the same calls: pipelines for checks, `PUT .../merge` with
+ * `sha`, `PUT .../rebase`, labels, notes and merge requests.
+ */
+import type {
+	ILandCheck,
+	ILandCommandRunner,
+	ILandForge,
+	ILandMerge,
+	ILandPullRequest,
+} from './land.interface';
+import { runForgeRead } from './forge-read-retry.helper';
+import { LandBranchGoneError } from './land-branch-gone.helper';
+import {
+	LAND_MAX_PAGES,
+	LAND_PAGE_SIZE,
+	LAND_WORKFLOW_FILE,
+} from './land.constant';
+
+interface IRawPull {
+	number: number;
+	state: string;
+	draft?: boolean;
+	merged?: boolean;
+	body?: string | null;
+	labels?: { name: string }[];
+	head: { ref: string; sha: string; repo?: { full_name?: string } | null };
+}
+
+interface IRawCheckRun {
+	id?: number;
+	name: string;
+	conclusion: string | null;
+	html_url?: string;
+}
+
+const NOT_FOUND = 404;
+const FAILED_CONCLUSIONS = new Set(['failure', 'timed_out']);
+const SPEC_PATH = /\.spec\.[cm]?[jt]sx?$/u;
+
+/** A land batch's head: `queue/batch-N`, under any namespace or none. */
+const BATCH_HEAD = /(?:^|\/)queue\/batch-/u;
+
+export const createGithubLandForge = (input: {
+	readonly slug: string;
+	readonly integration: string;
+	readonly run: ILandCommandRunner;
+	/** Pauses between read attempts; the composition root supplies the clock. */
+	readonly wait: (ms: number) => Promise<void>;
+	readonly mergeMethod?: 'merge' | 'squash' | 'rebase';
+}): ILandForge => {
+	const { slug, integration, run } = input;
+	const firstLine = (text: string): string =>
+		text
+			.split('\n')
+			.find((line) => line.trim() !== '')
+			?.trim() ?? '';
+	const answered = (
+		what: string,
+		status: number,
+		message: string | undefined,
+	): string =>
+		`${what} answered ${String(status)}${message ? `: ${message}` : ''}`;
+	const call = async (
+		method: string,
+		path: string,
+		fields: Readonly<Record<string, string>> = {},
+	): Promise<{ status: number; body: unknown; message?: string }> => {
+		const { result, attempts, exhausted } = await runForgeRead({
+			method,
+			wait: input.wait,
+			once: () =>
+				run([
+					'api',
+					'--method',
+					method,
+					`repos/${slug}/${path}`,
+					...Object.entries(fields).flatMap(([k, v]) => [
+						'-f',
+						`${k}=${v}`,
+					]),
+				]),
+		});
+		if (exhausted)
+			throw new Error(
+				`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'} (${String(attempts)} attempts)`,
+			);
+		if (result.exitCode === 0) {
+			return {
+				status: 200,
+				body:
+					result.stdout.trim() === ''
+						? {}
+						: JSON.parse(result.stdout),
+			};
+		}
+		const status = Number(
+			/HTTP (\d{3})/u.exec(`${result.stderr}${result.stdout}`)?.[1],
+		);
+		if (Number.isInteger(status))
+			return {
+				status,
+				body: undefined,
+				message: firstLine(result.stderr).replace(/^gh: /u, ''),
+			};
+		throw new Error(
+			`forge call ${method} ${path} failed: ${result.stderr.trim() || result.spawnError || 'no answer'}`,
+		);
+	};
+	const ok = async <T>(path: string): Promise<T> => {
+		const { status, body, message } = await call('GET', path);
+		if (status !== 200)
+			throw new Error(answered(`GET ${path}`, status, message));
+		return body as T;
+	};
+	/**
+	 * Every item of a listing, page after page: a pass that read only the
+	 * first hundred pull requests or check runs judged on part of the facts.
+	 * Bounded, so a runaway listing ends the pass instead of looping.
+	 */
+	const all = async <T>(
+		path: string,
+		itemsOf: (page: unknown) => readonly T[] = (page) =>
+			page as readonly T[],
+	): Promise<readonly T[]> => {
+		const items: T[] = [];
+		for (let page = 1; page <= LAND_MAX_PAGES; page += 1) {
+			const got = itemsOf(
+				await ok<unknown>(
+					`${path}${path.includes('?') ? '&' : '?'}per_page=${String(LAND_PAGE_SIZE)}&page=${String(page)}`,
+				),
+			);
+			items.push(...got);
+			if (got.length < LAND_PAGE_SIZE) return items;
+		}
+		throw new Error(
+			`GET ${path} has more than ${String(LAND_MAX_PAGES * LAND_PAGE_SIZE)} items; the pass ends rather than judge on part of them.`,
+		);
+	};
+	const baseOf = async (pr: IRawPull): Promise<string> =>
+		(
+			await ok<{ merge_base_commit: { sha: string } }>(
+				`compare/${integration}...${pr.head.sha}`,
+			)
+		).merge_base_commit.sha;
+	/** Who pushed a head: its commit's author login, absent when GitHub names none. */
+	const headAuthorOf = async (
+		sha: string,
+	): Promise<{ readonly headAuthor?: string }> => {
+		const login = (
+			await ok<{ author?: { login?: string } | null }>(`commits/${sha}`)
+		).author?.login;
+		return login === undefined ? {} : { headAuthor: login };
+	};
+	const view = async (pr: IRawPull): Promise<ILandPullRequest> => ({
+		number: pr.number,
+		headRef: pr.head.ref,
+		headSha: pr.head.sha,
+		draft: pr.draft === true,
+		state: pr.state === 'open' ? 'open' : 'closed',
+		merged: pr.merged === true,
+		labels: (pr.labels ?? []).map((l) => l.name),
+		body: pr.body ?? '',
+		...(pr.head.repo?.full_name !== undefined &&
+		pr.head.repo.full_name.toLowerCase() !== slug.toLowerCase()
+			? { crossRepository: true }
+			: {}),
+		testedBase: await baseOf(pr),
+		...(await headAuthorOf(pr.head.sha)),
+	});
+	const pulls = (query: string): Promise<readonly IRawPull[]> =>
+		all<IRawPull>(`pulls?base=${integration}&${query}`);
+	return {
+		integrationTip: async () => {
+			const { status, body, message } = await call(
+				'GET',
+				`branches/${integration}`,
+			);
+			if (status === NOT_FOUND)
+				throw new LandBranchGoneError(integration);
+			if (status !== 200)
+				throw new Error(
+					answered(`GET branches/${integration}`, status, message),
+				);
+			return (body as { commit: { sha: string } }).commit.sha;
+		},
+		requiredChecks: async () =>
+			(
+				await ok<
+					{
+						type: string;
+						parameters?: {
+							required_status_checks?: { context: string }[];
+						};
+					}[]
+				>(`rules/branches/${integration}`)
+			).flatMap((rule) =>
+				rule.type === 'required_status_checks'
+					? (rule.parameters?.required_status_checks ?? []).map(
+							(c) => c.context,
+						)
+					: [],
+			),
+		landRuns: async () =>
+			(
+				await ok<{ workflow_runs: { id: number; status: string }[] }>(
+					`actions/workflows/${encodeURIComponent(LAND_WORKFLOW_FILE)}/runs?branch=${encodeURIComponent(integration)}&per_page=${String(LAND_PAGE_SIZE)}`,
+				)
+			).workflow_runs.map(({ id, status }) => ({ id, status })),
+		openPullRequests: async () =>
+			Promise.all(
+				(await pulls('state=open'))
+					// A batch under any namespace, or none: `queue/batch-` has no
+					// leading slash when the project has no namespace.
+					.filter((pr) => !BATCH_HEAD.test(pr.head.ref))
+					.map(view),
+			),
+		// Every open batch, and the most recently closed ones: a red verdict
+		// matters on the tip it was given on, which a closed batch older than
+		// the last page of them no longer stands on.
+		batchPullRequests: async (prefix) =>
+			Promise.all(
+				[
+					...(await pulls('state=open')),
+					...(await ok<IRawPull[]>(
+						`pulls?base=${integration}&state=closed&sort=updated&direction=desc&per_page=${String(LAND_PAGE_SIZE)}`,
+					)),
+				]
+					.filter(
+						(pr, index, list) =>
+							[prefix]
+								.flat()
+								.some((each) =>
+									pr.head.ref.startsWith(`${each}batch-`),
+								) &&
+							list.findIndex((o) => o.number === pr.number) ===
+								index,
+					)
+					.map(view),
+			),
+		pullRequest: async (number) =>
+			view(await ok<IRawPull>(`pulls/${String(number)}`)),
+		checks: async (sha): Promise<readonly ILandCheck[]> => {
+			const runs = await all<IRawCheckRun>(
+				`commits/${sha}/check-runs`,
+				(page) => (page as { check_runs: IRawCheckRun[] }).check_runs,
+			);
+			return Promise.all(
+				runs.map(async (run) => {
+					const check: ILandCheck = {
+						name: run.name,
+						conclusion: run.conclusion,
+						url: run.html_url,
+					};
+					if (
+						run.id === undefined ||
+						!FAILED_CONCLUSIONS.has(run.conclusion ?? '')
+					)
+						return check;
+					// The vitest annotations of a red shard name its failing specs.
+					const specs = [
+						...new Set(
+							(
+								await all<{ path?: string }>(
+									`check-runs/${String(run.id)}/annotations`,
+								)
+							).flatMap((note) =>
+								note.path !== undefined &&
+								SPEC_PATH.test(note.path)
+									? [note.path]
+									: [],
+							),
+						),
+					];
+					return specs.length > 0
+						? { ...check, failingSpecs: specs }
+						: check;
+				}),
+			);
+		},
+		merge: async (number, sha): Promise<ILandMerge> => {
+			const { status } = await call(
+				'PUT',
+				`pulls/${String(number)}/merge`,
+				{
+					sha,
+					merge_method: input.mergeMethod ?? 'merge',
+				},
+			);
+			return status === 200
+				? 'merged'
+				: status === 409
+					? 'head-moved'
+					: 'refused';
+		},
+		addLabel: async (number, label) => {
+			await call('POST', `issues/${String(number)}/labels`, {
+				'labels[]': label,
+			});
+		},
+		removeLabel: async (number, label) => {
+			await call(
+				'DELETE',
+				`issues/${String(number)}/labels/${encodeURIComponent(label)}`,
+			);
+		},
+		comment: async (number, text) => {
+			await call('POST', `issues/${String(number)}/comments`, {
+				body: text,
+			});
+		},
+		comments: async (number) =>
+			(
+				await all<{ body?: string }>(
+					`issues/${String(number)}/comments`,
+				)
+			).map((entry) => entry.body ?? ''),
+		openPullRequest: async ({ head, title, body }) =>
+			(
+				(
+					await call('POST', 'pulls', {
+						head,
+						base: integration,
+						title,
+						body,
+					})
+				).body as {
+					number: number;
+				}
+			).number,
+		updatePullRequest: async (number, body) => {
+			await call('PATCH', `pulls/${String(number)}`, { body });
+		},
+		closePullRequest: async (number) => {
+			await call('PATCH', `pulls/${String(number)}`, { state: 'closed' });
+		},
+		reopenPullRequest: async (number, headSha) => {
+			const [events, commit] = await Promise.all([
+				all<{ event?: string; created_at?: string }>(
+					`issues/${String(number)}/events`,
+				),
+				ok<{ commit: { committer?: { date?: string } } }>(
+					`commits/${headSha}`,
+				),
+			]);
+			const pushedAt = Date.parse(commit.commit.committer?.date ?? '');
+			// A reopen after the head's commit is this head's one reopen.
+			if (
+				events.some(
+					(event) =>
+						event.event === 'reopened' &&
+						Date.parse(event.created_at ?? '') >= pushedAt,
+				)
+			)
+				return false;
+			await call('PATCH', `pulls/${String(number)}`, {
+				state: 'closed',
+			});
+			await call('PATCH', `pulls/${String(number)}`, { state: 'open' });
+			return true;
+		},
+		dispatchWorkflow: async (workflow, ref, inputs = {}) =>
+			(
+				await call(
+					'POST',
+					`actions/workflows/${encodeURIComponent(workflow)}/dispatches`,
+					{
+						ref,
+						...Object.fromEntries(
+							Object.entries(inputs).map(([k, v]) => [
+								`inputs[${k}]`,
+								v,
+							]),
+						),
+					},
+				)
+			).status === 200,
+	};
+};
