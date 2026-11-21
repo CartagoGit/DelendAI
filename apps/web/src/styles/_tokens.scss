@@ -1,0 +1,13 @@
+// _tokens.scss — design tokens for the site (CSS custom props + radii/maxw).
+//
+// Themes (5 palettes) live in _themes.scss.  Anything that varies by theme
+// belongs there; anything that is invariant (radii, layout max width,
+// font stack) lives here.
+//
+// All values are exposed as CSS custom properties on `:root` so they can be
+// consumed from any partial without @use (we keep imports explicit per file
+// for tree-shaking and IDE navigation).
+:root {
+	--radius: 12px;
+	--maxw: 68rem;
+}
