@@ -3,6 +3,10 @@
  * (26 commands) and a representative sample of flag→tool mappings,
  * including the positional + required-flag validations. Recording-stub ctx.
  */
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { EXIT_CODE } from '../../contracts/constants/exit-code.constant';
@@ -405,6 +409,28 @@ describe('proposals group (f00046 S7)', async () => {
 				slices: [{ id: 'S1' }],
 			},
 		],
+		[
+			'proposals create',
+			[
+				'--title=T',
+				'--why=W',
+				'--non-goals=["a, b","c"]',
+				'--slices=[{"sliceId":"S1","files":["f.ts"],"acceptance":["x.spec.ts"]}]',
+			],
+			'delendai_proposals_create_proposal',
+			{
+				title: 'T',
+				why: 'W',
+				nonGoals: ['a, b', 'c'],
+				slices: [
+					{
+						sliceId: 'S1',
+						files: ['f.ts'],
+						acceptance: ['x.spec.ts'],
+					},
+				],
+			},
+		],
 	] as const)(
 		'%s maps its flags onto its tool',
 		async (name, args, tool, expected) => {
@@ -413,6 +439,66 @@ describe('proposals group (f00046 S7)', async () => {
 			expect(calls[0]).toEqual({ tool, args: expected });
 		},
 	);
+
+	it('[<20ms] proposals create reads the full input from --from and lets flags win', async () => {
+		const dir = mkdtempSync(join(tmpdir(), 'proposals-create-'));
+		const file = join(dir, 'input.json');
+		writeFileSync(
+			file,
+			JSON.stringify({
+				title: 'File title',
+				why: 'file why',
+				nonGoals: ['n1'],
+				slices: [
+					{
+						sliceId: 'S1',
+						files: ['a.ts'],
+						acceptance: ['a.spec.ts'],
+					},
+				],
+			}),
+		);
+		const { ctx, calls } = buildStubContext();
+		await find('proposals create').run(
+			[`--from=${file}`, '--why=flag why'],
+			ctx,
+		);
+		rmSync(dir, { recursive: true, force: true });
+		expect(calls[0]).toEqual({
+			tool: 'delendai_proposals_create_proposal',
+			args: {
+				title: 'File title',
+				why: 'flag why',
+				nonGoals: ['n1'],
+				slices: [
+					{
+						sliceId: 'S1',
+						files: ['a.ts'],
+						acceptance: ['a.spec.ts'],
+					},
+				],
+			},
+		});
+	});
+
+	it('[<20ms] proposals create refuses an unreadable --from file', async () => {
+		const { ctx, calls } = buildStubContext();
+		const result = await find('proposals create').run(
+			['--from=/nonexistent/input.json'],
+			ctx,
+		);
+		expect(calls).toHaveLength(0);
+		expect(result.code).not.toBe(EXIT_CODE.OK);
+	});
+
+	it('[<20ms] proposals create takes a plain --non-goals string as one goal', async () => {
+		const { ctx, calls } = buildStubContext();
+		await find('proposals create').run(
+			['--title=T', '--non-goals=just one'],
+			ctx,
+		);
+		expect(calls[0]?.args).toEqual({ title: 'T', nonGoals: ['just one'] });
+	});
 
 	it.each([
 		'proposals create',
