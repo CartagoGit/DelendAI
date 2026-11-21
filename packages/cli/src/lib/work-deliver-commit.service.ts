@@ -1,0 +1,80 @@
+/**
+ * work-deliver-commit.service.ts — the tool commits what the tool wrote.
+ *
+ * `work deliver` moves the proposal to in-progress through the proposals
+ * tool, which rewrites the proposal's document. When the tool left that
+ * write uncommitted, the proof then refused the dirty tree, and the
+ * startup reconciler could commit it under `chore(wip): keep the
+ * uncommitted work…`, a subject the verdict lint reads as hand-written.
+ * So the write is committed here, under the tool's own subject, before
+ * anything else runs. Only paths that were clean before the call are
+ * taken: a file somebody else left dirty stays theirs.
+ */
+import type { IGitInCheckout } from '../contracts/interfaces/git-in-checkout.interface';
+
+/** The paths `git status` lists as changed or untracked. */
+export const dirtyPathsOf = (git: IGitInCheckout): ReadonlySet<string> => {
+	const status = git([
+		'status',
+		'--porcelain',
+		'-z',
+		'--untracked-files=all',
+	]);
+	if (!status.ok) return new Set();
+	const entries = status.out.split('\0');
+	const paths = new Set<string>();
+	for (let index = 0; index < entries.length; index += 1) {
+		const entry = entries[index] ?? '';
+		if (entry.length <= 3) continue;
+		// The runner trims the output, so a first entry written ` D path`
+		// reaches here as `D path`: the path starts at the first space.
+		paths.add(entry.slice(entry[2] === ' ' ? 3 : 2));
+		// Under -z a rename or copy is followed by its source path, bare:
+		// a proposal transition is a rename, and slicing that entry too
+		// turned docs/… into s/….
+		if (entry[0] === 'R' || entry[0] === 'C') {
+			const source = entries[index + 1];
+			if (source !== undefined && source.length > 0) paths.add(source);
+			index += 1;
+		}
+	}
+	return paths;
+};
+
+/** The subject a tool's own commit carries. */
+export const toolCommitSubject = (tool: string, detail: string): string =>
+	`chore(delendai): ${tool} ${detail}`;
+
+/**
+ * Commit the paths a tool call changed, given those dirty before it.
+ * `undefined` when it wrote nothing; the commit refusal otherwise.
+ */
+export const commitToolWrites = (
+	git: IGitInCheckout,
+	dirtyBefore: ReadonlySet<string>,
+	subject: string,
+): string | undefined => {
+	const written = [...dirtyPathsOf(git)].filter(
+		(path) => !dirtyBefore.has(path),
+	);
+	if (written.length === 0) return undefined;
+	const staged = git(['add', '--', ...written]);
+	if (!staged.ok) return staged.out || 'git add failed';
+	const committed = git(['commit', '-q', '-m', subject, '--', ...written]);
+	return committed.ok ? undefined : committed.out || 'git commit failed';
+};
+
+/**
+ * Run a tool call and commit what it wrote: the tool's answer, or a
+ * refusal carrying the commit's reason when the commit failed.
+ */
+export const answerCommittingWrites = async (
+	git: IGitInCheckout,
+	subject: string,
+	call: () => Promise<unknown>,
+): Promise<unknown> => {
+	const dirtyBefore = dirtyPathsOf(git);
+	const answer = await call();
+	const refusal = commitToolWrites(git, dirtyBefore, subject);
+	return refusal === undefined ? answer : { ok: false, reason: refusal };
+};

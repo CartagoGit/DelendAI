@@ -1,0 +1,48 @@
+---
+id: x01120
+title: "A proposal moved ready to review in a unit survives a concurrent edit of its ready copy on develop"
+kind: fix
+status: review
+type: proposal
+track: general
+date: 2026-11-21
+last-transition-id: b2625a61-6ef3-4bf1-ae23-3a5770c186c3
+last-correlation-id: b2625a61-6ef3-4bf1-ae23-3a5770c186c3
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T10:16:30.517Z
+---
+
+# x01120 — A proposal moved ready to review in a unit survives a concurrent edit of its ready copy on develop
+
+## goal
+
+When develop edits the ready/ copy of a proposal that a unit moved to review/, the merge ref holds exactly one file for it, so proposal-uniqueness and the proposals lint stay green.
+
+## why
+
+PR #3373 (x01114): the unit moved x01114 from ready/ to review/ while develop concurrently edited the ready/ copy. Git merged the rename and the edit as a modify/delete-style result that keeps both files, so the merge ref has the proposal in two state folders and tools/scripts/lint/proposal-uniqueness.script.ts fails. Root cause hypothesis: a proposal's state is its folder, and git has no notion that the move must win over a later edit of the old path; nothing re-applies the move after develop is merged, and nothing on the unit detects the stale copy before publishing. Checked docs/delendai/proposals: x00529 only made transitions leave no orphan copy inside one tree; no proposal covers the cross-branch merge.
+
+## non-goals
+
+- Changing which folder a status maps to
+
+## slices
+
+- global_gate: none
+
+### S1 — Publishing detects a stale second copy of a moved proposal and re-applies the move
+- **Status**: review
+- **Files**: `tools/scripts/lint/proposal-uniqueness.script.ts`, `tools/scripts/lint/proposal-uniqueness.script.spec.ts`, `packages/cli/src/lib/work-deliver.service.ts`, `packages/cli/src/lib/work-deliver.service.spec.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.ts`, `packages/cli/src/lib/work-deliver-stale-proposal.service.spec.ts`, `packages/cli/src/contracts/interfaces/work-deliver.interface.ts`, `packages/cli/src/contracts/interfaces/stale-proposal-drop.interface.ts`, `packages/cli/src/commands/work.command.ts`, `packages/cli/src/lib/work-deliver-precheck.service.spec.ts`
+- **Gate**: type
+- **Decisions**: none
+- acceptance:
+  - "proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep."
+  - "work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or the content the unit itself moved away (its blob in the parent of the commit that deleted or renamed it); if it holds edits it removes nothing and refuses naming both paths (\"carry the edits of <stale> into <kept>, then deliver again\"); with no stale copy it changes nothing."
+- shipped-in: `8d5eeeba3383`
+- review-state: in_review
+- review-implementer: claude-sonnet-5-5
+
+## acceptance
+
+- proposal-uniqueness.script.spec.ts: a tree holding one proposal id in ready/ and review/ is reported with both paths and the folder its frontmatter status names as the one to keep.
+- work-deliver.service.spec.ts: when a proposal file stands in two status folders, deliver removes the earlier copy before it proves only if that copy equals the kept copy or the content the unit itself moved away (its blob in the parent of the commit that deleted or renamed it); if it holds edits it removes nothing and refuses naming both paths ("carry the edits of <stale> into <kept>, then deliver again"); with no stale copy it changes nothing.
