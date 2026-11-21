@@ -22,8 +22,25 @@ import type {
 
 const NAMESPACE = '*';
 
+/** Drops block comments with a linear scan; an unterminated one runs to the end. */
+const stripBlockComments = (text: string): string => {
+	const parts: string[] = [];
+	let from = 0;
+	for (;;) {
+		const open = text.indexOf('/*', from);
+		if (open === -1) {
+			parts.push(text.slice(from));
+			return parts.join('');
+		}
+		parts.push(text.slice(from, open));
+		const close = text.indexOf('*/', open + 2);
+		if (close === -1) return parts.join('');
+		from = close + 2;
+	}
+};
+
 const stripComments = (text: string): string =>
-	text.replace(/\/\*[\s\S]*?\*\//gu, '').replace(/^\s*\/\/.*$/gmu, '');
+	stripBlockComments(text).replace(/^[ \t]*\/\/.*$/gmu, '');
 
 /** Every way a module names another, and what it declares itself. Pure. */
 export const factsOf = (

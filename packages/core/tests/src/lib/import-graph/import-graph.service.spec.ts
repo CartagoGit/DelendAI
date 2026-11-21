@@ -10,6 +10,7 @@ import {
 	storedImportGraph,
 } from '@delendai/core/lib/import-graph/import-graph-cache.service';
 import {
+	factsOf,
 	affectedFiles,
 	affectedFilesIn,
 	buildImportGraph,
@@ -121,5 +122,41 @@ describe('the task reach', () => {
 			consumers: ['p/b.ts'],
 			specs: ['p/a.spec.ts'],
 		});
+	});
+});
+
+describe('factsOf comment stripping', () => {
+	const resolve = (specifier: string): string => specifier;
+
+	it('[<200ms] drops a terminated block comment and keeps the code after it', () => {
+		const facts = factsOf(
+			'/* export const gone = 1; */ export const kept = 2;',
+			resolve,
+		);
+		expect([...facts.local]).toEqual(['kept']);
+	});
+
+	it('[<200ms] strips an unterminated block comment to the end', () => {
+		const facts = factsOf(
+			'export const a = 1;\n/* export const b = 2;',
+			resolve,
+		);
+		expect([...facts.local]).toEqual(['a']);
+	});
+
+	it('[<200ms] finishes fast on a long run of unterminated openers', () => {
+		const facts = factsOf(
+			`export const a = 1;\n${'/*a'.repeat(200_000)}`,
+			resolve,
+		);
+		expect([...facts.local]).toEqual(['a']);
+	});
+
+	it('[<200ms] finishes fast on a long run of blank lines', () => {
+		const facts = factsOf(
+			`export const a = 1;${'\n \t'.repeat(200_000)}x`,
+			resolve,
+		);
+		expect([...facts.local]).toEqual(['a']);
 	});
 });
