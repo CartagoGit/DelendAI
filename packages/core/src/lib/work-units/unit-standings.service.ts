@@ -217,8 +217,9 @@ export const readUnitStandings = async (
 			};
 		},
 	);
-	// A unit anybody is on is live, whatever its refs say: read only for
-	// the units the verdict would give away, against one machine reading.
+	// A unit whose lease beat or whose proof is in flight is live, whatever
+	// its refs say. A surviving server process or session environment is
+	// not life: a finished worker's `__serve` outlived its unit (x01100).
 	const judged = await Promise.all(
 		entries.map(async (entry) => {
 			if (entry.standing === 'live' && entry.author?.orphaned !== true)
@@ -228,7 +229,12 @@ export const readUnitStandings = async (
 				lease: leases.get(entry.ref),
 				worktree: worktreeOfRef(root, entry.ref) ?? entry.worktree,
 			});
-			if (!life.alive) return entry;
+			if (
+				!life.signs.some(
+					(sign) => sign === 'heartbeat' || sign === 'proof',
+				)
+			)
+				return entry;
 			return {
 				...entry,
 				standing: 'live' as const,
