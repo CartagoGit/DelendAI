@@ -2,14 +2,14 @@
 id: x01111
 title: "Work deliver prints its answer after the unit worktree is removed"
 kind: fix
-status: in-progress
+status: review
 type: proposal
 track: general
 date: 2026-11-21
-last-transition-id: 9c43798d-9dcb-4f03-9d29-3e1b7a31309d
-last-correlation-id: 9c43798d-9dcb-4f03-9d29-3e1b7a31309d
-last-transition-from: review
-last-transition-at: 2026-11-21T05:06:17.377Z
+last-transition-id: 9d983f0f-8472-4de4-82a2-6f2fd4a487b2
+last-correlation-id: 9d983f0f-8472-4de4-82a2-6f2fd4a487b2
+last-transition-from: in-progress
+last-transition-at: 2026-11-21T05:28:42.265Z
 ---
 
 # x01111 — Work deliver prints its answer after the unit worktree is removed
@@ -43,7 +43,7 @@ Seen 3 times: the last submit removes the unit worktree, then the CLI lazily imp
 - review-implementer: claude-sonnet-5-5
 
 ### S2 — Leave the unit worktree before it can be removed
-- **Status**: ready
+- **Status**: review
 - **Files**: `packages/cli/src/commands/work.command.ts`, `new:packages/cli/src/contracts/interfaces/leave-worktree-ports.interface.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - **Decisions**: none
