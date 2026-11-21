@@ -187,7 +187,7 @@ describe('the watchdog evidence', () => {
 describe('the pass wiring', () => {
 	it('[<20ms] a derived conflict is dispatched to the land workflow, never solved here', async () => {
 		seen.derived = true;
-		const dispatchWorkflow = vi.fn(() => Promise.resolve());
+		const dispatchWorkflow = vi.fn(() => Promise.resolve(true));
 		await runIntegrationPass({
 			root: '/repo',
 			policy: resolveDevelopmentPolicy({
