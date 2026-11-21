@@ -38,9 +38,9 @@ A worker passed a checkout path read from a temp file another worker had overwri
 - **Decisions**: none
 - acceptance:
   - "packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts: [<200ms] foreignUnitOf names the unit of a different kind or proposal and finds nothing for a create unit or a non-unit tree"
-  - "plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts: refuses a checkout owned by another unit, naming it and the work enter command"
+  - "plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts: [<200ms] create_proposal refuses a checkout owned by another unit, naming it and the work enter command"
 
 ## acceptance
 
 - packages/core/tests/src/lib/work-units/unit-adoption.service.spec.ts: [<200ms] foreignUnitOf names the unit of a different kind or proposal and finds nothing for a create unit or a non-unit tree
-- plugins/proposals/src/lib/tools/authoring/create-proposal.tool.ts: refuses a checkout owned by another unit, naming it and the work enter command
+- plugins/proposals/tests/src/lib/tools/authoring/create-proposal.tool.spec.ts: [<200ms] create_proposal refuses a checkout owned by another unit, naming it and the work enter command
