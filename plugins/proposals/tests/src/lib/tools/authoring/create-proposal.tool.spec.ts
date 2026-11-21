@@ -2,7 +2,7 @@
  * create-proposal.tool.spec.ts — the create_proposal handler: where it
  * writes, what it refuses, and the publication step it names.
  */
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -15,6 +15,7 @@ import {
 } from '@delendai/test-kit';
 
 import type { IResolvedDevelopmentPolicy } from '@delendai/core/public';
+import { resolveDevelopmentPolicy } from '@delendai/core/public';
 
 import type { IToolRegistration } from '@delendai/core/contracts';
 
@@ -52,6 +53,7 @@ describe('create_proposal', () => {
 		trunk: 'develop',
 		worktrees: {
 			'unit-tree': 'delendai/wip/agent-a/implement/x00001-S1-g1/topic',
+			'create-tree': 'delendai/wip/agent-a/create/new-all-g1/topic',
 		},
 	});
 	let root = '';
@@ -120,6 +122,29 @@ describe('create_proposal', () => {
 		expect(refused.isError).toBe(true);
 		expect(refused.content[0]?.text).toContain(unit);
 		expect(refused.content[0]?.text).toContain('work enter');
+		expect(existsSync(join(tree, 'docs/delendai/proposals'))).toBe(false);
+	});
+
+	it('[<500ms] create_proposal called from a create unit writes the proposal there', async () => {
+		const { root: repo, worktrees } = unitRepo.copy();
+		const tree = worktrees['create-tree'] ?? '';
+		const create = await capture(
+			buildCreateProposalRegistration({
+				...options,
+				proposalsDirAbs: join(repo, 'docs/delendai/proposals'),
+				indexPathAbs: join(
+					repo,
+					'.cache/delendai/proposals/index.json',
+				),
+				workspaceRoot: repo,
+				developmentPolicy: resolveDevelopmentPolicy({
+					development: { profile: 'shared-checkout-pr' },
+				}),
+			}),
+		);
+		const made = await create({ ...proposal, checkout: tree });
+		expect(made.content[0]?.text).not.toContain('belongs to');
+		expect(existsSync(join(tree, 'docs/delendai/proposals'))).toBe(true);
 	});
 
 	it('[<200ms] refuses a document it cannot write', async () => {
