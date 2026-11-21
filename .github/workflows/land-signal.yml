@@ -8,7 +8,7 @@ name: land-signal
 on:
     pull_request:
         types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled, converted_to_draft, closed]
-        branches: [develop]
+        branches: [rehearsal/r20261121-045542-g2/derived-conflict-integration]
 
 permissions:
     actions: write
