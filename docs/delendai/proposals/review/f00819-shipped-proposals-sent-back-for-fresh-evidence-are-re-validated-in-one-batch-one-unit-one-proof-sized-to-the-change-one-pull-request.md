@@ -12,6 +12,7 @@ last-transition-from: in-progress
 last-transition-at: 2026-11-18T08:23:19.409Z
 shipped-in:
   - "569fa373862fb1fa57d6c4671fe8150cecb414f3"
+  - "6c623053b93278e334d2b3fe477ad5024878bb9f"
 ---
 
 # f00819 — Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request
@@ -86,7 +87,7 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
 - review-implementer: claude-opus-5-5
 
 ### S4 — The batch is published as one pull request titled by the product, and documented
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `packages/cli/src/contracts/constants/help-translation.constant.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
@@ -97,8 +98,10 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "The work-unit playbook has one line saying that shipped proposals sent back for fresh evidence are re-validated with `delendai work revalidate`, not one unit each, and that approving the batch is a later review batch"
   - "Pre-check: `delendai work prove --only=typecheck,lint-docs,lint-governance` passes before the slice is handed over"
 - shipped-in: `6c623053b932`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: approved by mimo-v2.6-flash — verified at 6c623053b932, validate exit 0 and tests 57/57 claimed, no recorded run cited; acceptance 5/5: (1) revalidateBatch ends with a single `const published = await ports.publish();` and returns its code — no title argument is built anywhere; revalidatePortsOf wir… (2) spec `publishes once for a batch of three proposals, with no title argument` calls revalidateBatch and expects `calls.publish` to equal `[[]]` — exactly one ca… (3) help-translation.constant.ts line 224 gives `work` a summary that names `revalidate` ("`revalidate` re-validates the shipped proposals sent back for fresh evid… (4) delendai-work-unit-playbook/SKILL.md line 68 reads verbatim: "Shipped proposals sent back for fresh evidence are re-validated with `delendai work revalidate`, … (5) `bun run typecheck` exits 0 across all 80 workspaces; `work prove --only=...` runs lint-docs (ok, 29s); lint-governance reports 31/32 jobs passing, the single … — Approved at 6c623053b9327, the merge that delivered S4 and an ancestor of develop (no later f00819 delivery touches its two files). Gate: `bun run typecheck` exits 0; `bun run lint:cli:i18n` exits 0; the `work` help summary names `revalidate`; the playbook line is at SKILL.md:68. Tests 57/57 in work-revalidate.service.spec.ts (which holds the publish-once spec) and work.command.spec.ts. lint-governance is 31/32 here too, the single failure being the same unrelated closed-with-independent-approval false positive filed separately. S2 and S3 are judged on their own.
 
 ## acceptance
 
