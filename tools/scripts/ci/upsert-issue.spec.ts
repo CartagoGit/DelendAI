@@ -62,6 +62,28 @@ describe('closeClearedIssues', () => {
 	});
 });
 
+describe('createGhIssueForge', () => {
+	it('[<20ms] lists only the exact title and writes through gh', async () => {
+		const calls: string[] = [];
+		const forge = createGhIssueForge((args) => {
+			calls.push(args.join(' '));
+			return JSON.stringify([
+				{ number: 4, title: 'T' },
+				{ number: 5, title: 'T and more' },
+			]);
+		});
+		expect(await forge.listOpen('T')).toEqual([4]);
+		await forge.create('T', 'B');
+		await forge.edit(4, 'B2');
+		await forge.close(4, 'done');
+		expect(calls.slice(1)).toEqual([
+			'issue create --title T --body B',
+			'issue edit 4 --body B2',
+			'issue close 4 --comment done',
+		]);
+	});
+});
+
 describe('the calibration workflow', () => {
 	const text = readFileSync(
 		`${repoRoot()}/.github/workflows/test-budget-calibration.yml`,

@@ -48,3 +48,41 @@ export const closeClearedIssues = async (
 	for (const number of open) await forge.close(number, comment);
 	return open.length === 0 ? 'unchanged' : 'closed';
 };
+
+/** Runs `gh` with the given arguments and returns its stdout; specs inject a fake. */
+export type IGhRunner = (args: readonly string[]) => string;
+
+/** The forge over the `gh` CLI. */
+export const createGhIssueForge = (gh: IGhRunner): IIssueForge => ({
+	listOpen: (title) =>
+		Promise.resolve(
+			(
+				JSON.parse(
+					gh([
+						'issue',
+						'list',
+						'--state',
+						'open',
+						'--search',
+						`"${title}" in:title`,
+						'--json',
+						'number,title',
+					]),
+				) as { number: number; title: string }[]
+			)
+				.filter((issue) => issue.title === title)
+				.map((issue) => issue.number),
+		),
+	create: (title, body) => {
+		gh(['issue', 'create', '--title', title, '--body', body]);
+		return Promise.resolve();
+	},
+	edit: (number, body) => {
+		gh(['issue', 'edit', String(number), '--body', body]);
+		return Promise.resolve();
+	},
+	close: (number, comment) => {
+		gh(['issue', 'close', String(number), '--comment', comment]);
+		return Promise.resolve();
+	},
+});

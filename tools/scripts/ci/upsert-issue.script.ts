@@ -11,7 +11,7 @@ import { spawnSync } from 'node:child_process';
 
 import {
 	closeClearedIssues,
-	type IIssueForge,
+	createGhIssueForge,
 	upsertIssue,
 } from './upsert-issue';
 
@@ -30,39 +30,7 @@ const gh = (args: readonly string[]): string => {
 	return done.stdout;
 };
 
-const forge: IIssueForge = {
-	listOpen: (title) =>
-		Promise.resolve(
-			(
-				JSON.parse(
-					gh([
-						'issue',
-						'list',
-						'--state',
-						'open',
-						'--search',
-						`"${title}" in:title`,
-						'--json',
-						'number,title',
-					]),
-				) as { number: number; title: string }[]
-			)
-				.filter((issue) => issue.title === title)
-				.map((issue) => issue.number),
-		),
-	create: (title, body) => {
-		gh(['issue', 'create', '--title', title, '--body', body]);
-		return Promise.resolve();
-	},
-	edit: (number, body) => {
-		gh(['issue', 'edit', String(number), '--body', body]);
-		return Promise.resolve();
-	},
-	close: (number, comment) => {
-		gh(['issue', 'close', String(number), '--comment', comment]);
-		return Promise.resolve();
-	},
-};
+const forge = createGhIssueForge(gh);
 
 const title = arg('title');
 const body = arg('body');
