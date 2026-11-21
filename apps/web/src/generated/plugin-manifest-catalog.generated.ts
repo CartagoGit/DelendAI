@@ -887,6 +887,7 @@ export const GENERATED_PLUGIN_MANIFEST_WEB_CATALOG =
 		],
 		"permissions": [
 			"filesystem-read",
+			"filesystem-write",
 			"process",
 			"env-read"
 		],

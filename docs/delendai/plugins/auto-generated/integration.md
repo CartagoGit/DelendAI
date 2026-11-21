@@ -3,7 +3,7 @@ id: integration
 package: @delendai/integration
 version: 0.3.0
 maturity: experimental
-generated: 2026-11-13T14:22:05.043Z
+generated: 2026-11-21T11:37:59.130Z
 ---
 
 # Integration
@@ -27,6 +27,7 @@ The pull request flow proven on real GitHub: a rehearsal of every case and produ
 ## Permissions
 
 - filesystem-read
+- filesystem-write
 - process
 - env-read
 

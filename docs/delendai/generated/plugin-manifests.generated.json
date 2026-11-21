@@ -1,5 +1,5 @@
 {
-	"generatedAt": "2026-11-18T18:23:37.217Z",
+	"generatedAt": "2026-11-21T11:37:59.130Z",
 	"manifests": [
 		{
 			"id": "adaptive-optimizer",
@@ -1360,6 +1360,7 @@
 			"maturity": "experimental",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"env-read"
 			],
@@ -3447,6 +3448,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"env-read"
 			],
@@ -5074,6 +5076,7 @@
 			],
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"env-read"
 			],
@@ -6701,6 +6704,7 @@
 			"id": "integration",
 			"permissions": [
 				"filesystem-read",
+				"filesystem-write",
 				"process",
 				"env-read"
 			]
