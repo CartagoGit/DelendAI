@@ -22,6 +22,10 @@ import {
 // function of how far the test advances. Only timers and Date are faked; the
 // lock file I/O stays real, so after each advance the test yields to the real
 // event loop until that heartbeat's fs work has settled.
+// The real monotonic clock, kept before fake timers replace performance.now:
+// the heartbeat give-up below is a real-time bound, not a fake-time one.
+const realNowMs = performance.now.bind(performance);
+
 const settle = async (
 	predicate: () => boolean,
 	maxYields = 10_000,
@@ -78,9 +82,9 @@ const advanceToNextHeartbeat = async (
 	for (let attempt = 0; attempt < 100; attempt += 1) {
 		await vi.advanceTimersByTimeAsync(periodMs);
 		spentMs += periodMs;
-		const giveUpAt = performance.now() + 20;
+		const giveUpAt = realNowMs() + 20;
 		while (ticks.done === before) {
-			if (ticks.started === before && performance.now() > giveUpAt) {
+			if (ticks.started === before && realNowMs() > giveUpAt) {
 				break;
 			}
 			await new Promise<void>((resolve) => setImmediate(resolve));
@@ -172,7 +176,9 @@ describe('withFileMutex state-machine invariants', () => {
 			{ heartbeatMs: 40, staleMs: 800 },
 		] as const;
 
-		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
+		vi.useFakeTimers({
+			toFake: ['setTimeout', 'setInterval', 'Date', 'performance'],
+		});
 		try {
 			for (const [caseIndex, entry] of cases.entries()) {
 				const tracker = trackHeartbeats();
@@ -295,7 +301,9 @@ describe('withFileMutex state-machine invariants', () => {
 	it('[<200ms] heartbeat generations are monotonic across bounded runs', async () => {
 		const cases = [3, 4, 5] as const;
 
-		vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'Date'] });
+		vi.useFakeTimers({
+			toFake: ['setTimeout', 'setInterval', 'Date', 'performance'],
+		});
 		try {
 			for (const [caseIndex, targetHeartbeats] of cases.entries()) {
 				const generations: number[] = [];
