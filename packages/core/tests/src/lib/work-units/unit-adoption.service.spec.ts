@@ -223,7 +223,7 @@ describe('adoptProposalId', () => {
 describe('carryUnitRecords', () => {
 	const TAKEN = 'delendai/wip/agent-b/create/new-all-g2/the-topic';
 
-	it("moves the lease and drops the forge's copy when a unit changes hands", async () => {
+	it("[<400ms] moves the lease and drops the forge's copy when a unit changes hands", async () => {
 		const { main, tree, remote } = unitOn(OLD);
 		await enter(tree, OLD);
 		// The claim itself renamed the branch; this is what follows it.
