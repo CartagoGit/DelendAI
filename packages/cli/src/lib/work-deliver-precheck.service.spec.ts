@@ -87,6 +87,7 @@ describe('precheckDelivery', () => {
 				code: EXIT_CODE.OK,
 				data: { worktree: '/unit' },
 			}),
+			dropStaleProposalCopies: async () => [],
 			preflight: async () => ({ ok: true }),
 			transition: async () => ({ ok: true }),
 			coveragePrecheck: PASSES,
