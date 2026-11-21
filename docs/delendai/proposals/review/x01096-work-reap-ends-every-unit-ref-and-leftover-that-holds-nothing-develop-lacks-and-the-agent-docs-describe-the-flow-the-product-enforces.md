@@ -33,7 +33,7 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
 - global_gate: lint
 
 ### S1 — reap ends a landed unit of an idle owner
-- **Status**: review
+- **Status**: pending
 - **Files**: `packages/core/src/lib/work-units/work-unit-reap.service.ts`, `packages/core/src/lib/work-units/unit-lease.interface.ts`, `packages/core/src/lib/work-units/unit-standings.service.ts`, `packages/core/src/lib/work-units/unit-reaper.service.ts`, `packages/core/tests/src/lib/work-units/unit-reaper.service.spec.ts`, `packages/core/tests/src/lib/work-units/unit-reaper-landed.service.e2e.spec.ts`
 - **Gate**: lint
 - **Decisions**: none
@@ -41,8 +41,10 @@ Measured 2026-11-18 on the owner's clone: 15 worktrees (3.3 GB under .cache/dele
   - "`delendai work reap` lists, and `--apply` ends (worktree removed, local branch deleted, no ref kept because nothing is unique), a unit whose every commit is an ancestor of the integration branch and whose owner is past the idle window, whatever agent id owns it; a live owner's unit is never touched."
   - "unit-reaper.service.spec.ts covers: landed and idle (ended), landed and live (kept), one unlanded commit and idle (kept and listed), and a unit with uncommitted edits (kept, edits named)."
 - shipped-in: `2ab5ed987be8`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mai-code-2-flash
+- review-log: requested_changes by mai-code-2-flash — S1 is stale against current develop: its declared reaper implementation/spec paths no longer exist and work-unit reaper code moved across later commits. A review recorded against 2ab5ed987be8 cannot prove the current behavior. Redeliver S1 on current HEAD, update renamed/deleted Files entries through revalidate, and run unit-reaper/Landed e2e specs plus work reap gates.
 
 ### S2 — stranded and rescued refs whose patches are on develop are removed
 - **Status**: review
