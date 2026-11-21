@@ -40,7 +40,7 @@ The alerts are open on develop and block promotion. #493/#494: two copies of a b
 - acceptance:
   - "plugins/git/tests/src/lib/diff-paths.spec.ts: parseDiffFilePaths in @delendai/git reads diff --git headers with lastIndexOf and +++ b/ lines, no backtracking regex"
   - "plugins/git/tests/src/lib/diff-paths.spec.ts passes with both plugin specs; alerts 493 and 494 close"
-  - "spec with adversarial 100k-char header finishes in well under 400ms"
+  - "diff-paths.spec.ts: an adversarial 100k-char header finishes in well under 100ms"
 
 ### S2 — verify-develop-health output path validation
 - **Status**: pending
@@ -49,7 +49,7 @@ The alerts are open on develop and block promotion. #493/#494: two copies of a b
 - **Decisions**: none
 - acceptance:
   - "tools/tests/ci/verify-develop-health-output.spec.ts: --output is resolved and must stay inside the workspace (or be an explicit absolute path accepted deliberately), otherwise exit 2"
-  - "only the serialised known dashboard shape is written"
+  - "verify-develop-health.spec.ts still passes: only the serialised known dashboard shape is written"
   - "verify-develop-health-output.spec.ts covers traversal rejection and valid path; alert 495 closes"
 
 ### S3 — Fix no-op replace in work-unit-generation e2e spec
@@ -65,9 +65,9 @@ The alerts are open on develop and block promotion. #493/#494: two copies of a b
 
 - parseDiffFilePaths in @delendai/git reads diff --git headers with lastIndexOf and +++ b/ lines, no backtracking regex
 - plugins/git/tests/src/lib/diff-paths.spec.ts passes with both plugin specs; alerts 493 and 494 close
-- spec with adversarial 100k-char header finishes in well under 400ms
+- diff-paths.spec.ts: an adversarial 100k-char header finishes in well under 100ms
 - tools/tests/ci/verify-develop-health-output.spec.ts: --output is resolved and must stay inside the workspace (or be an explicit absolute path accepted deliberately), otherwise exit 2
-- only the serialised known dashboard shape is written
+- verify-develop-health.spec.ts still passes: only the serialised known dashboard shape is written
 - verify-develop-health-output.spec.ts covers traversal rejection and valid path; alert 495 closes
 - work-unit-generation.service.e2e.spec.ts after PR 3149 (merged): develop already reads `const scoped = SCOPED;`, so nothing is left to change here
 - work-unit-generation.service.e2e.spec.ts passes; alert 492 closes
