@@ -266,6 +266,12 @@ const runDelivery = async (
 	if (located.code !== 0) return located;
 	const unit = isRecord(located.data) ? located.data : {};
 	const checkout = textOf(unit.worktree);
+	// A proposal moved in this unit and edited at its old place on develop
+	// leaves two copies after the merge: the earlier one goes, before the proof.
+	const stale = await ports.dropStaleProposalCopies(checkout);
+	if (stale.refusal !== undefined) {
+		return { code: EXIT_CODE.VALIDATION, error: stale.refusal };
+	}
 	// Opened first: a proposal in review that gained a slice is refused by
 	// the proof's own lints until it stands in progress again.
 	const started = refusalOf(await ports.transition('in-progress', checkout));
