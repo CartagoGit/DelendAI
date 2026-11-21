@@ -1,0 +1,109 @@
+---
+id: f00640
+title: "Review debt is measured: age and drift since the work landed"
+kind: feat
+status: done
+type: proposal
+track: governance
+date: 2026-09-25
+priority: P1
+related:
+    - x00637 # the certified integration branch the drift is measured on
+last-transition-id: 3d58ee40-70f3-4394-b3db-83b42d59dc35
+last-correlation-id: 3d58ee40-70f3-4394-b3db-83b42d59dc35
+last-transition-from: review
+shipped-in:
+  - "e95e4e071fc125be14b463dff96d063fd124d267"
+  - "f6c803f03852f43d7353d60a9a2422e4073531fd"
+---
+
+# f00640 — Review debt is measured: age and drift since the work landed
+
+## goal
+
+For every proposal waiting in `review/`, the second agent can see how
+old the review is and how far the repository has moved under it since
+the work landed, and reviews come in the order that makes them
+cheapest and most useful.
+
+## why
+
+An external audit on 2026-09-25 counted 118 proposals in review against
+638 done, and named the risk: when the reviewer arrives, the context
+that produced the change may be dozens or hundreds of merges gone. A
+review of work that landed 250 commits ago, under files that changed
+since, is a different job from one that landed twenty minutes ago — and
+today both look the same in `proposal-ready-to-close`, which reports
+only slices done and whether `shipped-in` is set.
+
+## why this design
+
+The facts are already in git: `shipped-in` names the merge commits, the
+slices name their files, and the integration branch's history says what
+happened since. Nothing needs a new store — the report derives them.
+
+## non-goals
+
+- Closing reviews automatically. Done stays a second agent's call.
+- A semantic-conflict model. A measured, explainable proxy first.
+
+## architecture
+
+For each proposal in `review/`, from its `shipped-in` and slice Files:
+
+- `reviewAgeDays`: since the latest `shipped-in` commit;
+- `commitsSince`: commits on the integration branch after it;
+- `filesTouchedSince`: the slice files changed since, by later commits;
+- `driftRatio`: `filesTouchedSince / files`.
+
+Reported by `proposal-ready-to-close` (review section) and sortable:
+largest drift first by default, because those are the reviews that get
+more expensive with every merge. A proposal without `shipped-in` is
+reported as unmeasurable, never as fresh.
+
+## Slices
+
+- global_gate: none
+
+### S1 — Measure review age and drift
+- **Status**: done
+- shipped-in: `e95e4e071`
+- **Gate**: `npx vitest run tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
+- **Files**: `tools/scripts/lint/proposal-ready-to-close.script.ts`, `tools/scripts/lint/proposal-ready-to-close.script.spec.ts`
+The four measures for every review proposal, pure over git facts that
+are injected in the spec; `--sort=drift|age` on the report.
+Measured on develop at 309bbe59d: 79 proposals wait in review; the
+oldest-landed carry 250+ commits since and every slice file touched.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — f00640 S1 (commit e95e4e071) makes proposal-ready-to-close read shipped-in + slice Files + git facts and emit reviewAgeDays / commitsSince / filesTouchedSince / driftRatio for every proposal in review. When shipped-in is unknown to the clone, the entry reports {measured:false, reason:'no shipped-in commit is known to this clone'} - never 'fresh'. The list orders largest drift first, unmeasurable last, and accepts --sort=age. proposal-ready-to-close.script.spec.ts: 12/12 pass.
+- review-attribution: claude-opus-5-5 from Merge pull request #424 from CartagoGit/delendai/pr/claude-opus-5-5/f00640-S1-g1/review-age-and-drift (refs/heads/delendai/wip/claude-opus-5-5/f00640-S1-g1/review-age-and-drift) (e95e4e071fc125be14b463dff96d063fd124d267), opened by minimax-m3
+
+### S2 — Surface it where reviewers look
+- **Status**: done
+- **Gate**: `npx vitest run plugins/proposals/tests`
+- **Files**:
+  - `plugins/proposals/src/lib/services/review-drift.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-drift.interface.ts`
+  - `plugins/proposals/src/lib/services/review-queue.service.ts`
+  - `plugins/proposals/src/lib/contracts/interfaces/review-queue.interface.ts`
+  - `plugins/proposals/src/lib/contracts/constants/review-queue-schema.constant.ts`
+  - `plugins/proposals/src/generated/tool-outputs.ts`
+  - `plugins/proposals/tests/src/lib/tools/review-queue-drift.spec.ts`
+  - `tools/scripts/lint/proposal-ready-to-close.script.ts`
+The review queue the proposals tools return is ordered by drift, and
+each entry carries its measures. The measure moved from the lint into the
+plugin (`review-drift.service.ts`), where both read it: one implementation.
+- review-state: done
+- review-implementer: claude-opus-5-5
+- review-reviewer: minimax-m3
+- review-log: approved by minimax-m3 — f00640 S2 (commit f6c803f03) introduces plugins/proposals/src/lib/services/review-drift.service.ts with measureReviewDrift() that derives reviewAgeDays/commitsSince/filesTouchedSince/driftRatio from injected git facts (commitTimeMs/commitsSince/filesTouchedSince), plus byDrift() ordering helper. plugins/proposals/src/lib/services/review-queue.service.ts applies byDrift so every queue entry carries its drift, with unmeasurable entries placed last. The measure moved out of the lint into the plugin, so the lint now imports measureReviewDrift and uses byDrift too - one implementation. Schema + tool-output updated. Spec 'lists first the review whose files were rewritten after it landed' passes 1/1 against a real-repo fixture.
+- review-attribution: claude-opus-5-5 from Merge pull request #629 from CartagoGit/delendai/pr/claude-opus-5-5/implement/f00640-S2-g1/the-review-queue-shows-its-drift (refs/heads/delendai/wip/claude-opus-5-5/implement/f00640-S2-g1/the-review-queue-shows-its-drift) (f6c803f03852f43d7353d60a9a2422e4073531fd), opened by minimax-m3
+
+## acceptance
+
+- Every proposal in review reports its age, commits since, files
+  touched since and drift ratio, or says why it cannot be measured.
+- A proposal whose files were rewritten after it landed sorts above
+  one whose files are untouched.
