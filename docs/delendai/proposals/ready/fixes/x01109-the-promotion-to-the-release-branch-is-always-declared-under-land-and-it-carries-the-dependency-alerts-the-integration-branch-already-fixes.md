@@ -29,7 +29,7 @@ Dependabot alerts on main (astro #84-87) never close because no promotion develo
 
 ### S1 — Restore the schedule and hold it by a spec
 - **Status**: pending
-- **Files**: `delendai.config.json`, `tools/scripts/forge/promotion-declared.spec.ts`
+- **Files**: `delendai.config.json`, `new:tools/scripts/forge/promotion-declared.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
@@ -37,7 +37,7 @@ Dependabot alerts on main (astro #84-87) never close because no promotion develo
 
 ### S2 — open-promotion says why it does nothing and lists the alerts the integration branch fixes
 - **Status**: pending
-- **Files**: `tools/scripts/forge/dependabot-fixes.lib.ts`, `tools/scripts/forge/dependabot-fixes.lib.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`
+- **Files**: `new:tools/scripts/forge/dependabot-fixes.lib.ts`, `tools/scripts/forge/dependabot-fixes.lib.spec.ts`, `tools/scripts/forge/open-promotion.script.ts`, `tools/scripts/forge/open-promotion.script.spec.ts`
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
@@ -47,7 +47,7 @@ Dependabot alerts on main (astro #84-87) never close because no promotion develo
 
 ## acceptance
 
-- tools/scripts/forge/promotion-declared.spec.ts: with engine land the repository config declares a promotion schedule
+- new:tools/scripts/forge/promotion-declared.spec.ts: with engine land the repository config declares a promotion schedule
 - tools/scripts/forge/open-promotion.script.spec.ts: nothing-declared prints the reason (no schedule, one branch, unparsable config)
-- tools/scripts/forge/dependabot-fixes.lib.spec.ts: an alert whose patched version is in the integration lockfile is listed as fixed; one without a fix is reported unfixed
+- new:tools/scripts/forge/dependabot-fixes.lib.spec.ts: an alert whose patched version is in the integration lockfile is listed as fixed; one without a fix is reported unfixed
 - tools/scripts/forge/open-promotion.script.spec.ts: the opened pull request body carries the fixed alerts and the output names the unfixed
