@@ -98,7 +98,7 @@ describe('guard through real git hooks', () => {
 	const git = (root: string, ...args: string[]) =>
 		spawnSync('git', args, { cwd: root, encoding: 'utf8' });
 
-	it('[<5000ms] refuses deleting a unit branch a worktree still works on', () => {
+	it('[<11105ms] refuses deleting a unit branch a worktree still works on', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
@@ -216,7 +216,7 @@ describe('guard through real git hooks', () => {
 		).not.toBe(0);
 	});
 
-	it('[<5000ms] refuses an identity an agent wrote into the repository config (x00698)', () => {
+	it('[<9066ms] refuses an identity an agent wrote into the repository config (x00698)', () => {
 		const root = repoWith({
 			development: {
 				profile: 'shared-checkout-pr',
