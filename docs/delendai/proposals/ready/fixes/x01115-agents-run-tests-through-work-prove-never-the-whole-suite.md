@@ -45,7 +45,7 @@ Measured 2026-11-21: external reviewer agents (mimo-v2.6-flash, gpt-5.6) ran an 
 - **Decisions**: none
 - acceptance:
   - "AGENT-BOOTSTRAP.md states in one rule that tests run through `delendai work prove` and never the whole suite, and stays at or under 32,000 bytes (bootstrap-prompt-size spec)"
-  - "delendai-work-unit-playbook SKILL.md repeats the rule for reviewers and implementers"
+  - "tools/scripts/lint/work-prove-rule-text.script.spec.ts: the rule text that tests run through `delendai work prove` appears in delendai-work-unit-playbook SKILL.md and in AGENT-BOOTSTRAP.md"
 
 ### S3 — The guard reaches every project init wires, with a migration for existing ones
 - **Status**: pending
@@ -53,7 +53,8 @@ Measured 2026-11-21: external reviewer agents (mimo-v2.6-flash, gpt-5.6) ran an 
 - **Gate**: none
 - **Decisions**: none
 - acceptance:
-  - "init writes or merges the guard for detected vitest or jest configs and a migration carries existing projects"
+  - "packages/core/tests/src/lib/init/init-vitest-guard.spec.ts: init writes or merges the guard for detected vitest or jest configs"
+  - "packages/core/tests/src/lib/init/init-vitest-guard-migration.spec.ts: a migration carries the guard to existing projects"
 
 ## acceptance
 
