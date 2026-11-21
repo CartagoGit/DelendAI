@@ -2,10 +2,14 @@
 id: x01114
 title: "Land-repair attributes a red by failing specs and the perf e2e names why its capture fails"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: trust
 date: 2026-11-21
+last-transition-id: a7ccc467-2768-4966-8f1d-08ad4e12315f
+last-correlation-id: a7ccc467-2768-4966-8f1d-08ad4e12315f
+last-transition-from: ready
+last-transition-at: 2026-11-21T05:45:05.351Z
 ---
 
 # x01114 — Land-repair attributes a red by failing specs and the perf e2e names why its capture fails
