@@ -350,7 +350,20 @@ export const withUnitHere = async (
 export const createWorkCommand = (): ICliCommand => ({
 	name: 'work',
 	...WORK_COMMAND,
-	run: async (args, ctx) => {
+	run: async (rawArgs, ctx) => {
+		const verbose = rawArgs.includes('--verbose');
+		const args = rawArgs.filter((arg) => arg !== '--verbose');
+		// Loaded when an answer is sized: only these verbs need it (startup budget).
+		const sized = async (
+			result: ICliCommandResult,
+		): Promise<ICliCommandResult> =>
+			(await import('../lib/work-answer-size.service')).sizedAnswer({
+				verb: args[0] ?? '',
+				result,
+				verbose,
+				json: ctx.globals.json === true,
+				cwd: ctx.cwd,
+			});
 		if (args[0] === 'enter') await briefOnEntering();
 		if (args[0] === 'rename-namespace')
 			return runRenameNamespace(args.slice(1), ctx);
@@ -394,14 +407,16 @@ export const createWorkCommand = (): ICliCommand => ({
 				if ('refusal' in found) return found.refusal;
 				withSlice = [...here, ...found.flags];
 			}
-			return deliverUnit(
-				deliverPortsOf(ctx, {
-					id,
-					reason,
-					agent,
-					urgent: scalarArg(unit, 'urgent'),
-					unitFlags: withSlice,
-				}),
+			return await sized(
+				await deliverUnit(
+					deliverPortsOf(ctx, {
+						id,
+						reason,
+						agent,
+						urgent: scalarArg(unit, 'urgent'),
+						unitFlags: withSlice,
+					}),
+				),
 			);
 		}
 		if (args[0] === 'enter' && args.includes(PRINT_PATH_FLAG)) {
@@ -417,7 +432,9 @@ export const createWorkCommand = (): ICliCommand => ({
 				? [args[0], ...(await withUnitHere(args.slice(1), ctx.cwd))]
 				: args;
 		const result = await runWorkUnit(unitArgs, ctx);
-		return args[0] === 'enter' ? withSlicesView(result, ctx) : result;
+		return args[0] === 'enter'
+			? withSlicesView(result, ctx)
+			: await sized(result);
 	},
 });
 
