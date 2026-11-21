@@ -179,9 +179,11 @@ export const runIntegrationRepair = async (
 	log(
 		result.kind === 'nothing'
 			? `land-repair: nothing to do (${result.why}).`
-			: result.kind === 'needs-person'
-				? `land-repair: needs a person (${result.reason}).`
-				: `land-repair: repair #${String(result.number)} ${result.kind}.`,
+			: result.kind === 'unowned'
+				? `land-repair: unowned failure, nobody reverted (${result.why}).`
+				: result.kind === 'needs-person'
+					? `land-repair: needs a person (${result.reason}).`
+					: `land-repair: repair #${String(result.number)} ${result.kind}.`,
 	);
 	return 0;
 };
