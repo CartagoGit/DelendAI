@@ -2,10 +2,14 @@
 id: x01107
 title: "Fix four open CodeQL alerts on develop (493, 494, 495, 492)"
 kind: fix
-status: ready
+status: in-progress
 type: proposal
 track: general
 date: 2026-11-21
+last-transition-id: d9948468-ff0a-4086-bb14-ded83e4e2e03
+last-correlation-id: d9948468-ff0a-4086-bb14-ded83e4e2e03
+last-transition-from: ready
+last-transition-at: 2026-11-21T01:31:42.113Z
 ---
 
 # x01107 — Fix four open CodeQL alerts on develop (493, 494, 495, 492)
