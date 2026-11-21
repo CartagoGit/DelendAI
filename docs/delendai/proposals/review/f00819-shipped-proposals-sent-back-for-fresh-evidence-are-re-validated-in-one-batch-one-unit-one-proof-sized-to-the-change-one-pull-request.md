@@ -10,6 +10,9 @@ last-transition-id: f5e80b6b-42f4-455d-93e5-2286849cdaf8
 last-correlation-id: f5e80b6b-42f4-455d-93e5-2286849cdaf8
 last-transition-from: in-progress
 last-transition-at: 2026-11-18T08:23:19.409Z
+shipped-in:
+  - "569fa373862fb1fa57d6c4671fe8150cecb414f3"
+  - "6c623053b93278e334d2b3fe477ad5024878bb9f"
 ---
 
 # f00819 — Shipped proposals sent back for fresh evidence are re-validated in one batch: one unit, one proof sized to the change, one pull request
@@ -33,7 +36,7 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
 - global_gate: none
 
 ### S1 — `delendai work revalidate` selects the proposals and prints the list it chose
-- **Status**: review
+- **Status**: done
 - **Files**: `packages/cli/src/commands/work.command.ts`, `packages/cli/src/commands/work.command.spec.ts`
 - **Gate**: none
 - acceptance:
@@ -44,11 +47,13 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "A proposal named in --proposals that does not satisfy the predicate is reported by id with the reason and left out, and the other ids are still selected [<50ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-governance` passes before the slice is handed over"
 - shipped-in: `a206adf9d929`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: approved by mimo-v2.6-flash — verified at 569fa373862f, validate exit 0 and tests 57/57 claimed, no recorded run cited; acceptance 6/6: (1) work.command.ts line 378 `if (args[0] === 'revalidate')` sits beside `deliver` (line 395) and only calls scalarArg(flags,'agent') / scalarArg(flags,'proposals'… (2) selectRevalidation is a pure function over the parsed proposals: it keeps stage === 'ready' whose every isLive slice has shippedIn and reviewState === 'changes… (3) revalidateBatch prints the refusal lines, then `for (const id of selection.chosen) ports.print(id)` and only afterwards enters the unit and transitions; an emp… (4) FIXTURE in work-revalidate.service.spec.ts has one proposal per case: f1 (all live slices shipped + changes_requested) and f5 (the unshipped slice is retired) … (5) the named-id spec calls selectRevalidation(FIXTURE, ['f1','f2','f4','zz']) and expects result.chosen === ['f1'], result.refused ids ['f2','f4','zz'] each with … (6) `bun run typecheck` exits 0 across all 80 workspaces; `work prove --only=...` runs lint-docs (ok, 29s) and lint-security (ok, 6s); lint-governance reports `31/… — Approved at 569fa373862fb, the newest first-parent delivery of f00819 that touches work.command.ts/.spec.ts and an ancestor of develop (it supersedes shipped-in a206adf9d929). Gate: `bun run typecheck` exits 0 across all 80 workspaces. Tests: 57/57 in work-revalidate.service.spec.ts and work.command.spec.ts. Pre-check `work prove --only=typecheck,lint-governance`: lint-docs ok (29s), lint-security ok (6s), lint-governance 31/32 jobs — the one failing job is closed-with-independent-approval, a false positive that mis-parses this review unit's own work ref (kindOfRef/agentOfRef still read the legacy agent-first shape while f00808 S8 made work refs kind-first), unrelated to this slice and filed separately. S2 and S3 are judged on their own and do not ride on this verdict.
 
 ### S2 — The batch is one unit and applies each proposal's transitions through the transition service
-- **Status**: review
+- **Status**: pending
 - **DependsOn**: [S1]
 - **Files**: `packages/core/src/lib/work-units/review-kind.service.ts`, `packages/core/src/lib/work-units/work-unit-publish.service.ts`, `packages/core/src/lib/work-units/review-unit-publish-checks.service.ts`, `packages/core/src/lib/work-units/unit-topic.service.ts`, `packages/core/src/lib/work-units/unit-forge-sync.service.ts`, `plugins/proposals/src/lib/services/review-claim.service.ts`, `plugins/proposals/src/lib/services/review-unit-tree.service.ts`, `plugins/proposals/src/lib/tools/transition/run-transition.tool.ts`
 - **Gate**: none
@@ -61,8 +66,14 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "Nothing retries or loops: a spec with a failing fake shows the service is called once for that proposal [<100ms]"
   - "Pre-check: `delendai work prove --only=typecheck,lint-governance,lint-architecture` passes before the slice is handed over"
 - shipped-in: `569fa373862f`
-- review-state: in_review
+- review-state: changes_requested
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: requested_changes by mimo-v2.6-flash — S2 is sent back: the acceptance requires a spec for EACH guard listed in the `why`, and three of the six have none that exercises a revalidation batch. (1) work-unit-publish.service.ts:118 and :218 — work-unit-publish.service.spec.ts and its e2e contain zero `revalid`/`batch` cases (grep count 0 in both). (2) review-unit-tree.service.ts:83 — no spec anywhere references proposalsDirOfUnit or reviewUnitOfAgent. (3) unit-forge-sync.service.ts:242 — unit-forge-sync.service.spec.ts has zero revalid/batch cases. Already covered: review-unit-publish-checks.service.spec.ts (`does not refuse a revalidation batch that changes proposal documents, nor mistake it for another reviewer pack`), review-claim.service.spec.ts (`does not read a revalidation batch as a review pack`), unit-topic.service.spec.ts (isRevalidationIdentity / isRevalidationBranch). The `why` also names diverged-review-pack.service.ts:41, which the acceptance list omits — give it the same spec.
+
+S3 has an unmet criterion too; it is recorded here because one change request reopens the whole proposal and no second one can be recorded until it is resubmitted. S3's line "The measured wall time of one batch of N proposals is recorded in the proposal and is lower than N times the 3 min 18 s to 3 min 32 s" is not met: the `why` records only per-proposal numbers (`work enter` 18 s, proposal-only proof 63 s static + 8.7 s generators, full code proof 344-373 s) and says verbatim "the publish and the forge's run are not measured per step here". No wall time of one batch of N proposals appears anywhere in the document, so neither half of that line can be checked. S3's Decision line asks for a step-by-step timing that includes publish and pull request open — those are exactly the two steps the `why` says were not measured.
+
+S1 and S4 are approved on their own evidence; the objections are S2's missing guard specs and S3's missing batch measurement.
 
 ### S3 — The batch is proved by the documents-only proof, after measuring where the 3.5 minutes go
 - **Status**: review
@@ -82,7 +93,7 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
 - review-implementer: claude-opus-5-5
 
 ### S4 — The batch is published as one pull request titled by the product, and documented
-- **Status**: review
+- **Status**: done
 - **DependsOn**: [S3]
 - **Files**: `packages/cli/src/contracts/constants/help-translation.constant.ts`, `plugins/proposals/skills/delendai-work-unit-playbook/SKILL.md`
 - **Gate**: none
@@ -93,8 +104,10 @@ Verified 2026-11-17 on develop 1b14a5075: 61 proposals in docs/delendai/proposal
   - "The work-unit playbook has one line saying that shipped proposals sent back for fresh evidence are re-validated with `delendai work revalidate`, not one unit each, and that approving the batch is a later review batch"
   - "Pre-check: `delendai work prove --only=typecheck,lint-docs,lint-governance` passes before the slice is handed over"
 - shipped-in: `6c623053b932`
-- review-state: in_review
+- review-state: done
 - review-implementer: claude-opus-5-5
+- review-reviewer: mimo-v2.6-flash
+- review-log: approved by mimo-v2.6-flash — verified at 6c623053b932, validate exit 0 and tests 57/57 claimed, no recorded run cited; acceptance 5/5: (1) revalidateBatch ends with a single `const published = await ports.publish();` and returns its code — no title argument is built anywhere; revalidatePortsOf wir… (2) spec `publishes once for a batch of three proposals, with no title argument` calls revalidateBatch and expects `calls.publish` to equal `[[]]` — exactly one ca… (3) help-translation.constant.ts line 224 gives `work` a summary that names `revalidate` ("`revalidate` re-validates the shipped proposals sent back for fresh evid… (4) delendai-work-unit-playbook/SKILL.md line 68 reads verbatim: "Shipped proposals sent back for fresh evidence are re-validated with `delendai work revalidate`, … (5) `bun run typecheck` exits 0 across all 80 workspaces; `work prove --only=...` runs lint-docs (ok, 29s); lint-governance reports 31/32 jobs passing, the single … — Approved at 6c623053b9327, the merge that delivered S4 and an ancestor of develop (no later f00819 delivery touches its two files). Gate: `bun run typecheck` exits 0; `bun run lint:cli:i18n` exits 0; the `work` help summary names `revalidate`; the playbook line is at SKILL.md:68. Tests 57/57 in work-revalidate.service.spec.ts (which holds the publish-once spec) and work.command.spec.ts. lint-governance is 31/32 here too, the single failure being the same unrelated closed-with-independent-approval false positive filed separately. S2 and S3 are judged on their own.
 
 ## acceptance
 
